@@ -1,0 +1,54 @@
+# Core Python version (match your dev environment, not enforced by pip)
+# python==3.11.*   # (or your preferred version)
+
+# Main dependencies
+kivy==2.3.0
+cython==0.29.36
+
+# Type checking and typing extensions (for TypedDict, NotRequired, etc.)
+typing_extensions>=4.0.0
+
+# Logging and debugging
+loguru
+
+# JSON schema validation (if used for data validation)
+jsonschema
+
+# For packaging and building (not needed at runtime, but useful for dev)
+buildozer
+setuptools
+wheel
+
+# For linting and formatting
+flake8
+black
+isort
+
+# For type checking
+mypy
+
+# For testing (if you have or plan to add tests)
+pytest
+
+# For Android permissions (used in Kivy on Android)
+pyjnius
+
+# Optional: If you use Pillow for image processing (common in Kivy projects)
+Pillow
+
+# Optional: If you use requests for HTTP (not detected in your code, but common)
+# requests
+
+# Optional: If you use numpy for any calculations (not detected, but common)
+# numpy
+
+# Optional: If you use sdl2 for Kivy (Kivy will pull this in as needed)
+# kivy_deps.sdl2
+# kivy_deps.glew
+# kivy_deps.gstreamer
+# kivy_deps.angle
+
+# Optional: If you use docutils for documentation
+# docutils
+
+# If you use any other libraries, add them here

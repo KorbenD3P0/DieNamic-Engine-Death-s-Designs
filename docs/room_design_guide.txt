@@ -1,0 +1,322 @@
+Here is the updated and modernized Room Design Guide. It has been completely overhauled to reflect the new architecture of the Die-Namic Engine, including the shift to flat lock structures, array-based multi-key support, inline dictionary definitions, and the new dynamic state-override systems.
+
+***
+
+# Room Design & Level Structure Guide
+**Version:** 0.2  
+**Game:** DieNamic Engine: Death's Designs Version 0.2  
+**Engine:** Die-Namic Engine  
+**Lead Developer:** Dallas B Pancoast  
+
+---
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Room Anatomy & Schema](#room-anatomy--schema)
+3. [Exits & Navigation](#exits--navigation)
+4. [Locks & Keys](#locks--keys)
+5. [Dynamic State Overrides (NEW)](#dynamic-state-overrides)
+6. [Furniture, Objects, & Items](#furniture-objects--items)
+7. [Environmental Properties](#environmental-properties)
+8. [Complete Examples](#complete-examples)
+
+---
+
+## Overview
+
+Rooms are the fundamental spatial units in the engine. They define:
+- Where the player can move
+- What objects/hazards/NPCs are present
+- Environmental conditions (temperature, gas lines)
+- **Dynamic visual states** based on hazard triggers (e.g., post-explosion, post-magnetic surge)
+
+---
+
+## Room Anatomy & Schema
+
+### Minimal Required Schema
+```json
+{
+  "Room Name": {
+    "description": "What the player sees upon entering.",
+    "exits": {
+      "north": "Connected Room Name"
+    }
+  }
+}
+```
+
+### Complete Modern Schema
+*Note the removal of the old `locking` wrapper and the addition of `state_` dictionaries.*
+```json
+{
+  "Room Name": {
+    "description": "String describing the base room.",
+    "state_descriptions": {
+      "post_mri": "String overriding the description when 'post_mri' flag is active."
+    },
+    "exits": {
+      "direction": "room_name"
+    },
+    "locked": false,
+    "unlocks_with": ["key_id_1", "key_id_2"],
+    
+    "furniture": [
+      "string_ref_to_furniture_json",
+      {
+        "name": "inline_custom_desk",
+        "is_container": true,
+        "items": ["item_key"]
+      }
+    ],
+    "objects": [
+      "string_ref_to_scenery",
+      {
+        "name": "television",
+        "is_omen_provider": "television",
+        "aliases": ["tv", "screen"]
+      }
+    ],
+    "state_added_objects": {
+      "post_mri": [
+        "scattered debris",
+        "mangled wheelchair"
+      ]
+    },
+    "examine_details": {
+      "object_name": "Base description of the object."
+    },
+    "state_examine_details": {
+      "post_mri": {
+        "object_name": "How the object looks after the MRI activates."
+      }
+    },
+    "items": ["item_key"],
+    "npcs": ["npc_key"],
+    "hazards_present": ["hazard_key"],
+    "first_entry_text": "String shown on first visit.",
+    "ambient_descriptions": ["String"],
+    
+    "room_type": "medical",
+    "temperature_zone": "cold",
+    "has_gas_lines": true,
+    "floor": 1
+  }
+}
+```
+
+---
+
+## Exits & Navigation
+
+Exits are now strictly string-to-string mappings, unless defining a special dynamic exit (like an elevator).
+
+### Standard Exits
+```json
+    "exits": {
+      "north": "ER Hallway",
+      "west": "Waiting Room"
+    }
+```
+
+### Dynamic Exits (Elevators)
+Elevators bypass standard room-to-room mapping to allow transit logic.
+```json
+    "exits": {
+      "out": {
+        "dynamic_destination": true,
+        "floor_mappings": {
+          "-1": "Basement Elevator Lobby",
+          "1": "Elevator Lobby (Level 1)",
+          "2": "Upper Floor Elevator Lobby"
+        }
+      },
+      "floor 1": { "dynamic_destination": true }
+    }
+```
+
+---
+
+## Locks & Keys
+
+The engine has flattened the locking schema. Locks are now applied directly to the Room or Furniture root level. 
+
+**CRITICAL FIX:** Use `"locked": true` (Do not use the deprecated `"is_locked"`).
+
+### Multi-Key Support
+You can now pass a list `[]` of valid keys. If the player has *any* of the keys in the list, the door will unlock.
+
+```json
+  "Upper Floor Stairwell Access": {
+    "locked": true,
+    "unlocks_with": [
+      "radiology_key_card", 
+      "medical_director_key_card"
+    ],
+    "exits": {
+      "east": "Upper Floor Hallway"
+    }
+  }
+```
+
+---
+
+## Dynamic State Overrides
+
+The engine now supports real-time environmental storytelling. When a hazard fires (e.g., the MRI activates and sets the `post_mri` interaction flag), rooms can instantly mutate without needing to swap the player to a new room ID.
+
+### 1. `state_descriptions`
+Overrides the main `look` description of the room.
+```json
+    "description": "A clean, sterile Radiology records room.",
+    "state_descriptions": {
+      "post_mri": "The room is a disaster. Metal cabinets are warped towards the west wall."
+    }
+```
+
+### 2. `state_examine_details`
+Overrides the text shown when the player `examine`s a specific object or furniture piece.
+```json
+    "examine_details": {
+      "filing_cabinets": "Standard metal filing cabinets."
+    },
+    "state_examine_details": {
+      "post_mri": {
+        "filing_cabinets": "The metal cabinets are visibly warped. Drawers are askew."
+      }
+    }
+```
+
+### 3. `state_added_objects`
+Dynamically injects new scenery or interactables into the room *only* after a specific flag is set.
+```json
+    "objects": ["handrails", "exit sign"],
+    "state_added_objects": {
+      "post_mri": [
+        "mangled wheelchair",
+        "scattered debris"
+      ]
+    }
+```
+
+---
+
+## Furniture, Objects, & Items
+
+The engine now supports both **String References** (pulling from master `.json` files) and **Inline Dictionaries** (defining unique, room-specific variants on the fly).
+
+### Furniture
+*Use for large containers, locked desks, and heavy scenery.*
+```json
+    "furniture": [
+      "waiting_room_chairs", // Pulls from furniture.json
+      {
+        "name": "reception_desk",
+        "description": "A cluttered desk.",
+        "is_container": true,
+        "capacity": 4,
+        "items": ["radiology_key_card", "scalpel"] // Inline unique variant
+      }
+    ]
+```
+
+### Objects
+*Use for scenery, non-containers, and omen providers.*
+```json
+    "objects": [
+      "gurney", // Simple string object
+      {
+        "name": "north window",
+        "description": "You can see the hospital's main sign outside.",
+        "is_omen_provider": "hospital_sign",
+        "aliases": ["window", "north window"]
+      }
+    ]
+```
+
+---
+
+## Environmental Properties
+
+These flags remain crucial for the `HazardEngine` to determine what ambient dangers can spawn organically.
+
+* `room_type`: Determines thematic hazard spawning (`medical`, `utility`, `public`, `food_service`).
+* `temperature_zone`: `cold`, `normal`, `hot`. (e.g., `deaths_breath` favors `cold` rooms).
+* `has_gas_lines`: Boolean. Required `true` for `gas_leak` hazards to naturally spawn.
+
+---
+
+## Complete Examples
+
+### Example 1: The Dynamic Hazard Room
+*Shows how the new state overrides transform a room instantly.*
+
+```json
+  "Radiology Records Room": {
+    "description": "A cramped room filled with filing cabinets and shelves overflowing with X-ray films.",
+    "state_descriptions": {
+      "post_mri": "The metal filing cabinets in this room are all slightly skewed, pulled towards the west wall. Some drawers have slid open, spilling X-rays onto the floor."
+    },
+    "exits": {
+      "west": "Radiology Wing Access"
+    },
+    "floor": 2,
+    "furniture": [
+      {
+        "name": "filing_cabinets",
+        "is_container": true,
+        "is_metallic": true,
+        "description": "Standard-issue metal filing cabinets.",
+        "items": []
+      }
+    ],
+    "objects": [
+      "X-ray films",
+      {
+        "name": "north window",
+        "description": "A narrow window set high in the north wall.",
+        "is_omen_provider": "hospital_sign",
+        "aliases": ["window", "north window"]
+      }
+    ],
+    "state_added_objects": {
+      "post_mri": ["fallen debris"]
+    },
+    "examine_details": {
+      "X-ray films": "Stacks of old X-ray films.",
+      "north window": "Through it, you can see the hospital's main sign above the entrance."
+    },
+    "state_examine_details": {
+      "post_mri": {
+        "X-ray films": "More X-rays have spilled onto the floor, stuck to the sides of the metal cabinets.",
+        "filing_cabinets": "The metal filing cabinets are visibly warped, leaning towards the MRI suite.",
+        "north window": "The window is cracked from the recent magnetic surge. The 'L' on the hospital sign outside has been ripped completely from its base."
+      }
+    },
+    "locked": false
+  }
+```
+
+### Example 2: Multi-Key Locked Room
+*Shows the flattened lock schema.*
+
+```json
+  "Upper Floor Stairwell Access": {
+    "description": "A secure door marks the transition between the upper floor hallway and the stairwell. A key card reader is mounted beside the door.",
+    "exits": {
+      "downstairs": "Stairwell",
+      "west": "MRI Scan Room"
+    },
+    "floor": 2,
+    "objects": [
+      "key card reader",
+      "secure door"
+    ],
+    "locked": true,
+    "unlocks_with": [
+      "radiology_key_card", 
+      "morgue_key_card",
+      "medical_director_key_card"
+    ]
+  }
+```

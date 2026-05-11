@@ -1,0 +1,298 @@
+{
+    "Police Station Interview Room": {
+        "tags": ["secure", "electrical", "confined", "public"],
+        "name": "Police Station Interview Room",
+        "description": "A cramped interrogation room with one-way mirror glass, flickering fluorescent lights, and a metal table bolted to the floor. The air conditioning rattles ominously. A security camera blinks red in the corner. Everything here is designed to be permanent - which makes it all the more dangerous when it fails.",
+        "entry_room": true,
+        "first_entry_text": "You are sitting under the harsh lights of an interrogation room. The police are desperately trying to piece together the freak accidents happening across the city. Surrounded by institutional concrete and locked doors, you've never felt more trapped.",
+        "examine_details": {
+            "one-way mirror": "Large mirror spanning one wall - or is someone watching from the other side?",
+            "fluorescent lights": "Buzzing fixtures casting harsh, flickering light. One tube is loose in its housing.",
+            "metal table": "Bolted to the floor - permanent, immovable, unforgiving.",
+            "security camera": "Blinking red eye in the corner, recording everything... or malfunctioning?",
+            "air conditioning": "Rattling vent overhead, condensation dripping from the edges."
+        },
+        "exits": {
+            "north": "Observation Room",
+            "east": "Evidence Locker Hallway",
+            "south": "Holding Cell Block"
+        },
+        "furniture": [],
+        "items": [],
+        "hazards_present": [
+            {
+                "type": "loose_fluorescent_tube",
+                "chance": 0.25,
+                "object_name_override": "flickering light fixture"
+            },
+            {
+                "type": "malfunctioning_hvac",
+                "chance": 0.15,
+                "object_name_override": "rattling air vent"
+            },
+            {
+                "type": "glass_shard",
+                "initial_state_override": "dormant"
+            },
+            {
+                "type": "faulty_wiring",
+                "initial_state_override": "dormant"
+            }
+        ],
+        "npc_slots": 1,
+        "objects": [
+            {
+                "name": "Fluorescent Lights",
+                "description": "One fixture buzzing louder than the others, tube visibly loose."
+            },
+            {
+                "name": "One-Way Mirror",
+                "description": "Heavy glass that could shatter into deadly shards."
+            }
+        ],
+        "state_descriptions": {},
+        "state_examine_details": {},
+        "state_flags": {
+            "floor": 1,
+            "official_meeting": true
+        }
+    },
+    "Observation Room": {
+        "tags": [
+            "secure",
+            "electrical",
+            "glass",
+            "confined"
+        ],
+        "name": "Observation Room",
+        "description": "Dark room behind the one-way mirror with recording equipment, ancient CRT monitors, and jury-rigged surveillance gear. Everything runs hot, smells of ozone.",
+        "examine_details": {
+            "crt monitors": "Old screens showing static and security feeds - electrical fire hazard.",
+            "recording equipment": "Tangled nest of cables, some exposed copper visible.",
+            "mirror wall": "Viewing glass into interview room - structural weak point."
+        },
+        "exits": {
+            "south": "Police Station Interview Room"
+        },
+        "furniture": [],
+        "items": [],
+        "hazards_present": [
+            {
+                "type": "exposed_wiring",
+                "initial_state_override": "live"
+            },
+            {
+                "type": "vintage_electronics"
+            }
+        ],
+        "objects": [
+            {
+                "name": "CRT Monitors",
+                "description": "Hot to the touch, screens crackling with static."
+            },
+            {
+                "name": "Cable Nest",
+                "description": "Fire marshal's nightmare of tangled wires."
+            }
+        ],
+        "state_descriptions": {},
+        "state_examine_details": {},
+        "state_flags": {
+            "floor": 1
+        }
+    },
+    "Evidence Locker Hallway": {
+        "tags": [
+            "secure",
+            "storage",
+            "narrow",
+            "industrial"
+        ],
+        "name": "Evidence Locker Corridor",
+        "description": "Narrow hallway lined with chain-link evidence cages. Shelves sag under the weight of boxed case files and seized property. A single exposed bulb casts harsh shadows.",
+        "examine_details": {
+            "evidence cages": "Chain-link enclosures floor to ceiling, padlocked but overcrowded.",
+            "shelving units": "Industrial metal racks bowing under decades of accumulated cases.",
+            "exposed bulb": "Single light source - no protective cage, easily shattered.",
+            "case file boxes": "Cardboard boxes stacked precariously high, decades old."
+        },
+        "exits": {
+            "west": "Police Station Interview Room",
+            "north": "Evidence Storage",
+            "south": "Waiting Area"
+        },
+            "furniture": [
+        {
+            "name": "Evidence Racks",
+            "description": "Tons of weight on sagging shelves - avalanche waiting to happen.",
+            "is_container": true,
+            "locked": true,
+            "capacity": 3,
+            "items": [
+            "bludworths_ledger",
+            "gammy_death_book"
+            ],
+            "is_metallic": false,
+            "is_breakable": true,
+            "unlocks_with": "desk_drawer_key",
+            "forceable": true,
+            "force_threshold": 2,
+            "forceable_text": "The desk drawers are sturdy, but with enough effort you could force them open. It will be noisy and might damage the contents."
+        }
+        ],
+        "items": [],
+        "hazards_present": [
+            {
+                "type": "unstable_shelving",
+                "chance": 0.3,
+                "object_name_override": "overloaded evidence racks"
+            }
+        ],
+        "objects": [],
+        "state_descriptions": {},
+        "state_examine_details": {},
+        "state_flags": {
+            "floor": 1
+        }
+    },
+    "Evidence Storage": {
+        "tags": [
+            "secure",
+            "chemical",
+            "explosive",
+            "storage"
+        ],
+        "name": "Main Evidence Storage",
+        "description": "Large room crammed with evidence from decades of cases. Gun locker in the corner, drug evidence sealed in bags, confiscated electronics piled haphazardly. Everything is catalogued but nothing is safe.",
+        "examine_details": {
+            "gun locker": "Heavy steel cabinet - locked, but are the seized weapons loaded?",
+            "drug evidence": "Bags of chemicals, some labels faded, some leaking.",
+            "electronics": "Pile of confiscated devices, batteries corroding, capacitors potentially explosive."
+        },
+        "exits": {
+            "south": "Evidence Locker Hallway"
+        },
+        "furniture": [],
+        "items": [],
+        "hazards_present": [
+            {
+                "type": "chemical_hazard",
+                "chance": 0.2,
+                "object_name_override": "degraded evidence bags"
+            },
+            {
+                "type": "battery_explosion",
+                "chance": 0.25,
+                "placement_object": "confiscated_electronics"
+            },
+            {
+                "type": "unstable_shelf",
+                "object_name_override": "evidence racks"
+            }
+        ],
+        "objects": [
+            {
+                "name": "Evidence Pile",
+                "description": "Decades of dangerous confiscated items in one room."
+            }
+        ],
+        "state_descriptions": {},
+        "state_examine_details": {},
+        "state_flags": {
+            "floor": 1
+        },
+        "special_exits": {
+            "leave": "LEVEL_TRANSITION_TRIGGER"
+        }
+    },
+    "Holding Cell Block": {
+        "tags": [
+            "secure",
+            "water_source",
+            "electrical",
+            "metal",
+            "confined"
+        ],
+        "name": "Holding Cells",
+        "description": "Row of barred cells, supposedly empty but somehow still ominous. Heavy steel doors, electronic locks buzzing, overhead pipes dripping condensation onto concrete floors.",
+        "examine_details": {
+            "cell bars": "Thick steel reinforced bars - immovable but vulnerable to electrical shorts.",
+            "electronic locks": "Magnetic locking system, indicator lights flickering erratically.",
+            "overhead pipes": "Old plumbing, rust stains, constant dripping creating puddles.",
+            "concrete floor": "Wet from condensation, slippery beneath fluorescent lights."
+        },
+        "exits": {
+            "north": "Police Station Interview Room"
+        },
+        "furniture": [],
+        "items": [],
+        "hazards_present": [
+            {
+                "type": "water_puddle",
+                "chance": 0.4,
+                "object_name_override": "pipe condensation"
+            },
+            {
+                "type": "electronic_malfunction",
+                "chance": 0.2,
+                "placement_object": "cell_lock_system"
+            },
+            {
+                "type": "exposed_wiring",
+                "initial_state_override": "live"
+            }
+        ],
+        "objects": [
+            {
+                "name": "Cell Doors",
+                "description": "Heavy steel that could trap... or crushing force if released."
+            },
+            {
+                "name": "Dripping Pipes",
+                "description": "Creating puddles near electrical systems."
+            }
+        ],
+        "state_descriptions": {},
+        "state_examine_details": {},
+        "state_flags": {
+            "floor": 1
+        }
+    },
+        "Waiting Area": {
+        "tags": [
+            "industrial"
+        ],
+        "name": "Waiting Area",
+        "description": "A bleak waiting area with rows of metal chairs bolted to the floor and the exit to the south. A vending machine hums in the corner, its contents freshness questionable.\nThe walls are lined with peeling paint and Wanted posters covered in 'Missing Persons' posters.",
+        "examine_details": {
+            "evidence cages": "Chain-link enclosures floor to ceiling, padlocked but overcrowded.",
+            "shelving units": "Industrial metal racks bowing under decades of accumulated cases.",
+            "exposed bulb": "Single light source - no protective cage, easily shattered.",
+            "case file boxes": "Cardboard boxes stacked precariously high, decades old."
+        },
+        "exits": {
+            "north": "Evidence Locker Hallway",
+            "south": "LEVEL_TRANSITION_HUB"
+        },
+        "furniture": [],
+        "items": [],
+        "hazards_present": [
+            {
+                "type": "unstable_shelving",
+                "chance": 0.3,
+                "object_name_override": "overloaded evidence racks"
+            }
+        ],
+        "objects": [
+            {
+                "name": "Evidence Racks",
+                "description": "Tons of weight on sagging shelves - avalanche waiting to happen."
+            }
+        ],
+        "state_descriptions": {},
+        "state_examine_details": {},
+        "state_flags": {
+            "floor": 1
+        }
+    }
+}

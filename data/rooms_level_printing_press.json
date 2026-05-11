@@ -1,0 +1,165 @@
+{
+  "Loading Dock": {
+    "name": "Loading Dock",
+    "description": "You stand on the concrete loading dock of 'Precision Press'. The night air is cool, but the air venting from the building smells of hot metal and chemical solvents. Stacks of wooden pallets are piled high against the corrugated metal walls. A heavy roll-up door is shut tight, but a smaller personnel door labeled 'Deliveries' sits to the side.",
+    "examine_details": {
+      "wooden pallets": "Rough timber pallets stacked carelessly. They look unstable.",
+      "personnel door": "Steel door with a reinforced glass window. Through the grime, you see a hallway.",
+      "roll-up door": "Locked tight. No way you're lifting that without power."
+    },
+    "exits": {
+      "in": "Delivery Hallway",
+      "out": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "hazards_present": [
+      "unstable_pallet_stack"
+    ],
+    "first_entry_text": "The hum of heavy machinery vibrates through the soles of your shoes. Somewhere inside, the presses are running. This is where the posters for the cinema were printed. The link is here."
+  },
+  "Delivery Hallway": {
+    "name": "Delivery Hallway",
+    "description": "A long, linoleum-floored corridor connecting the dock to the main facility. The walls are lined with framed prints of movie posters—including 'Love Lays Dying'. The fluorescent lights overhead hum loudly and flicker.",
+    "examine_details": {
+      "movie posters": "High-quality prints. You see the one for the movie you were supposed to see. It feels mocking.",
+      "fluorescent lights": "One tube is burnt out, the other strobes violently.",
+      "time clock": "An old punch-card system."
+    },
+    "exits": {
+      "south": "Loading Dock",
+      "north": "Main Press Floor",
+      "east": "Front Office"
+    },
+    "hazards_present": [
+      "flickering_hallway_light"
+    ]
+  },
+  "Front Office": {
+    "name": "Front Office",
+    "description": "A quiet administrative space, shielded from the noise of the plant by thick glass. Desks are cluttered with invoices and proofs. A coffee maker sits on a side table, smelling of burnt roast. A window overlooks the Main Press Floor.",
+    "examine_details": {
+      "desks": "Cluttered with paperwork. Invoices for the McKinley Cineplex are visible.",
+      "window": "Provides a view of the massive presses. You see workers in protective gear moving below.",
+      "coffee maker": "Left on. The pot is empty and the hot plate is smoking."
+    },
+    "exits": {
+      "west": "Delivery Hallway"
+    },
+    "furniture": [
+      {
+        "name": "filing_cabinet",
+        "description": "A beige metal cabinet holding employment records and vendor invoices.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "allowed_item_tags": ["paper", "key", "clue"],
+        "items": []
+      },
+      {
+        "name": "reception_desk",
+        "description": "A polished wood desk sitting behind the thick glass partition.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "allowed_item_tags": ["paper", "tool"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+       "overheating_coffee_maker"
+    ]
+  },
+  "Main Press Floor": {
+    "name": "Main Press Floor",
+    "description": "The heart of the factory. The rhythmic *THUMP-HISS* of the massive Heidelberg offset printers is deafening. The air is thick with paper dust and ozone. Giant rolls of paper sit on racks. To the west is the Chemical Cage. To the north, the Finishing Room.",
+    "examine_details": {
+      "offset printers": "Behemoths of steel and iron. They spin with terrifying speed. High-voltage warnings are everywhere.",
+      "paper rolls": "Massive spools of paper, weighing hundreds of pounds, stacked on high racks.",
+      "uv curing station": "A section of the press emitting a blinding purple light. It generates immense heat to dry the ink instantly."
+    },
+    "exits": {
+      "south": "Delivery Hallway",
+      "west": "Chemical Storage Cage",
+      "north": "Finishing Room"
+    },
+    "furniture": [
+      {
+        "name": "tool_chest",
+        "description": "A heavy-duty red rolling chest used for press maintenance.",
+        "is_container": true,
+        "allowed_item_tags": ["tool", "hardware"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "overheating_uv_lamp",
+      "suspended_paper_roll",
+      "robo_vacuum"
+    ],
+    "objects": ["offset_printers"]
+  },
+  "Chemical Storage Cage": {
+    "name": "Chemical Storage Cage",
+    "description": "A chain-link enclosure packed with 55-gallon drums. The smell of solvent is overpowering here, stinging your eyes. Hazard placards read 'EXTREMELY FLAMMABLE' and 'CORROSIVE'.",
+    "examine_details": {
+      "drums": "Labeled 'Industrial Solvent', 'Cyan Ink', 'Gloss Varnish'. One drum looks dented.",
+      "ventilation fan": "Spinning lazily. It's not doing enough to clear the fumes.",
+      "floor drain": "Located in the center of the room. It looks clogged."
+    },
+    "exits": {
+      "east": "Main Press Floor"
+    },
+    "hazards_present": [
+      "leaking_solvent_drum",
+      "accumulating_solvent_fumes"
+    ]
+  },
+  "Finishing Room": {
+    "name": "Finishing Room",
+    "description": "This is where printed sheets are cut and bound. The centerpiece is a massive industrial guillotine, its blade gleaming under the shop lights. Piles of paper trimmings cover the floor.",
+    "examine_details": {
+      "industrial guillotine": "A programmable paper cutter with a laser guide. The safety guard looks bypassed.",
+      "binder machine": "A complex array of gears and glue rollers."
+    },
+    "exits": {
+      "south": "Main Press Floor"
+    },
+    "furniture": [
+      {
+        "name": "supply_locker",
+        "description": "A tall metal locker for personal protective equipment.",
+        "is_container": true,
+        "allowed_item_tags": ["medical", "clothing", "tool"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "industrial_guillotine",
+      "malfunctioning_sprinklers"
+    ],
+    "npc_slots": 1,
+    "objects": ["binder_machine"]
+  },
+  "Office Supply Room": {
+    "name": "Office Supply Room",
+    "description": "A small, cramped closet filled with paper reams, toner cartridges, and office supplies. The air smells of cardboard and ink. A single overhead light flickers.",
+    "examine_details": {
+      "paper reams": "Stacks of printer paper. Some are damaged and leaking loose sheets.",
+      "toner cartridges": "Boxes of toner for the office printers. One box is open and empty.",
+      "overhead light": "It flickers on and off at irregular intervals."
+    },
+    "exits": {
+      "west": "Front Office"
+    },
+    "hazards_present": [
+      "falling_paper_stack",
+      "exposed_wiring"
+    ],
+    "furniture": [
+      {
+        "name": "storage_shelf",
+        "description": "An unassuming storage shelf.",
+        "is_container": true,
+        "allowed_item_tags": ["paper", "office_supply"],
+        "items": []
+      }
+    ]
+    }
+}

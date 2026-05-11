@@ -1,0 +1,1031 @@
+# Hazards Developer Guide
+
+**Version:** 0.3  
+**Game:** DieNamic Engine: Death's Designs  
+**Engine:** Die-Namic Engine  
+**Lead Developer:** Dallas B Pancoast  
+
+---
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Hazard Lifecycle](#hazard-lifecycle)
+3. [Complete Schema Reference](#complete-schema-reference)
+4. [Root Configuration](#root-configuration)
+5. [States & Transitions](#states--transitions)
+6. [Root Player Interactions](#root-player-interactions)
+7. [QTE Integration](#qte-integration)
+8. [Spawning & Placement](#spawning--placement)
+9. [Mobile & Autonomous Hazards](#mobile--autonomous-hazards)
+10. [Cross-Hazard Chaining & Synergies](#cross-hazard-chaining--synergies)
+11. [Global Propagation System](#global-propagation-system)
+12. [Sensory Masking](#sensory-masking)
+13. [Status Effects & Bleeding](#status-effects--bleeding)
+14. [Paranormal & Class-Gated Hazards](#paranormal--class-gated-hazards)
+15. [Procedural Sandbox Integration](#procedural-sandbox-integration)
+16. [Hazard Chain Analysis (Developer Tool)](#hazard-chain-analysis)
+17. [Debugging & Common Mistakes](#debugging--common-mistakes)
+18. [Complete Examples](#complete-examples)
+
+---
+
+## Overview
+
+Hazards are the core danger mechanic in DieNamic Engine: Death's Designs. They represent Death's elaborate traps — environmental threats that escalate through multiple states, chain into other hazards, and force players into QTE moments under pressure.
+
+Hazards are defined as JSON objects in `data/hazards.json`. The engine reads these definitions, spawns instances into rooms, and manages their state progression, player interactions, cross-hazard synergies, and room propagation.
+
+### Key Concepts
+
+**Hazard Definition vs Instance.** The JSON file defines a hazard *type* (like a blueprint). At runtime, the engine spawns *instances* with unique IDs like `gas_leak#6b048331`. Multiple instances of the same type can exist in different rooms.
+
+**State Machine.** Every hazard is a finite state machine. It starts in `initial_state` and transitions through states based on timers, player actions, synergies with other hazards, or QTE outcomes. Terminal states end the hazard's lifecycle.
+
+**Declarative Design.** Almost everything is driven by JSON data. The engine reads keys like `chance_to_progress`, `hazard_interaction`, `triggers_qte_on_entry`, and `on_state_entry_special_action` — you rarely need Python code for new hazards.
+
+---
+
+## Hazard Lifecycle
+
+```
+1. Spawn Check
+   Level Init reads rooms.json hazards_present/possible_hazards
+   OR Sandbox Generator picks from hazards.json based on tags + placement
+   OR Another hazard chains into this one via triggers_hazard_on_state_change
+   OR Propagation system spawns it in a connected room
+   ↓
+2. Spawn & Bind
+   Engine calls _add_active_hazard(type, room, initial_state)
+   Hazard binds to placement_object (furniture in the room)
+   spawn_entities creates examinable objects in the room
+   ↓
+3. Initial State
+   Usually idle/dormant — no danger yet
+   Player may see sensory_feedback clues
+   ↓
+4. Progression
+   chance_to_progress rolls each turn (0.0–1.0)
+   OR hazard_interaction from another hazard forces state change
+   OR player_interaction triggers effect_on_self
+   OR propagation from a connected room spawns/escalates
+   progress_while_offscreen: true means it ticks even when player is elsewhere
+   progress_while_in_room: true means it ONLY ticks while player is present
+   ↓
+5. Escalating States
+   Each state can have sensory_feedback (audio/visual/tactile warnings)
+   environmental_effect changes room properties (fire, gas, visibility)
+   set_flag broadcasts to the room for description overrides
+   ↓
+6. QTE Moment
+   triggers_qte_on_entry launches a Quick Time Event
+   Success → safe state or rewards
+   Alternative → heroic path with tradeoffs
+   Failure → escalation or death
+   ↓
+7. Terminal State
+   is_terminal_state: true — no further transitions allowed
+   instant_death_in_room: true — kills the player immediately
+   sets_room_on_fire: true — ignites the room
+```
+
+---
+
+## Complete Schema Reference
+
+### Root-Level Keys
+
+| Key | Type | Required | Description |
+|-----|------|----------|-------------|
+| `name` | string | Yes | Display name shown to the player |
+| `initial_state` | string | Yes | State the hazard starts in |
+| `states` | object | Yes | Map of state_name → state definition |
+| `level_id` | string/int/list | No | Which level(s) this hazard belongs to. `"all"` for any level |
+| `tags` | string[] | No | Categorical tags: `"fire"`, `"electrical"`, `"water"`, `"structural"`, `"paranormal"`, `"environmental"`, `"flammable_gas"`, `"animal"`, `"chaos_agent"`, `"mobile"`, `"slow_burn"`, `"sensory_mask"`, `"propagated"`, `"mechanical"` |
+| `placement_object` | string[] | No | Furniture keys this hazard can attach to. Use `"room"`, `"floor"`, `"wall"`, `"ceiling"` for generic placement |
+| `object_name_options` | string[] | No | Alternative display names for the hazard entity in the room |
+| `spawn_entities` | object[] | No | Objects created in the room when the hazard spawns (see Spawning) |
+| `player_interaction` | object | No | Root-level interaction rules grouped by verb (see Player Interactions) |
+| `examine_responses` | object | No | State-specific examine text for spawned entities |
+| `environmental_omens` | object | No | Omen text tied to room objects, shown via the omen system |
+| `progress_while_offscreen` | bool | No | If true, hazard ticks even when player is in another room |
+| `can_be_spawned` | bool | No | If true, the Sandbox Generator can select this hazard |
+| `spawn_chance_modifier` | float | No | Multiplier on spawn probability (0.0–1.0) |
+| `can_follow_player` | bool | No | If true, hazard can move to track the player (paranormal) |
+| `follows_at_fear_threshold` | float | No | Fear level at which following begins |
+| `can_move_between_rooms` | bool | No | If true, hazard is mobile (roaming entity). Requires a handler |
+| `movement_logic` | string | No | Movement AI: `"random_wander"`, `"seek_target_type_then_player"`, `"patrol"` |
+| `movement_speed_turns` | int | No | How many turns between moves |
+| `movement_path` | string[] | No | Fixed room sequence for patrol movement |
+| `seek_hazard_types` | string[] | No | Hazard types this mobile hazard seeks out |
+| `seek_radius` | int | No | BFS depth for seeking behavior |
+| `is_decoy` | bool | No | If true, this hazard is harmless but distracting |
+| `triggered_by_room_action` | object[] | No | Legacy action triggers (use player_interaction instead) |
+| `collision_effects` | object | No | Effects when a mobile hazard physically collides with objects |
+| `tags` | string[] | No | Used by synergy systems, sandbox generator, and class affinities |
+
+### State-Level Keys
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `description` | string | Narrative text shown when this state is active |
+| `chance_to_progress` | float | Probability (0.0–1.0) of advancing to `next_state` each turn |
+| `next_state` | string | State to transition to on progression |
+| `duration_in_state` | int | Minimum turns before progression can occur |
+| `is_terminal_state` | bool | If true, no further transitions allowed |
+| `instant_death_in_room` | bool | If true, player dies immediately on entering this state's room |
+| `death_message` | string | Shown on the Game Over screen |
+| `sets_room_on_fire` | bool | If true, the room catches fire |
+| `set_flag` | string | Sets a global interaction flag for room state overrides |
+| `environmental_effect` | object | Room environment changes (see below) |
+| `sensory_feedback` | object | Clue text: `audio`, `visual`, `tactile` keys |
+| `masks_sensory_feedback` | bool | If true, suppresses sensory_feedback from ALL other hazards in the room |
+| `triggers_qte_on_entry` | object | Launches a QTE when this state is entered (see QTE Integration) |
+| `hazard_interaction` | object | Synergies with other hazards in the room (see Chaining) |
+| `triggers_hazard_on_state_change` | object[] | Declares chain dependencies for the chain analyzer tool |
+| `on_state_entry_special_action` | string/object | Engine action on state entry (see Special Actions) |
+| `on_state_entry_apply_damage` | int | HP damage applied when this state is entered |
+| `on_state_entry_consequences` | object | Compound entry effects: `hp_damage`, `fear_increase`, `fear_decrease`, `message` |
+| `on_state_entry_rewards` | object | Rewards: `score_bonus`, `turns_bonus`, `achievements_to_unlock` |
+| `on_state_entry_move_player_to` | string | Forces the player to a different room |
+| `on_state_entry_play_sfx` | string | Triggers a sound effect |
+| `pause_for_player_acknowledgement` | bool | Pauses progression until player dismisses a popup |
+| `progress_while_in_room` | bool | Only progresses while the player is in this room |
+| `progression_condition` | object | Gates progression on conditions (see below) |
+| `poltergeist_events` | object[] | Random paranormal events: `chance` + `message` |
+| `autonomous_action` | string | Action performed automatically each turn |
+| `seek_behavior` | object | Targeting behavior for mobile hazards |
+| `proximity_attack` | object | Attack when mobile hazard is near the player |
+| `fear_threshold` | float | Fear level required for this state to activate |
+| `fear_triggered_progression_chance` | float | Extra progression chance when fear is high |
+| `item_to_spawn_on_entry` | string | Drops an item into the room |
+| `despawn_hazard_entities_on_entry` | bool | Removes spawned entities when entering this state |
+
+### Environmental Effect Keys
+
+```json
+"environmental_effect": {
+    "noise_level": 10,
+    "is_sparking": true,
+    "visibility": "hazy",
+    "temperature_celsius": 45,
+    "gas_level": 8,
+    "is_electrified": true,
+    "is_on_fire": true
+}
+```
+
+Visibility values: `"normal"`, `"hazy"`, `"near_blind"`, `"strobing"`.
+
+### Progression Condition Keys
+
+```json
+"progression_condition": {
+    "player_has_tagged_item": "metallic",
+    "min_fear": 0.5,
+    "turns_in_room_gte": 4
+}
+```
+
+When present, progression only occurs if ALL conditions are met. If the player drops a metallic item, a magnetic hazard freezes. If fear drops below threshold, a paranormal hazard pauses.
+
+### Special Actions (on_state_entry_special_action)
+
+String form for built-in actions:
+
+| Action | Description |
+|--------|-------------|
+| `"trigger_level_transition"` | Ends the level, shows completion screen |
+| `"mri_lock_doors_and_initiate_qtes"` | MRI-specific: locks adjacent rooms, strips metallic items |
+| `"mri_unlock_doors_and_release_items"` | Reverses MRI door locks |
+
+Dict form for parameterized actions:
+
+```json
+"on_state_entry_special_action": {
+    "action": "propagate_hazard",
+    "connection_type": "hvac",
+    "spawns_hazard": "smoke_inhalation",
+    "spawns_in_state": "light_smoke",
+    "escalates_existing_to": "thick_smoke",
+    "message_in_target": "Smoke seeps from the vents!",
+    "max_propagation_rooms": 3
+}
+```
+
+See Global Propagation System for details.
+
+---
+
+## Root Player Interactions
+
+Player interactions are defined at the hazard root, grouped by verb. Each verb contains an array of rules. The engine filters rules using `requires_hazard_state` to match the hazard's current state.
+
+### Supported Verbs
+
+`examine`, `take`, `use`, `force`, `move`, `fix`, `kick`
+
+### Rule Keys
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `on_target_name` | string/string[] | Entity name(s) this rule applies to |
+| `requires_hazard_state` | string[] | States where this rule is active |
+| `message` | string | Text shown to the player |
+| `message_success` | string | Text on successful interaction |
+| `message_failure` | string | Text on failed interaction |
+| `effect_on_self` | object | Changes hazard state: `{"target_state": "new_state"}` |
+| `effect_on_player` | object | Player effects: `hp_damage`, `fear_increase`, `fear_decrease` |
+| `on_success` | object | Effects on success: `target_state`, `message`, `score_bonus` |
+| `on_failure` | object | Effects on failure: `message`, `fear_increase` (int, not float — see schema note) |
+| `blocks_action_success` | bool | If true, prevents the action from succeeding |
+| `qte_to_trigger` | string | Launches a QTE type on interaction |
+| `required_item_name` | string | Item required in inventory |
+| `required_item_type` | string | Item type required |
+| `required_item_subtype` | string | Item subtype required |
+| `requires_affinity` | string | Character class affinity required |
+| `success_chance` | float | Probability of success (0.0–1.0) |
+| `grants_item` | string | Gives an item to the player |
+| `sets_interaction_flag` | string | Sets a global flag |
+
+### Schema Note on on_success / on_failure
+
+The schema `PlayerInteractionRuleTypedDict` defines `on_success` and `on_failure` as `Dict[str, Union[str, int, float, bool]]`. Fear values should use float (e.g., `0.15`). If schema validation fails on a float, ensure schemas.py includes `float` in the Union.
+
+### Example
+
+```json
+"player_interaction": {
+    "examine": [
+        {
+            "on_target_name": ["gas valve", "valve"],
+            "requires_hazard_state": ["leaking"],
+            "message": "The valve is loose. Gas hisses from the joint."
+        }
+    ],
+    "use": [
+        {
+            "on_target_name": ["gas valve"],
+            "requires_hazard_state": ["leaking"],
+            "required_item_subtype": "tool",
+            "message_success": "You wrench the valve shut. The hissing stops.",
+            "effect_on_self": { "target_state": "sealed" }
+        }
+    ],
+    "force": [
+        {
+            "on_target_name": ["vent cover", "vent"],
+            "requires_hazard_state": ["stale_air", "suffocating"],
+            "qte_to_trigger": "button_mash",
+            "message": "You throw your weight into the vent panel.",
+            "on_success": {
+                "target_state": "vent_opened",
+                "message": "The panel bursts free! Fresh air rushes in."
+            },
+            "on_failure": {
+                "message": "It won't budge.",
+                "fear_increase": 15
+            }
+        }
+    ]
+}
+```
+
+---
+
+## QTE Integration
+
+QTEs are triggered by `triggers_qte_on_entry` on a hazard state. When the player enters a room with a hazard in a QTE-triggering state (or when the hazard transitions to that state while the player is present), the QTE launches.
+
+### QTE Types
+
+| Type Key | Widget | Description |
+|----------|--------|-------------|
+| `input` | Text Input | Type a word exactly |
+| `button_mash` / `spam_any_key` | Tap Area | Mash a button to reach target count |
+| `sequence_input` / `multiword_code` | Button Sequence | Press buttons in the correct order |
+| `directional_input` | Directional Pad | Tap directions in sequence |
+| `reaction_single_key` | Reaction Button | Wait for green, then tap |
+| `timed_choice` / `targeted_cancel` | Choice Buttons | Pick the right option before timeout |
+| `hold_and_release` | Hold & Release | Hold, then release in the green window |
+| `hold_to_threshold` | Hold | Hold until the bar fills past threshold |
+| `alternating_keys` / `balance_meter` | Alternating Buttons | Alternate LEFT/RIGHT rapidly |
+| `rhythm_timing` | Rhythm Bar | Tap when cursor is in the green zone |
+| `pattern_memory` | Memory Grid | Watch pattern, reproduce it |
+| `aim_and_click` | Aim Area | Tap red targets before they vanish |
+| `drag_track` / `mouse_spiral` | Trace Path | Drag finger along a path |
+| `precision_tap_count` | Precision Gauge | Pump to keep gauge in target zone |
+
+### QTE Context Schema
+
+```json
+"triggers_qte_on_entry": {
+    "qte_type": "input",
+    "duration": 5.0,
+    "qte_context": {
+        "ui_prompt_message": "TYPE 'DODGE' TO EVADE!",
+        "expected_input_word": "dodge",
+        "success_message": "You dodge the falling debris!",
+        "failure_message_timeout": "Too slow!",
+        "failure_message_wrong_input": "Wrong command!",
+        "is_fatal_on_failure": false,
+        "next_state_after_qte_success": "safe_state",
+        "next_state_after_qte_failure": "escalated_state",
+        "hp_damage_on_failure": 10,
+
+        "alternative_input": "close valve",
+        "alternative_success_message": "You tighten the valve!",
+        "next_state_after_alternative_success": "heroic_save",
+        "hp_damage_on_alternative_success": 10
+    }
+}
+```
+
+### Per-Character QTE Tuning
+
+QTE difficulty can scale per character class using dict values:
+
+```json
+"qte_context": {
+    "target_mash_count": { "default": 20, "EMT": 15, "Athlete": 12 },
+    "required_hold_time": { "default": 2.5, "Medium": 3.0 }
+}
+```
+
+---
+
+## Spawning & Placement
+
+### Spawn Entities
+
+When a hazard spawns, it can create examinable objects in the room:
+
+```json
+"spawn_entities": [
+    {
+        "name": "dark presence",
+        "type": "hazard_entity",
+        "hazard_key": "deaths_breath",
+        "description": "An unnatural cold you can feel in your bones."
+    }
+]
+```
+
+These entities appear in the "You see:" list and can be targeted by `examine`, `use`, etc. The `hazard_key` links the entity back to its parent hazard for interaction routing.
+
+### Placement Objects
+
+The `placement_object` array tells the Sandbox Generator what furniture the hazard needs:
+
+```json
+"placement_object": ["machinery", "shelf", "railing"]
+```
+
+Special values: `"room"` (no furniture needed), `"floor"`, `"wall"`, `"ceiling"`.
+
+If the required furniture doesn't exist in a room, the Sandbox Generator won't place the hazard there.
+
+### Examine Responses
+
+State-specific examine text for spawned entities:
+
+```json
+"examine_responses": {
+    "propane tanks": {
+        "base_description": "A rack of large propane tanks.",
+        "stable": "Safely connected to the fryers.",
+        "valve_melting": "The valves are melting! Gas is escaping!"
+    }
+}
+```
+
+---
+
+## Mobile & Autonomous Hazards
+
+Mobile hazards move between rooms autonomously. They require `can_move_between_rooms: true` and a registered handler in `hazard_engine.py`.
+
+### Configuration
+
+```json
+{
+    "can_move_between_rooms": true,
+    "movement_logic": "seek_target_type_then_player",
+    "movement_speed_turns": 2,
+    "seek_hazard_types": ["gas_leak", "water_puddle"],
+    "seek_radius": 3
+}
+```
+
+### Movement Logic Types
+
+| Logic | Behavior |
+|-------|----------|
+| `"random_wander"` | Picks a random adjacent room every N turns |
+| `"seek_target_type_then_player"` | BFS-searches for target hazard types, then seeks player |
+| `"patrol"` | Follows a fixed `movement_path` room sequence |
+
+### Handler Registration
+
+Every mobile hazard needs a Python handler registered in `hazard_engine.py`:
+
+```python
+def _move_stray_cat(self, hazard_id, hazard, player_location):
+    messages, consequences = [], []
+    # ... movement logic ...
+    return messages, consequences
+
+HazardEngine.MOBILE_HAZARD_HANDLERS['stray_cat'] = HazardEngine._move_stray_cat
+```
+
+The handler is called every turn for each active instance. It reads the hazard's `location`, evaluates movement logic, updates `hazard['location']`, and returns messages/consequences.
+
+### Following Hazards (Paranormal)
+
+For hazards that track the player rather than roaming independently:
+
+```json
+{
+    "can_follow_player": true,
+    "follows_at_fear_threshold": 0.6,
+    "progress_while_offscreen": true
+}
+```
+
+The hazard follows the player to their current room once player fear exceeds the threshold. The `bleeding` status effect can boost follow chance (see Status Effects).
+
+---
+
+## Cross-Hazard Chaining & Synergies
+
+### hazard_interaction (Within States)
+
+When a hazard's state includes `hazard_interaction`, the engine checks every turn whether the target hazard exists in the same room AND is in one of the `trigger_conditions` states. If so, it applies the effect.
+
+```json
+"puddle_formed": {
+    "hazard_interaction": {
+        "faulty_wiring": {
+            "chance": 1.0,
+            "trigger_conditions": ["sparking", "electrical_fire"],
+            "target_state": "electrified_puddle",
+            "message": "Sparks hit the puddle! The water lights up!"
+        },
+        "deaths_breath": {
+            "chance": 0.6,
+            "trigger_conditions": ["icy_presence"],
+            "target_state": "black_ice",
+            "message": "The puddle freezes into invisible black ice."
+        }
+    }
+}
+```
+
+### Interaction Fields
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `chance` | float | Probability (0.0–1.0) of the interaction firing |
+| `trigger_conditions` | string[] | Target hazard must be in one of these states |
+| `target_state` | string | State to transition THIS hazard to on trigger |
+| `effect` | string | Alternative: `"instant_progression"` advances the target hazard |
+| `message` | string | Narrative text shown when the interaction fires |
+
+### triggers_hazard_on_state_change (Chain Declarations)
+
+This key declares that entering this state should spawn or escalate another hazard. It is used by the Chain Analyzer tool to build dependency graphs.
+
+```json
+"dislodged": {
+    "triggers_hazard_on_state_change": [
+        {
+            "type": "falling_scaffolding",
+            "target_state": "wobbling",
+            "spawn_in_room": true,
+            "message": "The scaffolding shifts without its fastener."
+        }
+    ]
+}
+```
+
+### collision_effects (Mobile Hazards)
+
+When a mobile hazard physically enters a room with specific objects:
+
+```json
+"collision_effects": {
+    "overturned_deep_fryer": {
+        "chance": 1.0,
+        "effect": "trigger_hazard",
+        "target_hazard_type": "propane_tanks",
+        "target_hazard_state": "valve_melting"
+    }
+}
+```
+
+---
+
+## Global Propagation System
+
+Propagation allows hazards to spread through physical room connections that players can't walk through — HVAC ducts, pipes, wiring conduits.
+
+### Room Connections
+
+Add a `connections` key to room definitions in `rooms_level_*.json`:
+
+```json
+"Hospital Emergency Entrance": {
+    "exits": { "north": "ER Hallway", "west": "Waiting Room" },
+    "connections": {
+        "hvac": ["ER Hallway", "Waiting Room", "Patient Room 101"],
+        "pipes": ["Waiting Room", "Coroner's Office"],
+        "wiring": ["ER Hallway", "MRI Control Room"]
+    }
+}
+```
+
+Connection types: `"hvac"`, `"pipes"`, `"wiring"`, `"gas_lines"`. Connections are one-way by default. Add the reverse entry in the target room for bidirectional flow.
+
+### Propagation Trigger
+
+A hazard state triggers propagation via `on_state_entry_special_action`:
+
+```json
+"ignited": {
+    "sets_room_on_fire": true,
+    "is_terminal_state": true,
+    "on_state_entry_special_action": {
+        "action": "propagate_hazard",
+        "connection_type": "hvac",
+        "spawns_hazard": "smoke_inhalation",
+        "spawns_in_state": "light_smoke",
+        "escalates_existing_to": "thick_smoke",
+        "message_in_target": "Smoke blasts through the vents!",
+        "max_propagation_rooms": 3
+    }
+}
+```
+
+### Propagation Parameters
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `action` | string | Must be `"propagate_hazard"` |
+| `connection_type` | string | Which connection type to follow: `"hvac"`, `"pipes"`, `"wiring"`, `"gas_lines"` |
+| `spawns_hazard` | string | Hazard type to spawn in target rooms |
+| `spawns_in_state` | string | Initial state for newly spawned instances |
+| `escalates_existing_to` | string | If the hazard already exists in the target room, escalate to this state |
+| `message_in_target` | string | Message shown if the player is in a target room |
+| `max_propagation_rooms` | int | Maximum number of rooms to propagate to |
+
+### Multi-Hop Chains
+
+Propagated hazards can themselves have propagation triggers, creating multi-hop chains. Example: `gas_leak` ignites → propagates `gas_fumes` via gas_lines → `gas_fumes` ignites → propagates `smoke_inhalation` via HVAC.
+
+### Player Countermeasure: Vent Covers
+
+Add interactable vent covers as room objects. When the player uses them, set an interaction flag like `vent_sealed_Room_Name`. The propagation handler checks for this flag and skips sealed rooms.
+
+---
+
+## Sensory Masking
+
+When a hazard state has `"masks_sensory_feedback": true`, the `sensory_feedback` blocks from ALL other hazards in the same room are suppressed from the room description.
+
+```json
+"blaring": {
+    "masks_sensory_feedback": true,
+    "environmental_effect": { "noise_level": 10 },
+    "sensory_feedback": {
+        "audio": "A deafening, pulsing shriek."
+    }
+}
+```
+
+When this alarm is blaring, the player won't see "A faint rattling sound" from a `loose_bolt` or "A deep groan from above" from `collapsing_stairs`. They're flying blind acoustically. The masking hazard's own sensory feedback IS still shown — it replaces everything else.
+
+This is implemented in `_get_rich_room_description` in `game_logic.py`.
+
+---
+
+## Status Effects & Bleeding
+
+### Bleeding
+
+When the player fails a QTE and takes HP damage, they gain a `bleeding` status effect (10 turns). This boosts mobile hazard tracking:
+
+- Hazards with `can_follow_player: true` follow regardless of `follows_at_fear_threshold`
+- Hazards with seek_behavior get increased tracking range
+- Bleeding decrements by 1 each turn and expires at 0
+
+Implementation: `game_logic.py` sets `player['status_effects']['bleeding'] = 10` on QTE failure with damage. `hazard_engine.py` checks `status_effects` (with type guard — it may be a list or dict depending on game state) in `_tick_mobile_hazards`.
+
+### Important Type Guard
+
+`player['status_effects']` can be either a `list` or a `dict` at runtime. Always guard with `isinstance` before calling `.get()`:
+
+```python
+status = self.game_logic.player.get('status_effects')
+if isinstance(status, dict):
+    bleeding = status.get('bleeding', 0)
+```
+
+---
+
+## Paranormal & Class-Gated Hazards
+
+Some hazards should only be visible to specific character classes (e.g., `deaths_breath` is only visible to the Medium).
+
+### Gating Layers
+
+There are three places where paranormal hazards must be filtered:
+
+1. **Room description** (`_get_rich_room_description` in game_logic.py) — Filter hazards with `"paranormal"` in tags from the "You see:" object list for non-Medium characters.
+
+2. **Contextual action buttons** (`populate_contextual_targets` in widgets.py) — Gate by `hazard_key` and normalized entity name at lines ~2494 and ~2509.
+
+3. **Examine command** (`_command_examine` in inventory_mixins.py) — Kill switch returns "You don't see any X here" for non-Medium characters.
+
+All three layers must agree. If any layer leaks the entity name, the player can interact with it.
+
+### Tag Convention
+
+Use `"tags": ["paranormal"]` on hazards that should be class-gated. Check `self.player.get('character_class', '')` against `'Medium'` in each gating layer.
+
+---
+
+## Procedural Sandbox Integration
+
+The Sandbox Procedural Generator (`procedural_generator.py`) selects hazards for rooms based on tags, placement requirements, and chain dependencies.
+
+### Hazard Categories
+
+Hazards are grouped into categories in `ProceduralGenerator.HAZARD_CATEGORIES`:
+
+```python
+HAZARD_CATEGORIES = {
+    "fire": ["gas_leak", "faulty_wiring", "dropped_lighter"],
+    "electrical": ["faulty_wiring", "electrical_surge"],
+    "structural": ["collapsing_stairs", "loose_bolt", "falling_scaffolding"],
+    "water": ["leaking_pipe", "condensation_drip"],
+    "chaos": ["robo_vacuum", "stray_cat"],
+    "environmental": ["deteriorating_safe_room", "blaring_alarm"],
+    "paranormal": ["deaths_breath"]
+}
+```
+
+When adding a new hazard, register it in the appropriate category. New mobile hazards also need handler registration (see Mobile Hazards).
+
+### Chain Dependency Checking
+
+The Sandbox uses `hazard_chains.py` to verify that all hazard chain dependencies are present. If you place `loose_bolt` (which chains into `falling_scaffolding`), the analyzer warns if `falling_scaffolding` isn't also selected.
+
+---
+
+## Hazard Chain Analysis
+
+`hazard_chains.py` provides developer tools for analyzing chain dependencies:
+
+```python
+from hazard_chains import analyze_hazard_chains, check_missing_dependencies, format_chain_warning
+
+# Build the full dependency graph
+chains = analyze_hazard_chains(resource_manager)
+# chains = {"gas_leak": {"spreading_fire", "wall_collapse"}, ...}
+
+# Check if selected hazards have unresolved chains
+missing = check_missing_dependencies(["gas_leak", "robo_vacuum"], resource_manager)
+# missing = [("gas_leak", {"spreading_fire", "wall_collapse"})]
+
+# Format a user-friendly warning
+warning = format_chain_warning(missing)
+```
+
+The chain analyzer reads `triggers_hazard_on_state_change` declarations and recursively follows the entire chain (A → B → C → D). It's used by the Sandbox configuration UI to warn players about incomplete chains.
+
+---
+
+## Debugging & Common Mistakes
+
+### Schema Validation Errors
+
+**`on_failure[fear_increase]: got float`** — The schema expects `Union[str, int, float, bool]`. Ensure `schemas.py` includes `float` in the `on_success`/`on_failure` type definition.
+
+**`'list' object has no attribute 'get'`** on status_effects — `player['status_effects']` can be a list OR dict at runtime. Always guard with `isinstance(status, dict)` before calling `.get()`.
+
+### Hazard Not Appearing
+
+1. Check `level_id` matches the current level (or is `"all"`)
+2. Check `can_be_spawned: true` if using the Sandbox Generator
+3. Check `placement_object` — the required furniture must exist in the room
+4. Check the room's `hazards_present` or `possible_hazards` array
+
+### QTE Not Triggering
+
+1. Verify `triggers_qte_on_entry` is on the correct state (not the state before)
+2. Check that `qte_type` matches a valid QTE definition key
+3. Ensure the player enters the room AFTER the state transition (not before)
+
+### Synergy Not Firing
+
+1. Both hazards must be in the SAME room
+2. The target hazard must be in one of the `trigger_conditions` states
+3. Check `chance` — a value less than 1.0 may not fire every turn
+4. The `hazard_interaction` key must be on the SOURCE hazard's state, not the target's
+
+### Propagation Not Working
+
+1. The source room must have `connections` with the correct `connection_type`
+2. The `spawns_hazard` type must exist in `hazards.json`
+3. Check for sealed vents: `vent_sealed_RoomName` interaction flag blocks HVAC propagation
+4. `on_state_entry_special_action` must use dict form with `"action": "propagate_hazard"`
+
+### Mobile Hazard Not Moving
+
+1. Verify `can_move_between_rooms: true` at hazard root
+2. Check that a handler is registered in `MOBILE_HAZARD_HANDLERS`
+3. Verify `movement_speed_turns` — the hazard only moves every N turns
+4. Check if the hazard is in a terminal state (terminal states don't tick)
+
+### Chain Analyzer Shows False Positives
+
+The analyzer reads `triggers_hazard_on_state_change` declarations. If a target hazard type doesn't exist in `hazards.json`, it reports a missing dependency. This is expected for placeholder references.
+
+---
+
+## Complete Examples
+
+### Micro-Chain: Condensation Drip
+
+A slow-burn hazard that's harmless alone but lethal when combined with electricity or cold.
+
+```json
+"condensation_drip": {
+    "name": "Condensation Drip",
+    "level_id": "all",
+    "initial_state": "forming",
+    "progress_while_offscreen": true,
+    "tags": ["water", "environmental", "slow_burn"],
+    "placement_object": ["ceiling", "pipe", "vent"],
+    "object_name_options": ["dripping pipe", "wet ceiling"],
+
+    "player_interaction": {
+        "examine": [
+            {
+                "on_target_name": ["dripping pipe", "wet ceiling"],
+                "requires_hazard_state": ["forming"],
+                "message": "A thin bead of moisture on the ceiling."
+            },
+            {
+                "on_target_name": ["puddle", "wet floor"],
+                "requires_hazard_state": ["puddle_formed"],
+                "message": "A wide puddle covers part of the floor."
+            }
+        ]
+    },
+
+    "states": {
+        "forming": {
+            "description": "Moisture clings to the ceiling.",
+            "chance_to_progress": 0.15,
+            "next_state": "dripping"
+        },
+        "dripping": {
+            "description": "Water drips steadily.",
+            "chance_to_progress": 0.25,
+            "next_state": "puddle_formed",
+            "sensory_feedback": {
+                "audio": "A steady drip... drip... drip."
+            }
+        },
+        "puddle_formed": {
+            "description": "A wide puddle covers the floor.",
+            "hazard_interaction": {
+                "faulty_wiring": {
+                    "chance": 1.0,
+                    "trigger_conditions": ["sparking", "electrical_fire"],
+                    "target_state": "electrified_puddle",
+                    "message": "Sparks hit the puddle!"
+                },
+                "deaths_breath": {
+                    "chance": 0.6,
+                    "trigger_conditions": ["icy_presence"],
+                    "target_state": "black_ice",
+                    "message": "The puddle freezes into black ice."
+                }
+            }
+        },
+        "electrified_puddle": {
+            "triggers_qte_on_entry": {
+                "qte_type": "reaction_single_key",
+                "duration": 3.0,
+                "qte_context": {
+                    "ui_prompt_message": "ELECTRIFIED FLOOR! JUMP!",
+                    "is_fatal_on_failure": true,
+                    "next_state_after_qte_success": "puddle_formed"
+                }
+            }
+        },
+        "black_ice": {
+            "triggers_qte_on_entry": {
+                "qte_type": "balance_meter",
+                "duration": 2.5,
+                "qte_context": {
+                    "ui_prompt_message": "BLACK ICE! KEEP BALANCE!",
+                    "target_alternations_default": 8,
+                    "next_state_after_qte_success": "black_ice",
+                    "next_state_after_qte_failure": "slip_and_fall"
+                }
+            }
+        },
+        "slip_and_fall": {
+            "on_state_entry_consequences": {
+                "hp_damage": 8,
+                "message": "You slam into the ground."
+            },
+            "chance_to_progress": 1.0,
+            "next_state": "black_ice"
+        }
+    }
+}
+```
+
+### Chaos Agent: Stray Cat
+
+A mobile hazard that wanders rooms and catalyzes other hazards when startled.
+
+```json
+"stray_cat": {
+    "name": "Stray Cat",
+    "level_id": "all",
+    "initial_state": "lurking",
+    "progress_while_offscreen": true,
+    "can_move_between_rooms": true,
+    "movement_logic": "random_wander",
+    "movement_speed_turns": 3,
+    "tags": ["animal", "chaos_agent", "mobile"],
+
+    "states": {
+        "lurking": {
+            "description": "A cat watches from the shadows.",
+            "hazard_interaction": {
+                "deaths_breath": {
+                    "chance": 0.8,
+                    "trigger_conditions": ["cold_breeze", "icy_presence"],
+                    "target_state": "startled",
+                    "message": "The cat hisses at the cold and bolts!"
+                },
+                "blaring_alarm": {
+                    "chance": 1.0,
+                    "trigger_conditions": ["blaring"],
+                    "target_state": "startled",
+                    "message": "The alarm sends the cat into a frenzy!"
+                }
+            }
+        },
+        "startled": {
+            "description": "The cat crashes through everything.",
+            "chance_to_progress": 1.0,
+            "next_state": "fled",
+            "hazard_interaction": {
+                "precarious_water_cup": {
+                    "chance": 1.0,
+                    "effect": "instant_progression",
+                    "message": "The cat's tail whips the cup off the edge!"
+                },
+                "oxygen_tank": {
+                    "chance": 0.6,
+                    "trigger_conditions": ["sealed"],
+                    "effect": "instant_progression",
+                    "message": "The cat crashes into the tank!"
+                }
+            }
+        },
+        "fled": {
+            "description": "The cat is gone.",
+            "is_terminal_state": true
+        }
+    }
+}
+```
+
+### Propagation: Gas Fumes
+
+A propagated hazard spawned via gas_lines connections. Can itself propagate smoke when ignited.
+
+```json
+"gas_fumes": {
+    "name": "Gas Fumes",
+    "level_id": "all",
+    "initial_state": "clear",
+    "progress_while_offscreen": true,
+    "tags": ["flammable_gas", "environmental", "propagated"],
+
+    "states": {
+        "clear": {
+            "is_terminal_state": true
+        },
+        "faint_smell": {
+            "description": "A chemical smell hangs in the air.",
+            "chance_to_progress": 0.15,
+            "next_state": "strong_fumes",
+            "hazard_interaction": {
+                "faulty_wiring": {
+                    "chance": 0.6,
+                    "trigger_conditions": ["sparking"],
+                    "target_state": "ignited_fumes",
+                    "message": "A spark meets the gas fumes!"
+                }
+            }
+        },
+        "strong_fumes": {
+            "description": "The room reeks of gas.",
+            "environmental_effect": { "gas_level": 8 },
+            "on_state_entry_consequences": {
+                "hp_damage": 2,
+                "fear_increase": 0.2
+            }
+        },
+        "ignited_fumes": {
+            "sets_room_on_fire": true,
+            "instant_death_in_room": true,
+            "is_terminal_state": true,
+            "death_message": "The gas ignites. No time to scream.",
+            "on_state_entry_special_action": {
+                "action": "propagate_hazard",
+                "connection_type": "hvac",
+                "spawns_hazard": "smoke_inhalation",
+                "spawns_in_state": "thick_smoke",
+                "escalates_existing_to": "suffocating_smoke",
+                "message_in_target": "Smoke blasts through the vents!",
+                "max_propagation_rooms": 4
+            }
+        }
+    }
+}
+```
+
+### Deteriorating Safe Room
+
+A hazard that only progresses while the player stays in the room, punishing camping.
+
+```json
+"deteriorating_safe_room": {
+    "name": "Sealed Room",
+    "initial_state": "fresh_air",
+    "tags": ["environmental", "slow_burn"],
+
+    "states": {
+        "fresh_air": {
+            "description": "Breathable air. Ventilation hums.",
+            "progress_while_in_room": true,
+            "chance_to_progress": 0.3,
+            "next_state": "stale_air"
+        },
+        "stale_air": {
+            "description": "Air feels thick. Ventilation stopped.",
+            "progress_while_in_room": true,
+            "chance_to_progress": 0.35,
+            "next_state": "suffocating",
+            "on_state_entry_consequences": {
+                "fear_increase": 0.1,
+                "message": "The ventilation goes silent."
+            }
+        },
+        "suffocating": {
+            "progress_while_in_room": true,
+            "chance_to_progress": 0.4,
+            "next_state": "hallucinating",
+            "on_state_entry_consequences": {
+                "hp_damage": 5,
+                "fear_increase": 0.25,
+                "message": "Your lungs burn."
+            }
+        },
+        "hallucinating": {
+            "chance_to_progress": 0.5,
+            "next_state": "asphyxiation",
+            "on_state_entry_consequences": {
+                "hp_damage": 10,
+                "fear_increase": 0.4
+            },
+            "poltergeist_events": [
+                { "chance": 0.6, "message": "A voice says your name." },
+                { "chance": 0.4, "message": "The door handle turns by itself." }
+            ]
+        },
+        "asphyxiation": {
+            "is_terminal_state": true,
+            "instant_death_in_room": true,
+            "death_message": "Your last breath is barely a sigh."
+        },
+        "vent_opened": {
+            "is_terminal_state": true,
+            "on_state_entry_consequences": {
+                "message": "Fresh air floods in.",
+                "fear_decrease": 0.3
+            }
+        }
+    }
+}
+```

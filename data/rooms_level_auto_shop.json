@@ -1,0 +1,127 @@
+{
+  "Garage Forecourt": {
+    "name": "Garage Forecourt",
+    "description": "The asphalt is cracked and stained with decades of oil. A single, rusted gas pump stands like a sentry near the entrance. The 'Ironclad Auto' sign hums with a sickly yellow neon. To the north, the main service bay doors are open just a crack, revealing the orange glow of a work light.",
+    "examine_details": {
+      "gas pump": "An ancient model. The dial is stuck at $2.18. A faint scent of gasoline lingers.",
+      "neon sign": "It buzzes at a frequency that makes your teeth ache.",
+      "oil stains": "They form dark, iridescent patterns on the ground, like Rorschach tests of previous disasters."
+    },
+    "entry_room": true,
+    "exits": {
+      "north": "Garage Lobby",
+      "out": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "furniture": [],
+    "hazards_present": [
+      "gas_leak"
+    ]
+  },
+  "Garage Lobby": {
+    "name": "Garage Lobby",
+    "description": "A cramped room with wood-paneled walls and a sagging linoleum floor. A vending machine hums loudly in the corner. A thick glass partition separates the waiting area from the main shop floor.",
+    "examine_details": {
+      "vending machine": "Stocked with stale crackers and generic soda. The cooling fan is rattling.",
+      "partition": "Smudged with greasy fingerprints.",
+      "desk": "Cluttered with miscellaneous invoices and work orders."
+    },
+    "exits": {
+      "south": "Garage Forecourt",
+      "north": "Main Repair Bay",
+      "east": "Mechanic's Office"
+    },
+    "furniture": [
+      {
+        "name": "key_rack",
+        "description": "A dusty board with several numbered hooks.",
+        "is_container": true,
+        "items": ["shop_master_key"]
+      }
+    ],
+    "hazards_present": [
+      "faulty_wiring"
+    ]
+  },
+  "Mechanic's Office": {
+    "name": "Mechanic's Office",
+    "description": "A cramped room with wood-paneled walls and a thick layer of cigarette ash. A calendar on the wall is five years out of date. A police scanner crackles on the desk, interspersed with bursts of static.",
+    "exits": {
+      "west": "Garage Lobby"
+    },
+    "furniture": [
+      {
+        "name": "cluttered_desk",
+        "description": "Covered in old invoices, coffee rings, and cigarette ash.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "allowed_item_tags": ["paper", "clue", "key"],
+        "items": []
+      }
+    ]
+  },
+  "Main Repair Bay": {
+    "name": "Main Repair Bay",
+    "description": "The shop is a cavern of steel and grease. A heavy-duty hydraulic lift dominates the center, holding up a vintage GTO. A power grinder sits on a workbench, still spinning down. Tools are scattered everywhere, and the floor is dangerously slick. An overhead compressor hose snakes along the ceiling, vibrating violently.",
+    "examine_details": {
+      "hydraulic lift": "An aging twin-post lift. The safety locks look rusted.",
+      "power grinder": "An angle grinder with a frayed cord. It smells of burnt carbon.",
+      "workbench": "A cluttered mess of oil filters and greasy rags."
+    },
+    "exits": {
+      "south": "Garage Lobby",
+      "east": "Parts Storage",
+      "down": "Service Pit"
+    },
+    "furniture": [
+      {
+        "name": "workbench",
+        "description": "A heavy steel table covered in grease and scattered tools.",
+        "is_container": true,
+        "allowed_item_tags": ["tool", "hardware"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "hydraulic_lift_failure",
+      "leaking_fuel_line",
+      "pressurized_air_hose"
+    ]
+  },
+  "Service Pit": {
+    "name": "Service Pit",
+    "description": "A narrow concrete trench beneath the main lift. It's dark, claustrophobic, and smells of old transmission fluid.",
+    "examine_details": {
+      "concrete walls": "Stained black with decades of oil."
+    },
+    "exits": {
+      "up": "Main Repair Bay"
+    },
+    "npc_slots": 1,
+    "hazards_present": [
+      "precarious_drop_light"
+    ]
+  },
+  "Parts Storage": {
+    "name": "Parts Storage",
+    "description": "Floor-to-ceiling shelves packed with heavy alternators, brake rotors, and tires. The overhead light is a single, bare bulb that swings gently.",
+    "examine_details": {
+      "tire rack": "A wall-mounted rack holding several massive truck tires. The mounting bolts are loose.",
+      "bare bulb": "It flickers rhythmically."
+    },
+    "exits": {
+      "west": "Main Repair Bay"
+    },
+    "furniture": [
+      {
+        "name": "filing_cabinet",
+        "description": "A dented metal cabinet containing old warranties and inventory logs.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "unstable_tire_rack"
+    ]
+  }
+}

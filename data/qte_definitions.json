@@ -1,0 +1,329 @@
+{
+  "input": {
+    "name": "Input",
+    "input_type": "word",
+    "ui_mode": "in-screen",
+    "ui_type": "text_input",
+    "description": "Player must input a valid command within the time limit.",
+    "valid_responses": [
+      "dodge",
+      "duck",
+      "jump",
+      "leap",
+      "roll",
+      "sidestep",
+      "back",
+      "catch"
+    ],
+    "default_duration": 10.0,
+    "score_on_success": 10,
+    "success_message_default": "You successfully dodged the danger!",
+    "failure_message_default": "You failed to react in time!",
+    "hp_damage_on_failure_default": 10,
+    "is_fatal_on_failure_default": false
+  },
+  "button_mash": {
+    "name": "Button Mash",
+    "input_type": "mash",
+    "ui_mode": "in-screen",
+    "ui_type": "tap_area",
+    "button_labels": [
+      "TAP!"
+    ],
+    "description": "Player must press a key or button repeatedly to meet a target count.",
+    "default_duration": 10.0,
+    "target_mash_count_default": 20,
+    "score_on_success": 15,
+    "success_message_default": "You were fast enough!",
+    "failure_message_default": "Not fast enough!",
+    "hp_damage_on_failure_default": 5,
+    "is_fatal_on_failure_default": false
+  },
+  "spam_any_key": {
+    "name": "Break Free / Spam",
+    "input_type": "mash",
+    "ui_mode": "in-screen",
+    "ui_type": "tap_area",
+    "button_labels": [
+      "TAP!"
+    ],
+    "description": "Player must mash any key to build a score to a threshold.",
+    "default_duration": 10.0,
+    "target_score_default": 25,
+    "success_message_default": "You break loose!",
+    "failure_message_default": "You’re still stuck!",
+    "hp_damage_on_failure_default": 5,
+    "is_fatal_on_failure_default": false
+  },
+  "sequence_input": {
+    "name": "Sequence Input",
+    "input_type": "sequence",
+    "ui_mode": "in-screen",
+    "ui_type": "button_sequence",
+    "required_sequence": [
+      "C",
+      "D",
+      "A",
+      "B"
+    ],
+    "button_labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "description": "Player must type a specific word or code exactly as shown.",
+    "default_duration": 10.0,
+    "score_on_success": 20,
+    "success_message_default": "Sequence input correct!",
+    "failure_message_default": "Incorrect sequence or too slow!",
+    "hp_damage_on_failure_default": 5,
+    "is_fatal_on_failure_default": false
+  },
+  "hold_and_release": {
+    "name": "Hold and Release",
+    "input_type": "hold_release",
+    "ui_mode": "in-screen",
+    "ui_type": "hold_release",
+    "gesture_type": "press_and_hold_or_release",
+    "description": "Tap and hold anywhere on the screen, then release within the time window.",
+    "default_duration": 5.0,
+    "release_window_default": [
+      0.6,
+      0.8
+    ],
+    "success_message_default": "Perfect timing!",
+    "failure_message_default": "Mistimed release!",
+    "hp_damage_on_failure_default": 8,
+    "is_fatal_on_failure_default": false
+  },
+  "balance_meter": {
+    "name": "Balance Meter",
+    "input_type": "alternate",
+    "ui_mode": "in-screen",
+    "ui_type": "alternating_buttons",
+    "button_labels": [
+      "LEFT",
+      "RIGHT"
+    ],
+    "default_duration": 3.0,
+    "success_message_default": "You keep your balance!",
+    "failure_message_default": "You slip and fall!",
+    "keys_default": [
+      "a",
+      "d"
+    ],
+    "target_alternations_default": 12
+  },
+  "reaction_single_key": {
+    "name": "Reflex Check",
+    "input_type": "single_key",
+    "ui_mode": "in-screen",
+    "ui_type": "reaction_button",
+    "description": "Wait for the button to turn GREEN... then TAP!",
+    "default_duration": 8.0,
+    "wait_time_range": [
+      2.0,
+      4.0
+    ],
+    "success_message_default": "Excellent reflexes.",
+    "failure_message_default": "Too slow."
+  },
+  "timed_choice": {
+    "name": "Critical Decision",
+    "input_type": "choice",
+    "ui_mode": "in-screen",
+    "ui_type": "choice_buttons",
+    "description": "Make a choice before time runs out.",
+    "ui_prompt_message": "CRITICAL DECISION REQUIRED",
+    "default_duration": 8.0,
+    "choices": [
+      "Take action!",
+      "Observe in silence.",
+      "Call for help!"
+    ],
+    "input_to_next_state": {
+      "Take action!": "success_outcome",
+      "Observe in silence.": "failure_outcome",
+      "Call for help!": "failure_outcome"
+    },
+    "success_message_default": "You've made your choice.",
+    "failure_message_default": "Indecision is fatal."
+  },
+  "hold_to_threshold": {
+    "name": "Hold to Threshold",
+    "input_type": "hold",
+    "ui_mode": "in-screen",
+    "ui_type": "hold",
+    "gesture_type": "press_and_hold",
+    "description": "Player must hold a key for a specific duration to reach a threshold.",
+    "default_duration": 10.0,
+    "required_hold_time_default": 2.5,
+    "success_message_default": "You held on long enough!",
+    "failure_message_default": "You let go too soon!",
+    "hp_damage_on_failure_default": 8,
+    "is_fatal_on_failure_default": false
+  },
+  "alternating_keys": {
+    "name": "Struggle / Alternate",
+    "input_type": "alternate",
+    "ui_mode": "in-screen",
+    "ui_type": "alternating_buttons",
+    "button_labels": [
+      "LEFT",
+      "RIGHT"
+    ],
+    "description": "Player must alternate between two keys rapidly.",
+    "keys_default": [
+      "a",
+      "d"
+    ],
+    "target_alternations_default": 12,
+    "default_duration": 10.0,
+    "success_message_default": "You broke free!",
+    "failure_message_default": "You couldn’t build enough momentum!",
+    "hp_damage_on_failure_default": 5,
+    "is_fatal_on_failure_default": false
+  },
+  "pattern_memory": {
+    "name": "MemoRetention",
+    "input_type": "pattern",
+    "ui_mode": "in-screen",
+    "ui_type": "memory_grid",
+    "description": "Watch the pattern, then tap the tiles to repeat it.",
+    "pattern_length_default": 4,
+    "grid_size": 3,
+    "success_message_default": "Pattern confirmed.",
+    "failure_message_default": "Memory sync failed."
+  },
+  "rhythm_timing": {
+    "name": "Rhythm Match",
+    "input_type": "rhythm",
+    "ui_mode": "in-screen",
+    "ui_type": "rhythm_bar",
+    "description": "Tap the button when the cursor is in the green zone! Do it 3 times!",
+    "default_duration": 10.0,
+    "target_beats": 3,
+    "beat_speed": 1.5,
+    "success_message_default": "Rhythm matched.",
+    "failure_message_default": "Signal lost."
+  },
+  "aim_and_click": {
+    "name": "Target Practice",
+    "input_type": "aim_click",
+    "ui_mode": "in-screen",
+    "ui_type": "aim_area",
+    "description": "Tap the red targets before they disappear!",
+    "default_duration": 8.0,
+    "target_count": 3,
+    "success_message_default": "Threats neutralized!",
+    "failure_message_default": "Too slow!"
+  },
+  "drag_track": {
+    "name": "Circuit Trace",
+    "input_type": "drag",
+    "ui_mode": "in-screen",
+    "ui_type": "trace_path",
+    "description": "Drag the connection from START to END.",
+    "path_type": "line",
+    "tolerance": 30,
+    "default_duration": 8.0,
+    "success_message_default": "Circuit completed.",
+    "failure_message_default": "Connection severed."
+  },
+  "directional_input": {
+    "name": "Evasive Maneuvers",
+    "input_type": "sequence",
+    "ui_mode": "in-screen",
+    "ui_type": "directional_pad",
+    "description": "Tap the directions indicated.",
+    "default_duration": 8.0,
+    "required_sequence": [
+      "up",
+      "left",
+      "down",
+      "right"
+    ],
+    "button_labels": [
+      "UP",
+      "DOWN",
+      "LEFT",
+      "RIGHT"
+    ],
+    "success_message_default": "Evasion successful.",
+    "failure_message_default": "Impact imminent."
+  },
+  "multiword_code": {
+    "name": "Override Code",
+    "input_type": "sequence",
+    "ui_mode": "in-screen",
+    "ui_type": "button_sequence",
+    "description": "Press the command words in the correct order.",
+    "default_duration": 15.0,
+    "required_sequence": [
+      "SYSTEM",
+      "OVERRIDE",
+      "CONFIRM"
+    ],
+    "button_labels": [
+      "SYSTEM",
+      "ABORT",
+      "OVERRIDE",
+      "DENY",
+      "CONFIRM",
+      "RESET"
+    ],
+    "ui_prompt_message": "INITIATE OVERRIDE SEQUENCE:",
+    "success_message_default": "Override Accepted.",
+    "failure_message_default": "Override Failed.",
+    "hp_damage_on_failure_default": 10
+  },
+  "precision_tap_count": {
+    "name": "Pressure Calibration",
+    "input_type": "tap",
+    "ui_mode": "in-screen",
+    "ui_type": "precision_gauge",
+    "description": "Tap 'PUMP' to keep the bar in the GREEN zone.",
+    "default_duration": 8.0,
+    "target_zone": [
+      10,
+      15
+    ],
+    "decay_rate": 0.5,
+    "success_message_default": "Pressure stabilized.",
+    "failure_message_default": "System overload or under-pressure."
+  },
+  "mouse_spiral": {
+    "name": "Stabilize Vortex",
+    "input_type": "spiral",
+    "ui_mode": "in-screen",
+    "ui_type": "trace_path",
+    "description": "Trace the spiral path from center to edge.",
+    "path_type": "spiral",
+    "tolerance": 40,
+    "default_duration": 8.0,
+    "success_message_default": "Vortex stabilized.",
+    "failure_message_default": "Containment breached."
+  },
+  "targeted_cancel": {
+    "name": "Emergency Abort",
+    "input_type": "cancel",
+    "ui_mode": "in-screen",
+    "ui_type": "choice_buttons",
+    "ui_prompt_message": "ABORT THE SEQUENCE! PRESS THE RED BUTTON!",
+    "choices": [
+      "INITIATE",
+      "DEPLOY",
+      "CANCEL",
+      "EXECUTE"
+    ],
+    "button_colors": {
+      "CANCEL": "ff0000",
+      "default": "333333"
+    },
+    "correct_choice": "CANCEL",
+    "default_duration": 8.0,
+    "success_message_default": "Sequence aborted.",
+    "failure_message_default": "Sequence irreversible."
+  }
+}

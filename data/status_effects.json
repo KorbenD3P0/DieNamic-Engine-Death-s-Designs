@@ -1,0 +1,88 @@
+{
+  "status_effects_definitions": {
+    "bleeding": {
+      "duration": 3,
+      "hp_change_per_turn": -1,
+      "message_on_tick": "You are bleeding steadily.",
+      "message_on_wear_off": "The bleeding has stopped."
+    },
+    "poisoned": {
+      "duration": 4,
+      "hp_change_per_turn": -1,
+      "message_on_tick": "You feel a wave of nausea from the poison.",
+      "message_on_wear_off": "The poison seems to have run its course."
+    },
+    "stunned": {
+      "duration": 1,
+      "prevents_action": true,
+      "message_on_tick": "You are stunned and can't act!",
+      "message_on_wear_off": "You shake off the daze."
+    },
+    "dizzy": {
+      "duration": 2,
+      "effects": {
+        "action_failure_chance": 0.3
+      },
+      "message_on_tick": "You feel dizzy and unsteady.",
+      "message_on_wear_off": "Your head clears."
+    },
+    "burned": {
+      "duration": 2,
+      "hp_change_per_turn": -2,
+      "message_on_tick": "Your burns sear with pain.",
+      "message_on_wear_off": "The worst of the burn pain subsides."
+    },
+    "stumbled": {
+      "duration": 1,
+      "prevents_action": false,
+      "message_on_tick": "You quickly regain your footing.",
+      "message_on_wear_off": ""
+    },
+    "entangled": {
+      "duration": 2,
+      "prevents_action": false,
+      "effects": {
+        "movement_penalty": true
+      },
+      "message_on_apply": "The vacuum wrapped a loose appliance cord around your ankle, making it difficult to move freely!",
+      "message_on_tick": "You struggle with the tangled cord.",
+      "message_on_wear_off": "You finally shake the cord free from your leg."
+    }
+  },
+    "hand_sprain": {
+    "name": "Hand Sprain",
+    "description": "Your hand throbs from overexertion. For a short time, it hurts to apply force.",
+    "short_label": "Hand Sprain",
+    "color": "warning",
+    "icon": "",
+    "turns_default": 3,
+    "blocks_force_actions": true,
+    "effects": {
+      "force_mash_penalty": 3
+    },
+    "on_apply_message": "You suffer a hand sprain!",
+    "on_expire_message": "Your hand feels better."
+  },
+  "VISIBILITY_LEVELS_SEVERITY": {
+    "normal": 0,
+    "dim": 1,
+    "patchy_smoke": 2,
+    "hazy_smoke": 2,
+    "dark": 3,
+    "smoky": 3,
+    "dense_smoke": 4,
+    "very_smoky": 4,
+    "blinding": 5,
+    "pitch_black": 5,
+    "zero": 5
+  },
+  "SMELL_LEVELS_PRIORITY": {
+    "none": 0,
+    "musty": 1,
+    "damp_must": 2,
+    "acrid_smoke": 3,
+    "chemical": 4,
+    "gas": 5,
+    "putrid": 6
+  }
+}

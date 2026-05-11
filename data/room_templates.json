@@ -1,0 +1,27 @@
+{
+  "room_templates": {
+    "staging_area": {
+      "default_name": "Staging Area",
+      "per_disaster_override": {
+        "transportation_air": {
+          "name": "Gate B7 - Boarding Area",
+          "description": "Rows of blue plastic seats face the floor-to-ceiling windows. Beyond the glass, your flight sits on the tarmac.",
+          "furniture": ["plastic_seats", "charging_station", "vending_machine"],
+          "objects": ["boarding_pass_scanner", "departure_board", "window_view"]
+        },
+        "transportation_road": {
+          "name": "Highway On-Ramp",
+          "description": "Your car idles in the merge lane. Brake lights stretch ahead as far as you can see.",
+          "furniture": ["your_car", "guardrail"],
+          "objects": ["road_sign", "traffic_ahead"]
+        },
+        "carnival": {
+          "name": "Ticket Booth Area",
+          "description": "A crush of families and teenagers funnel through the turnstiles. Cotton candy and diesel fumes mingle in the air.",
+          "furniture": ["ticket_booth", "turnstile"],
+          "objects": ["park_map", "prize_display"]
+        }
+      }
+    }
+  }
+}

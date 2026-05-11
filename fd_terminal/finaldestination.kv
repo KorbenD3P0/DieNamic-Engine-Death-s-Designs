@@ -1,0 +1,1560 @@
+# finaldestination.kv
+# LAYOUT CONTRACT:
+# KV defines: widget tree structure, static sizing, colors, fonts, borders
+# Python defines: dynamic content (text, button lists), callbacks, visibility toggles
+# Python NEVER adds children to widgets defined in KV — it only modifies
+# existing children or replaces contents of ScrollView/BoxLayout containers.
+# If Python needs a dynamic list, KV provides an empty BoxLayout with an id.
+#:kivy 2.1.0
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+#:import Window kivy.core.window.Window
+# --- THEME CONSTANTS ---
+#:set term_bg       (0.05, 0.05, 0.05, 1)
+#:set term_fg       (0.1, 0.8, 0.1, 1)
+#:set term_border   (0.3, 0.3, 0.3, 1)
+#:set term_accent   (1, 0.6, 0, 1)
+#:set font_mono     'RobotoMono'
+#:set font_bold     'RobotoMonoBold'
+
+# --- IMPORTS ---
+#:import TitleScreen fd_terminal.ui.TitleScreen
+#:import GameScreen fd_terminal.ui.GameScreen
+#:import SaveGameScreen fd_terminal.ui.SaveGameScreen
+#:import LoadGameScreen fd_terminal.ui.LoadGameScreen
+#:import StatusDisplayWidget fd_terminal.widgets.StatusDisplayWidget
+#:import OutputPanelWidget fd_terminal.widgets.OutputPanelWidget
+#:import ActionInputWidget fd_terminal.widgets.ActionInputWidget
+#:import ContextualActionsWidget fd_terminal.widgets.ContextualActionsWidget
+#:import CompassWidget fd_terminal.widgets.CompassWidget
+#:import ContextDockWidget fd_terminal.widgets.ContextDockWidget
+
+# --- MODERN COMPONENT STYLES ---
+
+<TerminalButton@Button>:
+    background_normal: ''
+    background_down: ''
+    background_color: (0, 0, 0, 0)  # Transparent background
+    color: term_fg                  # Green text (0.1, 0.8, 0.1, 1)
+    font_name: font_bold
+    font_size: dp(14)
+
+    # Text Wrapping Logic
+    halign: 'center'
+    valign: 'middle'
+    text_size: self.width - dp(8), self.height
+    shorten: True
+    shorten_from: 'right'
+
+    canvas.before:
+        # The Border
+        Color:
+            rgba: term_fg if self.state == 'normal' else term_accent
+        Line:
+            width: dp(1.2)
+            rounded_rectangle: (self.x, self.y, self.width, self.height, dp(4))
+
+        # The Hover/Press Effect
+        Color:
+            rgba: (0.1, 0.8, 0.1, 0.2) if self.state == 'down' else (0, 0, 0, 0)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(4)]
+
+<TerminalPanel@BoxLayout>:
+    canvas.before:
+        Color:
+            rgba: (0.08, 0.08, 0.08, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(6)]
+        Color:
+            rgba: term_border
+        Line:
+            width: dp(1)
+            rounded_rectangle: (self.x, self.y, self.width, self.height, dp(6))
+
+<TerminalPopup@Popup>:
+    # Applies the retro terminal theme to standard Kivy Popups
+    title_color: term_accent
+    title_font: font_bold
+    title_size: dp(18)
+    separator_color: term_accent
+
+    # Strip the default Kivy grey gradient and make it solid dark
+    background: ''
+    background_color: (0.08, 0.08, 0.08, 0.98)
+
+<SlotButton@Button>:
+    background_normal: ''
+    background_down: ''
+    background_color: (0.1, 0.1, 0.1, 1)
+    color: term_fg
+    font_name: font_bold
+    font_size: dp(16)
+    halign: 'center'
+    valign: 'middle'
+    text_size: self.width - dp(8), self.height
+    shorten: True
+    shorten_from: 'right'
+    markup: True
+    size_hint_y: None
+    height: dp(60)
+
+# --- TEMPLATES & STYLES ---
+
+<BaseScreen>:
+    canvas.before:
+        Color:
+            rgba: term_bg
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<MenuButton@TerminalButton>:
+    font_size: dp(18)
+    size_hint_y: None
+    height: dp(55)
+
+<HeaderLabel@Label>:
+    font_name: app.thematic_font_name
+    font_size: dp(24)
+    color: term_accent
+    size_hint_y: None
+    height: dp(40)
+    markup: True
+
+# --- WIDGET DEFINITIONS ---
+
+<StatusDisplayWidget>:
+    hp_label: hp_id
+    fear_label: fear_id
+    score_label: score_id
+    bg_texture: ''  # New property to hold the background texture
+
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: dp(40)
+    spacing: dp(5)
+    padding: dp(5)
+
+    canvas.before:
+        Color:
+            rgba: (1, 1, 1, 1) if self.bg_texture else (0.08, 0.08, 0.08, 1)
+
+        # If bg_texture is set, use it. Otherwise just draw a color block.
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: self.bg_texture if self.bg_texture else ''
+
+        # Keep the border line if you want it visible on top
+        Color:
+            rgba: term_border
+        Line:
+            width: dp(1)
+            rounded_rectangle: (self.x, self.y, self.width, self.height, dp(4))
+
+    Label:
+        id: hp_id
+        markup: True
+        font_name: font_bold
+    Label:
+        id: fear_id
+        markup: True
+        font_name: font_bold
+    Label:
+        id: score_id
+        markup: True
+        font_name: font_bold
+
+<OutputPanelWidget>:
+    output_label: output_lbl
+    output_scroll_view: output_sv
+
+    canvas.before:
+        Color:
+            rgba: (0.02, 0.02, 0.02, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(4)]
+        Color:
+            rgba: term_border
+        Line:
+            width: dp(1)
+            rounded_rectangle: (self.x, self.y, self.width, self.height, dp(4))
+
+    ScrollView:
+        id: output_sv
+        size_hint_y: 1
+        bar_width: dp(8)
+        bar_color: term_fg
+
+        Label:
+            id: output_lbl
+            markup: True
+            font_name: font_mono
+
+            # THE FIX: One single, reactive definition using the App property
+            font_size: sp(15) * app.text_scale
+
+            size_hint_y: None
+            # Make sure the text wraps to the width of the scrollview minus padding
+            text_size: self.width - dp(20), None
+            height: self.texture_size[1]
+            valign: 'top'
+            halign: 'left'
+            padding: dp(10), dp(10)
+
+<InventoryDisplayWidget>:
+    inventory_label: inv_lbl
+    orientation: 'vertical'
+    padding: dp(5)
+
+    canvas.before:
+        Color:
+            rgba: (0.05, 0.05, 0.05, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [dp(4)]
+        Color:
+            rgba: term_border
+        Line:
+            width: dp(1)
+            rounded_rectangle: (self.x, self.y, self.width, self.height, dp(4))
+
+    Label:
+        text: "INVENTORY"
+        font_name: font_bold
+        font_size: dp(12)
+        color: term_accent
+        size_hint_y: None
+        height: dp(20)
+
+    ScrollView:
+        Label:
+            id: inv_lbl
+            font_name: font_mono
+            font_size: dp(13)
+            markup: True
+            halign: 'left'
+            valign: 'top'
+            size_hint_y: None
+            height: self.texture_size[1]
+            # Text wrapping for long item names
+            text_size: self.width, None
+            padding_x: dp(5)
+
+<ActionInputWidget>:
+    text_input: txt_in
+    submit_button: btn_submit
+    orientation: 'horizontal'
+    spacing: dp(10)
+    size_hint_y: None
+    height: dp(40)
+
+    TextInput:
+        id: txt_in
+        multiline: False
+        font_name: font_mono
+        font_size: dp(16)
+        background_color: (0.1, 0.1, 0.1, 1)
+        foreground_color: (1, 1, 1, 1)
+        cursor_color: term_fg
+        padding_y: [self.height / 2.0 - (self.line_height / 2.0) * len(self._lines), 0]
+        size_hint_x: 0.75
+        on_text_validate: root._on_submit()
+
+    TerminalButton:
+        id: btn_submit
+        text: ">>>"
+        size_hint_x: 0.25
+        on_release: root._on_submit()
+
+<ContextDockWidget>:
+    core_grid: core_grid_id
+    context_grid: context_grid_id
+    orientation: 'vertical'
+    spacing: dp(2)
+
+    # Core Actions Grid (Move, Examine, etc.)
+    GridLayout:
+        id: core_grid_id
+        cols: 3
+        spacing: dp(4)
+        size_hint_y: None
+        height: self.minimum_height
+        row_default_height: dp(40)
+        row_force_default: False
+
+    Label:
+        text: "INTERACTIONS"
+        color: term_border
+        font_size: dp(10)
+        font_name: font_bold
+        size_hint_y: None
+        height: dp(15)
+
+    # Context Grid (Targets)
+    ScrollView:
+        bar_width: dp(4)
+        bar_color: term_fg
+        GridLayout:
+            id: context_grid_id
+            cols: 3
+            spacing: dp(4)
+            size_hint_y: None
+            height: self.minimum_height
+            # FIX: Allow buttons to dictate their own height
+            row_default_height: dp(40)
+            row_force_default: False
+
+<ContextualActionsWidget>:
+    grid: grid_id
+    bar_width: dp(4)
+    GridLayout:
+        id: grid_id
+        cols: 3
+        spacing: dp(4)
+        size_hint_y: None
+        # Keep dynamic height calculation
+        height: self.minimum_height
+
+        # FIX: Disable forced row height.
+        # This tells the Grid to respect the height of the buttons themselves.
+        row_force_default: False
+        row_default_height: dp(45) # Used only as a fallback
+
+#:import App kivy.app.App
+
+<InfoPopup>:
+    message_label: msg_lbl
+    image_source: ''  # New property to hold the path
+    title: "Notice"
+    size_hint: 0.85, None
+    height: dp(300)
+
+    # 1. Dynamic Title Color (Black in Light Mode, White in Dark Mode)
+    title_color: (0, 0, 0, 1) if App.get_running_app().theme_mode == 'Light' else (1, 1, 1, 1)
+
+    # 2. Dynamic Background (Light Grey in Light Mode, Dark Grey in Dark Mode)
+    background_color: (0.95, 0.95, 0.95, 1) if App.get_running_app().theme_mode == 'Light' else (0.1, 0.1, 0.1, 1)
+
+    # 3. Dynamic Separator
+    separator_color: (0.2, 0.2, 0.2, 1) if App.get_running_app().theme_mode == 'Light' else (0, 1, 0, 1)
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(10)
+        spacing: dp(10)
+
+        # NEW: The Image Area
+        Image:
+            source: root.image_source
+            # Only take up space if a source is set
+            size_hint_y: 0.4 if root.image_source else 0
+            opacity: 1 if root.image_source else 0
+            allow_stretch: True
+            keep_ratio: True
+
+        ScrollView:
+            do_scroll_x: False
+
+            Label:
+                id: msg_lbl
+                markup: True
+                # Use the font registered in main.py
+                font_name: 'RobotoMono'
+
+                # BINDING 1: Text Scale
+                # Multiplies base size (15dp) by the global scalar
+                font_size: dp(15) * App.get_running_app().text_scale
+
+                size_hint_y: None
+                height: self.texture_size[1]
+                text_size: self.width, None
+                halign: 'center'
+                valign: 'middle'
+
+                # BINDING 2: Dynamic Color
+                # If Light Mode -> Black Text. If Dark Mode -> White Text.
+                color: (0, 0, 0, 1) if App.get_running_app().theme_mode == 'Light' else (1, 1, 1, 1)
+
+        TerminalButton:
+            text: "ACKNOWLEDGE"
+            size_hint_y: None
+            height: dp(45)
+            on_release: root.dismiss()
+
+<QTEPopup>:
+    container: container_id
+    timer_bar: timer_id
+    prompt_label: prompt_id
+
+    title: "HEADS UP!!"
+    title_color: term_accent
+    title_align: 'center'
+    separator_color: term_accent
+    size_hint: 0.9, None
+    height: min(Window.height * 0.85, dp(500))
+    auto_dismiss: False
+
+    BoxLayout:
+        orientation: 'vertical'
+        # Added extra padding at the top to keep text away from the line
+        padding: dp(15), dp(25), dp(15), dp(15)
+        spacing: dp(15)
+
+        Label:
+            id: prompt_id
+            text: "REACT!"
+            font_name: font_bold
+            font_size: dp(17)
+            color: term_accent
+            size_hint_y: None
+            # THE FIX 1: Dynamic height based on text length!
+            height: self.texture_size[1]
+            text_size: self.width, None
+            halign: 'center'
+            valign: 'middle'
+            markup: True
+
+        BoxLayout:
+            id: container_id
+            orientation: 'vertical'
+            spacing: dp(10)
+            # Fills the remaining space nicely
+            size_hint_y: 1
+
+        # THE FIX 2: A custom, themeable Terminal Timer Bar!
+        Widget:
+            id: timer_id
+            size_hint_y: None
+            height: dp(12)
+            # Create dynamic properties for Python to update
+            value: 100.0
+            max: 100.0
+
+            canvas.before:
+                # The dark empty track
+                Color:
+                    rgba: 0.2, 0.2, 0.2, 1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [dp(4)]
+
+                # The shrinking timer bar!
+                # Changes from Accent (Orange) to Red when under 30% time
+                Color:
+                    rgba: term_accent if (self.value / max(self.max, 0.1)) > 0.3 else (0.9, 0.1, 0.1, 1)
+                RoundedRectangle:
+                    pos: self.pos
+                    # Calculate width based on time remaining
+                    size: self.width * (self.value / max(self.max, 0.1)), self.height
+                    radius: [dp(4)]
+
+# --- MAIN SCREENS ---
+
+<TitleScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left, app.safe_top, app.safe_right, app.safe_bottom
+        spacing: dp(20)
+
+        # Top Spacer
+        Widget:
+            size_hint_y: 0.2
+
+        Label:
+            text: f"[b][color={root.color_red}]DieNamic [/color][color={root.color_white}]Engine:[/color]\n[color={root.color_white}]Death's [/color][color={root.color_red}]Designs[/color][/b]"
+            font_name: app.thematic_font_name
+            font_size: app.get_scaled_font_size(app.thematic_font_name, dp(42))
+            markup: True
+            size_hint_y: None
+            height: dp(140)
+            text_size: self.width, None
+            halign: 'center'
+            valign: 'middle'
+
+        Widget:
+            size_hint_y: 0.1
+
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: dp(12)
+            size_hint_y: None
+            height: self.minimum_height
+            size_hint_x: 0.7
+            pos_hint: {'center_x': 0.5}
+
+            MenuButton:
+                text: "New Game"
+                on_release: root.start_new_game_flow()
+            MenuButton:
+                text: "Load Game"
+                on_release: root.go_to_screen('load_game')
+            MenuButton:
+                text: "Achievements"
+                on_release: root.go_to_screen('achievements')
+            MenuButton:
+                text: "Sandbox Mode"
+                on_release: root.go_to_screen('sandbox_select', direction='right')
+            MenuButton:
+                text: "How to Play"
+                on_release: root.go_to_screen('tutorial')
+            MenuButton:
+                text: "Journal"
+                on_release: root.go_to_screen('journal')
+            MenuButton:
+                text: "Settings"
+                on_release: root.go_to_screen('settings')
+            MenuButton:
+                text: "Exit Game"
+                on_release: app.stop()
+
+        # Bottom Spacer
+        Widget:
+            size_hint_y: 0.2
+
+<CharacterSelectScreen>:
+    character_grid: character_grid_id
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left, app.safe_top, app.safe_right, app.safe_bottom
+        spacing: dp(10)
+
+        # Top Spacer
+        Widget:
+            size_hint_y: 0.1
+
+        HeaderLabel:
+            text: "[b]Select Your Character[/b]"
+
+        ScrollView:
+            GridLayout:
+                id: character_grid_id
+                cols: 1
+                spacing: dp(10)
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(20)
+
+        MenuButton:
+            text: "Back to Title"
+            size_hint_x: 0.8
+            pos_hint: {'center_x': 0.5}
+            on_release: root.go_to_screen('title', 'left')
+            text_size: self.width - dp(10), None
+            halign: 'center'
+            valign: 'middle'
+
+        # Bottom Spacer
+        Widget:
+            size_hint_y: 0.1
+
+
+
+<SandboxConfigurationScreen>:
+    hazard_grid: hazard_grid_id
+    chk_related: chk_related_id
+    chk_all_items: chk_all_items_id
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left, app.safe_top, app.safe_right, app.safe_bottom
+        spacing: dp(10)
+
+        # Top Spacer
+        Widget:
+            size_hint_y: 0.1
+
+        HeaderLabel:
+            text: "[b]SIMULATION CONFIGURATION[/b]"
+            halign: 'center'
+            size_hint_y: None
+            height: dp(30)
+
+        # Main Content Area: Left (Hazards), Right (Options)
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: dp(10)
+
+            # Left: Hazard Scroll List
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.6
+
+                Label:
+                    text: "[color=888888]ACTIVE HAZARDS[/color]"
+                    markup: True
+                    size_hint_y: None
+                    height: dp(25)
+                    halign: 'left'
+                    text_size: self.size
+
+                # Panel background for list
+                TerminalPanel:
+                    ScrollView:
+                        bar_width: dp(8)
+                        bar_color: term_fg
+                        BoxLayout:
+                            id: hazard_grid_id
+                            orientation: 'vertical'
+                            spacing: dp(2)
+                            size_hint_y: None
+                            height: self.minimum_height
+                            padding: dp(10)
+
+            # Right: Config Options & Launch
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x: 0.4
+                spacing: dp(15)
+                padding: dp(5)
+
+                Label:
+                    text: "[color=888888]PARAMETERS[/color]"
+                    markup: True
+                    size_hint_y: None
+                    height: dp(25)
+                    halign: 'left'
+                    text_size: self.size
+
+                # Toggle: Related Items
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    height: dp(40)
+                    Label:
+                        text: "Include Related Items"
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                        font_size: dp(13)
+                    CheckBox:
+                        id: chk_related_id
+                        size_hint_x: None
+                        width: dp(40)
+                        active: True
+                        on_active: root.toggle_related_items(self, self.active)
+
+                # Toggle: All Items
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    height: dp(40)
+                    Label:
+                        text: "Unlock Full Armory"
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                        font_size: dp(13)
+                    CheckBox:
+                        id: chk_all_items_id
+                        size_hint_x: None
+                        width: dp(40)
+                        active: False
+                        on_active: root.toggle_all_items(self, self.active)
+
+                # SEPARATOR
+                Widget:
+                    size_hint_y: None
+                    height: dp(10)
+                    canvas.before:
+                        Color:
+                            rgba: term_fg[0], term_fg[1], term_fg[2], 0.3
+                        Rectangle:
+                            pos: self.x + dp(10), self.center_y
+                            size: self.width - dp(20), dp(1)
+
+                # NEW: Procedural Generation Toggle
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    height: dp(40)
+                    Label:
+                        text: "[color=00ff00]Use Procedural Generation[/color]"
+                        markup: True
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                        font_size: dp(13)
+                        bold: True
+                    CheckBox:
+                        id: chk_procedural_id
+                        size_hint_x: None
+                        width: dp(40)
+                        active: False
+
+                # NEW: Room Count Slider (shown when procedural is enabled)
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: dp(60) if chk_procedural_id.active else 0
+                    opacity: 1 if chk_procedural_id.active else 0
+                    disabled: not chk_procedural_id.active
+
+                    Label:
+                        text: "Room Count: {}".format(int(room_count_slider_id.value))
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                        font_size: dp(11)
+                        color: (0.6, 0.6, 0.6, 1)
+
+                    Slider:
+                        id: room_count_slider_id
+                        min: 8
+                        max: 20
+                        value: 12
+                        step: 1
+
+                # NEW: Optional Seed Input
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    height: dp(40) if chk_procedural_id.active else 0
+                    opacity: 1 if chk_procedural_id.active else 0
+                    disabled: not chk_procedural_id.active
+
+                    Label:
+                        text: "Seed (optional):"
+                        halign: 'left'
+                        valign: 'middle'
+                        text_size: self.size
+                        font_size: dp(11)
+                        size_hint_x: 0.5
+
+                    TextInput:
+                        id: seed_input_id
+                        hint_text: "Random"
+                        multiline: False
+                        size_hint_x: 0.5
+                        font_size: dp(12)
+                        padding: [dp(5), dp(8)]
+
+                Widget:
+                    # Spacer to push buttons down
+                    size_hint_y: 1
+
+                TerminalButton:
+                    text: "INITIATE SIMULATION"
+                    size_hint_y: None
+                    height: dp(60)
+                    background_color: term_accent
+                    color: (0,0,0,1) # Black text on accent
+                    on_release: root.launch_simulation()
+
+        MenuButton:
+            text: "Abort Configuration"
+            size_hint_x: 0.8
+            pos_hint: {'center_x': 0.5}
+            on_release: root.go_to_screen('title', 'left')
+
+        # Bottom Spacer
+        Widget:
+            size_hint_y: 0.01
+
+<IntroScreen>:
+    intro_text_label: intro_text_label_id
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left, app.safe_top, app.safe_right, app.safe_bottom
+        spacing: dp(10)
+
+        # Top Spacer
+        Widget:
+            size_hint_y: 0.1
+
+        Label:
+            text: "It was a normal day"
+            font_name: app.thematic_font_name
+            font_size: dp(28)
+            color: term_accent
+            size_hint_y: None
+            height: dp(50)
+
+        ScrollView:
+            Label:
+                id: intro_text_label_id
+                text: "Loading..."
+                markup: True
+                font_name: font_mono
+                font_size: dp(16)
+                size_hint_y: None
+                height: self.texture_size[1]
+                text_size: self.width - dp(30), None
+                halign: 'center'
+                valign: 'top'
+                padding: dp(15), dp(15)
+
+        MenuButton:
+            text: "Continue..."
+            size_hint_x: 0.9
+            pos_hint: {'center_x': 0.5}
+            on_release: root.proceed_to_game()
+
+        # Bottom Spacer
+        Widget:
+            size_hint_y: 0.1
+
+<GameScreen>:
+    status_display: status_display_id
+    output_panel: output_panel_id
+    action_input: action_input_id
+    main_actions: main_actions_id
+    contextual_actions: contextual_actions_id
+    compass_display: compass_display_id
+    inventory_display: inventory_display_id
+    glitch_overlay: glitch_overlay_id
+
+    # WRAPPER: FloatLayout allows stacking widgets (Z-index)
+    FloatLayout:
+
+        # LAYER 1: The Main Game UI (Your existing layout)
+        BoxLayout:
+            orientation: 'vertical'
+            padding: [app.safe_left + dp(10), app.safe_bottom + dp(10), app.safe_right + dp(10), app.safe_top + dp(20)]
+            spacing: dp(6)
+
+            # Top Spacer
+            Widget:
+                size_hint_y: 0.1
+
+            StatusDisplayWidget:
+                id: status_display_id
+
+            BoxLayout:
+                orientation: 'horizontal'
+                spacing: dp(6)
+                size_hint_y: 1
+
+                OutputPanelWidget:
+                    id: output_panel_id
+                    size_hint_x: 0.65
+
+                # --- SPLIT COLUMN ---
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_x: 0.3
+
+                    # Replaces MapDisplayWidget
+                    CompassWidget:
+                        id: compass_display_id
+                        size_hint_y: None
+                        height: dp(150)  # Keep it square-ish
+                        # Add a background if you want it to look like a screen
+                        canvas.before:
+                            Color:
+                                rgba: 0.1, 0.1, 0.1, 1
+                            Rectangle:
+                                pos: self.pos
+                                size: self.size
+
+                    InventoryDisplayWidget:
+                        id: inventory_display_id
+                # ---------------------
+
+            # --- BUTTON CONTAINER ---
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                # PATCH: Increased from dp(280) to dp(350)
+                # 200 (Dock) + 100 (Targets) + 40 (Input) + Spacing ~= 350
+                height: dp(350)
+                spacing: dp(4)
+
+                # 1. Main Core Actions (Move, Inventory, etc.) & Interactions (Search, Unlock)
+                ContextDockWidget:
+                    id: main_actions_id
+                    size_hint_y: None
+                    # PATCH: Increased from dp(110) to dp(200)
+                    # 88dp (Core) + 15dp (Label) + 90dp (Interactions 2 rows) + Padding
+                    height: dp(200)
+
+                # 2. Contextual Targets (The generated buttons like "North", "Door")
+                ContextualActionsWidget:
+                    id: contextual_actions_id
+                    size_hint_y: None
+                    height: dp(100)
+
+                # 3. Text Input Bar
+                ActionInputWidget:
+                    id: action_input_id
+                    size_hint_y: None
+                    height: dp(40)
+
+            # Bottom Spacer
+            Widget:
+                size_hint_y: 0.02
+
+        # LAYER 2: The Glitch Overlay (Sits on top, usually invisible)
+        GlitchOverlay:
+            id: glitch_overlay_id
+
+<WinScreen>:
+    score_display: score_label
+    narrative_display: narrative_label
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left + dp(20), app.safe_top + dp(20), app.safe_right + dp(20), app.safe_bottom + dp(20)
+        spacing: dp(20)
+
+        # Top Spacer
+        Widget:
+            size_hint_y: 0.2
+
+        Label:
+            text: "[b][color=00ff00]SURVIVED[/color][/b]"
+            markup: True
+            font_name: app.thematic_font_name
+            font_size: sp(40)
+            size_hint_y: None
+            height: dp(60)
+
+        Label:
+            id: narrative_label
+            text: ""
+            text_size: self.width * 0.9, None
+            halign: 'center'
+            valign: 'middle'
+            markup: True
+            font_name: 'RobotoMono'
+            font_size: sp(16)
+            size_hint_y: None
+            height: self.texture_size[1]
+
+        Label:
+            id: score_label
+            text: "Score: 0"
+            font_name: 'RobotoMonoBold'
+            font_size: dp(22)
+            size_hint_y: None
+            height: dp(40)
+
+        Widget:
+            size_hint_y: 0.1
+
+        MenuButton:
+            text: "Main Menu"
+            size_hint_x: 0.8
+            pos_hint: {'center_x': 0.5}
+            on_release: root.go_to_screen('title')
+
+        # Bottom Spacer
+        Widget:
+            size_hint_y: 0.2
+
+<LoseScreen>:
+    death_reason_label: death_reason_id
+    final_narrative_label: final_narrative_id
+    flavor_text_label: flavor_text_id
+    title_label: title_label_id
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left + dp(10), app.safe_top + dp(10), app.safe_right + dp(10), app.safe_bottom + dp(10)
+        spacing: dp(10)
+
+        # Top Spacer (much smaller)
+        Widget:
+            size_hint_y: None
+            height: dp(10)
+
+        # Title stays outside ScrollView so it's always visible
+        Label:
+            id: title_label_id
+            text: "[b][color=ff0000]DEATH HAS CLAIMED YOU[/color][/b]"
+            font_name: app.thematic_font_name
+            font_size: dp(28)
+            markup: True
+            size_hint_y: None
+            height: dp(45)
+            halign: 'center'
+            text_size: self.width, None
+
+        # ScrollView gets all remaining space
+        ScrollView:
+            bar_width: dp(4)
+            bar_color: 1, 0, 0, 0.5
+            GridLayout:
+                cols: 1
+                spacing: dp(15)
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(15), dp(10)
+
+                Label:
+                    id: death_reason_id
+                    font_name: font_mono
+                    font_size: dp(18)
+                    markup: True
+                    halign: 'center'
+                    size_hint_y: None
+                    text_size: self.width - dp(10), None
+                    height: self.texture_size[1]
+
+                Label:
+                    id: final_narrative_id
+                    font_name: font_mono
+                    font_size: dp(14)
+                    markup: True
+                    halign: 'center'
+                    size_hint_y: None
+                    text_size: self.width - dp(10), None
+                    height: self.texture_size[1]
+
+                Label:
+                    id: flavor_text_id
+                    font_name: font_mono
+                    font_size: dp(16)
+                    color: 1, 0, 0, 1  # Keep it red like the screenshot
+                    markup: True
+                    halign: 'center'
+                    size_hint_y: None
+                    height: self.texture_size[1] if self.text else 0
+                    text_size: self.width - dp(10), None
+                    opacity: 1 if self.text else 0
+
+        # Button OUTSIDE ScrollView — always visible at bottom
+        MenuButton:
+            text: "Return to Main Menu"
+            on_release: root.go_to_screen('title', 'right')
+
+        # Minimal bottom spacer for home bar
+        Widget:
+            size_hint_y: None
+            height: dp(5)
+
+<LoadGameScreen>:
+    slots_layout: slots_layout_id
+    status_label: status_label_id
+    btn_back: btn_back_id
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left + dp(20), app.safe_top + dp(20), app.safe_right + dp(20), app.safe_bottom + dp(20)
+        spacing: dp(10)
+
+        # Top Spacer
+        Widget:
+            size_hint_y: 0.2
+
+        HeaderLabel:
+            text: "[b]Load Game[/b]"
+
+        # The scrollable list of slots
+        ScrollView:
+            BoxLayout:
+                id: slots_layout_id
+                orientation: 'vertical'
+                spacing: dp(8)
+                size_hint_y: None
+                height: self.minimum_height
+
+        Label:
+            id: status_label_id
+            text: ""
+            markup: True
+            font_name: font_mono
+            size_hint_y: None
+            height: dp(30)
+            color: term_fg
+
+        MenuButton:
+            id: btn_back_id
+            text: "< Back"
+            # Action bound in Python based on entry context
+
+        # Bottom Spacer
+        Widget:
+            size_hint_y: 0.2
+
+<SaveGameScreen>:
+    slots_layout: slots_layout_id
+    status_label: status_label_id
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left + dp(20), app.safe_top + dp(20), app.safe_right + dp(20), app.safe_bottom + dp(20)
+        spacing: dp(10)
+
+        # Top Spacer
+        Widget:
+            size_hint_y: 0.2
+
+        HeaderLabel:
+            text: "[b]Save Game[/b]"
+
+        ScrollView:
+            BoxLayout:
+                id: slots_layout_id
+                orientation: 'vertical'
+                spacing: dp(8)
+                size_hint_y: None
+                height: self.minimum_height
+
+        Label:
+            id: status_label_id
+            text: ""
+            markup: True
+            font_name: font_mono
+            size_hint_y: None
+            height: dp(30)
+            color: term_fg
+
+        MenuButton:
+            text: "< Back to Game"
+            on_release: root.go_to_screen('game', 'right')
+
+        # Bottom Spacer
+        Widget:
+            size_hint_y: 0.2
+
+<AchievementsScreen>:
+    # --- FIX: Connect the Python property to the KV ID ---
+    grid_layout: achievements_grid
+    # -----------------------------------------------------
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left + dp(20), app.safe_top + dp(20), app.safe_right + dp(20), app.safe_bottom + dp(20)
+        spacing: dp(10)
+
+        # Top Spacer
+        Widget:
+            size_hint_y: 0.2
+
+        HeaderLabel:
+            text: "[b]Achievements[/b]"
+
+        ScrollView:
+            GridLayout:
+                id: achievements_grid
+                cols: 1
+                spacing: dp(5)
+                size_hint_y: None
+                height: self.minimum_height
+
+        MenuButton:
+            text: "< Back"
+            on_release: root.go_to_screen('title', 'right')
+
+        # Bottom Spacer
+        Widget:
+            size_hint_y: 0.2
+
+<JournalScreen>:
+    evidence_list_layout: evidence_list_layout_id
+    stories_list_layout: stories_list_layout_id
+    evidence_details_title: evidence_details_title_id
+    evidence_details_description: evidence_details_description_id
+    story_details_title: story_details_title_id
+    story_details_description: story_details_description_id
+    story_details_scroll: story_details_scroll_id
+    content_manager: content_manager_id
+    btn_evidence_tab: btn_evidence_tab_id
+    btn_stories_tab: btn_stories_tab_id
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left + dp(10), app.safe_top + dp(10), app.safe_right + dp(10), app.safe_bottom + dp(10)
+        spacing: dp(10)
+
+        # Top Spacer
+        Widget:
+            size_hint_y: 0.1
+
+        HeaderLabel:
+            text: "[b]Journal[/b]"
+            halign: 'center'
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: dp(50)
+            spacing: dp(10)
+
+            ToggleButton:
+                id: btn_evidence_tab_id
+                text: "Evidence"
+                font_name: font_bold
+                font_size: dp(16)
+                group: 'journal_tabs'
+                state: 'down'
+                on_press: root.switch_view('evidence')
+                background_normal: ''
+                background_color: (0.2, 0.2, 0.2, 1)
+                color: term_fg
+
+            ToggleButton:
+                id: btn_stories_tab_id
+                text: "Stories"
+                font_name: font_bold
+                font_size: dp(16)
+                group: 'journal_tabs'
+                on_press: root.switch_view('stories')
+                background_normal: ''
+                background_color: (0.2, 0.2, 0.2, 1)
+                color: term_fg
+
+        ScreenManager:
+            id: content_manager_id
+
+            Screen:
+                name: 'evidence'
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: dp(10)
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_x: 0.4
+                        Label:
+                            text: "[b]Items[/b]"
+                            markup: True
+                            size_hint_y: None
+                            height: dp(30)
+                            color: term_accent
+                        ScrollView:
+                            BoxLayout:
+                                id: evidence_list_layout_id
+                                orientation: 'vertical'
+                                spacing: dp(5)
+                                size_hint_y: None
+                                height: self.minimum_height
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_x: 0.6
+                        Label:
+                            id: evidence_details_title_id
+                            text: "Select Item"
+                            font_name: font_bold
+                            size_hint_y: None
+                            height: dp(40)
+                            color: term_accent
+                            markup: True
+                        ScrollView:
+                            id: evidence_details_scroll_id
+                            Label:
+                                id: evidence_details_description_id
+                                text: "..."
+                                markup: True
+                                font_name: font_mono
+                                font_size: dp(14)
+                                text_size: self.width - dp(20), None
+                                size_hint_y: None
+                                height: self.texture_size[1]
+                                valign: 'top'
+            Screen:
+                name: 'stories'
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: dp(10)
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_x: 0.4
+                        Label:
+                            text: "[b]Unlocked Stories[/b]"
+                            markup: True
+                            size_hint_y: None
+                            height: dp(30)
+                            color: term_accent
+                        ScrollView:
+                            BoxLayout:
+                                id: stories_list_layout_id
+                                orientation: 'vertical'
+                                spacing: dp(5)
+                                size_hint_y: None
+                                height: self.minimum_height
+                    BoxLayout:
+                        orientation: 'vertical'
+                        size_hint_x: 0.6
+                        Label:
+                            id: story_details_title_id
+                            text: "Select Story"
+                            font_name: font_bold
+                            size_hint_y: None
+                            height: dp(40)
+                            color: term_accent
+
+                        # --- FIX: Add the ID here ---
+                        ScrollView:
+                            id: story_details_scroll_id
+                        # ----------------------------
+                            Label:
+                                id: story_details_description_id
+                                text: "..."
+                                markup: True
+                                font_name: font_mono
+                                font_size: dp(14)
+                                text_size: self.width - dp(20), None
+                                size_hint_y: None
+                                height: self.texture_size[1]
+                                valign: 'top'
+
+        MenuButton:
+            text: "< Back"
+            on_release: root.go_to_screen('title', 'right')
+
+        # Bottom Spacer
+        Widget:
+            size_hint_y: 0.2
+
+<TutorialScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+
+        # --- THE PADDING FIX ---
+        # Kivy format: [left, top, right, bottom]
+        # dp(50) on top clears all camera notches and status bars.
+        # dp(40) on bottom clears the Android gesture navigation pill.
+        padding: dp(15), dp(50), dp(15), dp(40)
+        spacing: dp(15)
+
+        # Header
+        Label:
+            text: "[b]How to Play[/b]"
+            font_name: font_bold
+            font_size: dp(24)
+            color: term_accent
+            size_hint_y: None
+            height: dp(40)
+            markup: True
+
+        # The Scrollable Content Area
+        ScrollView:
+            bar_width: dp(4)
+            bar_color: term_fg
+            size_hint_y: 1.0  # Explicitly takes all remaining vertical space
+
+            Label:
+                id: tutorial_label
+                markup: True
+                font_name: font_mono
+                font_size: dp(15)
+
+                # Text Wrapping Logic
+                text_size: self.width - dp(10), None
+                size_hint_y: None
+                height: self.texture_size[1]
+
+                valign: 'top'
+                halign: 'center'
+
+        # Fixed Spacer (Replaces the unpredictable size_hint_y: 0.2)
+        Widget:
+            size_hint_y: None
+            height: dp(10)
+
+        # Back Button
+        MenuButton:
+            text: "Back to Title"
+            on_release: root.go_to_screen('title', 'right')
+
+<InterLevelScreen>:
+    title_label: title_label_id
+    narrative_label: narrative_label_id
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left + dp(20), app.safe_top + dp(20), app.safe_right + dp(20), app.safe_bottom + dp(20)
+        spacing: dp(15)
+
+        # Top Spacer
+        Widget:
+            size_hint_y: None
+            height: dp(10)
+
+        HeaderLabel:
+            id: title_label_id
+            text: "[b]Level Complete![/b]"
+            size_hint_y: None
+            height: dp(45)
+
+        ScrollView:
+            bar_width: dp(4)
+            bar_color: 0.1, 0.8, 0.1, 0.5
+            Label:
+                id: narrative_label_id
+                text: ""
+                markup: True
+                font_name: font_mono
+                font_size: dp(16)
+                size_hint_y: None
+                height: self.texture_size[1]
+                text_size: self.width * 0.9, None
+                halign: 'center'
+                valign: 'top'
+
+        Widget:
+            size_hint_y: None
+            height: dp(10)
+
+        MenuButton:
+            text: "Continue"
+            on_release: root.proceed_to_next_level(self)
+
+        Widget:
+            size_hint_y: None
+            height: dp(5)
+
+<EvadedHazardEntry>:
+    canvas.before:
+        Color:
+            rgba: (0.15, 0.15, 0.15, 1) if self.selected else (0, 0, 0, 0)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<SettingsScreen>:
+    wipe_btn: wipe_data_button_id
+    text_slider: slider_id
+    sample_text_label: sample_lbl_id
+    theme_btn: theme_btn_id
+    vol_slider: vol_slider_id
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: app.safe_left + dp(40), app.safe_top + dp(40), app.safe_right + dp(40), app.safe_bottom + dp(40)
+        spacing: dp(20)
+
+        # Top Spacer
+        Widget:
+            size_hint_y: 0.1
+
+        HeaderLabel:
+            text: "[b]Settings[/b]"
+            halign: 'center'
+            font_name: app.thematic_font_name
+
+        # --- Text Scale Section ---
+        Label:
+            text: "Text Size Scale"
+            font_name: font_bold
+            size_hint_y: None
+            height: dp(30)
+            color: term_fg
+
+        Slider:
+            id: slider_id
+            min: 0.8
+            max: 1.4
+            value: app.text_scale
+            step: 0.1
+            size_hint_y: None
+            height: dp(40)
+            on_value: root._on_text_scale_change(self, self.value)
+
+        Label:
+            id: sample_lbl_id
+            text: f"Sample Text ({app.text_scale:.1f}x)"
+            font_name: font_mono
+            font_size: sp(16) * app.text_scale
+            size_hint_y: None
+            height: dp(40)
+            color: term_fg
+
+        # --- NEW: Theme Toggle Section ---
+        Label:
+            text: "Visual Theme"
+            font_name: font_bold
+            size_hint_y: None
+            height: dp(30)
+            color: term_fg
+
+        TerminalButton:
+            id: theme_btn_id
+            text: f"Current Mode: {app.theme_mode}"
+            size_hint_y: None
+            height: dp(45)
+            on_release: root._toggle_theme(self)
+
+        # --- Master Volume Section ---
+        Label:
+            # FIX: Look at root.current_volume, NOT the slider ID
+            text: f"Master Volume ({int(root.current_volume * 100)}%)"
+            font_name: font_bold
+            size_hint_y: None
+            height: dp(30)
+            color: term_fg
+
+        Slider:
+            id: vol_slider_id
+            min: 0.0
+            max: 1.0
+            step: 0.05
+
+            # FIX: The slider gets its value from root
+            value: root.current_volume
+
+            size_hint_y: None
+            height: dp(40)
+            on_value: root._on_volume_change(self, self.value)
+
+        Button:
+            id: wipe_data_button_id
+            text: "Erase Meta Progress"
+            background_color: 0.8, 0.1, 0.1, 1  # Make it red in the menu too
+            size_hint_y: None
+            height: dp(50)
+            on_release: root.prompt_wipe_data()
+
+        # --- Spacer and Back Button ---
+        Widget:
+            size_hint_y: 0.1
+
+
+        MenuButton:
+            text: "Back to Title"
+            on_release: root._go_back(self)
+
+<MapPopup>:
+    size_hint: 0.9, 0.9
+    auto_dismiss: True
+    map_label: map_label_id
+
+    BoxLayout:
+        orientation: 'vertical'
+        padding: dp(20)
+        spacing: dp(10)
+
+        # Header
+        Label:
+            text: "LEVEL MAP"
+            font_name: app.thematic_font_name
+            font_size: dp(24)
+            size_hint_y: None
+            height: dp(40)
+            color: term_accent
+
+        TerminalPanel:
+            size_hint_y: 1
+            ScrollView:
+                do_scroll_x: True
+                do_scroll_y: True
+                bar_width: dp(10)
+                bar_color: term_fg
+
+                Label:
+                    id: map_label_id
+                    text: root.map_content
+                    font_name: font_mono
+                    font_size: dp(14)
+                    size_hint: None, None
+                    size: self.texture_size
+                    padding: dp(20), dp(20)
+                    markup: True
+                    halign: 'left'
+                    valign: 'top'
+
+        TerminalButton:
+            text: "CLOSE MAP"
+            size_hint_y: None
+            height: dp(50)
+            on_release: root.dismiss()
+

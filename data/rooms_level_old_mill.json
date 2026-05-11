@@ -1,0 +1,185 @@
+{
+    "Mill Approach": {
+        "description": "A crumbling stone path leads through overgrown wildflowers to an abandoned watermill. The massive wheel stands motionless, half-rotted and draped in vines. The mill pond is stagnant and fetid. Broken wooden fencing leans at crazy angles. The ancient structure groans in the wind.",
+        "examine_details": {
+            "waterwheel": "Enormous and ancient, its paddles rotting away. Some planks are missing entirely.",
+            "stagnant pond": "Green scum covers dark water. The smell of decay is overpowering.",
+            "broken fence": "Weathered posts and rails, most fallen or listing dangerously.",
+            "overgrown path": "Wildflowers and weeds have reclaimed the approach, hiding uneven ground."
+        },
+        "exits": {
+            "north": "Mill Ground Floor",
+            "west": "LEVEL_TRANSITION_HUB"
+        },
+        "entry_room": true,
+        "first_entry_text": "The old mill stands before you like a monument to entropy. Its wheel hasn't turned in decades - but something inside is definitely moving.",
+        "furniture": [],
+        "hazards_present": [
+            {
+                "chance": 0.1,
+                "type": "weak_floorboards",
+                "object_name_override": "rotted_footbridge",
+                "support_object_override": "pond_crossing"
+            }
+        ],
+        "items": [],
+        "name": "Mill Approach",
+        "objects": [
+            "waterwheel",
+            "stagnant_pond",
+            "broken_fence"
+        ],
+        "state_flags": {
+            "floor": 0
+        }
+    },
+    "Mill Ground Floor": {
+        "description": "The main floor of the mill. Massive grinding stones sit silent, coated in years of dust. Rotted grain sacks lie scattered, leaking moldy contents. Wooden pillars support the floors above, many visibly warped. A rickety wooden staircase climbs to the upper level. Water seeps through the stone foundation.",
+        "examine_details": {
+            "grinding stones": "Huge millstones, weathered and cracked. One is slightly tilted on its mount.",
+            "grain sacks": "Decomposing burlap bags, their contents turned to powder and mold.",
+            "wooden pillars": "Load-bearing posts, many showing signs of rot and insect damage.",
+            "seeping water": "Groundwater leaking through cracks in the stone floor. It pools in low spots."
+        },
+        "exits": {
+            "south": "Mill Approach",
+            "up": "Upper Millworks",
+            "east": "Storage Annex"
+        },
+        "furniture": [],
+        "hazards_present": [
+            {
+                "type": "gas_leak",
+                "object_name_override": "grain_dust_cloud",
+                "support_object_override": "air",
+                "chance": 0.15
+            },
+            {
+                "type": "leaking_pipe",
+                "object_name_override": "foundation_crack",
+                "support_object_override": "floor"
+            },
+            {
+                "chance": 0.2,
+                "object_name_options": [
+                    "tilted_millstone"
+                ],
+                "support_object_override": "stone_mount",
+                "type": "precarious_object"
+            }
+        ],
+        "items": [],
+        "name": "Mill Ground Floor",
+        "objects": [
+            "grinding_stones",
+            "grain_sacks",
+            "wooden_pillars"
+        ],
+        "state_flags": {
+            "floor": 1
+        }
+    },
+    "Storage Annex": {
+        "description": "A side room where supplies were once kept. Rusted tools hang from pegs on warped wooden walls. Shelves sag under the weight of ancient, unlabeled containers. The ceiling is water-stained and sagging. Something scurries in the shadows.",
+        "examine_details": {
+            "rusted tools": "Sickles, hooks, and hammers - all corroded beyond use.",
+            "sagging shelves": "Wooden planks bowing dangerously. Some have already collapsed.",
+            "old containers": "Ceramic jugs and tin boxes, their contents long since spoiled.",
+            "water-damaged ceiling": "The boards overhead are soft and dark with rot. Dripping constantly."
+        },
+        "exits": {
+            "west": "Mill Ground Floor"
+        },
+        "furniture": [
+            "storage_shelves"
+        ],
+        "hazards_present": [
+            {
+                "type": "unstable_shelf",
+                "object_name_override": "overloaded_storage_shelf",
+                "support_object_override": "wall"
+            }
+        ],
+        "items": [],
+        "name": "Storage Annex",
+        "objects": [
+            "rusted_tools",
+            "old_containers"
+        ],
+        "state_flags": {
+            "floor": 1
+        }
+    },
+    "Upper Millworks": {
+        "description": "The upper working level. Wooden chutes and hoppers once directed grain to the stones below. The floor creaks alarmingly with each step. Gears and pulleys hang from the ceiling, their leather belts cracked and dangling. Daylight streams through gaps in the wooden walls.",
+        "examine_details": {
+            "grain chutes": "Wooden channels, dry and splitting with age.",
+            "ceiling gears": "Drive mechanisms hanging overhead. The mounting beams are splitting.",
+            "cracked belts": "Leather drive belts, most broken and hanging loose.",
+            "wall gaps": "The wooden siding has shrunk and warped, leaving dangerous openings."
+        },
+        "exits": {
+            "down": "Mill Ground Floor",
+            "up": "Mill Loft"
+        },
+        "furniture": [],
+        "hazards_present": [
+            {
+                "type": "weak_floorboards"
+            },
+            {
+                "chance": 0.2,
+                "object_name_options": [
+                    "hanging_gear_assembly"
+                ],
+                "support_object_override": "ceiling_beam",
+                "type": "precarious_object"
+            }
+        ],
+        "items": [],
+        "name": "Upper Millworks",
+        "objects": [
+            "grain_chutes",
+            "ceiling_gears",
+            "cracked_belts"
+        ],
+        "state_flags": {
+            "floor": 2
+        }
+    },
+    "Mill Loft": {
+        "description": "The highest level - a hayloft converted for grain storage. The floor is a patchwork of rotted boards and gaping holes. Exposed rafters show signs of termite damage. A single window provides weak light. And there, trapped against the far wall, pressed beneath a massive falling roof beam - your target!",
+        "examine_details": {
+            "rotted loft floor": "More gaps than boards. You can see all the way down to the ground floor.",
+            "termite-damaged rafters": "The roof supports are riddled with insect galleries. Barely holding.",
+            "falling beam": "A huge roof timber has broken free and is crushing someone against the wall!",
+            "single window": "A small opening, the glass long since broken out."
+        },
+        "exits": {
+            "down": "Upper Millworks"
+        },
+        "first_entry_text": "You burst into the loft. There! Pinned beneath the collapsing roof beam! They're still alive - but barely!",
+        "furniture": [],
+        "hazards_present": [
+            {
+                "type": "weak_floorboards",
+                "chance": 0.3
+            }
+        ],
+        "items": [],
+        "name": "Mill Loft",
+        "objects": [
+            "rotted_loft_floor",
+            "termite_damaged_rafters"
+        ],
+        "special_encounters": {
+            "house_target_encounter": {
+                "trigger": "on_entry",
+                "target_reference": "player.target_name"
+            }
+        },
+        "state_flags": {
+            "floor": 3
+        }
+    }
+}

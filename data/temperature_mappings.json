@@ -1,0 +1,12 @@
+{
+  "normal": 20,
+  "room_temperature": 20,
+  "cold": 5,
+  "cool": 15,
+  "warm": 25,
+  "hot": 35,
+  "freezing": -5,
+  "boiling": 100,
+  "very_cold": 0,
+  "very_hot": 40
+}

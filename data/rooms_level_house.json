@@ -1,0 +1,700 @@
+{
+  "Attic": {
+    "description": "The air in the attic is thick with dust and the suffocating smell of old wood and decay. Cobwebs hang like macabre decorations in the gloom. Moonlight filters weakly through cracks in the boarded-up circular window. Stacks of old boxes and forgotten relics are piled everywhere. You see a sturdy wooden crate in one corner with something pinned to it.",
+    "examine_details": {
+      "boarded-up window": "A circular window, heavily boarded from the inside. Only slivers of moonlight penetrate.",
+      "cobwebs": "Thick, dusty cobwebs hang everywhere, brushing against your face as you move.",
+      "crate": "A sturdy wooden crate. Something seems to be pinned to its lid, and it might contain items.",
+      "old trunk": "A large, dust-covered trunk, possibly locked.",
+      "stack of old boxes": "Piles of cardboard boxes, some collapsing under their own weight. Who knows what's inside?"
+    },
+    "exits": {
+      "down": "Attic Entrance"
+    },
+    "first_entry_text": "The attic is stifling. Every shadow seems to writhe, and the silence is heavy with unspoken secrets.",
+    "forceable": false,
+    "furniture": [
+      {
+        "name": "crate",
+        "description": "A sturdy wooden crate. Something is pinned to its lid.",
+        "is_container": true,
+        "items": [
+          "newspaper_clipping",
+          "deadbolt_key"
+        ]
+      },
+      {
+        "name": "stack_of_old_boxes",
+        "description": "Piles of cardboard boxes, some collapsing under their own weight. Who knows what's inside?"
+      },
+      {
+        "name": "old_trunk",
+        "description": "A large, dust-covered trunk, possibly locked.",
+        "locked": true,
+        "is_container": true,
+        "is_narrative_container": true,
+        "capacity": 2,
+        "items": [
+          "photo_of_kimberly_corman"
+        ],
+        "unlocks_with":"storage_room_key"
+      }
+    ],
+    "hazards_present": [
+      {
+        "chance": 0.15,
+        "object_name_options": [
+          "unstable_stack_of_boxes"
+        ],
+        "support_object_override": "stack_of_old_boxes",
+        "type": "precarious_object"
+      },
+      {
+        "chance": 0.1,
+        "object_name_override": "rotting_beam",
+        "support_object_override": "ceiling",
+        "type": "unstable_shelf"
+      },
+      {
+        "chance": 0.2,
+        "type": "weak_floorboards"
+      }
+    ],
+    "items": [],
+    "locked": true,
+    "unlocks_with": "attic_key",
+    "name": "Attic",
+    "objects": [
+      "boarded-up window",
+      "cobwebs"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "crate_interactions": 0,
+      "floor": 2,
+      "has_newspaper_clipping": true
+    }
+  },
+  "Attic Entrance": {
+    "description": "A dark, square opening in the hallway ceiling. A rickety wooden ladder hangs down slightly, disappearing into the oppressive darkness above. It's secured with a heavy-looking padlock near the top.",
+    "examine_details": {
+      "padlock": "A heavy, rust-covered padlock. It looks very sturdy.",
+      "rickety wooden ladder": "The ladder looks old and unstable. Best to be careful if you manage to get up there."
+    },
+    "exits": {
+      "down": "Upstairs Hallway",
+      "up": "Attic"
+    },
+    "furniture": [],
+    "hazards_present": [],
+    "items": [],
+    "name": "Attic Entrance",
+    "objects": [
+      "padlock",
+      "rickety wooden ladder"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 2
+    }
+  },
+  "Back Porch": {
+    "description": "A crumbling concrete porch overlooking an overgrown backyard. The house groans behind you. Through the chain-link fence, you can see the street — and a demolition crane looming over the property.",
+    "first_entry_text": "You step outside into the cold air. The sound of heavy machinery fills the yard. A massive wrecking ball swings lazily from a crane overhead, aimed directly at the house.",
+    "locked": true,
+    "unlocks_with": "deadbolt_key",
+    "exits": {
+        "north": "Kitchen",
+        "leave": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "hazards_present": ["wrecking_ball"],
+    "objects": [
+        {
+            "name": "demolition crane",
+            "description": "A towering yellow crane with a wrecking ball suspended from its cable. It's positioned to demolish this house."
+        },
+        {
+            "name": "chain-link fence",
+            "description": "A rusted chain-link fence separating the backyard from the street. Too tall to climb."
+        }
+    ],
+    "furniture": [],
+    "floor": 1,
+    "items": [],
+    "forceable": true,
+    "force_threshold": 15,
+    "forceable_text": "The back door is locked tight with a deadbolt. You might be able to force it open, but it would take some effort and make a lot of noise."
+  },
+  "Basement Stairs": {
+    "description": "Steep, narrow wooden stairs descend into pitch darkness. The air grows significantly colder and damper as you peer down. A heavy padlock secures a bolt on the door at the bottom.",
+    "examine_details": {
+      "padlock on door": "A sturdy padlock secures the door leading further into the basement.",
+      "stairs": "The wooden steps are slick with damp and look dangerously worn."
+    },
+    "exits": {
+      "up": "Foyer",
+      "down": "Main Basement Area"
+    },
+    "furniture": [],
+    "hazards_present": [
+      {
+        "object_name_override": "rickety_stairs",
+        "support_object_override": "stairwell",
+        "type": "collapsing_stairs"
+      }
+    ],
+    "items": [],
+    "name": "Basement Stairs",
+    "objects": [
+      "stairs",
+      "padlock_on_door"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 2
+    }
+  },
+  "Bathroom": {
+    "description": "The air is thick with the stench of mildew and stagnant water. A cracked mirror hangs precariously above a stained sink. The bathtub is coated in grime. The medicine cabinet hangs slightly open, revealing empty shelves.",
+    "examine_details": {
+      "cracked mirror": "The mirror is cracked and discolored, reflecting a distorted version of the room... and you.",
+      "grimy bathtub": "A thick layer of grime coats the tub. You'd rather not touch it.",
+      "medicine cabinet": "Hangs crookedly, its door ajar. Might contain old medication or toiletries.",
+      "stained sink": "The porcelain is stained yellow and brown. A constant drip emanates from the faucet."
+    },
+    "exits": {
+      "east": "Upstairs Hallway"
+    },
+    "furniture": [
+      {
+        "name": "medicine_cabinet",
+        "description": "A decrepit old medicine cabinet. Might have something useful inside.",
+        "capacity":1,
+        "is_container":true,
+        "locked": false,
+        "allowed_item_tags": ["medical", "bathroom"],
+        "items": []
+      },
+      "toilet"
+    ],
+    "hazards_present": [
+      {
+        "chance": 0.2,
+        "type": "weak_floorboards"
+      },
+      {
+        "chance": 0.15,
+        "object_name_override": "leaky_sink_pipe",
+        "support_object_override": "stained_sink",
+        "type": "leaking_pipe"
+      }
+    ],
+    "items": [],
+    "name": "Bathroom",
+    "objects": [
+      "cracked_mirror",
+      "stained_sink",
+      "grimy_bathtub"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 2
+    }
+  },
+  "Dining Room": {
+    "description": "A long, mahogany dining table stands as the centerpiece, draped with a moth-eaten lace cloth. Ghostly outlines in the thick dust suggest where plates and silverware once sat. Cobwebs cling to the ornate, empty chairs like macabre decorations. A tall, dark wood cupboard stands against one wall, its doors slightly ajar.",
+    "examine_details": {
+      "cupboard": "A tall, dark cupboard. Its doors are slightly open, revealing shadowy recesses within. Might contain old silverware or... other things.",
+      "dining table": "The polished surface of the mahogany table is barely visible under the dust. It's set for a meal that never happened.",
+      "moth-eaten cloth": "A once-fine lace tablecloth, now yellowed and riddled with holes.",
+      "ornate chairs": "High-backed chairs, intricately carved but now frail and draped in cobwebs."
+    },
+    "exits": {
+      "south": "Kitchen",
+      "west": "Foyer"
+    },
+    "furniture": [
+        {
+        "name": "cupboard",
+        "description": "A large, dust-covered cupboard, possibly locked.",
+        "capacity":1,
+        "is_container":true,
+        "locked": false,
+        "items": [
+        ]
+      },
+      "cupboard"
+    ],
+    "hazards_present": [
+      {
+        "chance": 0.15,
+        "object_name_override": "cupboard_shelf",
+        "support_object_override": "cupboard",
+        "type": "unstable_shelf"
+      },
+      {
+        "chance": 0.1,
+        "type": "weak_floorboards"
+      }
+    ],
+    "items": [],
+    "name": "Dining Room",
+    "objects": [
+      "dining_table",
+      "ornate_chairs",
+      "moth_eaten_cloth"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 2
+    }
+  },
+  "Foyer": {
+    "description": "You step into a grand, yet decaying foyer. Dust motes dance in the slivers of light piercing the grime-coated windows. A massive, tarnished crystal chandelier hangs precariously overhead. A wide staircase, its banister chipped and warped, ascends to the upper floor. To the west, a shadowed archway leads to a living room, and to the east, a formal dining room. A door to the south seems to lead to the basement stairs.",
+    "examine_details": {
+      "coat rack": "An old-fashioned coat rack stands empty, save for a few cobwebs.",
+      "dusty table": "A heavy wooden table covered in a thick layer of dust. Perfect for hiding small items.",
+      "grime-coated windows": "Years of dirt obscure the view outside, casting the foyer in perpetual twilight.",
+      "tarnished chandelier": "This once magnificent chandelier is now coated in grime and sways dangerously with every draft. It looks like it could fall at any moment.",
+      "wide staircase": "The main staircase looks impressive but parts of its banister are broken, and the wood is warped."
+    },
+    "exits": {
+      "east": "Dining Room",
+      "outside": "Front Porch",
+      "south": "Basement Stairs",
+      "north": "Library",
+      "upstairs": "Upstairs Hallway",
+      "west": "Living Room"
+    },
+    "first_entry_text": "The silence inside is profound, broken only by the creak of the floorboards underfoot. The smell of dust and decay is thick in the air.",
+    "furniture": [],
+    "hazards_present": [],
+    "items": [],
+    "is_locked": true,
+    "unlocks_with": "bludworths_house_key",
+    "name": "Foyer",
+    "objects": [
+      "tarnished_chandelier",
+      "grime-coated_windows",
+      "wide_staircase"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 2
+    }
+  },
+  "Front Porch": {
+    "description": "The rotted wooden porch creaks under your feet. The front door, a heavy oak scarred by time, stands before you. It's firmly shut. A chilling breeze whispers through the overgrown ivy clinging to the decaying facade.",
+    "entry_room": true,
+    "examine_details": {
+      "broken rocking chair": "A splintered old rocking chair. It sways gently, though there's no wind.",
+      "decaying facade": "The house's exterior is crumbling, paint peeling like sunburnt skin.",
+      "front door": "A massive oak door, reinforced with iron bands. It's clearly locked. There's a large, ornate keyhole.",
+      "overgrown ivy": "Thick, dark ivy chokes the walls, its tendrils like grasping fingers."
+    },
+    "exits": {
+      "inside": "Foyer"
+    },
+    "first_entry_text": "The air here feels heavy, expectant. Stepping onto the porch feels like crossing a threshold into somewhere truly unwelcoming.",
+    "furniture": [
+      "broken_rocking_chair"
+    ],
+    "hazards_present": ["stray_cat"],
+    "items": [],
+    "locking": {
+      "locked": true,
+      "unlocks_with": "bludworths_house_key"
+    },
+    "name": "Front Porch",
+    "npc_slots": 1,
+    "objects": [
+      "overgrown_ivy",
+      "decaying_facade",
+      "front_door"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 1
+    }
+  },
+  "Guest Bedroom": {
+    "description": "A small, spartan bedroom. A single metal-frame bed is covered with a stained mattress. The air is stale. A child's toy, a red SUV, sits forlornly on the floor near the window.",
+    "examine_details": {
+      "single bed": "A simple bed with a thin, stained mattress. Not much to see, but something could be hidden underneath.",
+      "toy red suv": "A small, plastic red SUV toy car, scratched and missing a wheel. It looks eerily familiar..."
+    },
+    "exits": {
+      "north": "Upstairs Hallway"
+    },
+    "furniture": [
+      "single_bed"
+    ],
+    "hazards_present": [],
+    "items": [],
+    "name": "Guest Bedroom",
+    "objects": [
+      "toy_red_suv"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 2
+    }
+  },
+  "Guest Bedroom 2": {
+    "description": "This room was clearly once a study or office. A large, cluttered desk is covered in yellowed papers and strange, unsettling diagrams. An old camera rests on one corner of the desk. The room feels cold.",
+    "examine_details": {
+      "camera": "An older model camera rests on the desk, a layer of dust covering its cracked lens. It might still have photos inside.",
+      "cluttered desk": "Papers, books, and strange instruments are piled high on this desk. A thorough search might yield something.",
+      "strange diagrams": "Sheets of paper covered in complex, unsettling diagrams and equations. They seem to depict sequences of events, ending in gruesome outcomes."
+    },
+    "exits": {
+      "west": "Upstairs Hallway"
+    },
+    "furniture": [
+      "cluttered_desk"
+    ],
+    "items": [],
+    "name": "Guest Bedroom 2",
+    "objects": [
+      "strange_diagrams",
+      "camera"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 2
+    }
+  },
+  "Upstairs Hallway": {
+    "description": "The upstairs hallway is oppressively silent. Faded, peeling wallpaper depicts unsettling pastoral scenes. Moonlight spills through a grimy window at the far end, illuminating dancing dust motes. Doors lead to several bedrooms and a bathroom. A dark, square opening in the ceiling suggests an attic entrance.",
+    "examine_details": {
+      "grimy window": "A tall window at the end of the hall, so dirty that it barely lets in any light.",
+      "peeling wallpaper": "The wallpaper is discolored and peeling, revealing dark stains underneath. The pastoral scenes seem to mock the house's decay.",
+      "small table": "A rickety table, perhaps holding a forgotten trinket."
+    },
+    "exits": {
+      "downstairs": "Foyer",
+      "east": "Guest Bedroom 2",
+      "north": "Master Bedroom",
+      "south": "Guest Bedroom",
+      "up": "Attic Entrance",
+      "west": "Bathroom"
+    },
+    "furniture": [
+      "small_table"
+    ],
+    "items": [],
+    "name": "Upstairs Hallway",
+    "objects": [
+      "peeling_wallpaper",
+      "grimy_window"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 1
+    }
+  },
+  "Kitchen": {
+    "description": "The kitchen is a scene of utter chaos. Broken plates crunch underfoot, and scattered utensils litter the floor. Greasy pots and pans are piled in a stained sink. The back door is heavily boarded up from the inside. A faint, unpleasant smell – gas? – hangs in the air, mingling with the stench of decay. Exposed wires spark near the sink. A grimy trash can sits in the corner.",
+    "examine_details": {
+      "deadbolted back door": "The back door is locked tight with one of those deadbolts that needs a key from both sides. Escape this way seems impossible right now.",
+      "boarded window": "Heavy wooden planks cover the window frame, nailed securely from the inside. It would take considerable force to break through.",
+      "dirty sink": "A grimy, stained sink piled high with dirty dishes. Exposed wires spark dangerously near the faucet. You catch a whiff of gas.",
+      "kitchen counter": "Covered in grime and old food stains. Some drawers might still hold secrets.",
+      "shelves": "Rickety wooden shelves, laden with dusty jars and tins. They don't look very stable.",
+      "trash can": "An overflowing kitchen trash can, reeking of old food and something faintly metallic. Might be worth a look, if you dare."
+    },    
+    "exits": {
+      "north": "Dining Room",
+      "south": "Back Porch"
+    },
+    "furniture": [
+      "kitchen_counter",
+      "shelves",
+      "trash_can",
+      "dirty_sink"
+    ],
+    "hazards_present": [
+      "gas_leak"
+    ],
+    "items": [],
+    "name": "Kitchen",
+    "objects": [
+      "broken_plates",
+      "scattered_utensils",
+      "boarded_window",
+      "deadbolted_back_door"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 1
+    }
+  },
+  "Library": {
+    "description": "Towering bookshelves line the walls, filled with crumbling, leather-bound books, many spilling onto the floor. A large, imposing oak desk sits in the center, its surface cluttered with papers and a book left open. The air smells of decaying paper and dust.",
+    "examine_details": {
+      "bookshelves": "Floor-to-ceiling bookshelves, packed tightly. Some shelves sag precariously under the weight.",
+      "cluttered papers": "Scattered notes, journals, and strange diagrams cover the desk and floor. Some might contain valuable information.",
+      "crumbling books": "Ancient tomes, their pages yellowed and brittle. Many look like they haven't been touched in decades.",
+      "large desk": "A heavy oak desk, its drawers potentially hiding secrets or useful items."
+    },
+    "exits": {
+      "south": "Foyer"
+    },
+    "first_entry_text": "The scent of old paper and forgotten knowledge hangs heavy here. This room feels like the heart of the house's secrets.",
+    "furniture": [
+      "bookshelves",
+      "large_desk"
+    ],
+    "hazards_present": [],
+    "items": [],
+    "name": "Library",
+    "objects": [
+      "crumbling_books",
+      "cluttered_papers"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 1
+    }
+  },
+  "Living Room": {
+    "name": "Living Room",
+    "description": "Dusty sheets cover most of the furniture. A large, cold fireplace dominates one wall, stained black with soot. The hearth is filled with ash. An worn armchair and tattered sofa sit beneath protective covers.",
+    "examine_details": {
+      "dusty sheets": "Old sheets thrown over furniture to protect them from dust and time.",
+      "fireplace": "A large, cold fireplace, stained black with soot. The hearth is filled with ash. One of the bricks seems loose.",
+      "tattered sofa": "The sofa has seen better days, its fabric worn and faded beneath the protective covering.",
+      "worn armchair": "An old armchair that has seen better days, now covered with a dusty sheet."
+    },
+    "exits": {
+      "east": "Foyer"
+    },
+    "furniture": [
+      {
+        "name": "fireplace",
+        "description": "A cold, dark fireplace. The mantelpiece is bare except for a thick layer of dust.",
+        "is_container": true,
+        "capacity": 1,
+        "special_lid_item": "loose_brick",
+        "items": [
+          "loose_brick"
+        ]
+      },
+      {
+        "name": "fireplace_cavity",
+        "description": "A dark, empty space within the fireplace where a loose brick has been removed.",
+        "is_hidden_container": true,
+        "revealed_by_lid": "loose_brick",
+        "revealed_by_flag": "fireplace_cavity_revealed",
+        "items": [
+        ]
+      }
+    ],
+    "items": [
+      {
+        "name": "loose_brick",
+        "is_lid": true,
+        "covers": "fireplace_cavity",
+        "description": "A loose brick in the fireplace. It looks like it could be pulled free.",
+        "takeable": true
+      }
+    ],
+    "objects": [
+      "dusty_sheets"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "fireplace_cavity_revealed": false,
+      "floor": 1,
+      "loose_brick_taken": false
+    }
+  },
+  "Main Basement Area": {
+    "description": "You step onto a cold, damp concrete floor. The air is heavy with the smell of mildew and earth. Pipes groan ominously overhead, dripping water intermittently. A single, bare bulb flickers weakly, casting long, dancing shadows. A sturdy workbench covered in rusty tools stands against one wall. To the south, a warped wooden door leads to a storage room.",
+    "examine_details": {
+      "dripping_pipes": "Rusty pipes run along the ceiling, weeping water and staining the concrete below.",
+      "flickering_bulb": "A single bare bulb, its light stuttering and unreliable. The wiring looks ancient.",
+      "rusty_tools": "A collection of old, rusted tools lies scattered on the workbench and floor.",
+      "shelves": "Damp, wooden shelves line one wall, sagging under the weight of forgotten junk.",
+      "workbench": "A heavy wooden workbench, stained and scarred from years of use. Its drawers might hold something."
+    },
+    "exits": {
+      "south": "Storage Room",
+      "up": "Basement Stairs"
+    },
+    "locked": true,
+    "unlocks_with": "basement_key",
+    "first_entry_text": "The basement is cold and oppressive. The air is thick with the smell of decay.",
+    "furniture": [
+      {
+        "name": "workbench",
+        "description": "A heavy wooden workbench, stained and scarred from years of use. Its drawers might hold something.",
+        "is_container": true,
+        "capacity": 2
+      },
+      {
+        "name": "metal_shelves",
+        "description": "Tall, metal shelves lined with dusty jars, boxes, and forgotten tools. Something glints between the clutter."
+      }
+    ],
+    "hazards_present": [
+      {        
+        "chance": 0.1,
+        "object_name_override": "flickering bulb wiring",
+        "support_object_override": "flickering bulb",
+        "type": "faulty_wiring"
+      },
+      {
+        "chance": 0.1,
+        "object_name_override": "damp concrete patch",
+        "support_object_override": "floor",
+        "type": "weak_floorboards"
+      },
+      {
+        "chance": 0.1,
+        "object_name_options": [
+          "loose pipe fitting"
+        ],
+        "support_object_override": "dripping pipes",
+        "type": "precarious_object"
+      },
+      {
+        "chance": 0.1,
+        "support_object_override": "dripping pipes",
+        "type": "leaking_pipe"
+      }
+    ],
+    "items": [],
+    "name": "Main Basement Area",
+    "objects": [
+      "dripping_pipes",
+      "flickering_bulb",
+      "rusty_tools"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 2
+    }
+  },
+  "Master Bedroom": {
+    "description": "A massive four-poster bed dominates the room, its velvet curtains ripped and faded, casting long shadows. A thick layer of dust covers everything. An ornate dresser stands against one wall, and a large desk sits near the window. An old ceiling fan hangs motionless overhead, its chains dangling.",
+    "examine_details": {
+      "ceiling_fan_with_chains": "An old ceiling fan hangs overhead, coated in dust. Two chains dangle from it. Frayed wiring is visible near its base, and it looks very unsteady. Probably best not to touch it.",
+      "dresser": "A tall dresser with multiple drawers for clothes... or other things.",
+      "four-poster_bed": "A grand bed, though now shrouded in dust. The space underneath is dark and could hide something.",
+      "large_desk": "A writing desk with several drawers, some of which might be locked.",
+      "nightstand": "A small table beside the bed, its drawer slightly ajar."
+    },
+    "exits": {
+      "south": "Upstairs Hallway"
+    },
+    "furniture": [      
+      {
+        "name": "large_desk",
+        "description": "A large, dust-covered desk, possibly locked.",
+        "is_container": true,
+        "capacity": 1,
+        "locked": false,
+        "items": [
+        ]
+      },
+      "four_poster_bed",
+      "nightstand",
+      "dresser"
+    ],
+    "hazards_present": [
+      {
+        "object_name_override": "ceiling_fan_with_chains",
+        "support_object_override": "ceiling",
+        "type": "wobbling_ceiling_fan"
+      },
+      {
+        "chance": 0.1,
+        "type": "weak_floorboards"
+      }
+    ],
+    "items": [],
+    "name": "Master Bedroom",
+    "objects": [
+      "ceiling_fan_with_chains"
+    ],
+    
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": 2
+    }
+  },
+  "Storage Room": {
+    "description": "A cramped, windowless storage room. The air is stagnant and smells faintly of chemicals. Wooden shelves line the walls, crammed with dusty jars, forgotten equipment, and cobweb-covered boxes. You feel an intense sense of dread in here. There's a sturdy locked cabinet against the back wall.",
+    "examine_details": {
+      "dusty_jars": "Rows of jars containing unidentifiable substances, coated in a thick layer of dust.",
+      "locked_cabinet": "A metal cabinet, firmly locked. It might contain something valuable or dangerous.",
+      "old_trunk": "A heavy, old-fashioned trunk, secured with a rusty lock.",
+      "shelves": "These shelves are packed to breaking point with miscellaneous junk. They look ready to topple."
+    },
+    "exits": {
+      "north": "Main Basement Area"
+    },
+    "first_entry_text": "This small room feels suffocating. The silence is unnerving.",
+    "furniture": [
+            {
+        "name": "old_trunk",
+        "description": "A large, dust-covered trunk, possibly locked.",
+        "locked": true,
+        "capacity":2, 
+        "items": [],
+        "unlocks_with":"storage_room_key"
+      },
+      "shelves",
+      "locked_cabinet"
+    ],
+    "hazards_present": [
+      {
+        "chance": 0.2,
+        "type": "unstable_shelf"
+      },
+      {
+        "chance": 0.15,
+        "object_name_options": [
+          "box_of_old_chemicals"
+        ],
+        "support_object_override": "shelves",
+        "type": "precarious_object"
+      },
+      {
+        "chance": 0.1,
+        "object_name_options": [
+          "ancient_electrical_device"
+        ],
+        "support_object_override": "shelves",
+        "type": "faulty_wiring"
+      }
+    ],
+    "items": [],
+    "locked": true,
+    "unlocks_with": "storage_room_key",
+    "objects": [
+      "dusty_jars"
+    ],
+    "state_descriptions": {},
+    "state_examine_details": {},
+    "state_flags": {
+      "floor": -1
+    }
+  }
+}

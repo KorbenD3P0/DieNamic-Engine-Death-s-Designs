@@ -1,0 +1,159 @@
+{
+  "Vet Clinic Reception": {
+    "name": "Vet Clinic Reception",
+    "description": "The reception desk is unmanned. A nameplate reads the name of the person you are looking for. A half-drunk coffee cup is still warm. Somewhere in the back, something knocks over.",
+    "first_entry_text": "The front door swings open under your hand - unlocked. The bell above it chimes.\n\nSomewhere deeper in the building, a door slams.",
+    "entry_room": true,
+    "exits": {
+      "east": "Exam Room",
+      "north": "Supply Corridor",
+      "south": {
+        "target": "LEVEL_TRANSITION_HUB"
+      }
+    },
+    "furniture": [
+      {
+        "name": "Reception Desk",
+        "description": "Standard laminate desk. A drawer is slightly open.",
+        "is_container": true,
+        "locked": false,
+        "items": [
+          "camera",
+          "flashlight"
+        ]
+      }
+    ],
+    "hazards_present": [
+      "precarious_water_cup",
+      "deaths_breath"
+    ],
+    "objects": [
+      {
+        "name": "Nameplate",
+        "description": "The nameplate reads the name of the person you came here for. They were here minutes ago."
+      },
+      {
+        "name": "Coffee Cup",
+        "description": "Still warm. Whoever left this left in a hurry."
+      },
+      {
+        "name": "Wall Calendar",
+        "description": "Today is circled in red. Below it, in small handwriting: 'Don't be alone today.'"
+      }
+    ],
+    "items": [],
+    "npc_slots": 2
+  },
+  "Exam Room": {
+    "name": "Exam Room",
+    "description": "A sterile exam room with a stainless steel table. Locked drug cabinet on the wall. The smell of antiseptic is sharp. The cabinet's lock looks like it was recently forced.",
+    "exits": {
+      "west": "Vet Clinic Reception"
+    },
+    "furniture": [
+      {
+        "name": "Drug Cabinet",
+        "description": "A heavy steel cabinet with a reinforced lock. It hangs open - someone got here before you. Two labeled vials remain inside.",
+        "is_container": true,
+        "locked": false,
+        "items": [
+          "vet_sedatives",
+          "adrenaline"
+        ]
+      },
+      {
+        "name": "Exam Table",
+        "description": "Stainless steel table with paper crinkled across it - someone was sitting here recently.",
+        "is_container": false
+      }
+    ],
+    "hazards_present": [
+      "malfunctioning_ventilator",
+      "oxygen_tank"
+    ],
+    "objects": [
+      {
+        "name": "Medical Posters",
+        "description": "Anatomical diagrams of dogs and cats. Someone has drawn an X over one of the figures with a red marker."
+      },
+      {
+        "name": "Biohazard Bin",
+        "description": "A red biohazard disposal container. Full."
+      }
+    ],
+    "items": [
+      "scalpel",
+      "bandages"
+    ],
+    "npc_slots": 1
+  },
+  "Supply Corridor": {
+    "name": "Supply Corridor",
+    "description": "A long narrow corridor connecting the clinic to the adjoining industrial storage building. The walls are institutional beige. One of the fluorescent lights flickers in a slow, rhythmic pattern.",
+    "exits": {
+      "south": "Vet Clinic Reception",
+      "north": "Industrial Storage"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "faulty_wiring",
+      "weak_floorboards"
+    ],
+    "objects": [
+      {
+        "name": "Flickering Light",
+        "description": "The fluorescent tube buzzes and dims in a metronomic pattern, like a heartbeat."
+      },
+      {
+        "name": "Service Door",
+        "description": "A heavy door leading to the industrial section. Propped open with a folded piece of paper."
+      }
+    ],
+    "items": [],
+    "lighting": "dim"
+  },
+  "Industrial Storage": {
+    "name": "Industrial Storage",
+    "description": "A massive echoing warehouse space attached to the clinic for bulk supply storage. Shipping crates are stacked dangerously high. An emergency medical station is bolted to the far wall. The smell of cardboard and industrial cleaner.",
+    "exits": {
+      "south": "Supply Corridor"
+    },
+    "furniture": [
+      {
+        "name": "Emergency Medical Station",
+        "description": "A bright red wall-mounted cabinet marked EMERGENCY - AED. Unlatched.",
+        "is_container": true,
+        "locked": false,
+        "items": [
+          "defibrillator_pads",
+          "first_aid_kit"
+        ]
+      },
+      {
+        "name": "Foreman's Lockbox",
+        "description": "A heavy steel lockbox on a shelf. Combination lock, but the combination is written on a sticky note on the shelf above it. Someone trusted that no one would look.",
+        "is_container": true,
+        "locked": false,
+        "items": [
+          "warehouse_key"
+        ]
+      }
+    ],
+    "hazards_present": [
+      "falling_scaffolding",
+      "unstable_shelf"
+    ],
+    "objects": [
+      {
+        "name": "Shipping Crates",
+        "description": "Stacked to the ceiling. Some of them are leaning at angles that defy physics."
+      },
+      {
+        "name": "Sticky Note",
+        "description": "On the shelf above the lockbox: '4-7-9-2'. Someone really trusted in security by obscurity."
+      }
+    ],
+    "items": [],
+    "npc_slots": 1
+  }
+}

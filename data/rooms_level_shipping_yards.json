@@ -1,0 +1,173 @@
+{
+    "Shipping Yard Gate": {
+        "description": "A rusted chain-link fence surrounds an abandoned industrial shipping yard. The gate hangs open, one hinge broken. Cracked asphalt stretches ahead, weeds pushing through everywhere. Rows of stacked shipping containers create a rusted maze. The smell of oil and rust hangs heavy.",
+        "examine_details": {
+            "chain-link fence": "Rusted fencing topped with coiled barbed wire, much of it sagging or torn.",
+            "broken gate": "A sliding gate hanging at an angle, one wheel off its track.",
+            "cracked asphalt": "The pavement is buckled and split, puddles of oily water in every depression.",
+            "shipping containers": "Towering stacks of rusted metal boxes in faded colors."
+        },
+        "exits": {
+            "north": "Container Maze",
+            "east": "LEVEL_TRANSITION_HUB"
+        },
+        "entry_room": true,
+        "first_entry_text": "The abandoned shipping yard sprawls before you like a metal graveyard. Warning signs about hazardous materials are faded but still visible.",
+        "furniture": [],
+        "hazards_present": [],
+        "items": [],
+        "name": "Shipping Yard Gate",
+        "objects": [
+            "chain_link_fence",
+            "broken_gate",
+            "shipping_containers"
+        ],
+        "state_flags": {
+            "floor": 0
+        }
+    },
+    "Container Maze": {
+        "description": "Narrow passages between towering stacks of shipping containers. Some lean precariously, their corners dented from impacts. Pools of chemical-tainted water reflect the rust above. Graffiti covers many surfaces. The containers creak and groan as metal expands in the heat.",
+        "examine_details": {
+            "leaning containers": "Multiple-ton metal boxes stacked haphazardly. Some look ready to topple.",
+            "chemical pools": "Rainbow-sheened water puddles. The fumes make your eyes water.",
+            "graffiti": "Spray-painted warnings: 'KEEP OUT' and 'DANGER - UNSTABLE'.",
+            "creaking metal": "The entire maze of containers shifts and settles with unnerving sounds."
+        },
+        "exits": {
+            "south": "Shipping Yard Gate",
+            "east": "Loading Dock",
+            "north": "Warehouse Entrance"
+        },
+        "furniture": [],
+        "hazards_present": [
+            {
+                "chance": 0.25,
+                "object_name_options": [
+                    "precariously_stacked_container"
+                ],
+                "support_object_override": "container_stack",
+                "type": "precarious_object"
+            }
+        ],
+        "items": [],
+        "name": "Container Maze",
+        "objects": [
+            "leaning_containers",
+            "chemical_pools",
+            "graffiti"
+        ],
+        "state_flags": {
+            "floor": 1
+        }
+    },
+    "Loading Dock": {
+        "description": "A concrete loading platform, cracked and stained with decades of spills. A rusty overhead crane hangs motionless above. Exposed electrical conduits spark occasionally. Heavy chains and hooks dangle at various heights. The smell of diesel and decay is overwhelming.",
+        "examine_details": {
+            "overhead crane": "A massive metal structure with a rusted hook. Its cables look frayed.",
+            "sparking conduits": "Exposed electrical wiring running along the ceiling. Dangerous.",
+            "loading platform": "Crumbling concrete with deep cracks and dark stains.",
+            "hanging chains": "Heavy industrial chains suspended from the crane. Some hang at head level."
+        },
+        "exits": {
+            "west": "Container Maze"
+        },
+        "furniture": [],
+        "hazards_present": [
+            {
+                "type": "faulty_wiring",
+                "object_name_override": "exposed_power_conduit",
+                "support_object_override": "ceiling"
+            },
+            {
+                "chance": 0.2,
+                "object_name_options": [
+                    "crane_hook_assembly"
+                ],
+                "support_object_override": "overhead_crane",
+                "type": "precarious_object"
+            }
+        ],
+        "items": [],
+        "name": "Loading Dock",
+        "objects": [
+            "overhead_crane",
+            "sparking_conduits",
+            "hanging_chains"
+        ],
+        "state_flags": {
+            "floor": 1
+        }
+    },
+    "Warehouse Entrance": {
+        "description": "The entrance to a cavernous warehouse. Rusted rollup doors are jammed halfway open. Inside, dim emergency lighting flickers. You can smell gas - there's definitely a leak somewhere. Water drips from pipes overhead. Metal shelving units tower into darkness.",
+        "examine_details": {
+            "jammed rollup doors": "Industrial doors stuck partially open, their mechanisms seized.",
+            "flickering emergency lights": "Battery-powered lighting, most units failing or dead.",
+            "dripping pipes": "Overhead plumbing, some leaking  water, others... something else.",
+            "smell of gas": "Unmistakable odor of natural gas. There's a leak nearby."
+        },
+        "exits": {
+            "south": "Container Maze",
+            "in": "Warehouse Interior"
+        },
+        "furniture": [],
+        "hazards_present": [
+            {
+                "type": "gas_leak"
+            }
+        ],
+        "items": [],
+        "name": "Warehouse Entrance",
+        "objects": [
+            "jammed_rollup_doors",
+            "flickering_emergency_lights",
+            "dripping_pipes"
+        ],
+        "state_flags": {
+            "floor": 1
+        }
+    },
+    "Warehouse Interior": {
+        "description": "Inside the warehouse proper. Massive industrial shelving units create corridors of shadow. Forgotten crates are stacked haphazardly. The gas smell is stronger here. Emergency lights cast everything in sickly yellow. And there - collapsed under a fallen shelf unit - a figure struggles weakly!",
+        "examine_details": {
+            "industrial shelving": "Twenty-foot-tall metal racks, many leaning at dangerous angles.",
+            "forgotten crates": "Wooden boxes and pallets, their contents unknown and potentially hazardous.",
+            "fallen shelf": "A massive shelving unit has toppled, pinning someone beneath!",
+            "emergency lighting": "Weak yellow lights swinging from sparking wires."
+        },
+        "exits": {
+            "out": "Warehouse Entrance"
+        },
+        "first_entry_text": "You rush into the warehouse. There! Trapped under the collapsed shelving unit! The gas leak is directly above them!",
+        "furniture": [],
+        "hazards_present": [
+            {
+                "type": "unstable_shelf",
+                "object_name_override": "towering_industrial_rack",
+                "support_object_override": "floor"
+            },
+            {
+                "type": "faulty_wiring",
+                "object_name_override": "exposed_emergency_light_wiring",
+                "support_object_override": "ceiling"
+            }
+        ],
+        "items": [],
+        "name": "Warehouse Interior",
+        "objects": [
+            "industrial_shelving",
+            "forgotten_crates",
+            "emergency_lighting"
+        ],
+        "special_encounters": {
+            "level_house_target_encounter": {
+                "trigger": "on_entry",
+                "target_reference": "player.target_name"
+            }
+        },
+        "state_flags": {
+            "floor": 1
+        }
+    }
+}

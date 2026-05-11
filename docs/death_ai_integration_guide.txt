@@ -1,0 +1,568 @@
+# Death AI Integration Guide
+**Version:** 1.0  
+**Last Updated:** 2025-11-06  
+**Component:** DeathAI Cheating Detection & Adaptive Difficulty
+
+---
+
+## Overview
+
+This guide shows how to integrate the new DeathAI features:
+1. **Cheating Detection** - Detects save scumming, infinite items, invulnerability, room skipping
+2. **Adaptive Difficulty** - Automatically adjusts challenge based on player performance
+
+---
+
+## Integration Points
+
+### 1. Save/Load System Integration
+
+**When player loads a save, call:**
+```python
+# In GameLogic.load_game() or wherever saves are loaded
+def load_game(self, save_file):
+    # ... existing load logic ...
+    
+    # Notify Death AI about save load
+    if self.death_ai:
+        self.death_ai.on_save_loaded()
+    
+    # ... rest of load logic ...
+```
+
+**What it does:**
+- Tracks reload timestamps
+- Detects if player reloads >5 times in 10 minutes
+- Triggers "save scumming" punishment (harder hazards, +30% fear, Death taunts)
+
+---
+
+### 2. Item System Integration
+
+**When player takes an item, call:**
+```python
+# In GameLogic.handle_take() or item pickup logic
+def handle_take(self, item_key):
+    current_room = self.player.get('location', '')
+    
+    # ... existing take logic ...
+    
+    # Notify Death AI about item taken
+    if self.death_ai and current_room:
+        self.death_ai.on_item_taken(item_key, current_room)
+    
+    # ... rest of take logic ...
+```
+
+**What it does:**
+- Tracks item_id + room_id combinations
+- Detects if same item taken >3 times from same room
+- Triggers "infinite items" punishment (item removed, Death warns)
+
+---
+
+### 3. Damage System Integration
+
+**When player takes damage, call:**
+```python
+# In GameLogic.apply_damage() or wherever HP is reduced
+def apply_damage(self, damage_amount):
+    old_hp = self.player.get('hp', 100)
+    
+    # Apply damage
+    self.player['hp'] = max(0, old_hp - damage_amount)
+    
+    # Notify Death AI about damage taken
+    if self.death_ai and damage_amount > 0:
+        self.death_ai.on_damage_taken(damage_amount)
+    
+    # ... rest of damage logic ...
+```
+
+**What it does:**
+- Tracks damage events and resulting health values
+- Detects if player takes damage but health doesn't decrease (invulnerability)
+- Triggers "invulnerability" punishment (instant death, max fear, Death is furious)
+
+---
+
+### 4. Room Navigation Integration
+
+**When player enters a room, call:**
+```python
+# In GameLogic.handle_move() or room transition logic
+def handle_move(self, direction):
+    target_room_id = self.current_room_data['exits'].get(direction)
+    
+    if not target_room_id:
+        self.add_message("You can't go that way.")
+        return
+    
+    # Check if room is locked
+    was_locked = self._is_room_locked(target_room_id)
+    used_key = False
+    
+    if was_locked:
+        # Try to unlock with key
+        required_key = self._get_required_key(target_room_id)
+        if required_key in self.player.get('inventory', []):
+            used_key = True
+            self.add_message(f"You unlock the door with {required_key}.")
+        else:
+            self.add_message("The door is locked.")
+            return
+    
+    # Move to room
+    self.player['location'] = target_room_id
+    
+    # Notify Death AI about room entry
+    if self.death_ai:
+        self.death_ai.on_room_entered(target_room_id, was_locked, used_key)
+    
+    # ... rest of move logic ...
+```
+
+**What it does:**
+- Tracks room entry with lock status
+- Detects if player enters locked room without using key (room skipping exploit)
+- Triggers "room skipping" punishment (hazard spawned, +40% fear, Death warns)
+
+---
+
+### 5. Performance Tracking Integration
+
+**Track player performance for adaptive difficulty:**
+
+**After hazard cleared:**
+```python
+# In HazardEngine or GameLogic after successful hazard clear
+def on_hazard_cleared(self, hazard_id):
+    # ... existing clear logic ...
+    
+    # Update Death AI performance tracking
+    if self.death_ai:
+        self.death_ai.update_performance_tracking('hazard_cleared', success=True)
+```
+
+**After QTE completion:**
+```python
+# In QTE_Engine after QTE completes
+def on_qte_complete(self, errors):
+    success = (errors == 0)
+    
+    # ... existing QTE logic ...
+    
+    # Update Death AI performance tracking
+    if hasattr(self.game_logic, 'death_ai') and self.game_logic.death_ai:
+        if errors == 0:
+            self.game_logic.death_ai.update_performance_tracking('qte_perfect', success=True)
+        else:
+            self.game_logic.death_ai.update_performance_tracking('qte', success=(errors < 3))
+```
+
+**After player death:**
+```python
+# In GameLogic when player dies
+def on_player_death(self, cause):
+    # ... existing death logic ...
+    
+    # Update Death AI performance tracking
+    if self.death_ai:
+        self.death_ai.update_performance_tracking('death', success=False)
+    
+    # ... trigger death screen, respawn, etc ...
+```
+
+**After NPC saved:**
+```python
+# In GameLogic when NPC fate becomes "saved"
+def on_npc_saved(self, npc_id):
+    # ... existing NPC logic ...
+    
+    # Update Death AI performance tracking
+    if self.death_ai:
+        self.death_ai.update_performance_tracking('npc_saved', success=True)
+```
+
+**What it does:**
+- Tracks recent player actions (last 10 stored)
+- Calculates success rate and performance metrics
+- Automatically adjusts difficulty if player is doing too well or struggling
+- Death speaks when difficulty changes
+
+---
+
+## 6. Difficulty Modifier Usage
+
+**When calculating QTE time:**
+```python
+# In QTE_Engine or HazardEngine when setting up QTE
+def start_qte(self, base_time):
+    # Get difficulty-modified time
+    if hasattr(self.game_logic, 'death_ai') and self.game_logic.death_ai:
+        modified_time = self.game_logic.death_ai.get_difficulty_modified_value(
+            base_time, 
+            'qte_time'
+        )
+    else:
+        modified_time = base_time
+    
+    # Use modified_time for QTE
+    self.qte_time_limit = modified_time
+```
+
+**When applying damage:**
+```python
+# In GameLogic or HazardEngine when calculating damage
+def calculate_damage(self, base_damage):
+    # Get difficulty-modified damage
+    if self.death_ai:
+        modified_damage = self.death_ai.get_difficulty_modified_value(
+            base_damage,
+            'damage'
+        )
+    else:
+        modified_damage = base_damage
+    
+    return int(modified_damage)
+```
+
+**When adding fear:**
+```python
+# In DeathAI.update_fear() - already integrated internally
+def update_fear(self, event_type=None, custom_amount=None):
+    # ... existing fear calculation ...
+    
+    # Apply difficulty modifier to fear gain
+    if custom_amount:
+        custom_amount = self.get_difficulty_modified_value(custom_amount, 'fear')
+    
+    # ... rest of fear logic ...
+```
+
+---
+
+## Testing the Features
+
+### Test 1: Save Scumming Detection
+
+1. Load game
+2. Wait 1-2 seconds
+3. Load again
+4. Repeat 6+ times within 10 minutes
+5. **Expected:** Death speaks, hazards get harder, fear increases
+
+**Test Command Sequence:**
+```python
+# In test or debug mode
+for i in range(7):
+    game_logic.death_ai.on_save_loaded()
+    time.sleep(5)  # 5 second intervals
+
+# Should trigger after 6th reload
+```
+
+---
+
+### Test 2: Infinite Items Detection
+
+1. Take flashlight from supply closet
+2. Put flashlight down
+3. Take flashlight again (same room)
+4. Repeat until taken 4+ times
+5. **Expected:** Death speaks, item removed from inventory and game
+
+**Test Command Sequence:**
+```python
+# Take item multiple times
+for i in range(5):
+    game_logic.death_ai.on_item_taken('flashlight', 'supply_closet')
+
+# Should trigger on 4th take
+```
+
+---
+
+### Test 3: Invulnerability Detection
+
+1. Take damage (10 HP)
+2. Use cheat to restore health to 100
+3. Take damage again (10 HP) 
+4. Restore health to 100 again
+5. Take damage third time (10 HP)
+6. **Expected:** Death speaks, instant death, game over
+
+**Test Command Sequence:**
+```python
+# Simulate damage without health decreasing
+player = game_logic.player
+player['hp'] = 100
+
+for i in range(3):
+    game_logic.death_ai.on_damage_taken(10)
+    # Health should decrease but doesn't (simulating cheat)
+    # After 3rd time, should trigger punishment
+```
+
+---
+
+### Test 4: Room Skipping Detection
+
+1. Try to enter locked room
+2. Enter room without unlocking (using noclip or other exploit)
+3. **Expected:** Death speaks, hazard spawns, fear increases
+
+**Test Command Sequence:**
+```python
+# Enter locked room without key
+game_logic.death_ai.on_room_entered(
+    room_id='locked_storage',
+    was_locked=True,
+    used_key=False  # Didn't use key but entered anyway
+)
+
+# Should trigger immediately
+```
+
+---
+
+### Test 5: Adaptive Difficulty (Increase)
+
+1. Clear 3+ hazards successfully
+2. Save 1+ NPCs
+3. Keep fear below 30%
+4. Don't die
+5. **Expected:** Death speaks, difficulty increases (QTEs faster, more damage, more fear)
+
+**Test Command Sequence:**
+```python
+# Simulate excellent performance
+death_ai = game_logic.death_ai
+
+death_ai.update_performance_tracking('hazard_cleared', success=True)
+death_ai.update_performance_tracking('hazard_cleared', success=True)
+death_ai.update_performance_tracking('hazard_cleared', success=True)
+death_ai.update_performance_tracking('npc_saved', success=True)
+
+# Set player stats
+game_logic.player['fear'] = 0.2
+death_ai.performance_tracking['deaths'] = 0
+death_ai.performance_tracking['hazards_cleared'] = 3
+
+# Trigger evaluation
+death_ai._evaluate_adaptive_difficulty()
+
+# Should increase difficulty
+```
+
+---
+
+### Test 6: Adaptive Difficulty (Decrease)
+
+1. Die 3+ times
+2. Clear fewer than 2 hazards
+3. Keep fear above 60%
+4. **Expected:** Death speaks, difficulty decreases (QTEs slower, less damage, less fear)
+
+**Test Command Sequence:**
+```python
+# Simulate poor performance
+death_ai = game_logic.death_ai
+
+death_ai.update_performance_tracking('death', success=False)
+death_ai.update_performance_tracking('death', success=False)
+death_ai.update_performance_tracking('death', success=False)
+death_ai.update_performance_tracking('qte', success=False)
+death_ai.update_performance_tracking('qte', success=False)
+
+# Set player stats
+game_logic.player['fear'] = 0.7
+death_ai.performance_tracking['deaths'] = 3
+death_ai.performance_tracking['hazards_cleared'] = 1
+
+# Trigger evaluation
+death_ai._evaluate_adaptive_difficulty()
+
+# Should decrease difficulty
+```
+
+---
+
+## Logging & Debugging
+
+**All cheating detection and adaptive difficulty events are logged:**
+
+```
+[DeathAI] Save scumming detected: 7 reloads in 10 minutes
+[DeathAI] Cheating punishment triggered: save_scumming (strike 1)
+[DeathAI] Hazard mri_malfunction QTE time reduced: 8.0s → 6.4s
+
+[DeathAI] Infinite item exploit detected: flashlight_supply_closet taken 4 times
+[DeathAI] Cheating punishment triggered: infinite_items (strike 2)
+[DeathAI] Item flashlight removed from game
+
+[DeathAI] INVULNERABILITY DETECTED: Health 100 unchanged after damage
+[DeathAI] Cheating punishment triggered: invulnerability (strike 3)
+
+[DeathAI] ROOM SKIPPING DETECTED: Entered locked room 'morgue' without key
+[DeathAI] Cheating punishment triggered: room_skipping (strike 4)
+
+[DeathAI] Adaptive difficulty adjusted (player performing exceptionally well):
+  QTE time: 1.00 → 0.90
+  Damage: 1.00 → 1.11
+  Fear: 1.00 → 1.11
+
+[DeathAI] Adaptive difficulty adjusted (player struggling significantly):
+  QTE time: 0.90 → 0.99
+  Damage: 1.11 → 1.01
+  Fear: 1.11 → 1.01
+```
+
+---
+
+## Configuration
+
+**Adjust detection thresholds in `death_ai.py`:**
+
+```python
+# Save scumming threshold (currently 5 reloads in 10 minutes)
+if len(recent_reloads) > 5:  # Change this number
+
+# Infinite items threshold (currently 3 takes)
+if take_count > 3:  # Change this number
+
+# Invulnerability detection (currently 3 damage events)
+if len(self.cheating_metadata['damage_events']) >= 3:  # Change this number
+```
+
+**Adjust adaptive difficulty criteria:**
+
+```python
+# Performance thresholds for difficulty increase
+if (deaths == 0 and hazards_cleared >= 3 and fear < 0.3 and success_rate > 0.7):
+    # Adjust these values
+
+# Performance thresholds for difficulty decrease
+elif (deaths >= 3 and hazards_cleared < 2 and fear > 0.6 and success_rate < 0.4):
+    # Adjust these values
+```
+
+**Adjust difficulty multiplier ranges:**
+
+```python
+# Current ranges:
+# QTE time: 0.6 to 1.5 (60% to 150% of base time)
+# Damage: 0.5 to 2.0 (50% to 200% of base damage)
+# Fear: 0.7 to 1.5 (70% to 150% of base fear)
+
+self.difficulty_settings['qte_time_multiplier'] = max(0.6, min(1.5, value))
+# Adjust min/max values as needed
+```
+
+---
+
+## Feature Flags (Optional)
+
+**If you want to allow players to disable these features:**
+
+```python
+# In game_config.json
+{
+  "death_ai": {
+    "cheating_detection_enabled": true,
+    "adaptive_difficulty_enabled": true,
+    "allow_disable": false  # If true, show options in settings
+  }
+}
+
+# In DeathAI.__init__
+config = self.resource_manager.load_json('game_config.json')
+death_ai_config = config.get('death_ai', {})
+
+self.cheating_detection_enabled = death_ai_config.get('cheating_detection_enabled', True)
+self.adaptive_difficulty_enabled = death_ai_config.get('adaptive_difficulty_enabled', True)
+
+# In each method, check flag before executing
+def on_save_loaded(self):
+    if not self.cheating_detection_enabled:
+        return
+    # ... rest of method ...
+```
+
+---
+
+## Performance Considerations
+
+**Memory Usage:**
+- `reload_timestamps`: Max 20 entries (deque with maxlen=20)
+- `damage_events`: Max 10 entries (trimmed after each addition)
+- `recent_performance_window`: Max 10 entries (deque with maxlen=10)
+- `item_takes`: Unlimited dict, but only tracks taken items (reasonable size)
+
+**CPU Usage:**
+- All detection methods are O(1) or O(n) where n ≤ 20
+- No expensive operations or background threads
+- Safe to call on every action
+
+---
+
+## Known Issues & Edge Cases
+
+### Issue 1: False Positive Save Scumming
+**Scenario:** Player legitimately trying different strategies  
+**Solution:** Threshold is 5 reloads in 10 minutes, which is generous  
+**Workaround:** Adjust threshold higher if needed (e.g., 8 reloads)
+
+### Issue 2: Items That Respawn
+**Scenario:** Some items might be designed to respawn  
+**Solution:** Mark respawnable items in JSON with `"respawns": true`  
+**Code:**
+```python
+def on_item_taken(self, item_id: str, room_id: str):
+    # Check if item is meant to respawn
+    item_data = self.game_logic.get_item_data(item_id)
+    if item_data and item_data.get('respawns', False):
+        return  # Don't track respawning items
+    
+    # ... rest of method ...
+```
+
+### Issue 3: Legitimate Room Access Without Keys
+**Scenario:** Some rooms might have alternate unlocking methods (puzzles, NPCs)  
+**Solution:** Track all legitimate unlock methods  
+**Code:**
+```python
+# When room unlocked by puzzle/NPC
+self.death_ai.cheating_metadata['room_unlocks'][room_id].append(True)
+
+# Then on_room_entered won't trigger punishment
+```
+
+---
+
+## Future Enhancements
+
+**Potential additions:**
+
+1. **Dialogue Variety**: More Death taunts based on cheat type and frequency
+2. **Graduated Punishments**: First offense = warning, second = punishment, third = harsh
+3. **Achievement**: "Caught Red-Handed" - Trigger all 4 cheat detections
+4. **Replay Detection**: Track if player is replaying same sequence identically
+5. **Speed Hacking Detection**: Track turn times, detect if too fast
+6. **Difficulty Profiles**: Story Mode, Normal, Hard, Nightmare with preset multipliers
+7. **Player Stats Screen**: Show current difficulty multipliers and performance
+
+---
+
+## Questions or Issues?
+
+Submit to: [project lead / development team]
+
+**Related Documentation:**
+- `death_ai_fear_system_guide.txt` - Complete Death AI design philosophy
+- `hazards_developer_guide.txt` - For hazard difficulty integration
+- `qte_design_guide.txt` - For QTE time modifier integration
+
+---
+
+**THE DESIGN CANNOT BE CHEATED.**

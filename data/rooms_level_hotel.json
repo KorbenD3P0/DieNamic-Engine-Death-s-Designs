@@ -1,0 +1,176 @@
+{
+  "Grand Central Hotel - Lobby": {
+    "name": "Grand Central Hotel - Lobby",
+    "description": "The kind of lobby that used to be grand. Marble floors worn smooth. A chandelier that needs three bulbs replaced. The front desk has one person working it - the person you came here for.",
+    "first_entry_text": "The lobby is quiet for early evening. A few guests with rolling suitcases. Elevator music that somehow makes everything worse.\n\nThe receptionist looks up as you walk in. They tilt their head, curious. You look like someone with a problem.",
+    "entry_room": true,
+    "exits": {
+      "north": "Hotel Corridor - Floor 1",
+      "east": "Hotel Bar",
+      "up": "Hotel Elevator",
+      "leave": {
+        "target": "LEVEL_TRANSITION_HUB"
+      }
+    },
+    "furniture": [
+      {
+        "name": "Front Desk",
+        "description": "A heavy oak reception desk. Behind it, a computer, a phone, and a row of key hooks.",
+        "is_container": true,
+        "locked": false,
+        "items": [
+          "camera",
+          "flashlight"
+        ]
+      }
+    ],
+    "hazards_present": [
+      "deaths_breath",
+      "precarious_water_cup"
+    ],
+    "objects": [
+      {
+        "name": "Chandelier",
+        "description": "The chandelier above the lobby flickers once. You look up. Three bulbs are out."
+      },
+      {
+        "name": "Guest Register",
+        "description": "An old-fashioned paper register on the desk. The last name signed in today is one you recognize."
+      }
+    ],
+    "items": [],
+    "npc_slots": 2
+  },
+  "Hotel Bar": {
+    "name": "Hotel Bar",
+    "description": "A dark wood bar with six stools, three of them occupied. The bartender is also the only person listening to you if you decide to talk. The bottles behind the bar are lit from below, casting everything in amber.",
+    "exits": {
+      "west": "Grand Central Hotel - Lobby"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "frayed_lamp_cord",
+      "precarious_water_cup"
+    ],
+    "objects": [
+      {
+        "name": "Bar Mirror",
+        "description": "A long mirror behind the bar. You catch your own reflection. You look worse than you thought.",
+        "is_omen_provider": "window",
+        "aliases": [
+          "mirror"
+        ]
+      },
+      {
+        "name": "Bar Radio",
+        "description": "A small radio playing jazz. It skips once, and for a moment you hear a different station - something that sounds like a news report about a fire.",
+        "is_omen_provider": "radio",
+        "aliases": [
+          "radio"
+        ]
+      }
+    ],
+    "items": [],
+    "npc_slots": 1
+  },
+  "Hotel Elevator": {
+    "name": "Hotel Elevator",
+    "description": "A small elevator with brushed steel doors. The floor indicator stops at F2 for a long time before descending to lobby.",
+    "first_entry_text": "You press the button. The elevator hums. Somewhere above you, something shifts in the shaft.",
+    "exits": {
+      "down": "Grand Central Hotel - Lobby",
+      "up": "Hotel Corridor - Floor 2"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "elevator_freefall",
+      "elevator_door_crush"
+    ],
+    "objects": [
+      {
+        "name": "Control Panel",
+        "description": "Lobby, 2, 3, Emergency Stop. The button panel is cracked on the corner."
+      },
+      {
+        "name": "Emergency Phone",
+        "description": "A small red phone behind a glass panel. For use in case of emergency. The glass is already broken."
+      }
+    ],
+    "items": [],
+    "npc_slots": 0
+  },
+  "Hotel Corridor - Floor 1": {
+    "name": "Hotel Corridor - Floor 1",
+    "description": "A long carpeted corridor with numbered doors on either side. The carpet pattern is aggressive. One of the room doors is ajar and light spills out.",
+    "exits": {
+      "south": "Grand Central Hotel - Lobby",
+      "north": "Stairwell Access"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "weak_floorboards",
+      "deaths_breath"
+    ],
+    "objects": [
+      {
+        "name": "Ajar Door",
+        "description": "Room 104. The TV inside is playing something. The sound is wrong - not dialogue, just a steady tone."
+      },
+      {
+        "name": "Ice Machine",
+        "description": "The ice machine at the end of the corridor cycles on with a clunk. Ice clatters into the bin."
+      }
+    ],
+    "items": [],
+    "npc_slots": 1
+  },
+  "Hotel Corridor - Floor 2": {
+    "name": "Hotel Corridor - Floor 2",
+    "description": "Identical to floor 1 except for room numbers and a water stain shaped like nothing in particular on the ceiling. One of the room doors at the far end is chained shut from the outside.",
+    "exits": {
+      "down": "Hotel Elevator",
+      "south": "Stairwell Access"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "wobbling_ceiling_fan",
+      "weak_floorboards"
+    ],
+    "objects": [
+      {
+        "name": "Ceiling Fan",
+        "description": "The ceiling fan wobbles on its mount. It should not wobble that much."
+      },
+      {
+        "name": "Chained Door",
+        "description": "Room 217. Chained from the outside. A DO NOT DISTURB sign hangs on the knob anyway."
+      }
+    ],
+    "items": [],
+    "npc_slots": 2
+  },
+  "Stairwell Access": {
+    "name": "Stairwell Access",
+    "description": "A utilitarian stairwell connecting floors. The walls are painted cinder block. A fire hose cabinet on the wall. Emergency exit signs point down.",
+    "exits": {
+      "north": "Hotel Corridor - Floor 1",
+      "up": "Hotel Corridor - Floor 2"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "collapsing_stairs"
+    ],
+    "objects": [
+      {
+        "name": "Fire Hose Cabinet",
+        "description": "The cabinet is closed but not latched. The hose inside is dry and brittle."
+      },
+      {
+        "name": "Emergency Exit Sign",
+        "description": "Pointing down. Someone has drawn an arrow on the wall pointing up with the words BUT ALSO THIS WAY."
+      }
+    ],
+    "items": [],
+    "npc_slots": 0
+  }
+}

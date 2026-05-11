@@ -1,0 +1,357 @@
+{
+  "Cineplex Entrance": {
+    "name": "Cineplex Entrance",
+    "description": "A small open-air foyer in front of the kiosk. Movie posters plaster the walls. An enormous CINEPLEX sign in individual metal letters is mounted overhead. Through the glass doors you see crowds drift between automated ticket kiosks and the concession line. An overhead TV plays trailers.",
+    "first_entry_text": "You slip through the entrance doors, scanning every face. Someone here is already on the list.\n\nYour phone buzzes. A text from a number you don't recognize:\n\n'You're too late. I already know.'\n\nYour blood runs cold.",
+    "state_descriptions": {
+      "chaos_active": "The lobby is pandemonium. Dust billows from the hallway where the theater collapsed. The ticket kiosk has been overturned in the stampede. Screaming patrons are shoving their way out the main doors to the south."
+    },
+    "environmental_omens": {
+      "falling_marquee_letters": {
+        "television": "A commercial shows a sign falling off a building.",
+        "radio": "Sound of metal groaning and snapping.",
+        "window": "Reflection of the marquee letters shows one of them noticeably missing. You look up but the sign is intact."
+      }
+    },
+    "exits": {
+      "east": "Concessions",
+      "south": "Cineplex Parking Lot"
+    },
+    "entry_room": true,
+    "furniture": [
+      {
+        "name": "Ticket Kiosk",
+        "description": "A self-serve ticket kiosk with a smudged touchscreen.",
+        "is_container": false
+      },
+      {
+        "name": "Poster Frames",
+        "description": "Glass-fronted frames displaying colorful movie posters. One of the frames ticks as it settles.",
+        "is_container": true,
+        "is_breakable": true,
+        "broken_description": "Shattered poster frame. A scrap of paper is caught in the shards.",
+        "items": [
+          "poster_scrap"
+        ]
+      }
+    ],
+    "hazards_present": [
+      "falling_marquee_letters"
+    ],
+    "objects": [
+      {
+        "name": "Buzzing Marquee",
+        "description": "The huge cineplex marquee. The letter X in Cineplex buzzes loudly and flickers.",
+        "aliases": [
+          "marquee",
+          "sign"
+        ]
+      },
+      {
+        "name": "Overhead TV",
+        "description": "A CRT television cycling through movie trailers. It occasionally flickers with static.",
+        "is_omen_provider": "television",
+        "aliases": [
+          "tv",
+          "television",
+          "monitor"
+        ]
+      },
+      {
+        "name": "Loose Screws",
+        "description": "A few metal screws scattered on the ground beneath the marquee. Where did they come from?",
+        "aliases": [
+          "screws",
+          "loose screws"
+        ]
+      }
+    ],
+    "items": [],
+    "npcs": [],
+    "npc_slots": 2
+  },
+  "Concessions": {
+    "name": "Concessions",
+    "description": "Stainless steel counters gleam under harsh lights. A noisy soda fountain drips steadily. The self-serve butter machine churns with hot melted oil. Ted, the concessionist, looks stressed as he manages the line. A radio plays pop music.",
+    "state_descriptions": {
+      "chaos_active": "The stand is abandoned. Ted is gone. Popcorn covers the floor like snow. The butter machine is buzzing angrily, dripping oil onto the floor. The radio plays a cheerful pop song that feels jarringly out of place."
+    },
+    "exits": {
+      "west": "Cineplex Entrance",
+      "east": "Theater Hallway"
+    },
+    "furniture": [
+      {
+        "name": "Concession Counter",
+        "description": "A long stainless steel counter."
+      },
+      {
+        "name": "Soda Fountain",
+        "description": "A multi-nozzle soda dispenser, dripping with condensation."
+      },
+      {
+        "name": "First Aid Station",
+        "description": "A small wall-mounted cabinet labeled First Aid.",
+        "is_container": true,
+        "items": [
+          "first_aid_kit",
+          "flashlight"
+        ]
+      }
+    ],
+    "hazards_present": [
+      "butter_pump_malfunction"
+    ],
+    "objects": [
+      {
+        "name": "Condiment Stand",
+        "description": "A stainless steel condiment stand with a butter dispenser. The wall behind is coated with a freshly spilled soda near the wall outlet."
+      },
+      {
+        "name": "Butter Pump",
+        "description": "A heated pump for dispensing butter-flavored topping. It gurgles with a low mechanical hum.",
+        "aliases": [
+          "pump",
+          "butter dispenser"
+        ]
+      },
+      {
+        "name": "Counter Radio",
+        "description": "A small radio playing more ads than music through bursts of static.",
+        "is_omen_provider": "radio",
+        "aliases": [
+          "radio"
+        ]
+      }
+    ],
+    "items": [],
+    "npcs": [],
+    "npc_slots": 2,
+    "environmental_omens": {
+      "popcorn_oil_flareup": {
+        "television": "A cooking show demonstrates flambe, the flames leap unnaturally high.",
+        "radio": "Sound of a sudden WHOOSH of fire.",
+        "window": "Reflection of lights momentarily looks like a burst of flame."
+      }
+    }
+  },
+  "Projection Corridor": {
+    "name": "Projection Corridor",
+    "description": "A dim, narrow staff hallway above the theaters. It hums with old projectors and smells faintly of ozone and hot dust. An old neon transformer on the wall crackles intermittently. Narrow stairs descend to Theater 7.",
+    "exits": {
+      "down": "Theater 7"
+    },
+    "furniture": [
+      {
+        "name": "Maintenance Cabinet",
+        "description": "A metal cabinet labeled Electrical Maintenance.",
+        "is_container": true,
+        "items": [
+          "note_from_concessions"
+        ]
+      }
+    ],
+    "hazards_present": [
+      "sparking_neon_transformer"
+    ],
+    "lighting": "dim",
+    "objects": [
+      {
+        "name": "Extension Cord",
+        "description": "A tangled mess of old extension cords leading under the door into the Projectionist Booth."
+      },
+      {
+        "name": "Projector Window",
+        "description": "A small thick glass window looking down into Theater 7.",
+        "is_omen_provider": "window",
+        "aliases": [
+          "window"
+        ]
+      },
+      {
+        "name": "Neon Transformer",
+        "description": "An old neon transformer mounted on the wall, crackling and occasionally sparking with blue light.",
+        "aliases": [
+          "transformer",
+          "neon transformer"
+        ]
+      },
+      {
+        "name": "Projectionist Booth",
+        "description": "Through a narrow window, you can peer into the projectionist booth. The room is dim, illuminated only by the flicker of the projector. On the far wall, a dark spatter. Near the base of the console, a pair of shoes that may or may not still have their owner in them. If you had a flashlight, maybe you could examine the booth better.",
+        "aliases": [
+          "booth",
+          "projection booth",
+          "projectionist booth"
+        ],
+        "use_item_interaction": [
+          {
+            "item_names_required": [
+              "flashlight"
+            ],
+            "action_effect": "trigger_projectionist_revelation",
+            "message_success": "The flashlight cuts through the dim booth. The person slumped by the console is very still. Their ID badge reads the name of the person you came here for. You are too late. Death collected this one before you even arrived.\n\n[color=ff4444]This one is gone. But the others on the list are still out there.[/color]",
+            "message_fail_item": "You cannot see anything more with that."
+          }
+        ]
+      }
+    ],
+    "items": [],
+    "npc_slots": 1,
+    "environmental_omens": {
+      "sparking_neon_transformer": {
+        "television": "Screen fills with violent blue static.",
+        "radio": "Loud electrical ZAP sound.",
+        "window": "Reflection shows blue sparks dancing on the wall."
+      },
+      "overheating_projector": {
+        "television": "Trailer glitches, shows brief flash of fire.",
+        "radio": "Static sounds like crackling flames.",
+        "window": "Reflection of lights looks like flickering fire."
+      }
+    }
+  },
+  "Theater Hallway": {
+    "name": "Theater Hallway",
+    "description": "Theater posters line the walls, casting long shadows. The air-conditioning unit overhead groans loudly. The tile here is damp and sticky.",
+    "first_entry_text": "You see a crumpled note on the floor near the entrance to Theater 7. You could examine it.",
+    "exits": {
+      "west": "Concessions",
+      "south": {
+        "destination": "Theater 7",
+        "locked": true,
+        "locked_message": "The door to Theater 7 is locked."
+      }
+    },
+    "furniture": [],
+    "hazards_present": [
+      "soda_spill_slip"
+    ],
+    "items": [
+      "crumpled_note"
+    ],
+    "lighting": "dim",
+    "objects": [
+      {
+        "name": "Groaning AC Unit",
+        "description": "The air conditioning unit struggles, making loud mechanical noises."
+      }
+    ],
+    "npcs": [],
+    "environmental_omens": {
+      "soda_spill_slip": {
+        "television": "Scene shows someone slipping dramatically on a wet floor.",
+        "radio": "Sound of someone falling with a splash.",
+        "window": "Reflection makes the floor look wet and treacherous."
+      }
+    }
+  },
+  "Theater 7": {
+    "name": "Theater 7",
+    "description": "A packed theater. Previews drone on the massive screen. High above, a heavy lighting rig for movie parties creaks. A faint smell of burning plastic drifts from the projection booth window high on the back wall. An emergency exit is visible to the east.",
+    "first_entry_text": "Previews drone on the massive screen as you look for your target. A faint smell, like burning plastic, wafts from the projection booth high above. A heavy lighting rig sits dormant directly above the crowd. Right under some sprinklers?\n\nA sudden, irrational spike of anxiety makes your heart pound.\n\nYou're not just anxious. You're right.",
+    "exits": {
+      "north": "Theater Hallway",
+      "up": "Projection Corridor",
+      "east": "Emergency Exit Corridor"
+    },
+    "key_item": "movie_ticket",
+    "furniture": [],
+    "hazards_present": [
+      "overheating_projector_chain"
+    ],
+    "lighting": "dim",
+    "objects": [
+      {
+        "name": "Film Projector",
+        "description": "The massive digital projector sits high in the projection booth. Its cooling fan whines loudly and a faint acrid smell of burning plastic drifts down. The lens flickers with unstable light.",
+        "id": "overheating_projector_chain",
+        "aliases": [
+          "projector",
+          "digital projector"
+        ]
+      },
+      {
+        "name": "Sticky Armrest",
+        "description": "The armrest of the nearest chair is coated in something sticky."
+      },
+      {
+        "name": "Projection Booth Window",
+        "description": "A small window high on the back wall. You think you see a faint haze behind the glass."
+      }
+    ],
+    "items": [],
+    "npc_slots": 2,
+    "environmental_omens": {
+      "overheating_projector": {
+        "television": "Trailer glitches, shows brief flash of fire.",
+        "radio": "Static sounds like crackling flames.",
+        "window": "Reflection of booth window looks like flickering fire."
+      },
+      "short_circuiting_light_rig": {
+        "television": "Screen fills with violent static.",
+        "radio": "Loud electrical ZAP sound.",
+        "window": "Reflection shows sparks dancing on the ceiling rig."
+      },
+      "collapsing_screen_rig": {
+        "television": "Image shakes violently as if from an impact.",
+        "radio": "Sound of groaning tearing metal.",
+        "window": "Reflection of the ceiling rig seems to buckle downwards."
+      }
+    }
+  },
+  "Emergency Exit Corridor": {
+    "name": "Emergency Exit Corridor",
+    "description": "A narrow concrete tunnel, cold and echoing. The crash bar on the exit door looks stiff and possibly painted shut. Night air seeps in from the gap around the frame.",
+    "exits": {
+      "west": "Theater 7",
+      "east": {
+        "destination": "Cineplex Parking Lot",
+        "locked": true,
+        "locked_message": "The exit door is jammed shut. You will have to force it open."
+      }
+    },
+    "furniture": [],
+    "hazards_present": [
+      "jammed_exit_bar"
+    ],
+    "objects": [
+      {
+        "name": "Scuffed Crash Bar",
+        "description": "The metal bar shows signs of wear and multiple layers of paint. It looks painted shut.",
+        "id": "jammed_exit_bar",
+        "aliases": [
+          "crash bar",
+          "exit bar",
+          "bar"
+        ]
+      }
+    ],
+    "items": []
+  },
+  "Cineplex Parking Lot": {
+    "name": "Cineplex Parking Lot",
+    "description": "Slick asphalt glitters under neon glow, reflecting puddles from an earlier rain. Discarded popcorn boxes litter the ground. Sirens echo faintly in the distance. The main entrance is north.",
+    "exits": {
+      "west": "Emergency Exit Corridor",
+      "north": "Cineplex Entrance",
+      "south": {
+        "target": "LEVEL_TRANSITION_HUB"
+      }
+    },
+    "furniture": [],
+    "objects": [
+      {
+        "name": "Puddle",
+        "description": "A murky puddle reflection shows the theater smoking - and this time the image does not change when you look away."
+      },
+      {
+        "name": "Oil Sheen",
+        "description": "An iridescent slick of oil on the wet asphalt."
+      }
+    ],
+    "npcs": [],
+    "items": [],
+    "hazards_present": []
+  }
+}

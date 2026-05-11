@@ -1,0 +1,104 @@
+{
+  "COLORS": {
+    "RED": "ff0000",
+    "GREEN": "00ff00",
+    "YELLOW": "ffff00",
+    "CYAN": "00ffff",
+    "MAGENTA": "ff00ff",
+    "WHITE": "ffffff",
+    "ORANGE": "ffa500",
+    "LIGHT_GREY": "d3d3d3",
+    "BLUE": "3399ff",
+    "PURPLE": "b266ff",
+    "CERULEAN": "007ba7"
+  },
+  "UI_THRESHOLDS": {
+    "FEAR_WARNING": 0.5,
+    "FEAR_CRITICAL": 0.8,
+    "HP_LOW_PERCENTAGE": 0.25
+  },
+  "SEMANTIC_COLOR_MAP": {
+    "room": "YELLOW",
+    "exit": "CYAN",
+    "evidence": "ORANGE",
+    "item": "GREEN",
+    "hazard": "MAGENTA",
+    "command": "CYAN",
+    "furniture": "BLUE",
+    "success": "GREEN",
+    "error": "RED",
+    "warning": "RED",
+    "special": "PURPLE",
+    "turn": "YELLOW",
+    "default": "WHITE",
+    "info": "CERULEAN"
+  },
+  "QTE": {
+    "DEFAULT_DURATION": 5.0,
+    "MAX_MRI_FAILURES": 3,
+    "SIGNAL_TIMEOUT": "INTERNAL_QTE_TIMEOUT_FAILURE_SIGNAL",
+    "SIGNAL_MASH_SUCCESS": "INTERNAL_QTE_MASH_SUCCESS_SIGNAL"
+  },
+  "PHYSICS": {
+    "DEFAULT_ITEM_WEIGHT": 1.0,
+    "WEIGHT_CATEGORIES": {
+      "featherweight": 0.1,
+      "light": 1.0,
+      "default": 2.0,
+      "medium": 3.0,
+      "heavy": 5.0,
+      "very_heavy": 10.0,
+      "massive": 20.0,
+      "immovable": 50.0
+    }
+  },
+  "HAZARDS": {
+    "GAS_LEVEL_EXPLOSION_THRESHOLD": 2.0,
+    "GAS_SPREAD_CHANCE": 0.3,
+    "GAS_SPREAD_THRESHOLD": 0.5,
+    "GAS_SPREAD_AMOUNT": 0.2,
+    "GAS_DECAY_RATE": 0.1,
+    "GAS_DECAY_CHANCE": 0.2,
+    "FIRE_IGNITES_CHANCE": 0.4,
+    "WATER_FREEZING_POINT_C": 0,
+    "MRI_LOCKED_DOOR_MESSAGE": "[color=ff0000]The MRI’s magnetic field wrenches at every scrap of metal, including the door!. You can’t push through, but maybe you could 'force' your way out...[/color]",
+    "MRI_POWER_CURVE": {
+      "START": 0.0,
+      "MAX": 1.0,
+      "PER_TURN_BASE": 0.12,
+      "PER_TURN_AGGRESSION_SCALE": 0.10,
+      "WEIGHT_THRESHOLDS": [
+        [0.0, ["light"]],
+        [0.35, ["light", "default"]],
+        [0.70, ["light", "default", "heavy"]]
+      ],
+      "ATTEMPTS_BY_POWER": [
+        [0.20, 1],
+        [0.55, 2],
+        [0.85, 3]
+      ],
+      "DURATION_SCALE_BY_POWER": [
+        [0.0, 1.00],
+        [0.35, 0.85],
+        [0.70, 0.70],
+        [0.90, 0.60]
+      ],
+      "QTE_TYPE": "dodge_projectile"
+    }
+  },
+  "SCORING": {
+    "QTE_SUCCESS": 10,
+    "EVIDENCE_FOUND": 20
+  },
+  "IDENTIFIERS": {
+    "ACTIONS": [
+      "move", "go", "examine", "look", "search", "break", "take", "get", 
+      "drop", "use", "force", "unlock", "talk", "inventory", "list", 
+      "help", "save", "load"
+    ],
+    "DIRECTIONS": [
+      "north", "south", "east", "west", "up", "down", "northeast", 
+      "northwest", "southeast", "southwest", "upstairs", "downstairs"
+    ]
+  }
+}

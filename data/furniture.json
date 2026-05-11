@@ -1,0 +1,740 @@
+{
+  "reception_desk": {
+    "name": "reception desk",
+    "description": "A long, sturdy desk where visitors check in. Papers, pens, and a computer terminal are neatly arranged on its surface.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 5,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  },
+  "games_area": {
+    "name": "games area",
+    "description": "An area with several carnival games. One 'Test-Your-Strength' high-striker game has a flickering, sparking generator attached to it.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "prize_bull_pen": {
+    "name": "prize bull pen",
+    "description": "A sturdy pen holding a massive, irritable-looking prize bull. The enclosure is made of a connected metal fence.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "food_stall": {
+    "name": "food stall",
+    "description": "A large, semi-permanent food stall. It's a hive of activity, with industrial deep fryers bubbling and several large propane tanks connected to grills.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "photo_booth": {
+    "name": "photo booth",
+    "description": "An automated photo booth. For a small price, it offers a strip of four photos. There's a discarded, blurry photo in the collection tray.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 1,
+    "items": [
+      "blurry_photo"
+    ],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "picnic_tables": {
+    "name": "picnic tables",
+    "description": "A group of wooden picnic tables, some with ketchup stains.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "waiting_room_chairs": {
+    "name": "waiting room chairs",
+    "description": "A row of uncomfortable-looking plastic chairs, bolted together. They show signs of heavy use.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true,
+    "break_integrity": 2,
+    "on_break_success_message": "With a loud crack, you shatter one of the plastic chairs, sending sharp fragments skittering across the floor.",
+    "on_break_spill_items": [
+      {
+        "name": "plastic_shard",
+        "quantity": "1d2"
+      }
+    ]
+  },
+  "medical_cots": {
+    "name": "medical cots",
+    "description": "A row of portable medical cots, each with a thin mattress and a folded blanket.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "first_aid_supply_cabinet": {
+    "name": "first aid supply cabinet",
+    "description": "A wall-mounted cabinet stocked with basic medical supplies and bandages.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 4,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": true
+  },
+  "game_stalls": {
+    "name": "game stalls",
+    "description": "A row of colorful carnival game stalls, each offering a different challenge and cheap prizes.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "food_carts": {
+    "name": "food carts",
+    "description": "Mobile food carts serving snacks, drinks, and carnival treats.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 3,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "plastic_chairs": {
+    "name": "plastic chairs",
+    "description": "A set of cheap, stackable plastic chairs. They look flimsy.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true,
+    "break_integrity": 1
+  },
+  "emergency_case": {
+    "name": "emergency case",
+    "description": "A red emergency case mounted on the wall with 'In Case of Emergency' written on it.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 15,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true,
+      "break_integrity": 1,
+      "on_break_success_message": "With a final, shattering crack, the glass front of the emergency case breaks open!",
+      "on_break_spill_items": [
+        { "name": "first_aid_kit", "quantity": 1 },
+        { "name": "bandages", "quantity": 1 },
+        { "name": "cigarette_lighter", "quantity": 1 },
+        { "name": "nail_gun", "quantity": 1 },
+        { "name": "screwdriver", "quantity": 1 },
+        { "name": "duct_tape", "quantity": 1 },
+        { "name": "flashlight", "quantity": 1 },
+        { "name": "batteries", "quantity": "1d4" },
+        { "name": "glass_shard", "quantity": "1d3" }
+      ]
+  },
+  "low_table": {
+    "name": "low table",
+    "description": "A simple, low table in the waiting area, covered in old magazines.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 2,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "hospital_bed": {
+    "name": "hospital bed",
+    "description": "A standard, adjustable hospital bed with metal railings.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "bedside_table": {
+    "name": "bedside table",
+    "description": "A small table next to the hospital bed, with a drawer.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 2,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "metal_shelves": {
+    "name": "metal shelves",
+    "description": "Tall, industrial metal shelves, stocked with various supplies.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 5,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "information_kiosk_unattended": {
+    "name": "information kiosk (unattended)",
+    "description": "An empty information kiosk. A few pamphlets are scattered on the counter.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 1,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  },
+  "wooden_pews": {
+    "name": "wooden pews",
+    "description": "Long wooden benches arranged in rows, facing an altar.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 1,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  },
+  "elevator_call_panel": {
+    "name": "elevator call panel",
+    "description": "The control panel to call the elevator. It has a key card slot.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false,
+    "use_item_interaction": [
+      {
+        "item_names_required": [
+          "radiology_key_card",
+          "medical_director_key_card"
+        ],
+        "action_effect": "activate_elevator_to_icu",
+        "message_success": "You swipe the {item_name}. The elevator call button lights up, and the doors hiss open, revealing access to the Upper Floor.",
+        "message_fail_item": "This key card doesn't seem to grant access to the upper floors via this elevator."
+      }
+    ]
+  },
+  "icu_bed_controls": {
+    "name": "ICU bed controls",
+    "description": "A control panel for adjusting the position and settings of the ICU bed.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "medical_supply_cart": {
+    "name": "medical supply cart",
+    "description": "A wheeled cart with drawers and shelves, stocked with medical supplies.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 3,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "filing_cabinets": {
+    "name": "filing cabinets",
+    "is_container": true,
+    "is_metallic": true,
+    "weight": 250,
+    "capacity": 5,
+    "description": "Standard-issue metal filing cabinets filled with patient records.",
+    "items": []
+  },
+  "records_shelves": {
+    "name": "records shelves",
+    "description": "Shelves overflowing with patient records and binders.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 5,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  },
+  "computer terminal desk": {
+    "name": "computer terminal desk",
+    "is_container": true,
+    "is_metallic": true,
+    "weight": 100,
+    "description": "A dusty desk with an old CRT monitor and keyboard.",
+    "items": []
+  },
+  "control_desk": {
+    "name": "control desk",
+    "description": "A large desk with multiple monitors and a complex control panel for the MRI machine.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 2,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false,
+    "use_item_interaction": [
+      {
+        "item_names_required": [
+          "radiology_key_card"
+        ],
+        "action_effect": "activate_mri_hazard",
+        "message_success": "You swipe the radiology key card through a card reader on the control desk. Lights on the console flash, and you hear the MRI machine in the next room hum to life with a powerful surge!",
+        "message_fail_item": "That key card doesn't seem to do anything with the control desk for activation."
+      },
+      {
+        "item_names_required": [
+          "medical_director_key_card"
+        ],
+        "action_effect": "activate_mri_hazard",
+        "message_success": "You swipe the medical director key card through a card reader on the control desk. Lights on the console flash, and you hear the MRI machine in the next room hum to life with a powerful surge!",
+        "message_fail_item": "That key card doesn't seem to do anything with the control desk for activation."
+      },
+      {
+        "item_names_required": [
+          "radiology_key_card"
+        ],
+        "action_effect": "deactivate_mri_hazard",
+        "mri_states_can_deactivate": [
+          "flickering_power",
+          "low_intensity_pull",
+          "medium_intensity_pull",
+          "high_intensity_pull"
+        ],
+        "message_success": "You swipe the radiology key card. The MRI machine whines down, and the intense magnetic field subsides. Emergency shutdown initiated.",
+        "message_fail_item": "This key card cannot deactivate the MRI with the control desk.",
+        "message_fail_mri_state": "The MRI is in a state that cannot be remotely deactivated with this key card right now! It's too unstable or already off."
+      },
+      {
+        "item_names_required": [
+          "medical_director_key_card"
+        ],
+        "action_effect": "deactivate_mri_hazard",
+        "mri_states_can_deactivate": [
+          "flickering_power",
+          "low_intensity_pull",
+          "medium_intensity_pull",
+          "high_intensity_pull"
+        ],
+        "message_success": "You swipe the medical director key card. The MRI machine whines down, and the intense magnetic field subsides. Emergency shutdown initiated.",
+        "message_fail_item": "This key card cannot deactivate the MRI with the control desk.",
+        "message_fail_mri_state": "The MRI is in a state that cannot be remotely deactivated with this key card right now! It's too unstable or already off."
+      }
+    ]
+  },
+  "equipment_cart": {
+    "name": "equipment cart",
+    "description": "A wheeled cart loaded with various medical equipment and supplies.",
+    "examine_details": "This cart holds a variety of medical tools: syringes, bandages, antiseptics, and more. It looks like it was used for emergency care. The top has several organized compartments and drawers.",
+    "type": "medical_equipment",
+    "subtype": "storage_container",
+    "takeable": false,
+    "weight": "very_heavy",
+    "is_metallic": true,
+    "is_container": true,
+    "is_distributable_in_containers": false,
+    "items": [
+      "Scalpel",
+      "bone_saw",
+      "Bandages",
+      "Painkillers",
+      "coroners_office_key"
+    ],
+    "capacity": 100,
+    "search_difficulty": "easy",
+    "use_on": [
+      "medical_emergency",
+      "mobile_workspace"
+    ],
+    "use_result": {
+      "medical_emergency": "The cart provides easy access to medical supplies for emergency care.",
+      "mobile_workspace": "You can wheel the cart to wherever you need the medical supplies."
+    },
+    "special_properties": [
+      "wheeled",
+      "organized_storage",
+      "medical_workspace"
+    ],
+    "organization_level": "professional"
+  },
+"mahogany_desk": {
+    "name": "Mahogany Desk",
+    "description": "A large, impressive desk. Its drawers are likely locked. There are strange carvings on its surface.",
+    "is_container": true,
+    "locked": true,
+    "capacity": 3,
+    "items": ["bludworths_house_key", "bludworths_final_notes"],
+    "is_metallic": false,
+    "is_breakable": true,
+    "unlocks_with": "desk_drawer_key",
+    "forceable": true,
+    "force_threshold": 2,
+    "forceable_text": "The desk drawers are sturdy, but with enough effort you could force them open. It will be noisy and might damage the contents."
+},
+  "revolving_door": {
+    "name": "revolving door",
+    "description": "The main revolving door for the hospital entrance. It seems to be the only way out.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": true,
+    "special_interaction": "level_exit"
+  },
+  "bookshelves": {
+    "name": "bookshelves",
+    "description": "Tall wooden bookshelves filled with various medical texts and journals.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 4,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "morgue_drawers": {
+    "name": "morgue drawers",
+    "description": "Rows of cold, metal drawers for storing bodies.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 4,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "examination_table": {
+    "name": "examination table",
+    "description": "A metal table used for autopsies and examinations.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "broken_rocking_chair": {
+    "name": "broken rocking chair",
+    "description": "A splintered rocking chair, its motion silenced forever.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  },
+  "crate": {
+    "name": "crate",
+    "description": "A sturdy wooden crate, nailed shut.",
+    "is_container": true,
+    "locked": true,
+    "capacity": 3,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true,
+      "break_integrity": 1,
+      "on_break_success_message": "You smash the crate open.",
+      "on_break_spill_items": [
+        { "name": "newspaper_clipping","quantity": 1,
+          "name": "deadbolt_key", "quantity": 1 }
+      ]
+  },
+  "stack_of_old_boxes": {
+    "name": "stack of old boxes",
+    "description": "A teetering stack of dusty cardboard boxes.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 4,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true,
+    "break_integrity": 1,
+    "on_break_spill_items": [
+      {
+        "name": "dust_cloud",
+        "quantity": "1"
+      }
+    ]
+  },
+  "old_trunk": {
+    "name": "old trunk",
+    "description": "A heavy, dust-covered trunk with iron bands.",
+    "is_container": true,
+    "locked": true,
+    "capacity": 5,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false,
+    "unlocks_with": "attic_key"
+  },
+  "medicine_cabinet": {
+    "name": "medicine cabinet",
+    "description": "A mirrored medicine cabinet.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 3,
+    "items": [
+      "painkillers",
+      "bandages"
+    ],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "hallway_mirror": {
+    "name": "Hallway Mirror",
+    "type": "mirror",
+    "description": "A tall, clear mirror in a gilt frame.",
+    "examine_details": "Your reflection stares back at you, unblinking."
+  },
+  "toilet": {
+    "name": "toilet",
+    "description": "A standard porcelain toilet.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "cupboard": {
+    "name": "cupboard",
+    "description": "A wooden kitchen cupboard.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 4,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "dusty_table": {
+    "name": "dusty table",
+    "description": "A small table covered in a thick layer of dust.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 2,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "coat_rack": {
+    "name": "coat rack",
+    "description": "An old-fashioned coat rack.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "single_bed": {
+    "name": "single bed",
+    "description": "A small bed with a thin, stained mattress.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  },
+  "cluttered_desk": {
+    "name": "cluttered desk",
+    "description": "A desk covered in papers and books.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 3,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  },
+  "small_table": {
+    "name": "small table",
+    "description": "A small end table.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 1,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "kitchen_counter": {
+    "name": "kitchen counter",
+    "description": "A long kitchen counter with a sink.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  },
+  "shelves": {
+    "name": "shelves",
+    "description": "A set of wooden shelves on the wall.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 5,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "trash_can": {
+    "name": "trash can",
+    "description": "A metal trash can.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 3,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "dirty_sink": {
+    "name": "dirty sink",
+    "description": "A stained porcelain sink.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  },
+  "large_desk": {
+    "name": "large desk",
+    "description": "An imposing wooden desk.",
+    "is_container": true,
+    "locked": true,
+    "capacity": 4,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false,
+    "unlocks_with": "desk_drawer_key"
+  },
+  "fireplace": {
+    "name": "fireplace",
+    "description": "A brick fireplace, filled with ash. One brick looks slightly loose.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 1,
+    "items": [
+      "loose_brick"
+    ],
+    "is_metallic": false,
+    "is_breakable": false,
+    "special_lid_item": "loose_brick",
+    "reveals_hidden_container": "fireplace_cavity"
+  },
+  "fireplace_cavity": {
+    "name": "fireplace cavity",
+    "description": "A small, hidden cavity behind a loose brick in the fireplace.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 1,
+    "items": [
+      "basement_key"
+    ],
+    "is_metallic": false,
+    "is_breakable": false,
+    "is_hidden_container": true
+  },
+  "workbench": {
+    "name": "workbench",
+    "description": "A sturdy workbench cluttered with tools.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 5,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  },
+  "four_poster_bed": {
+    "name": "four-poster bed",
+    "description": "A grand, ornate four-poster bed.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "nightstand": {
+    "name": "nightstand",
+    "description": "A small nightstand next to the bed.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 2,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true
+  },
+  "dresser": {
+    "name": "dresser",
+    "description": "A wooden dresser with several drawers.",
+    "is_container": true,
+    "locked": false,
+    "capacity": 4,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  },
+  "locked_cabinet": {
+    "name": "locked cabinet",
+    "description": "A metal cabinet, firmly locked.",
+    "is_container": true,
+    "locked": true,
+    "capacity": 4,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false,
+    "unlocks_with": "storage_room_key"
+  },
+  "ticket_booth": {
+    "name": "ticket booth",
+    "description": "A small booth for selling tickets.",
+    "is_container": true,
+    "locked": true,
+    "capacity": 2,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": true,
+    "break_integrity": 1,
+    "on_break_success_message": "You smash the ticket booth open.",
+    "on_break_spill_items": [
+      { "name": "demolition_derby_ticket_stub", "quantity": "1d3" }
+    ],
+    "unlocks_with": "booth_key"
+  },
+  "turnstile": {
+    "name": "turnstile",
+    "description": "A metal turnstile controlling entry.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": true,
+    "is_breakable": false
+  },
+  "hay_bales": {
+    "name": "hay bales",
+    "description": "Several large bales of hay.",
+    "is_container": false,
+    "locked": false,
+    "capacity": 0,
+    "items": [],
+    "is_metallic": false,
+    "is_breakable": false
+  }
+}

@@ -1,0 +1,14 @@
+venv/
+.venv/
+.buildozer/
+__pycache__/
+.idea/
+.vscode/
+.vs/
+.specui/
+*.aab
+*.keystore
+pepk.jar
+logs/
+saves/
+fate_log*.txt

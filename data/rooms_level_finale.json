@@ -1,0 +1,57 @@
+{
+  "crossroads_room": {
+    "name": "The Crossroads",
+    "description": "This is it. You can feel the air growing heavy. Death is closing in, and running is no longer an option. The tools to break the design are laid out before you on a stainless steel table.",
+    "first_entry_text": "The detective locks the door behind you. You are completely alone.\n\nYou have gathered what you need. It is time to make your play against Death.",
+    "exits": {},
+    "furniture": [
+      {
+        "name": "stainless steel table",
+        "description": "A cold metal table holding your grim instruments of salvation.",
+        "is_container": false
+      }
+    ],
+    "objects": [
+      "medical defibrillator",
+      "chemical sedation kit",
+      "heavy revolver"
+    ],
+    "examine_details": {
+      "medical defibrillator": "Plan A. A high-voltage industrial defibrillator. The machine hums with lethal voltage. To pull this off, you need the Warehouse Key and Defibrillator Pads.",
+      "chemical sedation kit": "Plan B. Heavy veterinary sedatives and adrenaline. Enough to stop a heart, and restart it. You need the Vet Sedatives and Adrenaline.",
+      "heavy revolver": "Plan C. A heavy, loaded revolver. The metal is cold. The math is simple: a life for a life. You need the Loaded Revolver to pull this off."
+    },
+    "interactable_triggers": {
+      "medical defibrillator": {
+        "on_action": "use",
+        "triggers_hazard_state_change": {},
+        "requires_all_evidence": false,
+        "on_talk_action": {
+          "action_effect": "trigger_finale_override",
+          "requires_items": ["warehouse_key", "defibrillator_pads"]
+        }
+      },
+      "chemical sedation kit": {
+        "on_action": "use",
+        "triggers_hazard_state_change": {},
+        "requires_all_evidence": false,
+        "on_talk_action": {
+          "action_effect": "trigger_finale_flatline",
+          "requires_items": ["vet_sedatives", "adrenaline"]
+        }
+      },
+      "heavy revolver": {
+        "on_action": "use",
+        "triggers_hazard_state_change": {},
+        "requires_all_evidence": false,
+        "on_talk_action": {
+          "action_effect": "trigger_finale_dark_path",
+          "requires_items": ["loaded_revolver"]
+        }
+      }
+    },
+    "hazards_present": [],
+    "locked": false,
+    "entry_room": true
+  }
+}

@@ -1,0 +1,2996 @@
+{
+  "_meta": {
+    "version": "0.1",
+    "description": "Room templates for the premonition level (Level 0). The procedural generator selects a shell based on the disaster's tags, then applies per-tag overrides to create location-specific rooms. Room keys are generic (staging_area, approach, etc.) — the override provides the final room name.",
+    "usage": "game_logic._build_premonition_rooms(disaster_data) reads this file, selects a shell, resolves overrides, and returns a rooms dict compatible with current_level_rooms_world_state."
+  },
+  "workplace_pool": [
+    {
+      "job_title": "Barista",
+      "workplace_name": "The Daily Grind",
+      "level_id": "level_coffee"
+    },
+    {
+      "job_title": "Veterinary Tech",
+      "workplace_name": "City Vet Clinic",
+      "level_id": "level_vet"
+    },
+    {
+      "job_title": "Projectionist",
+      "workplace_name": "The McKineplex",
+      "level_id": "level_theater",
+      "investigation_clue_item": "movie_stub"
+    },
+    {
+      "job_title": "Lane Mechanic",
+      "workplace_name": "Strike & Spare Lanes",
+      "level_id": "level_bowling"
+    },
+    {
+      "job_title": "Security Guard",
+      "workplace_name": "The Mall",
+      "level_id": "level_mall"
+    },
+    {
+      "job_title": "Lifeguard",
+      "workplace_name": "Community Pool",
+      "level_id": "level_community"
+    },
+    {
+      "job_title": "Ride Attendant",
+      "workplace_name": "Fairgrounds",
+      "level_id": "level_fairgrounds",
+      "investigation_clue_item": "fairgrounds_ticket"
+    },
+    {
+      "job_title": "Food Truck Cook",
+      "workplace_name": "Taco Time Truck",
+      "level_id": "level_food_truck"
+    },
+    {
+      "job_title": "Construction Worker",
+      "workplace_name": "Downtown Construction Site",
+      "level_id": "level_construction"
+    },
+    {
+      "job_title": "Warehouse Worker",
+      "workplace_name": "City Shipping Warehouse",
+      "level_id": "level_warehouse"
+    },
+    {
+      "job_title": "Office Assistant",
+      "workplace_name": "Downtown Office Building",
+      "level_id": "level_office"
+    },
+    {
+      "job_title": "Hotel Receptionist",
+      "workplace_name": "Grand Central Hotel",
+      "level_id": "level_hotel"
+    },
+    {
+      "job_title": "Restaurant Host",
+      "workplace_name": "Luigi's Italian Bistro",
+      "level_id": "level_restaurant"
+    },
+    {
+      "job_title": "Social Worker",
+      "workplace_name": "The Hospital",
+      "level_id": "level_1"
+    },
+    {
+      "job_title": "Hospital Nurse",
+      "workplace_name": "The Hospital",
+      "level_id": "level_1"
+    }
+  ],
+  "npc_archetypes_premonition": {
+    "_note": "These are ARCHETYPE templates, not the named NPCs in npcs.json. At level init, _build_premonition_rooms reads the current shell name and picks the matching dialogue variant for each archetype. The archetype's 'name' is randomized from a pool at runtime.",
+    "visionary": {
+      "role": "visionary",
+      "name_pool": [
+        "Alex",
+        "Morgan",
+        "Jamie",
+        "Casey",
+        "Jordan",
+        "Sam",
+        "Taylor",
+        "Kimberly",
+        "Cameron",
+        "Drew",
+        "Kurt"
+      ],
+      "description_template": "A [color=#5eafd2]{age} {appearance} [/color] who keeps looking around nervously, visibly agitated. Something is clearly wrong.",
+      "age_pool": [
+        "young",
+        "college-aged",
+        "teenage"
+      ],
+      "appearance_pool": [
+        "person in a hoodie",
+        "woman clutching her bag",
+        "guy with headphones around his neck",
+        "kid in a band t-shirt"
+      ],
+      "examinable": true,
+      "initial_state": "warning",
+      "dialogue_by_shell": {
+        "_default": {
+          "warning": {
+            "text": "'I'm sorry for freaking out but something terrible is about to happen. I SAW it.\nPlease, you have to help me warn the others — nobody will listen to me.'",
+            "options": [
+              {
+                "text": "Look, I believe you, but you need to calm tf down. I'll help warn people.",
+                "target_state": "grateful"
+              },
+              {
+                "text": "You need to calm down. What exactly did you see?",
+                "target_state": "explaining"
+              },
+              {
+                "text": "[color=00FF00][Walk away][/color]",
+                "target_state": "abandoned"
+              }
+            ]
+          },
+          "grateful": {
+            "text": "'Thank you. THANK YOU.\nMaybe I'm wrong, but the others should be warned. People in charge are saying I need to vacate.\nI'll meet you outside.'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc",
+              "set_player_flag": "visionary_allied"
+            }
+          },
+          "explaining": {
+            "text": "'I saw us all die, the whole thing play out like I was right there in the moment. [color=FF3131]{visionary_explains}[/color]\n\nI know how it sounds. But we have to go. NOW.'",
+            "options": [
+              {
+                "text": "Okay. Let's get people out of here.",
+                "target_state": "grateful"
+              },
+              {
+                "text": "I think you're having a panic attack. Just breathe.",
+                "target_state": "frustrated"
+              },
+              {
+                "text": "It's just a panic attack. Sit down. I'll get you some water. We aren't going anywhere.",
+                "target_state": "convinced_to_stay"
+              }
+            ]
+          },
+          "convinced_to_stay": {
+            "text": "They look at you, trembling, but slowly sit back down. 'You... you really think it was just my imagination?'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "set_player_flag": "visionary_distrusted"
+            }
+          },
+          "frustrated": {
+            "text": "'I'm NOT panicking! I'm trying to SAVE — fine. Fine. Go.\nBut when it happens, remember I tried.'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "abandoned": {
+            "text": "'Wait — where are you going? Please! PLEASE!'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        }
+      }
+    },
+    "skeptic": {
+      "role": "skeptic",
+      "name_pool": [
+        "Chad", "Derek", "Marcus", "Tiffany", "Brad", "Hunter", 
+        "Brock", "Kayla", "Riley", "Lauren", "Justin", "Emily", 
+        "Frankie", "Ashlynn"
+      ],
+      "description_template": "A[color=#5086ce] {appearance} [/color]who seems more annoyed than concerned. They keep rolling their eyes at [color=#BC13FE]{visionary}[/color].",
+      "appearance_pool": [
+        "confident-looking guy",
+        "woman with crossed arms",
+        "tall man checking his phone",
+        "impatient-looking person"
+      ],
+      "examinable": true,
+      "initial_state": "dismissive",
+      "dialogue_by_shell": {
+        "_default": {
+          "dismissive": {
+            "text": "'Oh great, another one. Let me guess — the sky is falling? Get bent. I've got things to do.'",
+            "options": [
+              {
+                "text": "I think we should listen to them. They seem really scared, and if they're right..",
+                "target_state": "considering",
+                "requires_flag": "visionary_allied"
+              },
+              {
+                "text": "Other people are already leaving. You should too.",
+                "target_state": "peer_pressure"
+              },
+              {
+                "text": "Fine, stay. It's your funeral.",
+                "target_state": "hostile"
+              },
+              {
+                "text": "[color=00FF00][Walk away][/color]",
+                "target_state": "annoyed"
+              }
+            ]
+          },
+          "considering": {
+            "text": "'...their commitment to the bit is giving, but there's probably an explanation. There's ALWAYS an explanation for shit like this.'",
+            "options": [
+              {
+                "text": "What if this time there isn't? What do you lose by leaving?",
+                "target_state": "persuasion_check_logical"
+              },
+              {
+                "text": "I can't force you. But I'm leaving, and I hope you do too.",
+                "target_state": "uncertain"
+              }
+            ]
+          },
+          "peer_pressure": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.7,
+                "success_state": "grudging",
+                "failure_state": "hostile",
+                "success_message": "'Other people are leaving? ...how many?'\n\nYou gesture to the panicked crowd.\n\n'...Fine. FINE. But if this is nothing, you owe me a drink.'",
+                "failure_message": "'Other people are leaving? ...how many?'\n\nYou point to the crowd, but they aren't having it.\n\n'Nice try. I'm not a sheep.\nGo follow your paranoid friend or whoever that is.'"
+              }
+            }
+          },
+          "persuasion_check_logical": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.65,
+                "class_bonus_override": {
+                  "Detective": -0.3,
+                  "Medium": -0.2
+                },
+                "success_state": "grudging",
+                "failure_state": "stubborn",
+                "success_message": "'...Shit. Okay. Okay, let's go.\nBut I'm coming back for my stuff later.'",
+                "failure_message": "'You almost had me. ALMOST.\nBut no. I'm staying right here.'"
+              }
+            }
+          },
+          "grudging": {
+            "text": "'Gross. I can't believe I'm doing this. Lead the way, I guess.'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "stubborn": {
+            "text": "'I appreciate the concern, really. But I'm not going anywhere.'",
+            "on_talk_action": {
+              "persuasion_result": "unsure"
+            }
+          },
+          "hostile": {
+            "text": "'Get the fuck away from me. You and that lunatic are causing a scene.'",
+            "on_talk_action": {
+              "persuasion_result": "hostile"
+            }
+          },
+          "annoyed": {
+            "text": "'Whatever.'",
+            "on_talk_action": {
+              "persuasion_result": "unsure"
+            }
+          },
+          "uncertain": {
+            "text": "'...Maybe I'll think about it.'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        }
+      }
+    },
+    "friend": {
+      "role": "friend",
+      "name_pool": [
+        "Darius",
+        "Sarah",
+        "Danny",
+        "Mia",
+        "Chris",
+        "Leah",
+        "Eli",
+        "Nora",
+        "Chidi",
+        "Lana",
+        "Alex",
+        "Domonic"
+      ],
+      "description_template": "Someone who seems to know [color=#BC13FE]{visionary}[/color]. They look torn — wanting to support their friend but clearly uncomfortable.",
+      "examinable": true,
+      "initial_state": "uncertain",
+      "dialogue_by_shell": {
+        "_default": {
+          "uncertain": {
+            "text": "'Look, I don't know what's going on, but[color=#BC13FE] {visionary} [/color]has never acted like this before. Maybe we should just... step away for a bit? Just to be safe?'",
+            "next_state": "convinced",
+            "on_talk_action": {
+              "persuasion_result": "convinced"
+            }
+          },
+          "convinced": {
+            "text": "'I'm staying with [color=#BC13FE]{visionary}[/color]. Whatever happens, I can't just let them leave alone.\n\nIf they say we should go, I'm going. You do what you want.'",
+            "on_talk_action": {
+              "special_effect": "despawn_npc"
+            }
+          }
+        }
+      }
+    },
+    "panicking": {
+      "role": "panicking",
+      "name_pool": [
+        "Tyler",
+        "Chloe",
+        "Brandon",
+        "Jessica",
+        "Mia",
+        "Eli",
+        "Joni",
+        "Lara",
+        "Levi",
+        "Zoe"
+      ],
+      "description_template": "A {role_title} who is pacing erratically. Their eyes are wide with terror, and they are hyperventilating.",
+      "examinable": true,
+      "initial_state": "hysterical",
+      "role_title_by_shell": {
+        "terminal": "stressed traveler",
+        "venue": "anxious fan",
+        "roadside": "nervous passenger",
+        "neighborhood": "jittery local",
+        "outdoor": "fretful hiker"
+      },
+      "dialogue_by_shell": {
+        "_default": {
+          "hysterical": {
+            "text": "'We need to get out! I can't breathe...[color=#BC13FE] {visionary} [/color]freaked me the fuck out! We're all going to die!'",
+            "options": [
+              {
+                "text": "Hey, look at me. Breathe. We are going to walk out of here together right now.",
+                "target_state": "persuasion_check_panic"
+              },
+              {
+                "text": "You're right, it's not safe! Run for the exit!",
+                "target_state": "blind_panic"
+              }
+            ]
+          },
+          "persuasion_check_panic": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.65,
+                "class_bonus_override": {
+                  "EMT": -0.3,
+                  "Survivor": -0.1
+                },
+                "success_state": "calmed_down",
+                "failure_state": "hyperventilating",
+                "success_message": "They take a shaky breath and nod. 'Okay... okay, lead the way.'",
+                "failure_message": "They rip their arm away from you. 'DON'T TOUCH ME! GET AWAY!'"
+              }
+            }
+          },
+          "calmed_down": {
+            "text": "'I'm right behind you. Please don't leave me.'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "hyperventilating": {
+            "text": "'I can't... I can't move... my legs won't work...'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "blind_panic": {
+            "text": "They scream and sprint blindly down the hall, tripping over their own feet. You have no idea where they went.",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        }
+      }
+    },
+    "fatalist": {
+      "role": "fatalist",
+      "name_pool": [
+        "Ian",
+        "Clear",
+        "Elias",
+        "Nora",
+        "Simon",
+        "Tara",
+        "Liam",
+        "Zoe",
+        "Chloe",
+        "Dylan",
+        "Zack"
+      ],
+      "description_template": "A {role_title} minding their own business from afar. They saw the whole commotion and clearly decided it's not worth worrying about.",
+      "examinable": true,
+      "initial_state": "resigned",
+      "role_title_by_shell": {
+        "terminal": "despondent commuter",
+        "venue": "hollow-eyed attendee",
+        "roadside": "exhausted drifter",
+        "neighborhood": "quiet observer",
+        "outdoor": "solitary camper"
+      },
+      "dialogue_by_shell": {
+        "_default": {
+          "resigned": {
+            "text": "'Oh come ON, are you kidding me? Even if it IS true, if it's our time, it's our time. You gonna listen to that fuckin psycho?'",
+            "options": [
+              {
+                "text": "It's not our time. We have a warning. We can do something about it.",
+                "target_state": "persuasion_check_fatalist"
+              },
+              {
+                "text": "Whatever. Sit here and die if you want.",
+                "target_state": "given_up"
+              }
+            ]
+          },
+          "persuasion_check_fatalist": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.8,
+                "class_bonus_override": {
+                  "Detective": -0.2,
+                  "Medium": -0.3
+                },
+                "success_state": "spark_of_hope",
+                "failure_state": "given_up",
+                "success_message": "Jesus, I was just kidding but you're really serious, aren't you?'",
+                "failure_message": "They are clearly over it. 'OH MY GOD BORINNNG.\nGo on without me, champ, save yourself, huh?'\nNow they're openly mocking you.\n 'Oh no, now I'm gonna die, wah wah. Fucking idiot.'"
+              }
+            }
+          },
+          "spark_of_hope": {
+            "text": "'If you really think something is going on... I'll follow you. For now.'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "given_up": {
+            "text": "They close their eyes and lean their head back. They don't respond anymore.",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        }
+      }
+    },
+    "distracted": {
+      "role": "distracted",
+      "name_pool": [
+        "Hunt",
+        "Frankie",
+        "Ashley",
+        "Dylan",
+        "Zach",
+        "Liam",
+        "Zoe",
+        "Chloe",
+        "Dylan",
+        "Darryl",
+        "Trisha"
+      ],
+      "description_template": "A {role_title} with oversized headphones on, completely absorbed in their phone screen.",
+      "examinable": true,
+      "initial_state": "oblivious",
+      "role_title_by_shell": {
+        "terminal": "bored teenager",
+        "venue": "texting fan",
+        "roadside": "distracted pedestrian",
+        "neighborhood": "jogger",
+        "outdoor": "vlogger"
+      },
+      "dialogue_by_shell": {
+        "_default": {
+          "oblivious": {
+            "text": "'...Hold on, let me finish this level. What did you say? Evacuate?'",
+            "options": [
+              {
+                "text": "[color=00ff00]*Yank the headphones off*[/color] THERE IS NO TIME. RUN!",
+                "target_state": "persuasion_check_distracted"
+              },
+              {
+                "text": "Hey, please, it's really dangerous here. You need to leave.",
+                "target_state": "persuasion_check_ignored"
+              }
+            ]
+          },
+          "persuasion_check_distracted": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.4,
+                "class_bonus_override": {
+                  "Detective": 0.3,
+                  "Athlete": -0.2
+                },
+                "success_state": "snapped_to_reality",
+                "failure_state": "ignored",
+                "success_message": "They drop their phone in shock. 'Whoa, okay, geez! I'm moving!'",
+                "failure_message": "They snatch their headphones back. 'Don't touch my stuff, weirdo!'"
+              }
+            }
+          },
+          "persuasion_check_ignored": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.4,
+                "class_bonus_override": {
+                  "Detective": -0.3,
+                  "Athlete": -0.2
+                },
+                "success_state": "snapped_to_reality",
+                "failure_state": "ignored",
+                "success_message": "For some reason, they actually listen to you.",
+                "failure_message": "They snatch their headphones back. 'Don't touch my stuff, weirdo!'"
+              }
+            }
+          },
+          "snapped_to_reality": {
+            "text": "'Okay, okay, I'm right behind you! Just go!'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "ignored": {
+            "text": "They put their headphones back on and turn their back to you, swiping on their screen.",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        }
+      }
+    },
+    "selfish": {
+      "role": "selfish",
+      "name_pool": [
+        "Carter",
+        "Peter",
+        "Olivia",
+        "Derek",
+        "Marcus",
+        "Brit",
+        "Brad",
+        "Tiffany",
+        "Russell",
+        "Leah",
+        "Jeremy",
+        "Connie"
+      ],
+      "description_template": "An aggressive {role_title} clutching their belongings tightly. They look ready to push past anyone to save themselves.",
+      "examinable": true,
+      "initial_state": "hostile",
+      "role_title_by_shell": {
+        "terminal": "impatient executive",
+        "venue": "VIP guest",
+        "roadside": "angry driver",
+        "neighborhood": "suspicious resident",
+        "outdoor": "geared-up tourist"
+      },
+      "dialogue_by_shell": {
+        "_default": {
+          "hostile": {
+            "text": "'Back off! I'm not waiting around for whatever disaster they're blabbering about. I'm looking out for number one!'",
+            "options": [
+              {
+                "text": "Fine, go alone!",
+                "target_state": "persuasion_check_selfish"
+              },
+              {
+                "text": "Hey, relax! We can all get out if we work together.",
+                "target_state": "scoffed"
+              }
+            ]
+          },
+          "persuasion_check_selfish": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.5,
+                "class_bonus_override": {
+                  "Engineer": -0.2,
+                  "Survivor": -0.2
+                },
+                "success_state": "using_you",
+                "failure_state": "scoffed",
+                "success_message": "They narrow their eyes. 'Fine, I'll come with.\nBut if you're wrong, you and I are gonna talk.'",
+                "failure_message": "They shove past you. 'I don't need your help, loser!'"
+              }
+            }
+          },
+          "using_you": {
+            "text": "'Move it! And stay out of my way!'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "scoffed": {
+            "text": "They ignore you completely, shoving their way through the crowd in the wrong direction.",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        }
+      }
+    },
+    "authority_figure": {
+      "role": "authority_figure",
+      "name_pool": [
+        "Officer Chen",
+        "Sergeant Miller",
+        "Agent Ruiz",
+        "Deputy Hayes",
+        "Deputy Walsh",
+        "Officer Lee",
+        "Officer Davis",
+        "Officer Thompson",
+        "Officer Carter",
+        "Deputy Soenso"
+      ],
+      "description_template": "A {role_title} who looks like they've been having a long day. They're watching[color=#BC13FE] {visionary} [/color]with a mix of concern and irritation.\n\n'Gotttta be fucking kidding me.' they say to themselves.",
+      "examinable": true,
+      "initial_state": "professional",
+      "role_title_by_shell": {
+        "terminal": "gate agent",
+        "venue": "security guard",
+        "roadside": "patrol officer",
+        "neighborhood": "traffic officer",
+        "outdoor": "park ranger"
+      },
+      "dialogue_by_shell": {
+        "_default": {
+          "professional": {
+            "text": "'Whoa there. Are you with the person causing a disturbance?\nIs there a problem here? I just received a few complaints.'",
+            "options": [
+              {
+                "text": "There's a serious safety concern. People need to evacuate.",
+                "target_state": "skeptical_authority"
+              },
+              {
+                "text": "I think something bad is about to happen. I know that sounds crazy.\n",
+                "target_state": "skeptical_authority"
+              },
+              {
+                "text": "No problem, officer. Just a misunderstanding.",
+                "target_state": "dismissed"
+              }
+            ]
+          },
+          "skeptical_authority": {
+            "text": "'A safety concern?\n*Their hand instinctively goes to their radio.*\nWhat kind of concern? I need specifics.'",
+            "options": [
+              {
+                "text": "[color=0000ff]*Tell the truth*[/color] —\n[color=#BC13FE]{visionary}[/color] started panicking out of nowhere that something bad is going to happen, but you don't have concrete evidence.\nIt's a long shot, but maybe they'll take it seriously.\n",
+                "target_state": "persuasion_check_authority",
+                "requires_flag": "visionary_allied"
+              },
+              {
+                "text": "[color=ffff00]*Bend the truth a bit*[/color] —\n'Oh yeah? Well \n-you should know multiple people have also reported feeling unsafe. To me for some reason. And now I'm telling you because it's your duty to take it seriously.'\n",
+                "target_state": "persuasion_check_authority"
+              },
+              {
+                "text": "[color=ff0000]*Cause a massive scene*[/color] —\nPunch them in the face, scream at the top of your lungs and maybe find a table to flip.\nRaw panic is the only way to get people moving right now.\n",
+                "target_state": "fatal_distraction"
+              },
+              {
+                "text": "Never mind. Forget I said anything.",
+                "target_state": "dismissed"
+              }
+            ]
+          },
+          "persuasion_check_authority": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.75,
+                "class_bonus_override": {
+                  "Detective": -0.25,
+                  "EMT": -0.2
+                },
+                "success_state": "evacuating",
+                "failure_state": "refused",
+                "success_message": "'...Alright. I'm calling it in.\nEveryone needs to move to the exits calmly.'",
+                "failure_message": "'I can't evacuate based on a hunch. I need concrete evidence of danger.'"
+              }
+            }
+          },
+          "fatal_distraction": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.85,
+                "class_bonus_override": {
+                  "Journalist": -0.15,
+                  "Survivor": -0.1,
+                  "Detective": -0.25,
+                  "EMT": -0.2,
+                  "Athlete": -0.1,
+                  "Mechanic": -0.2
+                },
+                "success_state": "evacuating",
+                "success_message": "You throw your arms up, scream at the top of your lungs, and violently shove {authority_figure}. 'WE'RE ALL GOING TO DIE! RUN!'\n\nPanic is a virus, and you just released it. Someone shrieks, and suddenly the crowd shatters into absolute chaos, stampeding for the exits! It's a total mess, but they are leaving!",
+                "success_action": {
+                  "type": "trigger_mass_evacuation"
+                },
+                "failure_state": "dead_end",
+                "failure_message": "You throw your arms up, scream at the top of your lungs, and violently shove {authority_figure}. 'WE'RE ALL GOING TO DIE! RUN!'\n\nInstead of stampeding for the exits... everyone stops. They stare at you in stunned silence. {authority_figure} freezes, reaching for their cuffs, completely distracted. The silence stretches on for a second too long.\n\n...and just like that, you've doomed everyone.",
+                "failure_action": {
+                  "type": "trigger_commotion_death"
+                }
+              }
+            }
+          },
+          "commotion_death_triggered": {
+            "text": "The silence stretches on for a second too long... You've doomed everyone.",
+            "on_talk_action": {
+              "type": "trigger_commotion_death"
+            }
+          },
+          "evacuating": {
+            "text": "'...Alright. I'm calling it in.\nATTENTION EVERYONE. We're conducting a precautionary evacuation. Please move to the nearest exit in an orderly fashion.'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": ["despawn_npc", "upgrade_unsure_to_convinced"]
+            }
+          },
+          "refused": {
+            "text": "'I understand your concern, but I can't act without evidence.\nIf you see something specific, come find me.'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "dismissed": {
+            "text": "'Alright. You've had your fun.\nKeep it down, please.'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        }
+      }
+    },
+    "bystander_1": {
+      "role": "bystander",
+      "name_pool": [
+        "Dave",
+        "Karen",
+        "Miguel",
+        "Priya",
+        "Tom",
+        "Aisha",
+        "Greg",
+        "Yuki",
+        "Svetlana",
+        "Omar",
+        "Faye",
+        "Darren",
+        "Jin",
+        "Pete",
+        "Koco",
+        "Jina",
+        "Kisha"
+      ],
+      "description_template": "A {appearance}. They seem completely unaware that anything is wrong.",
+      "appearance_pool": [
+        "middle-aged person with a coffee",
+        "parent with two kids in tow",
+        "tourist taking selfies",
+        "businessperson on a phone call"
+      ],
+      "examinable": true,
+      "initial_state": "oblivious",
+      "dialogue_by_shell": {
+        "_default": {
+          "oblivious": {
+            "text": "'Hmm?\n\nSorry, I wasn't paying attention. What's going on?'",
+            "options": [
+              {
+                "text": "You need to leave this area. It's not safe.",
+                "target_state": "persuasion_check_bystander"
+              },
+              {
+                "text": "Nothing. Never mind.",
+                "target_state": "shrugging"
+              }
+            ]
+          },
+          "persuasion_check_bystander": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.75,
+                "success_state": "leaving",
+                "failure_state": "skeptical_bystander",
+                "success_message": "'Oh — okay? If you say so. I was about to leave anyway.'",
+                "failure_message": "'Uh... I think I'm fine? Thanks though.'"
+              }
+            }
+          },
+          "leaving": {
+            "text": "'Yeah, you know what, I'm gonna head out. Something does feel off.'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "skeptical_bystander": {
+            "text": "'I appreciate the concern, but I'm good.'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "shrugging": {
+            "text": "'...Okay then.'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        }
+      }
+    },
+    "bystander_2": {
+      "role": "bystander",
+      "name_pool": [
+        "Chloe",
+        "Omar",
+        "Wendy",
+        "Jin",
+        "Pete",
+        "Lucia",
+        "Faye",
+        "Ash",
+        "Hailey",
+        "Pablo",
+        "Summer",
+        "Mika",
+        "Darlene",
+        "Jorge",
+        "Deborah",
+        "Karen"
+      ],
+      "description_template": "A {appearance}. They overheard the commotion and look curious.",
+      "appearance_pool": [
+        "young woman with a backpack",
+        "retiree in a fishing hat",
+        "college student with earbuds",
+        "off-duty worker in coveralls"
+      ],
+      "examinable": true,
+      "initial_state": "curious",
+      "dialogue_by_shell": {
+        "_default": {
+          "curious": {
+            "text": "'What's all the commotion? That person looks really freaked out.'",
+            "options": [
+              {
+                "text": "They have good reason to be. You should leave while you can.",
+                "target_state": "persuasion_check_bystander2"
+              },
+              {
+                "text": "I'm not sure. Just stay alert.",
+                "target_state": "alert"
+              }
+            ]
+          },
+          "persuasion_check_bystander2": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.45,
+                "success_state": "convinced_b2",
+                "failure_state": "hesitant",
+                "success_message": "'You seem serious. Alright, I'm not sticking around to find out.'",
+                "failure_message": "'Ehhh... I'll keep an eye out but I'm not leaving yet.'"
+              }
+            }
+          },
+          "convinced_b2": {
+            "text": "'Good looking out. I'm getting out of here.'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "hesitant": {
+            "text": "'I'll stay near the exit, how about that?'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "alert": {
+            "text": "'Okay... I guess I'll pay more attention.'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        }
+      }
+    }
+  },
+  "atmosphere_defaults": {
+    "_fallback": {
+        "time_of_day": "Tuesday afternoon",
+        "weather": "The weather is completely unremarkable.",
+        "smell": "nothing in particular",
+        "crowd": "steady — just the rhythm of a normal day"
+    },
+    "winter_sports": {
+        "time_of_day": "cold Saturday morning",
+        "weather": "The air is freezing, and snow is starting to flurry.",
+        "smell": "pine needles and cold mountain air",
+        "crowd": "scattered — people bundled up against the chill"
+    },
+    "outdoor_locations": {
+        "time_of_day": "mild afternoon",
+        "weather": "The sky is wide open. Unremarkable.",
+        "smell": "cut grass and distant exhaust",
+        "crowd": "light — a few joggers, dog walkers, the odd cyclist"
+    },
+    "coastal_disaster": {
+        "time_of_day": "breezy Tuesday morning",
+        "weather": "A brisk wind is coming off the water.",
+        "smell": "algae, iron, and diesel fuel",
+        "crowd": "sparse — dock workers, a few early tourists"
+    },
+    "transportation_water": {
+        "time_of_day": "breezy Tuesday morning",
+        "weather": "A brisk wind is coming off the water.",
+        "smell": "algae, iron, and diesel fuel",
+        "crowd": "sparse — dock workers, a few early tourists"
+    },
+    "drowning_water": {
+        "time_of_day": "breezy Tuesday morning",
+        "weather": "A brisk wind is coming off the water.",
+        "smell": "algae, iron, and diesel fuel",
+        "crowd": "sparse — dock workers, a few early tourists"
+    },
+    "transportation_air": {
+        "time_of_day": "early Thursday morning",
+        "weather": "The terminal is artificially lit. Could be any time of day.",
+        "smell": "jet fuel and floor cleaner",
+        "crowd": "typical — bored travelers, crying babies, the hum of announcements"
+    },
+    "transportation_rail": {
+        "time_of_day": "early Tuesday morning",
+        "weather": "The station is dim under fluorescent lights.",
+        "smell": "metal, oil, and stale coffee from the platform kiosk",
+        "crowd": "shoulder-to-shoulder commuters, eyes on phones, earbuds in"
+    },
+    "transportation_road": {
+        "time_of_day": "busy Wednesday morning",
+        "weather": "The sky is clear but the glare off the asphalt is brutal.",
+        "smell": "exhaust, hot rubber, and gasoline",
+        "crowd": "stop-and-go — horns, merging lanes, the grind of daily commuters"
+    },
+    "carnival": {
+        "time_of_day": "warm Friday evening",
+        "weather": "The air is thick and still.",
+        "smell": "popcorn, sweat, and cheap cologne",
+        "crowd": "thick — laughter, music, shoulder to shoulder"
+    },
+    "entertainment_venue": {
+        "time_of_day": "warm Friday evening",
+        "weather": "The air is thick and still.",
+        "smell": "popcorn, sweat, and cheap cologne",
+        "crowd": "thick — laughter, music, shoulder to shoulder"
+    },
+    "public_venue_accident": {
+        "time_of_day": "busy Saturday afternoon",
+        "weather": "The sun is out. It's a good day to be out.",
+        "smell": "food court grease, floor cleaner, and crowd",
+        "crowd": "packed — families, couples, weekend shoppers in every direction"
+    },
+    "structural_collapse": {
+        "time_of_day": "busy Monday morning",
+        "weather": "The sun is out, glaring off the glass and concrete.",
+        "smell": "hot asphalt and exhaust",
+        "crowd": "steady — just the rhythm of a normal day"
+    },
+    "urban_disaster": {
+        "time_of_day": "busy Monday morning",
+        "weather": "The sun is out, glaring off the glass and concrete.",
+        "smell": "hot asphalt and exhaust",
+        "crowd": "steady — just the rhythm of a normal day"
+    },
+    "construction_failure": {
+        "time_of_day": "busy Monday morning",
+        "weather": "The sun is out, glaring off the glass and concrete.",
+        "smell": "hot asphalt, sawdust, and diesel",
+        "crowd": "steady — workers on site, pedestrians threading through barriers"
+    },
+    "natural_disaster": {
+        "time_of_day": "dark afternoon",
+        "weather": "The sky is a bruised, unnatural shade of purple. The air pressure feels wrong.",
+        "smell": "ozone and damp earth",
+        "crowd": "uneasy — people glancing up, moving faster than usual"
+    },
+    "geological_event": {
+        "time_of_day": "quiet Sunday morning",
+        "weather": "The air is oddly still. No wind. Even the birds have gone quiet.",
+        "smell": "dry earth and something sulfurous",
+        "crowd": "light — the city is barely awake"
+    },
+    "seismic_activity": {
+        "time_of_day": "quiet Sunday morning",
+        "weather": "The air is oddly still. No wind. Even the birds have gone quiet.",
+        "smell": "dry earth and something sulfurous",
+        "crowd": "light — the city is barely awake"
+    },
+    "flood_related": {
+        "time_of_day": "stormy Thursday afternoon",
+        "weather": "The sky is dark for the time of day. Rain is starting.",
+        "smell": "wet concrete, mud, and ozone",
+        "crowd": "thinning — people checking their phones and looking at the sky"
+    },
+    "infrastructure_failure": {
+        "time_of_day": "stormy Thursday afternoon",
+        "weather": "The sky is dark for the time of day. Rain is starting.",
+        "smell": "wet concrete, mud, and ozone",
+        "crowd": "thinning — people checking their phones and looking at the sky"
+    },
+    "industrial_accident": {
+        "time_of_day": "early Thursday morning",
+        "weather": "The sky is overcast and pale. The air has a chemical edge to it.",
+        "smell": "fertilizer, diesel, and something acrid underneath",
+        "crowd": "sparse — a few workers in high-vis vests, a truck idling at the gate"
+    },
+    "rural_disaster": {
+        "time_of_day": "early Thursday morning",
+        "weather": "The sky is overcast and pale. The air has a chemical edge to it.",
+        "smell": "fertilizer, diesel, and something acrid underneath",
+        "crowd": "sparse — a few workers in high-vis vests, a truck idling at the gate"
+    }
+  },
+  "shell_selection": {
+    "geological_event": "neighborhood",
+    "urban_disaster": "neighborhood",
+    "natural_disaster": "outdoor", 
+    "industrial_accident": "roadside",
+    "rural_disaster": "roadside",
+    "winter_sports": "outdoor",
+    "outdoor_locations": "outdoor",
+    "coastal_disaster": "outdoor",
+    "structural_collapse": "neighborhood",
+    "construction_failure": "neighborhood",
+    "public_venue_accident": "venue",
+    "entertainment_venue": "venue",
+    "carnival": "venue",
+    "transportation_air": "terminal",
+    "transportation_rail": "terminal",
+    "transportation_water": "terminal",
+    "transportation_road": "roadside",
+    "flood_related": "outdoor",
+    "infrastructure_failure": "outdoor"
+  },
+  "npc_archetypes": {
+    "_note": "These are ROLE slots, not specific NPCs. The cast generator assigns named NPCs to each role. The visionary is always present. Other roles are filled from the cast pool.",
+    "roles": [
+      "visionary",
+      "friend",
+      "skeptic",
+      "panicking",
+      "fatalist",
+      "selfish",
+      "distracted",
+      "authority_figure",
+      "bystander_1",
+      "bystander_2"
+    ]
+  },
+  "shells": {
+    "terminal": {
+      "_description": "Linear flow: arrival → waiting → boarding → platform/view. Covers airports, train stations, ferry docks, bus terminals.",
+      "rooms": {
+        "arrival_hall": {
+          "base": {
+            "name": "Arrival Hall",
+            "description": "A large, busy hall filled with people. Announcements echo from overhead speakers. The air smells of fast food and floor cleaner.",
+            "first_entry_text": "Most people seem shaken up after[color=#BC13FE] {visionary} [/color]freaked out, but no one is actually *doing* anything about it.\nAre you going to just stand here?",
+            "exits": {
+              "north": "Waiting Area"
+            },
+            "floor": 1,
+            "furniture": [
+              "information_desk",
+              "vending_machine"
+            ],
+            "interactable_triggers": {},
+            "objects": [
+              {
+                "name": "overhead speakers",
+                "description": "Speakers overhead crackle with muzak and announcements.",
+                "is_omen_provider": "radio",
+                "aliases": [
+                  "speakers",
+                  "overhead speakers",
+                  "speaker",
+                  "radio"
+                ]
+              }
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "entry_room": true,
+            "npc_slots": 1
+          },
+          "overrides": {
+            "transportation_air+mechanical_failure": {
+              "name": "Airport Terminal — Concourse B",
+              "description": "A sprawling airport concourse stretches out beneath harsh fluorescent light. Travelers drag luggage past overpriced shops. Flight numbers shuffle on the overhead monitors. Gate B7 is to the north.",
+              "first_entry_text": "You were next in line to hand over your boarding pass when a {age} {appearance}—{visionary}—started screaming about an explosion.\n\nSecurity tackled them, the line stopped, and now you're stuck waiting while they sort it out. You're definitely missing your flight.",
+              "furniture": [
+                "self_check_in_kiosk",
+                "luggage_cart_rack"
+              ],
+              "objects": [
+                "departures_board",
+                "security_checkpoint",
+                "duty_free_window"
+              ],
+              "examine_details": {
+                "departures_board": "A massive LCD display. Your flight — FL-180 — now reads ON TIME. Gate B7.",
+                "security_checkpoint": "A bored TSA agent waves people through the scanner.",
+                "duty_free_window": "Perfume, liquor, and oversized Toblerones. The usual."
+              }
+            },
+            "transportation_rail+impact_blunt": {
+              "name": "{city_name} Central Station — Main Hall",
+              "description": "The grand hall of {city_name} Central Station echoes with footsteps and announcements. A massive clock hangs from the vaulted ceiling. The northbound platform is to the north.",
+              "first_entry_text": "You were jogging toward Platform 3 when[color=#BC13FE] {visionary} [/color]collided with you, grabbing your jacket and screaming that the trains were going to crash.\n\nBy the time you pushed them off, the 7:15 commuter express doors had already closed. You're stuck here.",
+              "furniture": [
+                "ticket_machine",
+                "newspaper_stand"
+              ],
+              "objects": [
+                "arrivals_board",
+                "platform_sign",
+                "station_clock"
+              ],
+              "examine_details": {
+                "arrivals_board": "Track 3 - 7:15 Commuter Express - ON TIME. That's yours.",
+                "station_clock": "A grand analog clock. The second hand ticks with mechanical precision.",
+                "platform_sign": "PLATFORM 3 — Northbound Express. An arrow points north."
+              }
+            },
+            "transportation_water+drowning_water": {
+              "name": "Lake Serenity Ferry Terminal",
+              "description": "A small waterfront terminal with wooden benches and the smell of lake water. The 'Queen Isabella' sits at the dock, engines idling. Boarding is to the north.",
+              "first_entry_text": "You had your ticket out. You were walking to the dock.\n\nThen[color=#BC13FE] {visionary} [/color]started shrieking about drowning and fire, blocking the main double doors. The terminal guards are trying to restrain them, but the boarding window is closing fast.",
+              "furniture": [
+                "ticket_window",
+                "wooden_bench"
+              ],
+              "objects": [
+                "ferry_schedule",
+                "life_jacket_station",
+                "dock_view"
+              ],
+              "examine_details": {
+                "ferry_schedule": "Queen Isabella — 3:00 PM departure. Lake Serenity to Port Carroll. 45 minutes.",
+                "life_jacket_station": "A bright orange cabinet labeled LIFE JACKETS. It looks like it hasn't been opened in years.",
+                "dock_view": "The ferry sits low in the water, rocking gently. Paint is peeling from the hull."
+              }
+            }
+          }
+        },
+        "waiting_area": {
+          "base": {
+            "name": "Waiting Area",
+            "description": "Rows of seats fill a bland waiting area. A TV mounted on the wall plays the news on low volume. People check their phones, stare at nothing, or sleep uncomfortably.",
+            "exits": {
+              "south": "Arrival Hall",
+              "north": "Boarding Zone",
+              "east": "Concessions"
+            },
+            "floor": 1,
+            "furniture": [
+              "row_of_seats"
+            ],
+            "interactable_triggers": {},
+            "objects": [
+              {
+                "name": "wall-mounted TV",
+                "description": "A battered wall-mounted TV sits here. Its display is dark and silent.",
+                "is_omen_provider": "television",
+                "aliases": [
+                  "television",
+                  "tv"
+                ]
+              }
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "npc_slots": 3
+          },
+          "overrides": {
+            "transportation_air+mechanical_failure": {
+              "name": "Gate B7 — Boarding Area",
+              "description": "Blue fabric seats face floor-to-ceiling windows. Beyond the glass, your plane sits on the tarmac. A ground crew member kicks a tire, then walks away. The gate agent types something into her terminal.",
+              "first_entry_text": "You drop into a seat near the window. The plane is right there — close enough to read the tail number. It looks fine. Of course it looks fine.\n\nA few other passengers are already waiting. One of them is staring at the plane like it owes them money.",
+              "objects": [
+                "gate_window",
+                "boarding_pass_scanner",
+                "overhead_monitor"
+              ],
+              "examine_details": {
+                "gate_window": "Through the glass, Flight 180 sits on the tarmac. The ground crew finishes loading luggage. Nothing looks wrong. You're not sure why you expected it to.",
+                "boarding_pass_scanner": "The gate agent's scanner. A small screen reads BOARDING SOON.",
+                "overhead_monitor": "FL-180 — BOARDING IN 10 MINUTES. The words blink green."
+              }
+            },
+            "transportation_rail+impact_blunt": {
+              "name": "Platform 3 — Waiting Benches",
+              "description": "A concrete platform with metal benches. The tracks gleam in the morning light. A digital sign counts down: NEXT TRAIN — 4 MIN.",
+              "first_entry_text": "You settle onto the cold metal bench. The platform is getting crowded — the morning rush.\n\nSomeone near the edge keeps looking down at the tracks. They seem agitated.",
+              "objects": [
+                "platform_edge",
+                "countdown_display",
+                "safety_line"
+              ],
+              "examine_details": {
+                "platform_edge": "A yellow safety line painted on the concrete. The drop to the tracks is about four feet.",
+                "countdown_display": "NEXT TRAIN — 4 MIN. The numbers tick down.",
+                "safety_line": "DO NOT CROSS. The paint is worn from years of foot traffic."
+              }
+            },
+            "transportation_water+drowning_water": {
+              "name": "Boarding Dock — Waiting Pier",
+              "description": "A weathered wooden pier with rope railings. The Queen Isabella's gangplank is being lowered. Seagulls circle overhead, screaming.",
+              "first_entry_text": "You lean against the railing. The lake smells like iron and algae. The ferry crew is shouting to each other as they lower the gangplank.\n\nA teenager near you is muttering something and won't stop fidgeting.",
+              "objects": [
+                "gangplank",
+                "rope_railing",
+                "lake_surface"
+              ],
+              "examine_details": {
+                "gangplank": "A metal ramp being lowered from the ferry to the dock. It clangs against the pier.",
+                "rope_railing": "Thick nautical rope strung between wooden posts. It sways in the breeze.",
+                "lake_surface": "The lake is calm. Almost too calm. A dark shape moves beneath the surface — just a fish."
+              }
+            }
+          }
+        },
+        "concessions": {
+          "base": {
+            "name": "Concessions",
+            "description": "A small food court area. The smell of burnt coffee and microwaved pastries hangs in the air. A bored attendant stares at their phone.",
+            "exits": {
+              "west": "Waiting Area"
+            },
+            "floor": 1,
+            "furniture": [
+              "food_counter",
+              "coffee_machine",
+              "trash_can"
+            ],
+            "objects": [
+              "menu_board",
+              "tip_jar"
+            ],
+            "items": [],
+            "hazards_present": [],
+            "interactable_triggers": {},
+            "locked": false,
+            "npc_slots": 3
+          },
+          "overrides": {
+            "transportation_air+mechanical_failure": {
+              "name": "Airport Terminal Coffee Shop",
+              "description": "A cramped Aerobean franchise wedged between gates. The barista looks like she hasn't slept in two days. The coffee smells burned.",
+              "furniture": [
+                "espresso_machine",
+                "pastry_case",
+                "small_table"
+              ],
+              "objects": [
+                "menu_board",
+                "crumpled_napkins",
+                "abandoned_newspaper"
+              ],
+              "examine_details": {
+                "abandoned_newspaper": "Today's McKinley Herald. The headline reads: FAA GROUNDS FLEET FOR INSPECTION — 'ROUTINE,' SAYS SPOKESPERSON. The article is circled in red pen. Someone wrote 'BULLSHIT' in the margin."
+              }
+            },
+            "transportation_rail+impact_blunt": {
+              "name": "Platform Kiosk",
+              "description": "A small newsstand and coffee window. The vendor is arguing with someone about correct change.",
+              "furniture": [
+                "news_rack",
+                "coffee_window"
+              ],
+              "objects": [
+                "today_newspaper",
+                "commuter_schedule"
+              ],
+              "examine_details": {
+                "today_newspaper": "McKinley Herald. A small article on page 3: RAIL UNION WARNS OF 'DEFERRED MAINTENANCE CRISIS.' Nobody seems to be reading it.",
+                "commuter_schedule": "A laminated schedule. Several trains have been cancelled this week. Mechanical issues."
+              }
+            },
+            "transportation_water+drowning_water": {
+              "name": "Dockside Snack Bar",
+              "description": "A weathered wooden shack selling fried fish, lemonade, and sunscreen. A hand-painted sign reads LAST FOOD BEFORE PORT CARROLL.",
+              "furniture": [
+                "fry_basket_station",
+                "cooler"
+              ],
+              "objects": [
+                "coast_guard_notice",
+                "weather_radio"
+              ],
+              "examine_details": {
+                "coast_guard_notice": "COAST GUARD ADVISORY: Small craft warning in effect until 6 PM. The ferry isn't a small craft... right?",
+                "weather_radio": "A dusty radio crackling with static. You catch fragments: '...pressure dropping... advisory extended...'"
+              }
+            }
+          }
+        },
+        "boarding_zone": {
+          "base": {
+            "name": "Boarding Zone",
+            "description": "The point of no return. People shuffle forward in a line, documents in hand. Beyond here, you're committed.",
+            "first_entry_text": "This is it. Once you step through, you're on board.\n\nSomething feels wrong. You can't explain it.",
+            "exits": {
+              "south": "Waiting Area",
+              "north": "Observation Point"
+            },
+            "floor": 1,
+            "furniture": [
+              "boarding_gate"
+            ],
+            "objects": [
+              "queue_barrier"
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false
+          },
+          "interactable_triggers": {},
+          "overrides": {
+            "transportation_air+mechanical_failure": {
+              "name": "Gate B7 — Jet Bridge",
+              "description": "The narrow jet bridge stretches from the gate to the plane's door. The carpet is stained. The walls flex slightly as you walk. Through the small windows, you can see the wing.",
+              "first_entry_text": "The gate agent scans boarding passes. The line moves forward.\n\nYou glance out the jet bridge window. The wing. Something about the wing.\n\nYour stomach drops. Not turbulence. Not nerves. Something *wrong*.",
+              "objects": [
+                "jet_bridge_window",
+                "plane_door"
+              ],
+              "examine_details": {
+                "jet_bridge_window": "Through the scratched plexiglass, you can see the wing of Flight 180. The rivets along the leading edge catch the light. One of them — is that loose? No. You're imagining things. ...Aren't you?",
+                "plane_door": "The open door of the aircraft. A flight attendant smiles mechanically from inside."
+              }
+            },
+            "transportation_rail+impact_blunt": {
+              "name": "Platform 3 — Boarding Point",
+              "description": "The train pulls in with a screech of brakes. Doors hiss open. The crowd surges forward.",
+              "first_entry_text": "The train arrives. Everyone moves at once.\n\nYou step toward the doors, but something makes you hesitate. A sound — was that the brakes? Or something grinding beneath the carriage?",
+              "objects": [
+                "train_doors",
+                "gap_warning",
+                "carriage_window"
+              ],
+              "examine_details": {
+                "train_doors": "The doors stand open, light spilling from inside. The gap between platform and train is wider than usual.",
+                "gap_warning": "MIND THE GAP. The words are almost worn away.",
+                "carriage_window": "Through the window, you can see the other side of the tracks. Another train sits idle — its wheels are being inspected by a maintenance crew. They look worried."
+              }
+            },
+            "transportation_water+drowning_water": {
+              "name": "Gangplank — Boarding",
+              "description": "The metal gangplank sways slightly underfoot. Crew members in orange vests wave passengers aboard. The ferry groans as it shifts against the dock.",
+              "first_entry_text": "You step onto the gangplank. It flexes under your weight.\n\nThe ferry rocks. A crew member grabs the railing. 'Just the wake from a speedboat,' he says. He doesn't look convinced.",
+              "objects": [
+                "gangplank_railing",
+                "hull_waterline",
+                "crew_member"
+              ],
+              "examine_details": {
+                "gangplank_railing": "Cold metal. Your knuckles are white around it.",
+                "hull_waterline": "The ferry sits lower in the water than the painted line suggests it should.",
+                "crew_member": "A deckhand in an orange vest. He keeps checking his watch and looking at the sky."
+              }
+            }
+          }
+        },
+        "observation_point": {
+          "base": {
+            "name": "Observation Point",
+            "description": "A spot with a view of the departure zone. From here, you can see everything — the vehicle, the people, the moment it all goes wrong.",
+            "first_entry_text": "From here, you can see it all.\n\nAnd then it happens.",
+            "exits": {
+              "south": "Boarding Zone"
+            },
+            "floor": 1,
+            "furniture": [],
+            "objects": [
+              "panoramic_view"
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "interactable_triggers": {},
+            "is_disaster_view": true,
+            "exit_room": true
+          },
+          "overrides": {
+            "transportation_air+mechanical_failure": {
+              "name": "Terminal Window — Runway View",
+              "description": "The massive terminal window frames the runway. Flight 180 taxis toward the threshold. The engines spool up.",
+              "first_entry_text": "You're watching through the glass. Flight 180 is taking off without you because you got caught in the commotion[color=#BC13FE] {visionary} [/color]caused.\n\nIt lifts—gear retracting—and then the left wing flexes wrong. A seam opens along the leading edge like a wound unzipping itself.\n\nThe wing shears off. Not slowly. Not dramatically. Just — gone.\n\nThe aircraft rolls, carves a burning arc into the tarmac, and the sound hits the glass a half-second later. A single, absolute BOOM.\n\n{reaction} Just like[color=#BC13FE] {visionary} [/color]said would happen.\nYou were supposed to be on that plane.",
+              "objects": [
+                "runway_view",
+                "terminal_glass"
+              ],
+              "examine_details": {
+                "runway_view": "Emergency vehicles converge from the perimeter roads. The fireball is still rising. The wreckage is scattered across three runways.",
+                "terminal_glass": "A hairline crack runs down the pane from the shockwave. You press your palm to it. It's warm."
+              }
+            },
+            "transportation_rail+impact_blunt": {
+              "name": "Platform End — Track View",
+              "description": "The far end of the platform. You shouldn't be here. Staff only. From here, you can see the tracks curving away under the river bridge.",
+              "first_entry_text": "You didn't board.[color=#BC13FE] {visionary} [/color]grabbed you, screaming, and pulled you back from the yellow line. You walked to the end of the platform instead, just trying to process what happened.\n\nThe train pulls away. Picks up speed. The signal light turns green — but it shouldn't. The connecting path's light was already green. ..but wouldn't that let another train.. oh God.\n\nThe freight train comes around the curve at full speed.\n\nThe collision isn't loud. It's LOW — a sound you feel in your chest before you hear it. The carriages accordion into each other. The platform shakes hard enough to knock you into the wall.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was telling the truth.",
+              "objects": [
+                "track_view",
+                "emergency_phone"
+              ],
+              "examine_details": {
+                "track_view": "The wreckage blocks both tracks. One carriage has rolled entirely off the bridge and hangs suspended by its coupling. Emergency sirens layer over each other from every direction.",
+                "emergency_phone": "The red emergency phone is ringing. You pick it up. The line is dead."
+              }
+            },
+            "transportation_water+drowning_water": {
+              "name": "Harbour Wall — East Berth",
+              "description": "The upper section of the harbour wall. You came up here for the view. From here, you can see the full breadth of the channel.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] wouldn't let you board. They caused such a scene the dockmaster threatened to call the police. You backed away to the harbour wall to watch the ship leave without you.\n\nThe cruise ship is lit up like a small city. Music carries across the water.\n\nThe speedboat is running dark. Moving too fast. Wrong angle.\n\nIt hits the hull below the waterline. The sound is a CRACK, not an explosion — like a tree snapping, but the size of a building.\n\nThen the fire. The fuel from the speedboat ignites against the hull plating. The ship lists. Slowly at first. Then all at once.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] is a fucking witch or something. You were supposed to be on that ship.",
+              "objects": [
+                "harbour_panorama",
+                "dock_railing"
+              ],
+              "examine_details": {
+                "harbour_panorama": "The ship is tilting past the point of no return. Lifeboats are dropping, but not enough of them. The water between the hull and the harbour wall is full of people.",
+                "dock_railing": "You grip the railing until your hands hurt. Someone beside you is on the phone with emergency services. They keep saying the same address over and over."
+              }
+            }
+          }
+        }
+      }
+    },
+    "venue": {
+      "_description": "Hub-and-spoke: entrance → main floor → side areas → exterior/overlook. Covers nightclubs, theaters, malls, carnivals, plazas, escalator incidents.",
+      "rooms": {
+        "entrance": {
+          "base": {
+            "name": "Entrance",
+            "description": "The main entrance to the venue. People file in, excited and oblivious.",
+            "first_entry_text": "Well that was weird. A[color=#5086ce] {appearance} [/color]named[color=#BC13FE] {visionary} [/color]is completely losing their mind near the entrance. You sigh and look at the crowd. It's busier than you expected.\n\nDo you try to help and chance looking as crazy as {visionary}? Or do you keep your head down and hope for the best?",
+            "exits": {
+              "north": "Main Floor"
+            },
+            "floor": 1,
+            "furniture": [
+              "ticket_booth"
+            ],
+            "objects": [
+              {
+                "name": "car radio",
+                "description": "A battered car nearby is blaring their radio for all to hear.",
+                "is_omen_provider": "radio",
+                "interactable_triggers": {},
+                "aliases": [
+                  "rude driver",
+                  "blaring car",
+                  "radio",
+                  "car with loud music"
+                ]
+              }
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "entry_room": true,
+            "npc_slots": 1
+          },
+          "overrides": {
+            "carnival": {
+              "name": "Fairgrounds Entrance",
+              "description": "A wrought-iron archway reads McKINLEY COUNTY FAIR in bulb letters, half of them burned out. The smell of funnel cake and livestock hits you immediately. Families stream through turnstiles.",
+              "first_entry_text": "You were literally about to start the ride when[color=#BC13FE] {visionary} [/color]started freaking the fuck out, screaming about everybody dying on and around the ride.\n\nSecurity rushed over, several people asked to be let off, but the disruption stopped the attendant and all of your cars got the boot. You see some of the ejected passengers already getting back in line, looking understandably upset at [color=#BC13FE]{visionary}[/color].\n\nDo you back them up or try to convince others to leave the area?",
+              "furniture": [
+                "ticket_booth",
+                "turnstile"
+              ],
+              "objects": [
+                "fair_archway",
+                "park_map_board",
+                "lost_and_found_box"
+              ],
+              "examine_details": {
+                "fair_archway": "McKINLEY COUNTY FAIR — 47th ANNUAL. Half the bulbs are dead. The ones that work flicker.",
+                "park_map_board": "A faded map under scratched plexiglass. The Midway, the Animal Barns, the Food Court, and the Main Stage are marked. Someone stuck a sticker on the Ferris Wheel that reads 'DEATH TRAP.'",
+                "lost_and_found_box": "A cardboard box labeled LOST & FOUND. It contains a single child's shoe and a half-eaten corn dog."
+              }
+            },
+            "entertainment_venue": {
+              "name": "Crimson Lounge — Front Door",
+              "description": "A neon sign buzzes overhead: CRIMSON LOUNGE. The bass from inside throbs through the walls. A bouncer checks IDs under a red heat lamp.",
+              "first_entry_text": "You were handing your ID to the bouncer when[color=#BC13FE] {visionary} [/color]shoved past you, hysterical, claiming the building was going to burn down.\n\nThe bouncer throws them to the pavement. The line halts. You step back to avoid the scuffle.",
+              "furniture": [
+                "velvet_rope",
+                "bouncer_stool"
+              ],
+              "objects": [
+                "neon_sign",
+                "drink_specials_board",
+                "fire_exit_sign"
+              ],
+              "examine_details": {
+                "neon_sign": "CRIMSON LOUNGE. The 'I' flickers. The red glow makes everyone look feverish.",
+                "fire_exit_sign": "A small green sign above a side door. The door has a chain and padlock on it. That can't be legal.",
+                "drink_specials_board": "'TONIGHT: $5 FIREBALLS.' An unfortunate name, given what's coming."
+              }
+            },
+            "public_venue_accident": {
+              "name": "Downtown Plaza — South Entrance",
+              "description": "A bustling open-air plaza surrounded by high-rises. Office workers eat lunch on benches. A street musician plays saxophone. Forty stories above, a window-washing platform crawls along the glass face of the Meridian Tower.",
+              "first_entry_text": "You were walking into the plaza for lunch when[color=#BC13FE] {visionary} [/color]grabbed your shoulders, eyes wild, telling you to run.\n\nThey pushed you back toward the street just as a street performer stopped playing. They're looking up. Way up.",
+              "furniture": [
+                "park_bench",
+                "fountain"
+              ],
+              "objects": [
+                "meridian_tower",
+                "platform_overhead",
+                "street_musician"
+              ],
+              "examine_details": {
+                "meridian_tower": "A gleaming glass skyscraper. Forty stories of corporate ambition. A window-washing platform hangs from cables near the 35th floor.",
+                "platform_overhead": "A metal platform suspended by two cables, slowly traversing the building face. Two workers in harnesses stand on it. One of the cables looks... taut. More than the other.",
+                "street_musician": "A saxophonist playing something melancholy. His case is open. A few bills and a lot of coins."
+              }
+            }
+          }
+        },
+        "main_floor": {
+          "base": {
+            "name": "Main Floor",
+            "description": "The heart of the venue. This is where everyone gathers. This is where it happens.",
+            "exits": {
+              "south": "Entrance",
+              "east": "Side Area",
+              "west": "Food and Drink",
+              "north": "Overlook"
+            },
+            "floor": 1,
+            "furniture": [],
+            "objects": [
+              "main_attraction"
+            ],
+            "items": [],
+            "hazards_present": [
+              "deaths_breath"
+            ],
+            "interactable_triggers": {},
+            "locked": false,
+            "npc_slots": 2
+          },
+          "overrides": {
+            "carnival": {
+              "name": "Midway — Central",
+              "description": "The midway stretches in both directions, lined with game stalls and flashing lights. The Ferris wheel looms to the north. A 'Test Your Strength' game stands near a food stall. The animal barns are to the east.",
+              "first_entry_text": "The midway is a wall of noise — carnival barkers, screaming kids, ride motors, pop music from competing speakers.\n\nA teenager is arguing with his friends near the strength game. He looks terrified. They look annoyed.",
+              "furniture": [
+                "strength_game",
+                "balloon_dart_booth"
+              ],
+              "objects": [
+                "ferris_wheel_view",
+                "prize_wall",
+                "popcorn_cart"
+              ],
+              "examine_details": {
+                "ferris_wheel_view": "The Ferris wheel turns slowly against the sky. From here, you can see a gondola near the top swaying more than the others.",
+                "strength_game": "A tall wooden tower with a bell at the top. 'RING THE BELL, WIN A PRIZE!' The mallet looks heavier than a car battery.",
+                "prize_wall": "Rows of oversized stuffed animals. Their dead plastic eyes stare at nothing."
+              }
+            },
+            "entertainment_venue": {
+              "name": "Crimson Lounge — Main Floor",
+              "description": "A packed dance floor throbs with bass. Laser lights cut through artificial fog. The bar runs the entire length of the far wall. Emergency exits are marked but the signs are barely visible through the haze.",
+              "first_entry_text": "The music hits you like a physical force. Bodies everywhere. The fog machine is working overtime — you can barely see the far wall.\n\nSomeone grabs your arm. A stranger. Wide eyes. They're trying to tell you something but you can't hear over the music.",
+              "furniture": [
+                "main_bar",
+                "DJ_booth",
+                "fog_machine"
+              ],
+              "objects": [
+                "dance_floor",
+                "laser_rig",
+                "blocked_fire_exit"
+              ],
+              "examine_details": {
+                "blocked_fire_exit": "A fire exit door. Blocked by a stack of amplifier cases. A fire marshal would have a seizure.",
+                "fog_machine": "A commercial fog machine pumping out thick white clouds. The haze is so dense you can taste it.",
+                "laser_rig": "A rack of laser projectors on the ceiling. One of them is sparking slightly. Nobody seems to notice."
+              }
+            },
+            "public_venue_accident": {
+              "name": "{city_name} Plaza — Center",
+              "description": "The heart of the plaza. A large fountain sprays water into the air. Office workers sit on the fountain's edge eating sandwiches. The shadow of the Meridian Tower falls across the western half.",
+              "first_entry_text": "You find a spot near the fountain. The sun is warm. Normal. A completely normal lunch.\n\nA street performer nearby suddenly stops playing. They're looking up. Way up.\n\n'Something's wrong with that platform,' they say to nobody in particular.",
+              "furniture": [
+                "central_fountain",
+                "food_cart"
+              ],
+              "objects": [
+                "tower_shadow",
+                "platform_cables",
+                "lunch_crowd"
+              ],
+              "examine_details": {
+                "platform_cables": "From here you can see both cables. The left one is vibrating. The platform is tilting — barely, maybe two degrees. The workers on it haven't noticed yet.",
+                "tower_shadow": "The shadow of the Meridian Tower cuts across the plaza like a sundial. You're sitting right in its path.",
+                "lunch_crowd": "Dozens of people eating, talking, scrolling their phones. None of them are looking up."
+              }
+            }
+          }
+        },
+        "side_area": {
+          "base": {
+            "name": "Side Area",
+            "description": "A quieter area adjacent to the main floor. Fewer people. Different atmosphere.",
+            "exits": {
+              "west": "Main Floor"
+            },
+            "floor": 1,
+            "furniture": [],
+            "objects": [],
+            "items": [],
+            "hazards_present": [],
+            "interactable_triggers": {},
+            "locked": false,
+            "npc_slots": 3
+          },
+          "overrides": {
+            "carnival": {
+              "name": "Animal Barns",
+              "description": "The smell hits you first — hay, manure, and hot animal bodies. Prize bulls stand in metal pens. A massive Brahma bull stamps and snorts in the far stall. A frayed rope is the only thing between it and the walkway.",
+              "furniture": [
+                "bull_pen",
+                "hay_bale_stack"
+              ],
+              "objects": [
+                "prize_bull",
+                "frayed_rope",
+                "barn_door"
+              ],
+              "examine_details": {
+                "prize_bull": "A massive Brahma bull. Muscle and fury. Its eyes track you with an intelligence that makes your skin crawl.",
+                "frayed_rope": "The rope holding the pen gate is worn to threads. One good pull — from a bull or a person — and it snaps.",
+                "barn_door": "A large sliding barn door. The track is rusted. It would take effort to close quickly."
+              }
+            },
+            "entertainment_venue": {
+              "name": "VIP Lounge",
+              "description": "A roped-off section with leather couches and bottle service. Quieter than the main floor, but the bass still pulses through the walls.",
+              "furniture": [
+                "leather_couch",
+                "bottle_service_table"
+              ],
+              "objects": [
+                "VIP_curtain",
+                "private_exit"
+              ],
+              "examine_details": {
+                "private_exit": "A door marked STAFF ONLY. It's unlocked. It leads to the alley behind the building.",
+                "VIP_curtain": "Heavy velvet curtain separating the VIP area from the main floor. Through the gap, you can see the fog getting thicker."
+              }
+            },
+            "public_venue_accident": {
+              "name": "Meridian Tower Lobby",
+              "description": "The ground-floor lobby of the Meridian Tower. Marble floors, security desk, elevator bank. A maintenance door is propped open with a fire extinguisher.",
+              "furniture": [
+                "security_desk",
+                "elevator_bank"
+              ],
+              "objects": [
+                "maintenance_door",
+                "building_directory",
+                "cable_access_panel"
+              ],
+              "examine_details": {
+                "cable_access_panel": "A panel on the wall labeled PLATFORM CABLE CONTROL — AUTHORIZED PERSONNEL ONLY. It's slightly ajar. Inside, you can see cable tension readouts. One gauge is in the red.",
+                "maintenance_door": "A heavy door propped open. Beyond it, a stairwell. A sign reads: ROOF ACCESS — PLATFORM OPERATIONS.",
+                "building_directory": "Floors 1-15: Corporate offices. Floor 38: Platform staging. Roof: Cable motor housing."
+              }
+            }
+          }
+        },
+        "food_and_drink": {
+          "base": {
+            "name": "Food and Drink",
+            "description": "A place to eat and drink. The food looks questionable. The drinks are overpriced.",
+            "exits": {
+              "east": "Main Floor"
+            },
+            "floor": 1,
+            "furniture": [
+              "food_counter"
+            ],
+            "objects": [
+              "menu_board"
+            ],
+            "npc_slots": 3,
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "interactable_triggers": {}
+          },
+          "overrides": {
+            "carnival": {
+              "name": "Food Court",
+              "description": "A cluster of food stalls selling deep-fried everything. Propane tanks sit beneath the fryers. A generator hums nearby, its exhaust vent pointing at the seating area.",
+              "furniture": [
+                "deep_fryer_station",
+                "propane_rack",
+                "portable_generator"
+              ],
+              "objects": [
+                "grease_puddle",
+                "extension_cord_tangle",
+                "picnic_tables"
+              ],
+              "examine_details": {
+                "propane_rack": "Three large propane tanks connected to the fryers by rubber hoses. One hose has a visible crack. Nobody seems concerned.",
+                "extension_cord_tangle": "A rat's nest of extension cords, some taped together. They're plugged into a single power strip that's warm to the touch.",
+                "grease_puddle": "A slick of old fryer grease on the ground near the stall. A clear slip hazard."
+              }
+            },
+            "entertainment_venue": {
+              "name": "Crimson Lounge — Bar",
+              "description": "The long bar is three deep with people shouting drink orders. Bottles line the wall behind the bartender. The cocktail menu features something called a 'Lit Fuse.' It arrives on fire.",
+              "furniture": [
+                "bar_top",
+                "liquor_shelf",
+                "bar_sink"
+              ],
+              "objects": [
+                "cocktail_menu",
+                "spilled_drink",
+                "overloaded_outlet"
+              ],
+              "examine_details": {
+                "overloaded_outlet": "Behind the bar, a single wall outlet has six plugs jammed into it via adapters. The plastic is slightly melted.",
+                "cocktail_menu": "'Lit Fuse — $12. Served FLAMING.' A bartender pours one. The blue flame reflects in his eyes.",
+                "spilled_drink": "Someone knocked over a drink. It's pooling near the DJ booth's power cables."
+              }
+            },
+            "public_venue_accident": {
+              "name": "Plaza Food Trucks",
+              "description": "A row of food trucks lines the western edge of the plaza, directly beneath the Meridian Tower. The lunch rush is at its peak.",
+              "furniture": [
+                "taco_truck",
+                "smoothie_cart"
+              ],
+              "objects": [
+                "queue_of_people",
+                "truck_awning",
+                "shadow_line"
+              ],
+              "examine_details": {
+                "shadow_line": "The shadow of the Meridian Tower bisects the food truck area. Half the trucks are in shade. You notice the shadow is moving — or rather, the platform's shadow within it is. It's swaying.",
+                "queue_of_people": "A line of twenty people waiting for tacos. All of them standing directly below the window-washing platform.",
+                "truck_awning": "A fabric awning stretched over the seating area. It wouldn't stop a falling wrench, let alone a falling platform."
+              }
+            }
+          }
+        },
+        "overlook": {
+          "base": {
+            "name": "Overlook",
+            "description": "A vantage point. From here, you see the moment everything goes wrong.",
+            "first_entry_text": "And then it happens.",
+            "exits": {
+              "south": "Main Floor"
+            },
+            "floor": 1,
+            "furniture": [],
+            "objects": [
+              "disaster_view"
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "exit_room": true,
+            "is_disaster_view": true,
+            "interactable_triggers": {}
+          },
+          "overrides": {
+            "carnival+heights": {
+              "name": "Ferris Wheel Base",
+              "description": "The base of the Ferris wheel. The motor house is at eye level from here. It smells of hot metal and grease.",
+              "first_entry_text": "You were just getting sat in the gondola when[color=#BC13FE] {visionary} [/color]had a complete meltdown. The operator had to halt the ride and unlock the carriage to drag them out. You stepped off too, mostly out of secondhand embarrassment.\n\nYou'd debated getting back on just to prove you weren't scared, but you walked away instead - the whole ferris wheel moment had passed for you.\nThen the wheel starts turning again.\n\nA vibration travels down the struts as you continue on. The motor pitch is wrong — too high, too strained.\n\nA bolt ejects from the central hub, sails through the air and pings off the concrete at your feet.\n\nYou look back as the axle shears. The wheel doesn't fall — very far. It *SMASHES* into the base and throws the ride attendant from their post; gondolas swinging free on their hinges, the riders still inside, some screaming for their lives and others losing them as they are thrown from their seats into other patrons, deep fried Snickers stands, the midway, and other nearby rides.\n\nSeveral gondolas break free from one section of curve, and it's enough to create some forward momentum; the structure rolls free and crashes through the midway in a cascade of steel and screaming before tipping over, encompassing a large radius of the carnival in carnage and chaos.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "ferris_wheel_base",
+                "operator_booth",
+                "fallen_bolt"
+              ],
+              "examine_details": {
+                "ferris_wheel_base": "The base casting has split. You can see where the metal fatigued — a grey, granular fracture that's been growing for years.",
+                "fallen_bolt": "M24 hex bolt. Grade 8. The threads are stripped and the shaft shows torsional fatigue shear. This bolt has been failing for a long time.",
+                "operator_booth": "The operator is gone. The emergency stop button has been mashed flat. It didn't work."
+              }
+            },
+            "entertainment_venue+fire_related": {
+              "name": "Crimson Lounge — Upper Balcony",
+              "description": "A narrow balcony overlooking the main floor. You came up for air. The music is thinner up here and the crowd looks different from above — too dense, too many bodies near the wrong walls.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] wouldn't stop screaming about a fire, dragging you up to the balcony away from the dance floor. People were laughing at them.\n\nBelow you, someone lights a cocktail. It's supposed to be a Lit Fuse. The bartender's done it a hundred times.\n\nNot this time.\n\nThe flame catches the paper cocktail napkin. The napkin touches the decorative foam padding behind the bar. In three seconds it's on the ceiling. In eight seconds the whole back wall is gone.\n\nThe crowd surges for the exits. The main exit is blocked — a stack of speaker equipment that's been there all night. You can see it clearly from up here.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] wasn't kidding.",
+              "objects": [
+                "balcony_railing",
+                "floor_view",
+                "emergency_strobe"
+              ],
+              "examine_details": {
+                "floor_view": "The main floor is unrecognisable. The fog machine ruptured and its fuel is burning. The fire suppression system discharged once and stopped. The blocked exit has become a killing ground.",
+                "balcony_railing": "The railing is getting hot. The heat is rising fast. You need to move.",
+                "emergency_strobe": "The strobes are firing — red, white, red, white — which makes it impossible to see clearly. Which is probably what's killing people right now."
+              }
+            },
+            "public_venue_accident": {
+              "name": "Plaza East — Safe Distance",
+              "description": "The eastern edge of the plaza. You crossed the street. Something told you to move. You didn't question it.",
+              "first_entry_text": "[color=BC13FE]{visionary}[/color] dragged you across the street, away from the plaza, ranting about falling glass and metal.\n\nYou hear it before you see it.\n\nA cable under tension makes a specific sound when it's about to fail — a high, singing note, [color=FF3131]like a guitar string wound too tight.[/color]\n\nThe window-washing platform drops. Not gradually — one end cuts loose and [color=FF3131]the whole thing pivots in a screaming arc.[/color] Tools fall first; wrenches, squeegees, a metal bucket spinning end over end. The bucket slams into the ground while various tools find new homes [color=FF3131]embedded in the skulls of people looking up at the noise.[/color]\n\nThen the platform hits the food truck row like a blade. Propane tanks normally used to cook food suddenly become lethal as [color=FF3131]multiple explosions[/color] rock the plaza.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] knew. How the hell did they know??",
+              "objects": [
+                "impact_zone_view",
+                "scattered_debris"
+              ],
+              "examine_details": {
+                "impact_zone_view": "Where the food trucks were, there is now a compressed mass of steel and aluminum. One of the workers was still on the platform. The other got clear.",
+                "scattered_debris": "A hard hat. A squeegee with the handle snapped. A full cup of coffee, still upright on the sidewalk, completely untouched."
+              }
+            },
+            "carnival+mechanical_failure": {
+              "name": "Coaster Queue — Exit Gate",
+              "description": "The exit gate at the side of the Demon's Peak queue. You're standing outside the barriers. You can see the full track layout from here.",
+              "first_entry_text": "[color=00ff00]You were strapped into the front car.[/color] The lap bar was locked. Then[color=#BC13FE] {visionary} [/color]started thrashing and screaming that the ride was going to crash. The operators had to unlock the whole train to get them out. You followed them to the exit, mostly out of secondhand embarrassment.\n\nBy the time you were walking away, the first car crests the lift hill. The chain disengages. The car descends, rockets upwards into its first big turn, and.. \n\n[color=ffff00]..something has broken the front car's wheels free[/color], causing sparks to shower the passengers, while [color=ffb366]all of their safety harnesses are disengaged[/color] from hydraulic failure. The coaster hits the sharp curve at fifty miles per hour, and [color=ff4444]the first section of cars leaves the tracks.[/color]\n\nThe steel frame of the row of seats snags the steel frame of the coaster itself just beyond the track, and the section is violently swung down into the frame of the coaster, [color=ff4444]breaking more track free ahead of the incoming cars[/color].\n\nYou watch in horror as the last connections between them break apart - right before each one hits the newly created gap in the tracks. One by one, they are launched into the nearby [color=00ccff]house of mirrors[/color], [color=ffff00]the ferris wheel looming above[/color], and [color=b266ff]the row of food carts[/color] standing in front of them.\n\nWatching the carnage unfold, you can't help but think to yourself: [color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "coaster_wreckage_view",
+                "track_gap"
+              ],
+              "examine_details": {
+                "coaster_wreckage_view": "The car is embedded in the support structure. A second car has derailed further up and is hanging from the track by one wheel. The ride is still moving — the chain hasn't stopped.",
+                "track_gap": "You can see the gap from here. Two bolts. That's all. Two bolts and this doesn't happen."
+              }
+            },
+            "public_venue_accident+structural_collapse": {
+              "name": "Theater Mezzanine — Rear Exit",
+              "description": "The rear mezzanine exit. You stood up to leave during the interval. You're not sure why. The finale was supposed to be spectacular.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] was hysterical, clawing their way over people in the aisle to get to the exit. You chased after them just to get them to quiet down.\n\nYou hear the rigging before you see it fail.\n\nA groan from above — not the show, not the music, something structural — and then the proscenium arch shifts. One of the hydraulic motors has seized. The entire fly system is under load it wasn't built to carry.\n\nThe arch comes down in sections. The first section takes the lighting rig. The second takes the performers. The third section collapses into the orchestra pit.\n\nThe pyrotechnics fire on their programmed cue. Into the dust cloud.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "stage_debris_view",
+                "emergency_exit_sign"
+              ],
+              "examine_details": {
+                "stage_debris_view": "The stage is gone — buried under tons of lighting rigs, speaker arrays, and rigging hardware. The hydraulic fluid is burning. The curtains are burning. The playbills are burning.",
+                "emergency_exit_sign": "The exit sign is still lit. Green. A small mercy, pointing at the door you're already walking through."
+              }
+            },
+            "public_venue_accident+mechanical_failure": {
+              "name": "Mall Upper Level — Balcony Rail",
+              "description": "The upper concourse balcony. You leaned on the rail, looking down at the escalator bank. Something about the sound was wrong — a grinding underneath the music.",
+              "first_entry_text": "You stepped back from the escalator when[color=#BC13FE] {visionary} [/color]started shouting at people to stay off it.\n\nThe grinding sound was coming from inside the machine — the shaft key failing — and the motor revs as the escalator shoots forward.\n\nThe line of shoppers, traffic-jammed behind a person with some shiny new luggage, are thrown into a pile at the bottom, where their combined weight breaks the floor panels loose, one by one.\n\nThe escalator stops for a moment - mangled metal unable to keep in fluid motion - until the motor malfunctions and repeatedly bucks in the *opposite* direction, throwing people forward before grinding backwards through clothing, shopping bags, and eventually skin and bone, over and over. The people on the ascending escalator have less than a second to process, and then the floor panels at the escalator bottom give, dropping patrons into the internal machinery.\n\nYou watch from the balcony rail. You can't look away as the escalator turns into a meat grinder. You can't do anything.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] really knew.\nHow the FUCK",
+              "objects": [
+                "escalator_view",
+                "balcony_railing"
+              ],
+              "examine_details": {
+                "escalator_view": "The escalator has stopped. Mall security has formed a cordon. You can hear one siren, then three, then too many to count.",
+                "balcony_railing": "Your knuckles are white where you're gripping it. You've been standing here for two minutes and you haven't moved."
+              }
+            }
+          }
+        }
+      }
+    },
+    "roadside": {
+      "_description": "Linear highway/rural flow: vehicle/roadside → approach → work zone/site → shoulder overlook. Covers highways, pipelines, factories, grain silos.",
+      "rooms": {
+        "vehicle_stop": {
+          "base": {
+            "name": "Vehicle Stop",
+            "description": "You've pulled over on the shoulder. Gravel crunches under your tires. The engine ticks as it cools.",
+            "first_entry_text": "You pull off the road.[color=#BC13FE] {visionary} [/color]made everybody stop, screaming from the backseat. What is going on?",
+            "exits": {
+              "north": "Approach Road"
+            },
+            "floor": 1,
+            "furniture": [
+              "your_vehicle",
+              "guardrail"
+            ],
+            "interactable_triggers": {},
+            "objects": [
+              {
+                "name": "car radio",
+                "description": "A battered car nearby is blaring their radio for all to hear.",
+                "is_omen_provider": "radio",
+                "aliases": [
+                  "rude driver",
+                  "blaring car",
+                  "radio",
+                  "car with loud music"
+                ]
+              }
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "entry_room": true,
+            "npc_slots": 1
+          },
+          "overrides": {
+            "transportation_road+impact_blunt": {
+              "name": "Route 42 — Emergency Shoulder",
+              "description": "Your car sits on the narrow shoulder of Route 42. Three lanes of traffic crawl past, bumper to bumper. The air smells like exhaust and hot asphalt. A semi-truck's air brakes hiss somewhere ahead.",
+              "first_entry_text": "Traffic is dead stopped thanks to[color=#BC13FE] {visionary} [/color]throwing the car into park and jumping out onto the shoulder.\n\nYou get out to stretch your legs and yell at them. The pavement radiates heat.",
+              "furniture": [
+                "your_car",
+                "jersey_barrier"
+              ],
+              "objects": [
+                "traffic_ahead",
+                "highway_sign",
+                "heat_shimmer"
+              ],
+              "examine_details": {
+                "traffic_ahead": "A solid wall of vehicles stretching to the horizon. Brake lights blink in sequence like a slow heartbeat.",
+                "highway_sign": "ROUTE 42 NORTH — McKINLEY 12 MI. Someone spray-painted 'GOOD LUCK' under it.",
+                "heat_shimmer": "The asphalt ripples with heat. It's at least 95 degrees out here."
+              }
+            },
+            "industrial_accident+chemical_hazard": {
+              "name": "Access Road — Plant Perimeter",
+              "description": "A two-lane access road runs along the chain-link perimeter fence of the McKinley industrial complex. Warning signs line the fence every twenty feet. A security booth sits unmanned at the gate.",
+              "first_entry_text": "You drove out here because[color=#BC13FE] {visionary} [/color]threatened to jump out of the moving car if you went any closer to the plant.\n\nThe industrial complex looms behind the fence — pipes, tanks, cooling towers.\n\nThe security booth is empty. The gate is open.",
+              "furniture": [
+                "perimeter_fence",
+                "security_booth"
+              ],
+              "objects": [
+                "warning_signs",
+                "plant_skyline",
+                "open_gate"
+              ],
+              "examine_details": {
+                "warning_signs": "DANGER — AUTHORIZED PERSONNEL ONLY. COMBUSTIBLE MATERIALS. NO SMOKING WITHIN 500 FT.",
+                "plant_skyline": "A maze of pipes, valves, and storage tanks. Steam rises from a cooling tower. Everything looks operational. Everything looks fine.",
+                "open_gate": "The gate is wide open. The chain and padlock lie on the ground, cut clean through."
+              }
+            }
+          }
+        },
+        "approach_road": {
+          "base": {
+            "name": "Approach Road",
+            "description": "A stretch of road leading toward the site. You can see activity ahead.",
+            "exits": {
+              "south": "Vehicle Stop",
+              "north": "Work Zone",
+              "east": "Rest Area"
+            },
+            "floor": 1,
+            "furniture": [],
+            "objects": [
+              "road_surface",
+              "distance_view"
+            ],
+            "interactable_triggers": {},
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "npc_slots": 2
+          },
+          "overrides": {
+            "transportation_road+impact_blunt": {
+              "name": "Route 42 — Between Vehicles",
+              "description": "You weave between idling cars and trucks. Drivers sit with windows down, radios playing different stations. A tanker truck's engine rumbles. The shoulder drops off into a drainage ditch.",
+              "objects": [
+                "tanker_truck",
+                "drainage_ditch",
+                "frustrated_drivers"
+              ],
+              "examine_details": {
+                "tanker_truck": "A massive fuel tanker. FLAMMABLE stenciled on the side in faded red letters. The tank is sweating in the heat — condensation, or a slow leak?",
+                "drainage_ditch": "A concrete drainage channel running parallel to the highway. Bone dry. If you needed to get off the road fast, this would be the way.",
+                "frustrated_drivers": "People leaning on horns, scrolling phones, shouting into the air. One guy is standing on his car roof trying to see what's ahead."
+              }
+            },
+            "industrial_accident+chemical_hazard": {
+              "name": "Plant Road — Loading Area",
+              "description": "A wide loading area inside the perimeter. Forklifts sit idle. Pallets of chemical drums are stacked against a warehouse wall. A pressure gauge on a nearby pipe reads well into the red zone.",
+              "objects": [
+                "chemical_drums",
+                "pressure_gauge",
+                "forklift"
+              ],
+              "examine_details": {
+                "chemical_drums": "Blue plastic drums with hazmat diamonds. The labels read SODIUM HYDROXIDE — CORROSIVE. One drum has a dark stain spreading from its base.",
+                "pressure_gauge": "The needle is pinned against the right side of the dial. The red zone starts at 150 PSI. This reads 210. The pipe is vibrating.",
+                "forklift": "Keys in the ignition. The seat is still warm."
+              }
+            }
+          }
+        },
+        "rest_area": {
+          "base": {
+            "name": "Rest Area",
+            "description": "A small pulloff area with basic amenities. A place to regroup.",
+            "exits": {
+              "west": "Approach Road"
+            },
+            "floor": 1,
+            "furniture": [
+              "picnic_table",
+              "trash_can"
+            ],
+            "objects": [
+              "notice_board"
+            ],
+            "items": [],
+            "interactable_triggers": {},
+            "hazards_present": [],
+            "locked": false,
+            "npc_slots": 3
+          },
+          "overrides": {
+            "transportation_road+impact_blunt": {
+              "name": "Route 42 — Emergency Callbox",
+              "description": "A small emergency pulloff with a callbox and a faded highway map under plexiglass. Someone has left a half-eaten sandwich on the guardrail.",
+              "furniture": [
+                "callbox",
+                "highway_map_display"
+              ],
+              "objects": [
+                "emergency_phone",
+                "accident_report_board"
+              ],
+              "examine_details": {
+                "emergency_phone": "A blue emergency phone. You pick it up — dead. The cable has been cut. Cleanly.",
+                "accident_report_board": "A faded DOT sign: THIS STRETCH OF ROUTE 42 HAS HAD 14 FATALITIES IN THE LAST 3 YEARS. DRIVE SAFE. Someone crossed out 14 and wrote 15."
+              }
+            },
+            "industrial_accident+chemical_hazard": {
+              "name": "Plant Break Room (Exterior)",
+              "description": "A concrete slab with a picnic table and a coffee machine that's seen better decades. Safety posters peel from the wall. A whiteboard reads: DAYS WITHOUT INCIDENT: 0.",
+              "furniture": [
+                "picnic_table",
+                "coffee_machine"
+              ],
+              "objects": [
+                "safety_poster",
+                "incident_board",
+                "hard_hat_rack"
+              ],
+              "examine_details": {
+                "safety_poster": "A cartoon worker gives a thumbs up. 'SAFETY IS NO ACCIDENT!' The irony is suffocating.",
+                "incident_board": "DAYS WITHOUT INCIDENT: The '0' is written in fresh marker. The previous number has been erased so many times the whiteboard is grey.",
+                "hard_hat_rack": "Three hard hats. One has a crack running through it. Someone put a smiley face sticker over the crack."
+              }
+            }
+          }
+        },
+        "work_zone": {
+          "base": {
+            "name": "Work Zone",
+            "description": "The center of activity. This is where it's about to happen.",
+            "exits": {
+              "south": "Approach Road",
+              "north": "Overlook Point"
+            },
+            "floor": 1,
+            "furniture": [],
+            "objects": [
+              "activity_center"
+            ],
+            "items": [],
+            "interactable_triggers": {},
+            "hazards_present": [],
+            "locked": false,
+            "npc_slots": 3
+          },
+          "overrides": {
+            "transportation_road+impact_blunt": {
+              "name": "Route 42 — Merge Point",
+              "description": "Three lanes squeeze into one. Orange cones funnel traffic into a bottleneck. A construction crew works behind a concrete barrier. A crane arm swings overhead. Everything is too close together.",
+              "objects": [
+                "merge_bottleneck",
+                "crane_overhead",
+                "concrete_barrier"
+              ],
+              "examine_details": {
+                "merge_bottleneck": "Cars, trucks, and semis jammed nose-to-tail trying to merge. Tempers are visible through windshields. A motorcycle weaves between lanes.",
+                "crane_overhead": "A construction crane swings a concrete slab over the traffic. The cable creaks. Workers below don't even look up anymore.",
+                "concrete_barrier": "Temporary jersey barriers separating traffic from the work zone. They look about as sturdy as cardboard."
+              }
+            },
+            "industrial_accident+chemical_hazard": {
+              "name": "Plant Floor — Reactor Building",
+              "description": "The main reactor building. Pipes run in every direction. The hum of machinery is so deep you feel it in your teeth. A control panel blinks amber warnings that nobody is watching.",
+              "objects": [
+                "reactor_core_view",
+                "control_panel",
+                "steam_vent"
+              ],
+              "examine_details": {
+                "reactor_core_view": "Through a reinforced window, the core of the operation — pressure vessels, heat exchangers, a web of pipes. One pipe is glowing dull red. That can't be normal.",
+                "control_panel": "Dozens of gauges and switches. Three amber warnings flash: PRESSURE ANOMALY, TEMP EXCEEDANCE, COOLANT LOW. A fourth light is solid red: MANUAL OVERRIDE ENGAGED.",
+                "steam_vent": "A vent blasting steam sideways. The steam smells wrong — acrid, chemical. Not just water."
+              }
+            }
+          }
+        },
+        "overlook_point": {
+          "base": {
+            "name": "Overlook Point",
+            "description": "A vantage point. From here, you see the moment it all goes wrong.",
+            "first_entry_text": "And then it happens.",
+            "exits": {
+              "south": "Work Zone"
+            },
+            "floor": 1,
+            "furniture": [],
+            "objects": [
+              "disaster_view"
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "interactable_triggers": {},
+            "is_disaster_view": true,
+            "exit_room": true
+          },
+          "overrides": {
+            "transportation_road+construction_failure": {
+              "name": "Route 42 — Overpass",
+              "description": "You climbed the embankment to the overpass. From here, you can see the entire stretch of Route 42. The merge point. The crane. The tanker.",
+              "first_entry_text": "You hauled[color=#BC13FE] {visionary} [/color]up the embankment to get them away from the traffic, assuming they were having a panic attack.\n\nBelow you, [color=9D00FF]the crane cable snaps.[/color] The concrete slab it was holding drops across two lanes.\n\nThe tanker brakes —[color=#b30505] too hard, too fast.[/color] It jackknifes across the median.\n\nThe cars behind it don't have time. The pile-up starts slow and ends fast, a chain reaction that moves backward down the highway at sixty miles per hour.\n\nThe tanker ignites on the third or seventh impact.\n\nRoute 42 becomes a canyon of fire.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] is a fucking witch or something.",
+              "objects": [
+                "highway_panorama",
+                "fireball_below"
+              ],
+              "examine_details": {
+                "highway_panorama": "The highway is unrecognisable. Black smoke rises in a column visible for miles. Emergency vehicles are staging on the overpass beside you — they can't get to the scene any other way.",
+                "fireball_below": "The tanker fuel spread across four lanes before it ignited. It's still burning. It'll burn for hours."
+              }
+            },
+            "transportation_road+cargo_spill": {
+              "name": "Route 42 — Overpass",
+              "description": "You climbed the embankment to the overpass. From here, you can see the entire stretch of Route 42. A flatbed semi loaded with massive timber logs is cresting the hill.",
+              "first_entry_text": "You hauled[color=#BC13FE] {visionary} [/color]up the embankment to get them away from the traffic, assuming they were having a panic attack.\n\nBelow you, a logging truck's securing chains snap with a sound like a gunshot.\n\nThe massive timber logs spill across three lanes of traffic at sixty miles per hour. They don't just block the road—they roll over the hoods of cars, crushing the cabins flat.\n\nA chain reaction of collisions piles up behind the initial spill. Fuel tanks rupture. Sparks from grinding metal ignite the wreckage.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "highway_panorama",
+                "crushed_vehicles"
+              ],
+              "examine_details": {
+                "highway_panorama": "The highway is a graveyard of crushed steel and splintered wood. The fires are spreading fast.",
+                "crushed_vehicles": "You can barely recognize the makes and models of the cars under the timber. Nobody inside could have survived that."
+              }
+            },
+            "transportation_road+weather_event": {
+              "name": "Route 42 — Overpass",
+              "description": "You climbed the embankment to the overpass. From here, you can usually see the entire stretch of Route 42. But today, a thick, unnatural bank of fog is rolling across the valley.",
+              "first_entry_text": "You hauled[color=#BC13FE] {visionary} [/color]up the embankment to get them away from the traffic, assuming they were having a panic attack.\n\nBelow you, the fog bank swallows the highway. Visibility drops to zero in seconds.\n\nYou don't see the first crash, you just hear it—a sickening crunch of metal on metal. Then another. Then three at once.\n\nCars plowing into an invisible wall of wreckage at full highway speeds. The pileup grows exponentially. Then, a spark finds a ruptured fuel tank, and the fog glows a hellish, burning orange.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "glowing_fog",
+                "highway_sounds"
+              ],
+              "examine_details": {
+                "glowing_fog": "The thick fog is illuminated from within by raging fires. You can see the shadows of twisted vehicles within the smoke.",
+                "highway_sounds": "The sounds of tires screeching, metal crunching, and people screaming echo up from the whiteout below."
+              }
+            },
+            "industrial_accident+chemical_hazard": {
+              "name": "Perimeter Hill — Safe Distance",
+              "description": "A grassy hill outside the plant's perimeter fence. The chain-link is still rattling from the shockwave.",
+              "first_entry_text": "You walked out through the open gate and up the hill because[color=#BC13FE] {visionary} [/color]physically dragged you.\n\nYou were still walking when the pressure relief vents on Reactor Building 3 started screaming.\n\nThe walls flex outward. Like a breath. Once.\n\nThen the building peels open from the inside. Not an explosion — a rupture. A contained system releasing everything at once. The roof goes first, spinning into the sky like a dropped coin. The walls follow in segments.\n\nA column of fire reaches the altitude of a small plane.\n\nSecondary explosions chain through the pipe network — each one a new fireball, each one smaller, none of them small.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "plant_ruins",
+                "shockwave_debris"
+              ],
+              "examine_details": {
+                "plant_ruins": "Where the reactor building stood, there is now a crater approximately forty feet deep. The pipe network is still exploding in sequence — you can see the fireballs tracking along the underground route.",
+                "shockwave_debris": "The grass between you and the fence is covered in papers. Safety manuals. Inspection logs. A hard hat, cracked clean in half, landed fifteen feet up the hill."
+              }
+            },
+            "industrial_accident+geological_event": {
+              "name": "Rural Road — Elevated Shoulder",
+              "description": "The raised shoulder on the east side of the road, up from the drainage culvert. You can smell the gas from here. You could smell it half a mile back.",
+              "first_entry_text": "You stopped the car because[color=#BC13FE] {visionary} [/color]grabbed the wheel. The smell hit you immediately — sulphur and something underneath it, something that made your teeth ache.\n\nYou got out. You walked up the embankment to get away from the fumes.\n\nA truck came down the road. The driver was smoking. The window was open.\n\nThe ignition point is three hundred meters behind you. The fireball is the diameter of a city block. The shockwave hits you like a flat hand across the chest and knocks you back two steps.\n\nThe pipeline is still burning. It'll burn until someone figures out how to shut the flow off. That'll take hours.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was actually right.",
+              "objects": [
+                "pipeline_fire",
+                "crater_edge"
+              ],
+              "examine_details": {
+                "pipeline_fire": "The trench above the pipeline is burning in both directions along the right-of-way. The nearest structure — a farmhouse — has its windows gone.",
+                "crater_edge": "The initial ignition point has cratered the road by about four feet. The asphalt has melted and re-solidified in strange, rippled shapes."
+              }
+            },
+            "rural_disaster+structural_collapse": {
+              "name": "Grain Co-op Access Road — Field Gate",
+              "description": "The field gate on the access road. You pulled over here. The silos were making a sound — a deep, pressurised thrumming that you felt more than heard.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] demanded you stop at the gate, refusing to go any closer. The silos were full — you could see it from the road, the grain dust venting from the roof vents in lazy plumes.\n\nGrain dust burns. You knew this, somehow, in the back of your mind.\n\nThe static discharge hit somewhere in the conveyor system. The dust cloud inside Silo 3 ignited all at once — not a fire, a deflagration. The silo didn't burn. It detonated.\n\nThe shockwave arrived before the noise. It moved the car. Then the noise arrived — a CRACK so loud it wasn't loud anymore, just pressure and white.\n\nBurning grain fell on the fields for two minutes.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "silo_crater",
+                "burning_fields"
+              ],
+              "examine_details": {
+                "silo_crater": "Where Silo 3 stood, there is a concrete ring and a crater. The adjacent silos have been deformed by the shockwave — they're still standing but their walls have buckled.",
+                "burning_fields": "The fields downwind of the blast are burning. Grain. Dry stubble. The fence line. A barn a quarter mile away has lost its roof."
+              }
+            },
+            "industrial_accident+machinery": {
+              "name": "Factory Perimeter — Loading Bay Door",
+              "description": "The loading bay exit at the rear of the building. You came through here. The door is still open behind you.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] grabbed you by the arm and hauled you outside. You told yourself they just needed air.\n\nThe floor had been making a sound — a low, periodic flexing, like a drumhead under tension. {visionary} noticed it. Nobody else seemed to.\n\nThe roof trusses fail from the centre outward. [color=BC13FE]They don't fall all at once — they cascade, each one releasing load onto the next, the collapse moving across the factory floor like a wave.[/color] The machinery goes with them.\n\nThe loading bay doors blow outward from the air pressure of the collapse. You're already outside. [color=FF3131]The door misses you by a meter.[/color]\n\nThe dust cloud rolls out across the car park and swallows everything.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was actually right.",
+              "objects": [
+                "factory_ruins",
+                "dust_front"
+              ],
+              "examine_details": {
+                "factory_ruins": "The factory is a flat, dense mass of debris. One wall is still standing — the east wall, brick, built in 1937 — but it's leaning and it won't last.",
+                "dust_front": "The dust cloud from the collapse is still moving. It's coating everything in the car park — cars, the gatehouse, you — in a uniform grey."
+              }
+            }
+          }
+        }
+      }
+    },
+    "neighborhood": {
+      "_description": "Grid layout: street → building entrance → interior → upper floor/rooftop. Covers bridge collapses, apartment collapses, urban structural failures.",
+      "rooms": {
+        "street_level": {
+          "base": {
+            "name": "Street Level",
+            "description": "A city street. Traffic passes. People walk. Everything is normal.",
+            "objects": [
+              "overhead_speakers"
+            ],
+            "examine_details": {
+              "overhead_speakers": {
+                "name": "Overhead Speakers",
+                "description": "Speakers overhead crackle with muzak and announcements.",
+                "is_omen_provider": "radio",
+                "aliases": ["speakers", "overhead speakers", "speaker", "radio", "car radio"]
+              }
+            }
+          },
+          "overrides": {
+            "structural_collapse+mechanical_failure": {
+              "name": "{city_name} Memorial Bridge — East Approach",
+              "description": "The east approach to the {city_name} Memorial Bridge. Two lanes of traffic flow onto the bridge. Pedestrians walk the sidewalk. The bridge stretches across the river, its cables gleaming in the sun.",
+              "first_entry_text": "You were crossing the bridge on foot. It was a beautiful day — clear sky, light breeze off the river.\n\nThen[color=#BC13FE] {visionary} [/color]grabbed you, babbling incoherently, and pulled you back toward the bank.",
+              "furniture": [
+                "handrail",
+                "bridge_pylon"
+              ],
+              "objects": [
+                "bridge_span",
+                "river_below",
+                "traffic_flow",
+                "car_radio"
+              ],
+              "examine_details": {
+                "bridge_span": "The {city_name} Memorial Bridge. Steel cables, concrete deck, four lanes of traffic. Built in 1974. The plaque says it was 'built to last.' The maintenance schedule might disagree.",
+                "river_below": "Sixty feet down. The {city_name} River is swollen from recent rain. The current looks strong.",
+                "traffic_flow": "Cars and trucks stream onto the bridge. A school bus. A moving van. An ambulance with no sirens. Just another commute."
+              }
+            },
+            "urban_disaster+construction_failure": {
+              "name": "Elm Street — Residential Block",
+              "description": "A quiet residential street lined with old brick apartment buildings. Cars are parallel parked tightly against the curb.",
+              "first_entry_text": "You were walking home. It was a normal day.\n\nThen[color=#BC13FE] {visionary} [/color]practically tackled you into the street, screaming at everyone to get away from the buildings.",
+              "furniture": [
+                "parked_cars",
+                "street_lamp"
+              ],
+              "objects": [
+                "brick_apartments",
+                "cracked_pavement",
+                "car_radio"
+              ],
+              "examine_details": {
+                "brick_apartments": "Six-story brick buildings built in the 1960s. They look solid, but the mortar between the bricks is turning to dust.",
+                "cracked_pavement": "The sidewalk near the foundation is buckling upward slightly."
+              }
+            }
+          }
+        },
+        "building_entrance": {
+          "base": {
+            "name": "Building Entrance",
+            "description": "The entrance to a building. Doors, lobby, the threshold between outside and in.",
+            "exits": {
+              "south": "Street Level",
+              "north": "Interior",
+              "up": "Upper Level"
+            },
+            "floor": 1,
+            "furniture": [
+              "entrance_doors",
+              "lobby_bench"
+            ],
+            "interactable_triggers": {},
+            "objects": [
+              "building_directory",
+              "elevator_doors"
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "npc_slots": 3
+          },
+          "overrides": {
+            "structural_collapse+mechanical_failure": {
+              "name": "Bridge Midspan — Pedestrian Walkway",
+              "description": "The middle of the bridge. The walkway narrows here. You can feel the deck flexing under the traffic. A jogger passes. A mother pushes a stroller. Below, the river churns.",
+              "exits": {
+                "south": "Street Level",
+                "north": "Interior",
+                "up": "Upper Level"
+              },
+              "objects": [
+                "deck_surface",
+                "cable_anchor",
+                "inspection_tag"
+              ],
+              "examine_details": {
+                "deck_surface": "The concrete deck has a crack running diagonally across the walkway. You step over it. It's wider than your finger.",
+                "cable_anchor": "A massive steel anchor point where a suspension cable meets the deck. The bolts are rusted. One is missing entirely.",
+                "inspection_tag": "A small metal tag wired to the cable: LAST INSPECTED — 2019. It's been seven years."
+              }
+            },
+            "urban_disaster+construction_failure": {
+              "name": "Apartment Lobby",
+              "description": "A dated lobby with fading floral wallpaper and a row of brass mailboxes. A small elevator sits with its doors open.",
+              "objects": [
+                "mailboxes",
+                "lobby_ceiling",
+                "elevator",
+                "overhead_speakers"
+              ],
+              "examine_details": {
+                "lobby_ceiling": "A long, jagged crack runs from the front door all the way to the elevator. Plaster dust occasionally drifts down from it.",
+                "mailboxes": "Stuffed with junk mail. The brass is tarnished.",
+                "elevator": "An old cage elevator. It groans audibly, even when empty."
+              }
+            }
+          }
+        },
+        "side_street": {
+          "base": {
+            "name": "Side Street",
+            "description": "A quieter side street. Less traffic. A few parked cars.",
+            "exits": {
+              "west": "Street Level"
+            },
+            "floor": 1,
+            "furniture": [
+              "parked_cars",
+              "dumpster"
+            ],
+            "interactable_triggers": {},
+            "objects": [
+              "alley_entrance",
+              "fire_escape"
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "npc_slots": 3
+          },
+          "overrides": {
+            "structural_collapse+mechanical_failure": {
+              "name": "River Bank — Under the Bridge",
+              "description": "A muddy path along the river bank, directly beneath the bridge. The underside of the deck is visible — steel beams, rust stains, pigeon nests. Water drips from somewhere above.",
+              "exits": {
+                "west": "Street Level"
+              },
+              "objects": [
+                "bridge_underside",
+                "support_column",
+                "rust_stains"
+              ],
+              "examine_details": {
+                "bridge_underside": "From below, the bridge looks different. The steel beams are streaked with rust. Chunks of concrete have spalled off, exposing rebar. This bridge is sick.",
+                "support_column": "A massive concrete support column. A crack runs vertically from the waterline to the deck. It's been patched with what looks like... duct tape and expanding foam.",
+                "rust_stains": "Orange-brown streaks run down the concrete like tears. The steel is weeping."
+              }
+            },
+            "urban_disaster+construction_failure": {
+              "name": "Alleyway",
+              "description": "A narrow alley between two apartment buildings. Fire escapes zigzag down the brick walls.",
+              "objects": [
+                "brick_wall",
+                "fire_escape"
+              ],
+              "examine_details": {
+                "brick_wall": "The exterior load-bearing wall. It's noticeably bowing outward near the bottom.",
+                "fire_escape": "Rusted metal stairs clinging to the side of the building. They look like they'd rip out of the masonry if more than two people stood on them."
+              }
+            }
+          }
+        },
+        "interior": {
+          "base": {
+            "name": "Interior",
+            "description": "Inside the building. The walls, the floor, the ceiling — all solid. All reliable. All taken for granted.",
+            "exits": {
+              "south": "Building Entrance"
+            },
+            "floor": 1,
+            "furniture": [],
+            "objects": [
+              "interior_details"
+            ],
+            "interactable_triggers": {},
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "npc_slots": 3
+          },
+          "overrides": {
+            "structural_collapse+mechanical_failure": {
+              "name": "Bridge West Side — Traffic Stop",
+              "description": "The west end of the bridge. Traffic has stopped — a fender bender up ahead. Horns blare. The bridge vibrates with the weight of stationary vehicles. You can feel a rhythmic swaying that wasn't there before.",
+              "exits": {
+                "south": "Building Entrance"
+              },
+              "objects": [
+                "stopped_traffic",
+                "bridge_sway",
+                "cracking_sound"
+              ],
+              "examine_details": {
+                "stopped_traffic": "Vehicles packed bumper to bumper. Nobody can move. The school bus is right in the middle of the span.",
+                "bridge_sway": "The bridge is swaying. Not from wind — from weight. The rhythm is wrong. It's getting worse.",
+                "cracking_sound": "A deep, structural groan. Like the sound a frozen lake makes before it gives way. But this isn't ice. This is steel and concrete."
+              }
+            },
+            "urban_disaster+construction_failure": {
+              "name": "First Floor Hallway",
+              "description": "A long, dimly lit corridor. The doors to the apartments are all shut. The floor is slanting noticeably to the left.",
+              "objects": [
+                "slanting_floor",
+                "door_frames"
+              ],
+              "examine_details": {
+                "slanting_floor": "If you put a marble down here, it would roll into the wall with frightening speed.",
+                "door_frames": "None of the doors sit square in their frames anymore. The building is actively settling."
+              }
+            }
+          }
+        },
+        "upper_level": {
+          "base": {
+            "name": "Upper Level",
+            "description": "Higher ground. A view of what's below. A view of what's coming.",
+            "first_entry_text": "From up here, you can see everything.",
+            "exits": {
+              "down": "Building Entrance"
+            },
+            "floor": 2,
+            "furniture": [],
+            "objects": [
+              "view_below"
+            ],
+            "interactable_triggers": {},
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "is_disaster_view": true,
+            "exit_room": true
+          },
+          "overrides": {
+            "urban_disaster+flood_related": {
+              "name": "4th Street — High Curb",
+              "description": "You stepped up onto the highest curb you could find. The sky is black. The rain is falling so hard it hurts.",
+              "first_entry_text": "You followed[color=#BC13FE] {visionary} [/color]up onto the high curb when they started screaming about water.\n\nThe storm drains didn't just back up — they exploded. The water pressure blew the manhole covers thirty feet into the air.\n\nWithin three minutes, the street is a river. Cars are floating. Someone tries to wade across and is swept under a submerged bus.\n\nThe water hits a blown transformer box on the corner. The blue flash arcs across the surface of the water, electrocuting everyone still trying to swim.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": ["flooded_street", "arcing_transformer"],
+              "examine_details": {
+                "flooded_street": "The water is moving incredibly fast, carrying dumpsters and newspaper stands like toys.",
+                "arcing_transformer": "Sparks shower down from the blown box, dancing across the rising water."
+              }
+            },
+            "urban_disaster+geological_event": {
+              "name": "Business District — Alleyway",
+              "description": "You ducked into an alleyway between two high-rises. The asphalt beneath your feet feels soft. Unanchored.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] grabbed you by the shirt and hurled you backward into the alleyway just as the street ahead groaned.\n\nThe street didn't crack. It just... dropped.\n\nA perfectly circular hole, eighty feet across, swallowed the intersection. A city bus fell straight down into the darkness. The sound of the subterranean water main rushing into the void echoed up the sides.\n\nThe edges of the sinkhole are still crumbling, taking sidewalks, streetlights, and pedestrians with them into the abyss.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] wasn't kidding.",
+              "objects": ["sinkhole_edge", "falling_debris"],
+              "examine_details": {
+                "sinkhole_edge": "The asphalt is shearing off in massive chunks. You can hear the water rushing far below.",
+                "falling_debris": "A parking meter slides into the hole, disappearing without a sound."
+              }
+            },
+            "structural_collapse": {
+              "name": "East Bank Overlook",
+              "description": "You made it off the bridge. You're standing on the east bank, looking back at the span. The swaying is visible now — a slow pendulum motion that bridges are not supposed to make.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] physically pulled you off the bridge.\n\nYou turn around when you hear it — the first sounds of metal.\n\nThe centre span drops first. Not a gradual failure — a sudden, sickening lurch downward, like a trapdoor releasing. Cables snap like guitar strings, each one a separate rifle crack.\n\nThe sound is a screeching barrage of metal on asphalt and then metal on water and then silence, which is worse.\n\nThe bridge folds in half. Vehicles slide into the gap. A school bus. A delivery truck. A car with its hazards on that had been stopped in traffic.\n\nThe river swallows everything.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "collapsed_span",
+                "river_debris"
+              ],
+              "examine_details": {
+                "collapsed_span": "The centre span of the {city_name} Memorial Bridge hangs vertically, submerged to its midpoint. Suspension cables trail in the current like dead vines. The span is still moving — swaying in the current.",
+                "river_debris": "Vehicles are visible just below the surface. One pair of taillights is still on, blinking red in the murk. Emergency sirens layer over each other from both banks."
+              }
+            },
+            "urban_disaster": {
+              "name": "Parking Structure — Level Three",
+              "description": "The open third level of the parking structure. You came up here to get away from the street. The rain hit like a wall five minutes ago and hasn't stopped.",
+              "first_entry_text": "The storm drain on the corner of 4th and Main backed up first. You watched it from the street — the water coming up instead of going down.\n\nYou climbed the parking structure stairs following [color=#BC13FE]{visionary}[/color]. You're not sure why. The car was on level one.\n\nIn six minutes, the street below is a river. Real current — fast enough to move parked cars. A truck floats past the entrance ramp. A person is on top of it, holding on.\n\nThe traffic signals are still cycling. Green. Yellow. Red. For no one.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] called it. They really knew.",
+              "objects": [
+                "flood_street_view",
+                "drainage_failure"
+              ],
+              "examine_details": {
+                "flood_street_view": "The entire block is underwater. The water line is at the top of the parking meters — about four feet. It's still rising. The current is carrying debris: bins, tyres, a push-bike.",
+                "drainage_failure": "You can see where the storm drain gave out — a geyser of brown water is still shooting up from the grate like a fountain. The city's drainage system has reversed."
+              }
+            },
+            "construction_failure": {
+              "name": "Opposite Pavement — Doorway",
+              "description": "The doorway of the corner shop across the street. You ducked in here. The building opposite — your building — has been making a sound for the last thirty seconds.",
+              "first_entry_text": "The sound was subterranean. A groaning from somewhere in the foundation, transmitted up through the pavement and into your feet.\n\n[color=#BC13FE]{visionary}[/color] dragged you across the street. You stood in a doorway.\n\nThe building doesn't collapse dramatically. It collapses practically — floors pancaking in sequence, each one adding its weight to the next, the whole structure compressing downward in a slow, deliberate way that takes about four seconds and produces a dust cloud the size of a city block.\n\nThe windows blow outward on the ground floor from the air pressure. Glass crosses the street. One piece hits the door frame six inches from your head.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "rubble_mound",
+                "glass_scatter"
+              ],
+              "examine_details": {
+                "rubble_mound": "The building is now approximately twelve feet tall where it was six stories. A stairwell column is still standing — the rest is a uniform grey mound. You can hear something from inside it. Something alive.",
+                "glass_scatter": "Glass covers the entire pavement on both sides of the street. Some pieces are still falling from the floors that haven't fully settled."
+              }
+            },
+            "drowning_water": {
+              "name": "Lakeshore Promenade — North Pier",
+              "description": "The north pier of the promenade. You watched the Queen Isabella pull away from here. You almost didn't get off in time.",
+              "first_entry_text": "You were the last one down the gangway, shoved forward by a panicked [color=#BC13FE]{visionary}[/color]. The crew member was already unhooking it when you stepped off.\n\nYou stood on the pier and watched the Queen Isabella make her turn into the lake. The lights were on all five decks. Music carried across the water.\n\nThe list started gently. Almost imperceptible. A degree. Two.\n\nBy five degrees, the plates were sliding off tables in the dining room. You could see them, tiny glints of light tumbling through the portholes.\n\nBy fifteen degrees, the screaming reached the shore.\n\nThe Queen Isabella rolled past the point of recovery and kept going. The funnel hit the water first. Then the hull came over on top of everything.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "capsized_hull",
+                "flotation_debris"
+              ],
+              "examine_details": {
+                "capsized_hull": "The hull of the Queen Isabella is visible above the waterline — red anti-fouling paint against black water. It's still moving, slowly rotating as it settles.",
+                "flotation_debris": "The lake surface between the pier and the wreck is covered in life rings, deck chairs, luggage, and people. Rescue boats are launching from the south pier."
+              }
+            }
+          }
+        }
+      }
+    },
+    "outdoor": {
+      "_description": "Nature path: trailhead/arrival → open area → viewpoint/shelter → high ground. Covers wildfires, floods, earthquakes, typhoons, ski lifts, sinkholes, dam breaks.",
+      "rooms": {
+        "arrival_point": {
+          "base": {
+            "name": "Arrival Point",
+            "description": "The starting point. A parking lot, a trailhead, a dock. The edge of civilization.",
+            "first_entry_text": "You're outside. The air is fresh. Nothing bad happens outdoors. Right?\n\nThen[color=#BC13FE] {visionary} [/color]started screaming.",
+            "exits": {
+              "north": "Open Area"
+            },
+            "furniture": [
+              "information_kiosk",
+              "parking_area"
+            ],
+            "objects": [
+              "car_radio"
+            ],
+            "examine_details": {
+              "car_radio": {
+                "name": "Car Radio",
+                "description": "A battered car nearby is blaring their radio for all to hear.",
+                "is_omen_provider": "radio",
+                "aliases": ["rude driver", "blaring car", "radio", "car with loud music"]
+              }
+            },
+            "floor": 1,
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "entry_room": true,
+            "npc_slots": 1
+          },
+          "overrides": {
+            "natural_disaster": {
+              "name": "{city_name} Overlook — Parking Area",
+              "description": "A gravel parking lot at the McKinley scenic overlook. A few cars. A ranger station with a CLOSED sign. The sky has an odd color — yellow-grey, like a bruise.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] ripped you out of the car, screaming something about the sky.\n\nThe sky looks wrong. The air tastes metallic. The birds are gone — completely silent.",
+              "furniture": [
+                "ranger_station",
+                "gravel_lot"
+              ],
+              "objects": [
+                "sky_color",
+                "silent_trees",
+                "radio"
+              ],
+              "examine_details": {
+                "sky_color": "The sky is the color of a old bruise — yellow, grey, with veins of green. You've never seen a sky like this.",
+                "silent_trees": "The forest is absolutely silent. No birds. No insects. No wind in the leaves. It's like nature is holding its breath.",
+                "weather_station": "A small automated weather station. The wind speed dial is pinned. The barometer is dropping so fast you can watch the needle move."
+              }
+            },
+            "infrastructure_failure+flood_related": {
+                "name": "{city_name} Dam — Visitor Parking",
+                "description": "A gravel parking lot overlooking the massive concrete wall of the dam. The sky looks bruised, and the air is heavy.",
+                "first_entry_text": "[color=#BC13FE]{visionary}[/color] dragged you out of the car, eyes wide, pointing at the concrete face of the dam...",
+                "furniture": [
+                  "ranger_station",
+                  "gravel_lot"
+                ],
+                "objects": [
+                  "sky_color",
+                  "dam_wall",
+                  "weather_station"
+                ],
+                "examine_details": {
+                  "dam_wall": "A colossal slab of concrete holding back millions of tons of water. You notice a damp patch near the base that wasn't there before.",
+                  "sky_color": "The sky is the color of an old bruise...",
+                  "weather_station": "The barometer is dropping so fast you can watch the needle move."
+                }
+              },
+            "winter_sports+mechanical_failure": {
+              "name": "McKinley Peak — Base Lodge",
+              "description": "The base lodge of McKinley Peak ski resort. Skiers and boarders mill about in colorful gear. The lift line stretches across the snow. Gondolas swing overhead on cables.",
+              "first_entry_text": "Perfect conditions — fresh powder, blue sky, light wind. The mountain is packed.\n\nThen[color=#BC13FE] {visionary} [/color]threw their skis down in the lift line and started shouting that the cables were going to snap. People are staring.",
+              "furniture": [
+                "ticket_window",
+                "ski_rack"
+              ],
+              "objects": [
+                "lift_line",
+                "gondola_cables",
+                "conditions_board"
+              ],
+              "examine_details": {
+                "lift_line": "A queue of skiers shuffles forward. Kids, families, a few show-offs doing tricks in line. Nobody's worried.",
+                "gondola_cables": "Thick steel cables run from the base station up the mountain, disappearing into the trees. The gondolas sway gently. One of them makes a grinding sound as it passes the first tower.",
+                "conditions_board": "CONDITIONS: POWDER — 8\" NEW. WIND: 15 MPH GUSTING TO 35. AVALANCHE RISK: MODERATE. Someone taped a note under it: 'Lift 3 cable tension check OVERDUE — see maintenance.'"
+              }
+            }
+          }
+        },
+        "open_area": {
+          "base": {
+            "name": "Open Area",
+            "description": "A wide open space. Exposed. Nowhere to hide if things go wrong.",
+            "exits": {
+              "south": "Arrival Point",
+              "north": "Viewpoint",
+              "east": "Shelter"
+            },
+            "floor": 1,
+            "furniture": [],
+            "interactable_triggers": {},
+            "objects": [
+              "open_sky",
+              "terrain"
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "npc_slots": 3
+          },
+          "overrides": {
+            "natural_disaster": {
+              "name": "{city_name} Overlook — Trail",
+              "description": "A dirt trail through sparse trees. The overlook point is ahead. The ground feels unstable — soft, almost spongy. Cracks have appeared in the trail surface.",
+              "objects": [
+                "ground_cracks",
+                "leaning_trees",
+                "distant_rumble"
+              ],
+              "examine_details": {
+                "ground_cracks": "Fresh cracks in the packed dirt. Some are an inch wide. They weren't here last week — you can tell because the exposed earth is dark and moist.",
+                "leaning_trees": "Several trees are tilted at odd angles. Their roots are partially exposed. The ground shifted under them.",
+                "distant_rumble": "A low rumble from somewhere underground. Not thunder. Deeper. Constant."
+              }
+            },
+            "winter_sports+mechanical_failure": {
+              "name": "{city_name} Peak — Lift Loading Zone",
+              "description": "The loading zone for Lift 3. Skiers shuffle forward, grabbing chairs as they swing around. An attendant waves people into position. The chairs climb steeply into the trees.",
+              "objects": [
+                "lift_chairs",
+                "loading_platform",
+                "cable_tension_monitor"
+              ],
+              "examine_details": {
+                "lift_chairs": "Two-person chairs, swinging around the bullwheel. They look sturdy enough. But one of them has a safety bar that doesn't latch.",
+                "loading_platform": "A rubber mat worn smooth from boots. The attendant looks bored. He hasn't checked the cable monitor in at least an hour.",
+                "cable_tension_monitor": "A small screen showing cable tension readings. The left column reads NOMINAL. The right column reads ALERT — TENSION VARIANCE 12%. Normal variance is under 3%."
+              }
+            }
+          }
+        },
+        "shelter": {
+          "base": {
+            "name": "Shelter",
+            "description": "A structure offering some protection from the elements.",
+            "exits": {
+              "west": "Open Area"
+            },
+            "floor": 1,
+            "furniture": [
+              "bench",
+              "roof_overhang"
+            ],
+            "objects": [
+              "supply_cache"
+            ],
+            "items": [],
+            "hazards_present": [],
+            "interactable_triggers": {},
+            "locked": false,
+            "npc_slots": 3
+          },
+          "overrides": {
+            "natural_disaster": {
+              "name": "{city_name} Overlook — Ranger Cabin",
+              "description": "A small ranger cabin, locked and boarded. A radio antenna on the roof sways in wind that wasn't there five minutes ago. An emergency supply box is mounted on the exterior wall.",
+              "furniture": [
+                "boarded_cabin",
+                "supply_box"
+              ],
+              "objects": [
+                "radio_antenna",
+                "emergency_map",
+                "seismograph_printout"
+              ],
+              "examine_details": {
+                "radio_antenna": "The antenna whips back and forth. The wind is picking up fast — and it's coming from the wrong direction.",
+                "emergency_map": "A faded evacuation map under cracked plexiglass. EVACUATION ROUTE: FOLLOW TRAIL SOUTH TO PARKING AREA. IN CASE OF EARTHQUAKE: MOVE TO OPEN GROUND.",
+                "seismograph_printout": "A curl of paper from a portable seismograph, still printing. The line is no longer flat. It's spiking. Rhythmically. Getting bigger."
+              }
+            },
+            "winter_sports+mechanical_failure": {
+              "name": "{city_name} Peak — Ski Patrol Hut",
+              "description": "A small red hut with a white cross. Ski patrol. A stretcher leans against the wall. A radio crackles inside with chatter about 'Lift 3 anomalies.'",
+              "furniture": [
+                "patrol_radio",
+                "first_aid_station"
+              ],
+              "objects": [
+                "stretcher",
+                "incident_log",
+                "mountain_map"
+              ],
+              "examine_details": {
+                "patrol_radio": "'Control, this is Patrol 7. We're getting reports of unusual vibration on Lift 3. Passengers are complaining. Over.' Static. No response.",
+                "incident_log": "A clipboard. The last three entries are all about Lift 3: 'Cable tension variance.' 'Grinding sound at Tower 4.' 'Gondola #17 safety latch failure.' All from today.",
+                "mountain_map": "A topographic map of McKinley Peak. Someone has drawn a red circle around Tower 4 of Lift 3 and written 'CHECK IMMEDIATELY' in block letters."
+              }
+            }
+          }
+        },
+        "viewpoint": {
+          "base": {
+            "name": "Viewpoint",
+            "description": "The highest accessible point. A panoramic view of everything below.",
+            "exits": {
+              "south": "Open Area",
+              "north": "High Ground"
+            },
+            "floor": 1,
+            "furniture": [],
+            "objects": [
+              "panorama"
+            ],
+            "items": [],
+            "hazards_present": [],
+            "interactable_triggers": {},
+            "locked": false,
+            "npc_slots": 3
+          },
+          "overrides": {
+            "natural_disaster": {
+              "name": "{city_name} Overlook — Cliff Edge",
+              "description": "The scenic overlook. A waist-high railing. Below, the valley spreads out — {city_name}, the river, the downtown core. The ground vibrates under your feet.",
+              "objects": [
+                "valley_view",
+                "vibrating_ground",
+                "railing"
+              ],
+              "examine_details": {
+                "valley_view": "{city_name} sprawls below. From here it looks peaceful. Orderly. Fragile.",
+                "vibrating_ground": "The ground is vibrating. Not shaking — vibrating. A constant, low-frequency hum. The railing buzzes against your palms.",
+                "railing": "A metal safety railing. The bolts anchoring it to the rock are loose. You can wiggle them with your fingers."
+              }
+            },
+            "winter_sports+mechanical_failure": {
+              "name": "{city_name} Peak — Mid-Station Platform",
+              "description": "The mid-station where Lift 3 passes through a support structure. From here you can see the cable running up to the summit and back down to the base. Gondolas full of skiers slide past.",
+              "objects": [
+                "cable_closeup",
+                "tower_four",
+                "summit_view"
+              ],
+              "examine_details": {
+                "cable_closeup": "The cable passes inches from the platform. You can hear it — a low singing sound, like a guitar string under too much tension. The pitch is rising.",
+                "tower_four": "Tower 4 is visible up the slope. Something is wrong with it — the crossarm is tilted. The cable is riding on the edge of the sheave, not in the groove.",
+                "summit_view": "The summit of {city_name} Peak. Beautiful. Dozens of people are up there, waiting for the lift to bring them down."
+              }
+            }
+          }
+        },
+        "high_ground": {
+          "base": {
+            "name": "High Ground",
+            "description": "The safest point. The place you end up when everything below falls apart.",
+            "first_entry_text": "And then it happens.",
+            "exits": {
+              "south": "Viewpoint"
+            },
+            "floor": 2,
+            "furniture": [],
+            "objects": [
+              "disaster_panorama"
+            ],
+            "items": [],
+            "hazards_present": [],
+            "interactable_triggers": {},
+            "locked": false,
+            "is_disaster_view": true,
+            "exit_room": true
+          },
+          "overrides": {
+            "natural_disaster+geological_event": {
+              "name": "Hilltop Park — Open Ground",
+              "description": "You sprinted to the center of the park, away from the trees, away from the power lines.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] made you sprint to the center of the park.\n\nThe P-wave hit first — a sudden, violent jolt that knocked you to your knees.\n\nThen the S-wave arrived. The ground rolled like the surface of the ocean. You watched the brick facade of the library across the street peel away and crush the cars parked below it. The sound is deafening — a deep, planetary grinding mixed with shattering glass and screaming.\n\nThe earth rips open along the park path, a jagged fissure expanding rapidly towards you.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": ["fissure", "collapsing_library"],
+              "examine_details": {
+                "fissure": "A jagged crack in the earth, easily three feet wide and growing.",
+                "collapsing_library": "A cloud of brick dust obscures the street. The aftershocks are already starting."
+              }
+            },  
+            "natural_disaster+structural_collapse": {
+              "name": "Hilltop Park — Open Ground",
+              "description": "The small hilltop park at the edge of the neighbourhood. You came up here. Your feet carried you here before your head understood why.",
+              "first_entry_text": "You chased[color=#BC13FE] {visionary} [/color]up the hill, demanding to know what they were talking about.\n\nThe dogs started barking at once. All of them.\n\nThen the P-wave — a rolling sensation, almost pleasant, like being on a slow boat. You looked at your hands. Your coffee was rippling.\n\nThe S-wave hit four seconds later.\n\nThe brick building on the corner of Elm and 3rd — four floors, 1962 construction — lifted slightly off its foundation and fell sideways. Not crumbling. Tilting, like a person losing their balance, and then falling.\n\nThe ground is still moving. It's been moving for thirty seconds. It keeps moving.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "neighbourhood_ruins",
+                "cracked_ground"
+              ],
+              "examine_details": {
+                "neighbourhood_ruins": "Half the buildings below are still standing. Half aren't. Gas is burning somewhere two streets over. You can hear the fire before you see it.",
+                "cracked_ground": "The park path has cracked along an underlying fault line. The crack is four inches wide at its widest. It runs the full length of the park and keeps going under the fence."
+              }
+            },
+            "winter_sports+mechanical_failure": {
+              "name": "{city_name} Peak — Treeline Clearing",
+              "description": "A clearing in the trees above the mid-station. You hiked up instead of taking the lift. You're not sure why you believed them.",
+              "first_entry_text": "You were still wondering if you fully believed [color=#BC13FE]{visionary}[/color] when they suddenly bolted from the lift line and scrambled up the adjacent hiking trail. You followed them.\n\n[color=#5eafd2]Then, the main cable makes a sound.[/color]\n\nNot the usual steady, mechanical hum. It's a harmonic —a high, singing vibration, rising in pitch until it sets your teeth on edge.\n\nWith a sound like a cannon shot, [color=#BC13FE]Tower 4's massive steel crossarm shears clean off[/color].\n\nThe tension releases in a violent whip. The cable lashes out, shearing through fifty-foot pines on both sides of the line. The gondolas plummet, [color=#5eafd2]but they don't hit the snow[/color]—they pendulum wildly out over the mountain pass road below, right into the path of a transit bus that had left from the lodge.\n\nA giant capsule of steel and glass slams into it broadside - [color=#5eafd2]the impact yanking the massive lift cable taut[/color]. Tires skidding desperately on the black ice, the bus is violently dragged off course. It tips and rolls heavily down the steep grade, [color=#BC13FE]wrapping itself in the snapped cable like a horrific spool[/color].\n\nThe tumbling bus acts as a massive anchor, dragging the entire lift system down with it. [color=#5eafd2]Towers buckle in a catastrophic domino effect.[/color] More gondolas are ripped from the sky, smashing into the lodge as the cable begins [color=#BC13FE]sawing through the patio supports[/color] as the crowd above looks on in absolute, frozen horror.\n\nThe mountain echoes with a chorus of tearing metal and screaming steel.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was actually right.",
+              "objects": [
+                "fallen_gondolas",
+                "snapped_cable"
+              ],
+              "examine_details": {
+                "fallen_gondolas": "Gondolas lie scattered down the slope. Some are crumpled against the trees. Others are half-buried in the snow. You can count eight from here. The lift was carrying forty.",
+                "snapped_cable": "The steel cable lies across the snow in a massive arc, still under tension where it's caught on Tower 3. The trees it cut through are still falling."
+              }
+            },
+            "natural_disaster+coastal_disaster": {
+              "name": "Coastal Bluff — Storm Shelter Ruins",
+              "description": "The concrete shelter at the top of the coastal bluff. Its roof is gone — took by a previous storm years ago. The walls are still standing.",
+              "first_entry_text": "The forecast said Category 2. It made landfall as a 4.\n\nYou were on the boardwalk when the first band hit. The wind was already wrong — not gusting, sustained, a constant pressure that leaned against you.\n\n[color=#BC13FE]{visionary}[/color] dragged you up the bluff path to the old shelter.\n\nFrom up here you can see the full sweep of the coastline. The storm surge is coming in now — not waves, a wall. A continuous elevation of the sea level, advancing. The boardwalk disappears under it in thirty seconds. The parking lot in two minutes.\n\nThe buildings that aren't anchored to their foundations begin to move.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "surge_panorama",
+                "shelter_wall"
+              ],
+              "examine_details": {
+                "surge_panorama": "The coastline below is no longer coastline. It's sea. The storm surge has advanced three blocks inland. Buildings are standing in water to their second floors.",
+                "shelter_wall": "The windward wall of the shelter is flexing — you can feel it vibrating under your hands. The wind speed up here is doing things you didn't think wind could do."
+              }
+            },
+            "geological_event+urban_disaster": {
+              "name": "{city_name} Business District — Parking Structure Roof",
+              "description": "The open roof of the parking structure adjacent to the business district. You came up here on your lunch break. You weren't hungry.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] made you run to the roof of the parking structure. They wouldn't let you stay on the street.\n\nThe street you were standing on thirty seconds ago is no longer there.\n\nIt didn't crack. It didn't settle. It inverted — the centre dropped and the edges curled down after it, like a tarpaulin with a weight placed in the middle.\n\nThe sinkhole is still growing. You can see it from up here — a circular depression that's expanding at its perimeter, the soil undermined by the collapsed water main that no one fixed for three years.\n\nA food cart. Two parked cars. A bus stop shelter. A person.\n\nGone.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "sinkhole_panorama",
+                "subsidence_crack"
+              ],
+              "examine_details": {
+                "sinkhole_panorama": "The sinkhole is approximately eighty feet across and still widening at its edges. The depth is unclear — the bottom isn't visible. Utility lines are dangling into it from all sides.",
+                "subsidence_crack": "A crack has propagated from the sinkhole along the street toward the parking structure you're standing on. It's about four inches wide. It wasn't there when you came up here."
+              }
+            },
+            "natural_disaster+fire_related": {
+              "name": "{city_name} National Forest — Fire Road Crest",
+              "description": "The crest of the fire road, above the smoke line. You can breathe up here. Barely.",
+              "first_entry_text": "The smoke came down the hill like fog. Fast. Rolling.\n\nYou'd been hiking the loop trail when[color=#BC13FE] {visionary} [/color]came at you out of the trees — not running, sprinting, eyes streaming from smoke. They grabbed your pack and hauled you up the slope to the fire road instead of back toward the car park.\n\nThe crown fire crested the ridge two minutes later. A wall of flame sixty feet tall moving at twenty miles an hour through the canopy. The sound is not what you expected — not crackling. A roar. Deep and constant, like standing next to a jet engine.\n\nThe car park is in that direction. Your car is in that direction.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right, the fucking witch.",
+              "objects": [
+                "fire_front_view",
+                "smoke_column"
+              ],
+              "examine_details": {
+                "fire_front_view": "The crown fire has burned through the area below the fire road and is moving east. The trees are burning from the tops down. The forest floor beneath them is already ash.",
+                "smoke_column": "The smoke column is visible for thirty miles in every direction, according to the ranger on the radio. They are classifying it as a megafire. That word is new."
+              }
+            },
+            "man_made_disaster+flood_related": {
+              "name": "{city_name} Valley — Ridge Above the River",
+              "description": "The ridge trail above the river bend. You ran here. Your lungs are burning. You can see the full valley floor from this elevation.",
+              "first_entry_text": "You were at the picnic site when the siren went off.\n\nNot an alarm — an air horn, from somewhere far upstream. One sustained note. Then silence. Then[color=#BC13FE] {visionary} [/color]screaming at you to run uphill, not toward the road, UPHILL, now, NOW.\n\nYou ran.\n\nThe wave arrived at the river bend before you reached the ridge. A wall of brown water fifteen feet high, carrying full-grown trees like chopsticks. It moved faster than anything that size should move.\n\nThe picnic site is gone. The campground is gone. The road is gone. The valley floor is gone — it's all river now, edge to edge.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "valley_flood",
+                "debris_wave"
+              ],
+              "examine_details": {
+                "valley_flood": "The entire valley floor is underwater. The flood line is moving up the ridge below you — still rising. The current at the valley centre is fast enough to carry cars. You've seen three.",
+                "debris_wave": "The debris front of the flood is just below you — a grinding mass of trees, timber, vehicles, and soil. It sounds like a continuous landslide."
+              }
+            },
+            "infrastructure_failure+flood_related": {
+              "name": "{city_name} Valley — Ridge Above the River",
+              "description": "The ridge trail above the river bend. The valley below looks wrong from here. The river is moving wrong.",
+              "first_entry_text": "You were at the picnic site when the siren went off upstream.\n\nOne sustained note. Then silence. Then[color=#BC13FE] {visionary} [/color]already running, already past you, already pointing uphill.\n\nYou ran.\n\nThe flood wave came around the river bend while you were still climbing. Fifteen feet of water moving at highway speed, carrying things that had no business moving that fast.\n\nThe picnic site. The campground. The road. The car park. All gone in the first ninety seconds.\n\nThe valley floor is a river now, edge to edge, all the way to the hills.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was actually right.",
+              "objects": [
+                "valley_flood",
+                "debris_wave"
+              ],
+              "examine_details": {
+                "valley_flood": "The entire valley is underwater. You can see the flood line still rising on the ridge below you. The current at the centre is fast enough to carry cars. You've watched three go past.",
+                "debris_wave": "The debris front is just below you — trees, timber, vehicles, sections of road surface. The noise is constant, like a landslide that never ends."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

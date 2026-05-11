@@ -1,0 +1,82 @@
+{
+  "Coffee Shop Entrance": {
+    "name": "The Daily Grind",
+    "description": "The smell of burnt beans is overwhelming. Steam hisses from behind the counter like an angry snake. The indie folk music playing on the overhead speakers is skipping on a loop. To the west is the Barista Station.",
+    "first_entry_text": "You walked in just as a customer threw a scalding cup of coffee across the counter, screaming that the milk was sour.\n\nNow the barista is threatening to call the cops, the customer is storming out, and the music skips in the background. Death loves a distraction.",
+    "exits": {
+      "west": "Barista Station",
+      "out": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "furniture": [
+      {
+        "name": "Display Case",
+        "description": "A glass coffin for stale pastries. The glass pane vibrates from the street traffic outside.",
+        "is_container": true,
+        "allowed_item_tags": ["consumable", "food"],
+        "items": []
+      },
+      {
+        "name": "Community Bulletin Board",
+        "description": "Covered in layers of lost pet flyers, band promos, and business cards.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "allowed_item_tags": ["paper", "clue"],
+        "items": []
+      }
+    ],
+    "objects": [
+      {
+        "name": "ceiling speaker",
+        "description": "The speaker crackles with static, then the indie music skips backward three beats. Over and over.",
+        "is_omen_provider": "radio",
+        "aliases": ["speaker", "radio", "music"]
+      }
+    ],
+    "hazards_present": [
+      "precarious_ceiling_fan"
+    ],
+    "entry_room": true,
+    "npc_slots": 1
+  },
+  "Barista Station": {
+    "name": "Barista Station",
+    "description": "Cramped and sweltering. A massive, chrome industrial espresso machine dominates the space, vibrating with terrifying internal pressure. Coffee grounds and spilled milk make the floor treacherous.",
+    "exits": {
+      "east": "Coffee Shop Entrance",
+      "north": "Supply Closet"
+    },
+    "furniture": [
+      {
+        "name": "Coffee Grinder",
+        "description": "An exposed hopper with heavy, spinning burr blades."
+      }
+    ],
+    "hazards_present": [
+      "faulty_water_line",
+      "faulty_wiring",
+      "industrial_espresso_machine"
+    ],
+    "npc_slots": 1,
+    "objects": ["sink"]
+  },
+  "Supply Closet": {
+    "name": "Supply Closet",
+    "description": "Claustrophobic. Shelves sag under the weight of ceramic mugs, syrups, and massive burlap sacks of beans.",
+    "exits": {
+      "south": "Barista Station"
+    },
+    "furniture": [
+      {
+        "name": "Storage Shelves",
+        "description": "Metal racks bolted to the wall. The bolts look rusted.",
+        "is_container": true,
+        "allowed_item_tags": ["tool", "hardware", "cleaning"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "unstable_inventory_shelf"
+    ],
+    "objects": ["mop bucket"]
+  }
+}

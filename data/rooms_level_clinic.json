@@ -1,0 +1,67 @@
+{
+  "Clinic Reception": {
+    "name": "City Vet Clinic — Reception",
+    "description": "The smell of bleach and old fur is overwhelming. Faded anatomical posters of dogs and cats peel from the walls. A swinging door leads to the examination area in the back.",
+    "first_entry_text": "The clinic is supposed to be closed today, but the front door was unlocked.\n\nYou hear a heavy metallic crash in the back room, followed by a frantic voice.",
+    "exits": {
+      "north": "Examination Room",
+      "out": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "furniture": [
+      {
+        "name": "Reception Desk",
+        "description": "Covered in appointment books, flea medication pamphlets, and a boarding schedule for a dog named Goomba. There's a computer monitor tucked behind the counter.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "allowed_item_tags": ["paper", "clue", "key"],
+        "items": []
+      }
+    ],
+    "objects": [
+      {
+        "name": "computer monitor",
+        "description": "The screen saver is bouncing around. Briefly, the bouncing logo morphs into a skull before returning to the clinic logo.",
+        "is_omen_provider": "television",
+        "aliases": ["monitor", "screen", "computer"]
+      },
+      "waiting room chairs"
+    ],
+    "hazards_present": [],
+    "entry_room": true,
+    "npc_slots": 1
+  },
+  "Examination Room": {
+    "name": "Examination Room",
+    "description": "Sterile and blindingly bright. A heavy stainless steel examination table sits in the center of the room. A large, reinforced medicine cabinet dominates the back wall, sitting next to a row of tall green cylinders.",
+    "exits": {
+      "south": "Clinic Reception"
+    },
+    "furniture": [
+      {
+        "name": "Examination Table",
+        "description": "Cold steel. There are faint scratch marks on the surface from terrified animals."
+      },
+      {
+        "name": "Medicine Cabinet",
+        "description": "A heavy glass-fronted cabinet. The shelves are packed with sedatives, adrenaline, and surgical supplies.",
+        "is_container": true,
+        "locked": true,
+        "unlocks_with": "clinic_master_key",
+        "allowed_item_tags": ["medical", "consumable", "chemical"],
+        "items": []
+      }
+    ],
+    "objects": [
+      "surgical sink"
+    ],
+    "hazards_present": [
+      {
+        "type": "unstable_shelf",
+        "object_name_override": "overloaded medical shelf"
+      },
+      "oxygen_tank",
+      "surgical_light_ignition"
+    ],
+    "npc_slots": 1
+  }
+}

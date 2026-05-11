@@ -1,0 +1,98 @@
+{
+  "Food Truck Lot": {
+    "name": "Food Truck Lot",
+    "description": "A busy parking lot turned street food hub. Taco Time Truck is parked in the far corner, surrounded by a lunch crowd. Smoke from the grill hangs in the air. The smell of charred meat and hot oil is overwhelming.",
+    "first_entry_text": "You spot the Taco Time Truck immediately. The target is behind the counter, moving fast, calling out orders.\n\nThey look up and catch your eye. Something passes over their face - not surprise. Recognition.",
+    "entry_room": true,
+    "exits": {
+      "north": "Taco Time Truck Interior",
+      "east": "Adjacent Alley",
+      "leave": {
+        "target": "LEVEL_TRANSITION_HUB"
+      }
+    },
+    "furniture": [],
+    "hazards_present": [
+      "spilled_hot_oil",
+      "propane_tanks"
+    ],
+    "objects": [
+      {
+        "name": "Lunch Crowd",
+        "description": "Twenty or so people milling around with food. Oblivious. Every one of them is a potential domino."
+      },
+      {
+        "name": "Menu Board",
+        "description": "Hand-painted. Today's special is circled in chalk. Something about it makes you uneasy and you can't explain why."
+      }
+    ],
+    "items": [],
+    "npc_slots": 2
+  },
+  "Taco Time Truck Interior": {
+    "name": "Taco Time Truck Interior",
+    "description": "Cramped and blazing hot. Two burners running, a deep fryer bubbling, a propane line running to both. The target works the grill with practiced speed. There is barely room for one person in here.",
+    "exits": {
+      "south": "Food Truck Lot"
+    },
+    "furniture": [
+      {
+        "name": "Storage Shelf",
+        "description": "A narrow shelf above the prep area with condiments and supplies.",
+        "is_container": true,
+        "items": [
+          "oil_rag",
+          "work_gloves"
+        ]
+      }
+    ],
+    "hazards_present": [
+      "gas_leak",
+      "propane_tank_explosion",
+      "spilled_hot_oil"
+    ],
+    "objects": [
+      {
+        "name": "Deep Fryer",
+        "description": "A commercial deep fryer at full temperature. The oil is at the brim."
+      },
+      {
+        "name": "Propane Line",
+        "description": "A flexible hose connecting the burners to a tank outside. It runs under your feet."
+      },
+      {
+        "name": "Service Window",
+        "description": "The opening where orders are handed out. The only exit besides the back."
+      }
+    ],
+    "items": [],
+    "npc_slots": 1
+  },
+  "Adjacent Alley": {
+    "name": "Adjacent Alley",
+    "description": "A narrow alley between the parking lot and a concrete wall. Dumpsters. A stray cat. The propane tanks for the truck are stored back here, chained to a fence.",
+    "exits": {
+      "west": "Food Truck Lot"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "propane_tanks",
+      "stray_cat",
+      "water_puddle"
+    ],
+    "objects": [
+      {
+        "name": "Propane Tank Rack",
+        "description": "Three commercial propane tanks chained to the fence. One of the fittings looks corroded."
+      },
+      {
+        "name": "Stray Cat",
+        "description": "A grey cat watches you from atop a dumpster with complete disdain."
+      }
+    ],
+    "items": [
+      "warning_sign"
+    ],
+    "npc_slots": 0
+  }
+}

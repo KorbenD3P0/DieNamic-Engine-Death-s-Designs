@@ -1,0 +1,38 @@
+{
+  "improvised_splint": {
+    "ingredients": ["magazines", "duct_tape"],
+    "result": "improvised_splint",
+    "message": "You bind the rolled-up magazines tight with the tape. It's not pretty, but it will stabilize a limb."
+  },
+  "insulated_gloves": {
+    "ingredients": ["rubber_gloves", "duct_tape"],
+    "result": "insulated_gloves",
+    "message": "You reinforce the rubber gloves with layers of tape. They should withstand minor shocks now."
+  },
+  "wet_towel": {
+    "ingredients": ["towel", "water_bottle"],
+    "result": "wet_towel",
+    "message": "You soak the towel. Good for smoke inhalation or cleaning burns."
+  },
+  "padded_armor": {
+    "ingredients": ["magazines", "duct_tape"],
+    "result": "padded_magazine_guards",
+    "message": "You tape thick bundles of magazines around your forearms and shins. It looks ridiculous, but it might stop a blade or similar.",
+    "achievement": "diy_defense"
+  },
+  "insulated_grip": {
+    "ingredients": ["rubber_gloves", "wrench"],
+    "result": "insulated_wrench",
+    "message": "You wrap the wrench handle in rubber. It's now safe to use on live electrical boxes."
+  },
+  "chemical_neutralizer": {
+    "ingredients": ["baking_soda", "water_bottle"],
+    "result": "alkaline_solution",
+    "message": "You mix the soda and water. Good for neutralizing acid burns."
+  },
+  "sticky_bomb_decoy": {
+    "ingredients": ["alarm_clock", "duct_tape"],
+    "result": "taped_alarm",
+    "message": "You create a throwable distraction. It ticks loudly."
+  }
+}

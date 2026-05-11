@@ -1,0 +1,12 @@
+{
+  "GAME_NAME": "DieNamic Engine: Death's Designs",
+  "GAME_VERSION": "0.3.5.-something",
+  "omen_popup_titles": [
+    "A Glimpse of the Design",
+    "The Cracks Begin to Show",
+    "The Veil Thins",
+    "Bitch, is that a sign??"
+],
+  "INITIAL_TURNS": 1000,
+  "premonition_timer_range": [45, 150]
+}

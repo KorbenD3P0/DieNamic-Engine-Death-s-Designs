@@ -1,0 +1,574 @@
+{
+"master_npcs":{
+  "social_worker": {
+    "name": "Social Worker",
+    "role": "social_worker",
+    "archetype": "social_worker",
+    "description": "A tired-looking woman in a lanyard and cardigan. She has a clipboard and the expression of someone who has seen too much today already.",
+    "workplace": "level_1",
+    "workplace_name": "The Hospital",
+    "is_static_employee": true,
+    "companion_eligible": false,
+    "initial_state": "working",
+    "dialogue_states": {
+      "working": {
+        "text": "Sorry, I'm swamped right now. We've got a mass casualty situation and half the survivors just walked through my ER. You're not here about that, are you?",
+        "options": [
+          {
+            "text": "Actually — yes. I was there.",
+            "target_state": "survivor_recognized"
+          },
+          {
+            "text": "I'm looking for someone.",
+            "target_state": "looking_for_someone"
+          }
+        ]
+      },
+      "survivor_recognized": {
+        "text": "You were there? God. I'm so sorry.\n\nLook — I've been trying to reach the other survivors for wellness checks. I have a list right here. Names, next of kin, employer contacts. Standard procedure after a disaster of that scale.\n\nI can't give you the file officially but... I've been doing this long enough to know when someone needs to find someone else fast.",
+        "on_talk_action": {
+          "set_player_flag": "learned_deaths_list",
+          "gives_item": "survivor_contact_sheet"
+        },
+        "options": [
+          {
+            "text": "Thank you. This could save lives.",
+            "target_state": "offer_help"
+          }
+        ]
+      },
+      "looking_for_someone": {
+        "text": "Name?\n\n*She flips through her clipboard.*\n\nI've got a few survivors from the incident still listed as uncontacted. If you're family or a friend, I can tell you where they work — that's all public record.",
+        "options": [
+          {
+            "text": "I was there too. Something is very wrong.",
+            "target_state": "survivor_recognized"
+          }
+        ]
+      },
+      "offer_help": {
+        "text": "I've seen enough paperwork cross my desk to know this isn't over for you.\n\nI don't have anywhere else to be right now that matters more than this. Let me come with you.\n\n*She sets down her clipboard.*\n\nI know every hospital in this city. Every clinic. If someone ends up hurt, I know who to call and what to say to get them seen. You need that.",
+        "options": [
+          {
+            "text": "I could use the help. Let's go.",
+            "target_state": "joined",
+            "on_select_action": {
+              "action_effect": "add_companion",
+              "companion_name": "social_worker",
+              "companion_display_name": "The Social Worker"
+            }
+          },
+          {
+            "text": "It's too dangerous. Stay here.",
+            "target_state": "declined"
+          }
+        ]
+      },
+      "joined": {
+        "text": "'Alright. Show me what we're dealing with.'\n\nShe pockets her phone and follows you toward the exit. You notice she doesn't look back."
+      },
+      "declined": {
+        "text": "'Okay. But if you change your mind — or if someone comes through that ER that you know — call me.'\n\nShe writes her number on a Post-It and hands it to you.\n\n*You can return and ask her to join later.*"
+      },
+      "rejoin": {
+        "text": "'You came back. That means it's worse than you said.\n\nAlright. I'm in.'",
+        "options": [
+          {
+            "text": "Let's go.",
+            "target_state": "joined",
+            "on_select_action": {
+              "action_effect": "add_companion",
+              "companion_name": "social_worker",
+              "companion_display_name": "The Social Worker"
+            }
+          }
+        ]
+      }
+    }
+  },
+
+  "dr_marcus_hall": {
+    "name": "Dr. Marcus Hall",
+    "role": "Coroner",
+    "description": "A young-ish, slightly anxious coroner in a rumpled lab coat.",
+    "workplace": "level_1",
+    "workplace_name": "The Hospital",
+    "is_static_employee": true,
+    "companion_eligible": false,
+    "initial_state": "greeting",
+    "dialogue_states": {
+      "greeting": {
+        "text": "Hello there, can I help you? What brings you to the morgue?",
+        "options": [
+          {
+            "text": "I'm looking for information about the body that just came in.",
+            "target_state": "about_body"
+          }
+        ]
+      },
+      "about_body": {
+        "text": "The body that just came in? Oh, that was... to be honest it's a bit of a mess.\nThe coroner's report hasn't even been started yet, but it looks like severe trauma consistent with... [color=#FF3131]well, it's hard to say[/color].",
+        "options": [
+          {
+            "text": "I know, I was there when it happened.\nYou're going to have another body on that table soon if I don't find out how to get off Death's list.",
+            "target_state": "about_deaths_list"
+          }
+        ]
+      },
+      "about_deaths_list": {
+        "text": "Death's List? ...shit. [color=#BC13FE]Another one?[/color]\n*sighs*\nLook, the guy before me was a [color=#BC13FE]legend[/color] in my line of work. He talked about that more than once, and I used to tell myself it was just bullshit; you know this town.\n\nThing is, [color=#BC13FE]you're not the first person to come here looking for answers, even after he retired[/color]. You might find more information at his old home, if it hadn't been demolished yet.",
+        "options": [
+          {
+            "text": "Where are his personal effects?",
+            "target_state": "bludworth_house"
+          },
+          {
+            "text": "Tell me more about '[color=#BC13FE]the guy before you[/color]'.",
+            "target_state": "about_bludworth"
+          }
+        ]
+      },
+      "about_bludworth": {
+        "text": "William was... unusual. Brilliant, but he had theories about death that went beyond medicine, in addition to a line of acquaintances from here to the ends of the earth\n\n-[color=#BC13FE]and more often than not, they visited here upright only once[/color].\nAnything that might provide answers, he kept at his house, not here. Except..",
+        "options": [
+          {
+            "text": "Except.. what?",
+            "target_state": "bludworth_house"
+          },
+          {
+            "text": "What kind of theories?",
+            "target_state": "bludworth_theories"
+          }
+        ]
+      },
+      "bludworth_house": {
+        "text": "His house is scheduled for demolition soon. If you're going to find answers, you need to get there fast if you're not already too late.\n\nHe had mentioned keeping a spare key to his old place somewhere in his desk, [color=#BC13FE]I just haven't found the key to unlock it yet[/color].\n\nHe dropped everything and quit one day, after a whole family in your situation showed up, and -oh god.\n*he goes pale*\nNow that I think about it..[color=#FF3131]be careful around here[/color].",
+        "on_talk_action": {
+          "gives_item": "bludworths_house_address"
+        },
+        "options": [
+          {
+            "text": "Thank you for the information.",
+            "target_state": "farewell"
+          },
+          {
+            "text": "Anything else you can tell me?",
+            "target_state": "final_warnings"
+          },
+          {
+            "text": "Do you have anything that might help me?",
+            "target_state": "helpful_items"
+          }
+        ]
+      },
+      "bludworth_theories": {
+        "text": "He believed death wasn't random - that there was a design, a pattern. He said some people could 'see' it coming.\n\nHonestly, it gave me the fucking creeps, but the amount of people who came to visit him, and then later came to visit ..us.. let's just say it was a lot.",
+        "next_state": "bludworth_house"
+      },
+      "helpful_items": {
+        "text": "I don't have much that would help with... whatever it is you're investigating, but somehow you people keep being drawn here looking for answers.\n\nJB's house might have what you need, but the demolition crew arrives tomorrow so I'd hurry. ..or was it today?",
+        "next_state": "bludworth_house"
+      },
+      "final_warnings": {
+        "text": "Just... be careful. After what happened to the others on that 'list' you mentioned...\n\nI'm hopeful people go back to having regular ass heart attacks and aneurysms instead of whatever the hell is going on here because it is [color=ff0000]messy[/color].",
+        "next_state": "farewell"
+      },
+      "farewell": {
+        "text": "Good luck. I hope you find what you're looking for before you wind up back here in a body bag.\n\n..[color=#FF3131]Sorry[/color]."
+      }
+    }
+  },
+  "hospital_nurse": {
+    "name": "Nurse",
+    "role": "hospital_nurse",
+    "archetype": "hospital_nurse",
+    "description": "Moving fast, always. Doesn't stop walking while she talks to you.",
+    "workplace": "level_1",
+    "workplace_name": "The Hospital",
+    "is_static_employee": true,
+    "companion_eligible": false,
+    "initial_state": "busy",
+    "dialogue_states": {
+      "busy": {
+        "text": "'Family only past this point. Unless you're press — in which case, especially not you.'",
+        "options": [
+          {
+            "text": "I was near the mass-casualty disaster that happened recently. I need to know if anyone else from that day came through here.",
+            "target_state": "softened"
+          },
+          {
+            "text": "I need to know if anyone from the recent mass-casualty disaster came through here.",
+            "target_state": "records"
+          }
+        ]
+      },
+      "softened": {
+        "text": "'From THAT? We had six admitted in the last two hours alone. One was DOA.\n\nIf you know them, the social worker down the hall has the contact list. She's been trying to reach people.'\n\n*She lowers her voice.*\n\n'Between you and me — the DOA came in with no ID. Young. Weird injuries. The coroner downstairs is going to have questions.'",
+        "options": [
+          {
+            "text": "What kind of weird injuries?",
+            "target_state": "weird_injuries"
+          },
+          {
+            "text": "Where is the social worker?",
+            "target_state": "direct_to_social_worker"
+          }
+        ]
+      },
+      "records": {
+        "text": "'I can't pull records for you. HIPAA. But the social worker two doors down is doing outreach for exactly this. She has a clipboard with every name.',",
+        "next_state": "direct_to_social_worker"
+      },
+      "weird_injuries": {
+        "text": "'Consistent with the disaster, technically. But the sequence is wrong. These injuries didn't happen all at once — they happened in a chain. Like dominoes.\n\nI've seen accident trauma. This felt... deliberate. Not by a person. By something else.\n\nAnyway. I didn't say that.'",
+        "next_state": "direct_to_social_worker"
+      },
+      "direct_to_social_worker": {
+        "text": "'Social worker is in the family consultation room, end of the hall. Name's on the door. She'll help you if you're a survivor — she's good people.'\n\n*She's already walking away.*"
+        }
+      }
+    }
+  },
+"archetype_dialogue": {
+  "act_1_survival": {
+    "visionary": {
+      "first_meeting": {
+        "text": "'You believed me. You actually believed me. Nobody ever believes me.'",
+        "options": [
+          {
+            "text": "What you saw — has it happened before?",
+            "target_state": "confession"
+          },
+          {
+            "text": "Who did you see die first? Who is next?",
+            "target_state": "reveal_list"
+          },
+          {
+            "text": "People who survived are dying. Do you know why?",
+            "target_state": "fear"
+          }
+        ]
+      },
+      "confession": {
+        "text": "'No, nothing like this. I've had that bad feeling and intrusive thoughts, but this was like a bad acid trip.'",
+        "next_state": "haunted"
+      },
+      "fear": {
+        "text": "'Dying? No. No no no. It's not supposed to work like that. We got OUT. We SURVIVED. That's supposed to be the end of it.'",
+        "next_state": "terrified"
+      },
+      "reveal_list": {
+        "text": "'I... I remember the exact order. God, I wish I didn't, but it's burned into my memory.'",
+        "on_talk_action": {
+          "type": "ask_who_is_next"
+        }
+      },
+      "haunted": {
+        "text": "'I've spent my whole life trying to forget that feeling. And now it's back. And it's worse.'",
+        "options": [
+          {
+            "text": "There's a doctor who studied this. Bludworth. I'm going to find his research.",
+            "target_state": "desperate_hope"
+          }
+        ]
+      },
+      "terrified": {
+        "text": "'Then it's not over. Oh God. It's not over. We cheated and now it's... it's coming back for us.'",
+        "options": [
+          {
+            "text": "I'm going to find answers. A Dr. Bludworth studied this.",
+            "target_state": "desperate_hope"
+          }
+        ]
+      },
+      "desperate_hope": {
+        "text": "'Bludworth? I've heard that name. Please — whatever you find, tell me. I can't go through this blind again.'"
+      }
+    },
+
+    "friend": {
+      "first_meeting": {
+        "text": "'Thank God you're okay. I've been going crazy in here. The doctors keep asking what happened but how do you explain... THAT?'",
+        "options": [
+          {
+            "text": "Have you heard from {visionary}?",
+            "target_state": "about_visionary"
+          },
+          {
+            "text": "Something is wrong. People are dying.",
+            "target_state": "about_deaths"
+          },
+          {
+            "text": "Just rest. I'll figure this out.",
+            "target_state": "resting"
+          }
+        ]
+      },
+      "about_visionary": {
+        "text": "'{visionary}? No... I haven't seen them since we got out. You think they're okay?'",
+        "next_state": "worried"
+      },
+      "about_deaths": {
+        "text": "'Dying? What do you mean dying? Who? Oh God... this isn't over, is it?'",
+        "next_state": "frightened"
+      },
+      "resting": {
+        "text": "'Be careful out there. And... thank you. For getting me out.'"
+      },
+      "worried": {
+        "text": "'Please find them. Please.'"
+      },
+      "frightened": {
+        "text": "'What do we do? What CAN we do? Is there someone who knows about this?'",
+        "options": [
+          {
+            "text": "There might be. A Dr. Bludworth. I'm looking into it.",
+            "target_state": "hopeful"
+          }
+        ]
+      },
+      "hopeful": {
+        "text": "'Find him. Find whatever he knew. I'll be here when you get back.'"
+      },
+      "act_1_survival": {
+        "text": "'Thank God you're okay. I've been going crazy in here. The doctors keep asking what happened...'",
+        "options": [
+          { "text": "Something is wrong. People are dying.", "target_state": "about_deaths" }
+        ]
+      },
+      "act_2_investigation": {
+        "text": "'I came as fast as I could. This place is creepy. What are we looking for?'",
+        "options": [
+          { "text": "Bludworth's research. Anything about Death's List.", "target_state": "searching" }
+          ]
+        }
+      },
+      "skeptic": {
+        "first_meeting": {
+          "text": "'Oh. It's you. The one who caused that scene right before everything went to hell. ...I guess I should thank you.'",
+          "next_state": "standard_loop"
+        },
+        "standard_loop": {
+          "text": "'How sweet. I still think there's a rational explanation for all of this.'",
+          "options": [
+            { "text": "It's not over. More people are going to die.", "target_state": "denial" }
+          ]
+        }
+      }
+    },
+
+      "first_meeting": {
+        "text": "'Oh my god, you're alive! I've been looking everywhere for you since we got out of there. The doctors keep asking what happened...'",
+        "next_state": "standard_loop"
+      },
+      "standard_loop": {
+        "text": "'I'm just glad you're okay. But I have a really bad feeling.'",
+        "options": [
+          { "text": "Something is wrong. People are dying.", "target_state": "about_deaths" }
+        ]
+      }
+    },
+
+  "act_2_investigation": {
+    "friend": {
+      "first_meeting": {
+        "text": "'I came as fast as I could! When I saw your name on the survivor contact sheet, I had to find you. This place is creepy though. What are we looking for?'",
+        "next_state": "standard_loop"
+      },
+      "standard_loop": {
+        "text": "'Whatever we need to find to stop this, let's find it fast.'",
+        "options": [
+          { "text": "We need Bludworth's research.", "target_state": "searching" }
+        ]
+      }
+    },
+    "skeptic": {
+      "first_meeting": {
+        "text": "'Well, look who it is. The social worker had your contact info, so I figured I'd track you down. Are you looking into what happened?'",
+        "next_state": "standard_loop"
+      },
+      "standard_loop": {
+        "text": "'I can't believe I'm here. Breaking into a dead man's house looking for... what, exactly? Proof that Death is a person?'",
+        "options": [
+            { "text": "Proof that Death is hunting us.", "target_state": "searching" }
+        ]
+      }
+    }
+  },
+  "act_3_hunted_workplace": {
+    "greeting_oblivious": {
+      "text": "'Hey! I know you! You're the one who was freaking out right before it happened. What are you doing here at {workplace_name}??'",
+      "options": [
+        { "text": "You are in terrible danger. You need to leave right now.", "target_state": "disbelief" },
+        { "text": "I came to check on you. Are you working today?", "target_state": "working" }
+      ]
+    },
+    "greeting_uneasy": {
+      "text": "'It's you. Look, ever since you and {visionary} freaked out, I've been super on edge. And didn't {recent_victim} just die in some freak accident? What do you want?'",
+      "options": [
+        { "text": "It wasn't an accident. And you're next. We have to go.", "target_state": "disbelief_uneasy" }
+      ]
+    },
+    "greeting_terrified": {
+      "text": "'You! Oh god, you're here. First {recent_victim}, now you're showing up at {workplace_name}?! Everyone is dying! Is it my turn?!'",
+      "options": [
+        { "text": "Not if I can help it. Come with me, right now.", "target_state": "escort" }
+      ]
+    },
+    "disbelief": {
+      "text": "'Danger? Are you serious? I survived a massive disaster, I think I can handle {workplace_name}. Look, I'm busy working as a {job_title}. I have to go.'",
+      "options": [
+        { "text": "Wait! Please, just listen to me.", "target_state": "escort" }
+      ]
+    },
+    "disbelief_uneasy": {
+      "text": "'Next? List?? No, no no. It was a coincidence. Look, I'm just trying to keep my head down and do my little {job_title} job. Don't bring that bad juju in here!'",
+      "options": [
+        { "text": "I'm not leaving you here to die alone.", "target_state": "escort" }
+      ]
+    },
+    "working": {
+      "text": "'Yeah, my manager is furious I took time off after the accident. I'm supposed to be running things as a {job_title} right now. It never stops.'",
+      "options": [
+        { "text": "This place isn't safe. You are being hunted.", "target_state": "disbelief" },
+        { "text": "I'll walk with you.", "target_state": "escort" }
+      ]
+    },
+    "escort": {
+      "text": "'Uh... okay. Sure. Just stay close, alright? I've got a really bad feeling about this.'",
+      "on_talk_action": { "special_effect": "recruit_companion" }
+    }
+  },
+
+  "act_3_hunted_public": {
+    "greeting_oblivious": {
+      "text": "'Hey! I know you from {disaster_name}! Man, what a small world. It's crazy that we made it out. I'm just out here trying to clear my head.'",
+      "options": [
+        { "text": "You are in terrible danger. You need to come with me right now.", "target_state": "disbelief" }
+      ]
+    },
+    "greeting_uneasy": {
+      "text": "'It's you. Look, I don't mean to be rude, but ever since {disaster_name}, I've been super on edge. Didn't {recent_victim} just die in some freak accident? What do you want?'",
+      "options": [
+        { "text": "It wasn't an accident. And you're next on the list. We have to go.", "target_state": "disbelief_uneasy" }
+      ]
+    },
+    "greeting_terrified": {
+      "text": "'You! Oh god, you're here. First {recent_victim}, now you're showing up?! Everyone from {disaster_name} is dying! Is it my turn?!'",
+      "options": [
+        { "text": "Not if I can help it. Stay close to me, we're leaving.", "target_state": "escort" }
+      ]
+    },
+    "disbelief": {
+      "text": "'Danger? Are you serious? Look, I survived a massive disaster, I'm just trying to get back to normal. I've got places to be and errands to run.'",
+      "options": [
+        { "text": "Wait! Please, just listen to me for one second.", "target_state": "escort" }
+      ]
+    },
+    "disbelief_uneasy": {
+      "text": "'Next? No, no no. It was a coincidence. Look, I'm just trying to keep my head down and enjoy my day. Don't bring that bad juju near me!'",
+      "options": [
+        { "text": "I'm not leaving you here to die alone.", "target_state": "escort" }
+      ]
+    },
+    "escort": {
+      "text": "'Uh... okay. Sure. Just stay close, alright? I've got a really bad feeling about this place suddenly.'",
+      "on_talk_action": { 
+        "special_effect": "recruit_companion" 
+      }
+    }
+  },
+  "act_4_the_plan": {
+      "visionary": { "first_meeting": { "text": "[WRITE THIS: Reconnecting at the hub for Act 4]", "next_state": "standard_loop" }, "standard_loop": { "text": "[WRITE THIS: Act 4 default loop]" } },
+      "friend": { "first_meeting": { "text": "[WRITE THIS]", "next_state": "standard_loop" }, "standard_loop": { "text": "[WRITE THIS]" } },
+      "skeptic": { "first_meeting": { "text": "[WRITE THIS]", "next_state": "standard_loop" }, "standard_loop": { "text": "[WRITE THIS]" } },
+      "panicking": { "first_meeting": { "text": "[WRITE THIS]", "next_state": "standard_loop" }, "standard_loop": { "text": "[WRITE THIS]" } },
+      "fatalist": { "first_meeting": { "text": "[WRITE THIS]", "next_state": "standard_loop" }, "standard_loop": { "text": "[WRITE THIS]" } },
+      "selfish": { "first_meeting": { "text": "[WRITE THIS]", "next_state": "standard_loop" }, "standard_loop": { "text": "[WRITE THIS]" } },
+      "distracted": { "first_meeting": { "text": "[WRITE THIS]", "next_state": "standard_loop" }, "standard_loop": { "text": "[WRITE THIS]" } },
+      "authority_figure": { "first_meeting": { "text": "[WRITE THIS]", "next_state": "standard_loop" }, "standard_loop": { "text": "[WRITE THIS]" } },
+      "bystander_1": { "first_meeting": { "text": "[WRITE THIS]", "next_state": "standard_loop" }, "standard_loop": { "text": "[WRITE THIS]" } },
+      "bystander_2": { "first_meeting": { "text": "[WRITE THIS]", "next_state": "standard_loop" }, "standard_loop": { "text": "[WRITE THIS]" } }
+    },
+  "funnel_plan_exchange": {
+    "selfish": {
+      "text": "'Honestly? If it's them or me... I choose me. I know a guy who owes me money. We lure him here, we do it quick. It's just math.'",
+      "options": [
+        { "text": "We are not murderers.", "target_state": "rejection" },
+        { "text": "Do it. Make the call.", "target_state": "lock_in_murder_plan" }
+      ]
+    },
+    "authority_figure": {
+      "text": "'You're talking about premeditated murder. If you cross that line, I'm arresting you myself. I won't let you do it.'",
+      "options": [
+        { "text": "Then you're in my way.", "target_state": "hostile_standoff" }
+      ]
+    },
+    "visionary": { "text": "[WRITE THIS: Reaction to the murder plan]" },
+    "friend": { "text": "[WRITE THIS]" },
+    "skeptic": { "text": "[WRITE THIS]" },
+    "panicking": { "text": "[WRITE THIS]" },
+    "fatalist": { "text": "[WRITE THIS]" },
+    "distracted": { "text": "[WRITE THIS]" },
+    "bystander_1": { "text": "[WRITE THIS]" },
+    "bystander_2": { "text": "[WRITE THIS]" }
+  },
+  
+  "funnel_plan_resurrection": {
+    "skeptic": {
+      "text": "'Let me get this straight. Your brilliant plan to avoid dying... is to kill yourselves. And just *hope* I know how to use these defibrillator pads?'",
+      "options": [ { "text": "It's the only loophole we have left.", "target_state": "reluctant_agreement" } ]
+    },
+    "fatalist": {
+      "text": "'It makes sense. You can't hide from Death. You have to walk right into its arms and spit in its face.'",
+      "options": []
+    },
+    "visionary": { "text": "[WRITE THIS: Reaction to the resurrection plan]" },
+    "friend": { "text": "[WRITE THIS]" },
+    "panicking": { "text": "[WRITE THIS]" },
+    "selfish": { "text": "[WRITE THIS]" },
+    "distracted": { "text": "[WRITE THIS]" },
+    "authority_figure": { "text": "[WRITE THIS]" },
+    "bystander_1": { "text": "[WRITE THIS]" },
+    "bystander_2": { "text": "[WRITE THIS]" }
+    },
+
+
+
+  "_default": {
+    "_context": "Fallback dialogue for any level not explicitly defined.",
+
+
+    "friend": {
+      "greeting": {
+        "text": "'I'm here, whatever you need.'"
+      }
+    },
+    "skeptic": {
+      "greeting": {
+        "text": "'I still think there's a rational explanation. But I'm not leaving.'"
+      }
+    },
+    "authority_figure": {
+      "greeting": {
+        "text": "'What's the situation? Tell me what you need.'"
+      }
+    },
+    "bystander_1": {
+      "greeting": {
+        "text": "'Is it true? Are we all still in danger?'"
+      }
+    },
+    "bystander_2": {
+      "greeting": {
+        "text": "'I'll do whatever you say. Just keep us alive.'"
+      }
+    },
+    "visionary": {
+      "greeting": {
+        "text": "'I can feel it getting closer. We're running out of time.'"
+      }
+    }
+  }
+  }
+  

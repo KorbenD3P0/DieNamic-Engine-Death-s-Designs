@@ -1,0 +1,101 @@
+{
+  "Lighthouse Base": {
+    "name": "Lighthouse Base",
+    "description": "You stand at the base of the abandoned coastal lighthouse. Salt-crusted stone walls rise into the fog above. The metal door hangs ajar, rusted hinges groaning in the wind. Broken glass from shattered windows crunches beneath your feet. The smell of brine and decay is overwhelming.",
+    "examine_details": {
+      "rusted door": "A heavy iron door, its hinges corroded by years of salt spray. It barely clings to the frame.",
+      "warning sign": "A faded sign reads: 'DANGER - UNSTABLE STRUCTURE - KEEP OUT'. It sways on a single rusty chain."
+    },
+    "exits": {
+      "up": "Lighthouse Stairwell",
+      "east": "Equipment Room",
+      "out": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "entry_room": true,
+    "first_entry_text": "The wind howls like a wounded animal. A surveyor's truck is parked haphazardly outside. Whoever you are looking for is currently inside this deathtrap.",
+    "furniture": [
+      {
+        "name": "Surveyor's Lockbox",
+        "description": "A heavy plastic Pelican case left near the entrance.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "allowed_item_tags": ["paper", "key", "tool"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "faulty_wiring",
+      "precarious_object"
+    ],
+    "npc_slots": 1
+  },
+  "Equipment Room": {
+    "name": "Equipment Room",
+    "description": "A cramped storage space filled with decaying maritime equipment. Moldy life jackets hang from rusted hooks. Coils of frayed rope lie tangled on the floor. Water drips steadily from a widening crack in the ceiling.",
+    "exits": {
+      "west": "Lighthouse Base"
+    },
+    "furniture": [
+      {
+        "name": "Metal Locker",
+        "description": "A battered equipment locker, empty except for cobwebs and rust stains.",
+        "is_container": true,
+        "allowed_item_tags": ["tool", "hardware", "clothing"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "leaking_pipe"
+    ],
+    "npc_slots": 1
+  },
+  "Lighthouse Stairwell": {
+    "name": "Lighthouse Stairwell",
+    "description": "A spiral staircase winds upward into darkness. The iron steps are slick with moisture and severe rust. Several treads are missing entirely, leaving dangerous gaps to the floor below. The handrail wobbles alarmingly.",
+    "exits": {
+      "down": "Lighthouse Base",
+      "up": "Watch Room"
+    },
+    "hazards_present": [
+      "collapsing_stairs",
+      "precarious_object"
+    ],
+    "npc_slots": 1
+  },
+  "Watch Room": {
+    "name": "Watch Room",
+    "description": "The middle observation level. Broken windows on all sides allow howling wind and sea spray to blast through. Rusted navigational equipment lies scattered across the floor. A heavy iron chandelier sways overhead, its mounting bracket severely corroded. Water pools everywhere.",
+    "exits": {
+      "down": "Lighthouse Stairwell",
+      "up": "Lantern Room"
+    },
+    "hazards_present": [
+      "water_puddle",
+      "wobbly_ceiling_fan",
+      "faulty_wiring"
+    ],
+    "furniture": [
+      {
+        "name": "Drafting Table",
+        "description": "A modern folding table set up amidst the ruins.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "items": []
+      }
+    ],
+    "npc_slots": 1
+  },
+  "Lantern Room": {
+    "name": "Lantern Room",
+    "description": "The top of the lighthouse. The massive, multi-ton Fresnel lens dominates the circular space, its brass housing tarnished black. The floor is a patchwork of rotting boards. Outside the reinforced glass, the storm rages.",
+    "exits": {
+      "down": "Watch Room"
+    },
+    "hazards_present": [
+      "weak_floorboards",
+      "shattering_lantern_glass",
+      "collapsing_fresnel_lens"
+    ],
+    "npc_slots": 1
+  }
+}

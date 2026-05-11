@@ -1,0 +1,146 @@
+{
+  "impaled": {
+    "description": [
+      "skewered by debris",
+      "pinned to the wall by a jagged shard",
+      "impaled on a rusted pipe",
+      "run through by rebar"
+    ],
+    "omen_clue": "{npc_name} was pinned to a wall by a {hazard_name}.",
+    "vulnerability_tags": [
+      "sharp",
+      "mechanical",
+      "falling_object"
+    ],
+    "death_message_template": "A {hazard_name} pierced {npc_name} through the chest and into the wall. Jesus, they were just stuck there like a pin cushion."
+  },
+  "crushed": {
+    "description": [
+      "flattened by weight",
+      "crushed beneath a collapsing support",
+      "pulverized by falling debris",
+      "broken under a heavy load"
+    ],
+    "omen_clue": "I heard their bones snapping as they were crushed.",
+    "vulnerability_tags": [
+      "heavy",
+      "structural",
+      "impact",
+      "crush"
+    ],
+    "death_message_template": "{npc_name} never saw it coming. The {hazard_name} crushed them before they could scream."
+  },
+  "burned": {
+    "description": [
+      "consumed by fire",
+      "eaten alive by flames",
+      "immolated in a flash",
+      "reduced to ash"
+    ],
+    "omen_clue": "{npc_name} was screaming as the fire took them.",
+    "vulnerability_tags": [
+      "fire",
+      "burn",
+      "heat",
+      "explosion"
+    ],
+    "death_message_template": "{npc_name} couldn't escape the heat. The {hazard_name} turned their sanctuary into an oven."
+  },
+  "frozen": {
+    "description": [
+      "frozen to death",
+      "encased in ice",
+      "shattered by the cold",
+      "stilled by the frost"
+    ],
+    "omen_clue": "I saw them blue and shivering before going still.",
+    "vulnerability_tags": [
+      "cold",
+      "freezing",
+      "ice"
+    ],
+    "death_message_template": "{npc_name} slowed to a halt, the frost claiming them. The {hazard_name} left them as a statue."
+  },
+  "electrocuted": {
+    "description": [
+      "fried by voltage",
+      "convulsing from the shock",
+      "scorched by an arc blast",
+      "stopped by a sudden current"
+    ],
+    "omen_clue": "{npc_name}'s body convulsed as sparks rained down.",
+    "vulnerability_tags": [
+      "electrical",
+      "water",
+      "shock"
+    ],
+    "death_message_template": "{npc_name} completed the circuit. The {hazard_name} stopped their heart instantly."
+  },
+  "drowned": {
+    "description": [
+      "submerged until the bubbles stopped",
+      "dragged under by the water",
+      "choked by the rising tide",
+      "lost to the depths"
+    ],
+    "omen_clue": "I saw {npc_name} gasping for air as water filled their lungs.",
+    "vulnerability_tags": [
+      "water",
+      "flood",
+      "drown"
+    ],
+    "death_message_template": "The water rose too fast. {npc_name} vanished beneath the surface of the {hazard_name}."
+  },
+  "chemical": {
+    "description": [
+      "poisoned or suffocated",
+      "choking on toxic fumes",
+      "partially dissolved by acid",
+      "gasping for clean air"
+    ],
+    "omen_clue": "I saw {npc_name} choking.",
+    "vulnerability_tags": [
+      "chemical",
+      "poison",
+      "gas",
+      "fumes"
+    ],
+    "death_message_template": "{npc_name} clawed at their throat, but the air itself was poison. The {hazard_name} left them silent."
+  },
+  "shredded": {
+    "description": [
+      "torn apart by machinery",
+      "mangled by gears",
+      "cut to ribbons",
+      "caught in the mechanism"
+    ],
+    "omen_clue": "I heard the grinding of gears and {npc_name}'s scream cut short.",
+    "vulnerability_tags": [
+      "mechanical",
+      "sharp",
+      "machinery",
+      "industrial",
+      "mechanical_failure",
+      "industrial_accident"
+    ],
+    "death_message_template": "{npc_name} fell into the {hazard_name} and was torn apart in seconds."
+  },
+  "falling": {
+    "description": [
+      "plummeting to death",
+      "smashed on the ground below",
+      "broken by the fall",
+      "dashed against the rocks"
+    ],
+    "omen_clue": "I saw them falling from a great height, screaming all the way down.",
+    "vulnerability_tags": [
+      "heights",
+      "gravity",
+      "structural",
+      "impact",
+      "transportation_air",
+      "winter_sports"
+    ],
+    "death_message_template": "{npc_name} lost their footing and the {hazard_name} sent them plummeting to their doom."
+  }
+}

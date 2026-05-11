@@ -1,0 +1,97 @@
+{
+  "Rec Center Lobby": {
+    "name": "Rec Center Lobby",
+    "description": "The linoleum is peeling. A trophy case rattles as a heavy door slams somewhere deep in the building. The smell of chlorine is faint but distinct. To the west is the Pool. To the east is the Gym.",
+    "first_entry_text": "You walk in through the squeaky glass doors. The receptionist is nowhere to be found, but you can hear the chaotic echoing sounds of the community center all around you.",
+    "exits": {
+      "west": "Natatorium",
+      "east": "Gymnasium",
+      "out": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "furniture": [
+      {
+        "name": "Front Desk",
+        "description": "Cluttered with sign-in sheets and lost-and-found bins.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "allowed_item_tags": ["paper", "key", "plastic"],
+        "items": []
+      },
+      {
+        "name": "Vending Machine",
+        "description": "The coil holding a bag of chips is stuck halfway. The machine hums loudly."
+      }
+    ],
+    "hazards_present": [
+      "faulty_vending_machine"
+    ],
+    "entry_room": true
+  },
+  "Natatorium": {
+    "name": "Natatorium",
+    "description": "The air is humid and reeks of chemicals. The blue water of the pool churns slightly near the deep-end drains. The tile deck is lethally slippery.",
+    "exits": {
+      "east": "Rec Center Lobby",
+      "north": "Pump Room"
+    },
+    "furniture": [
+      {
+        "name": "Lifeguard Chair",
+        "description": "A tall metal structure leaning over the deep end. The bolts at the base look rusted through."
+      }
+    ],
+    "hazards_present": [
+      "slippery_pool_deck",
+      "malfunctioning_pool_pump",
+      "precarious_lifeguard_chair"
+    ],
+    "npc_slots": 1,
+    "objects": ["pool drain", "safety hook"]
+  },
+  "Pump Room": {
+    "name": "Pump Room",
+    "description": "A deafening mechanical roar. Massive PVC pipes snake everywhere, dripping condensation. A heavy industrial breaker box governs the power to the entire facility.",
+    "exits": {
+      "south": "Natatorium"
+    },
+    "furniture": [
+      {
+        "name": "Chlorine Tank",
+        "description": "A heavy yellow cylinder. It hisses faintly.",
+        "is_container": false
+      },
+      {
+        "name": "Maintenance Locker",
+        "description": "A rusted locker holding pool testing kits and heavy tools.",
+        "is_container": true,
+        "allowed_item_tags": ["tool", "hardware"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "leaking_pipe",
+      "corroded_chlorine_valve",
+      "main_breaker_box"
+    ]
+  },
+  "Gymnasium": {
+    "name": "Gymnasium",
+    "description": "The polished wood floor echoes with every footstep. Massive motorized bleachers loom on one side, retracted into a dark, heavy wall of timber and steel.",
+    "exits": {
+      "west": "Rec Center Lobby"
+    },
+    "furniture": [
+      {
+        "name": "Equipment Bin",
+        "description": "A large wire mesh bin filled with deflated basketballs and jump ropes.",
+        "is_container": true,
+        "allowed_item_tags": ["sports", "blunt"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "retractable_bleachers"
+    ],
+    "npc_slots": 1
+  }
+}

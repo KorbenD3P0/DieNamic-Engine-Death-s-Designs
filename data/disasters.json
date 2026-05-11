@@ -1,0 +1,1284 @@
+{
+  "a plane's wing broke off mid-takeoff": {
+    "description": "You were seconds from boarding the flight when {visionary}, their face slick with sweat, seized your arm, their grip like a vice, and rasped, \n'{warning}'\n\n You listen, for some reason, and later watch the plane's wing detach during takeoff, shearing the plane's back half in two. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 50,
+      "max": 150
+    },
+    "warnings": [
+      "NO! Don't get on! The wing... it's going to SHEAR OFF!",
+      "That engine's screaming wrong! It's a death trap, I tell you!",
+      "WE'RE ALL GOING TO DIE! Don't you understand?! THIS PLANE IS A COFFIN!",
+      "ANY OTHER FLIGHT! For God's sake, that wing is compromised!",
+      "Look at the rivets on that wing! They're tearing! Don't board this flying deathtrap!",
+      "By all that's sacred, turn back NOW! This flight is doomed!",
+      "They're all going to be ripped apart! We're next if we get on!",
+      "To hell with this! I'm not dying today. Are you insane enough to board?"
+    ],
+    "visionary_explains": [
+      "I saw the wing tear off the side of the plane like wet paper! We were strapped in, screaming, as the cabin ripped open, and..",
+      "The engine exploded in a ball of fire. I watched the fuselage snap in half. People were just... sucked out into the void!",
+      "The metal was shrieking. I saw the rivets pop one by one, and then the floor just fell away. It was a slaughterhouse in the clouds!"
+    ],
+    "tags": [
+      "sharp_objects",
+      "mechanical_failure",
+      "explosion_related",
+      "transportation_air"
+    ],
+    "visionary_category": [
+      "transport_staff", 
+      "maintenance_technical", 
+      "bystanders_general",
+      "strangers_distinctive"
+    ],
+    "debris_pool": [
+      "a jagged piece of wing metal",
+      "a charred piece of engine",
+      "a scorched passenger seat",
+      "a burning piece of luggage",
+      "a twisted piece of landing gear"
+    ],
+    "related_evidence": [
+      "Burnt Fuselage Panel",
+      "Passenger's Diary",
+      "Black Box Transcript"
+    ],
+    "death_narrative": "but the manifest is absolute.\nYou may have deplaned, but your final destination was never in doubt.",
+    "environmental_omens": {
+      "television": "A travel documentary about exotic locations briefly shows an airplane wing with a visible stress crack before the scene changes. The narrator's voice glitches, repeating the word '...terminal...terminal...'",
+      "radio": "A pop song on the radio is interrupted by a distorted snippet of an air traffic controller saying, '...experiencing severe turbulence...' followed by a loud metallic groan.",
+      "window": "For a split second, the reflection of a bird flying past the window appears as a massive commercial airplane with one of its wings horrifically bent."
+    }
+  },
+"highway_pileup_crane": {
+    "name": "a devastating highway pile-up on Route 42",
+    "description": "You were merging onto Route 42 when a battered pickup truck screeched to a halt directly in front of you. You see {visionary} exit the passenger side, screaming, \n'{warning}'\n\n Just moments later, a cacophony of screeching tires, shattering glass, and twisting metal erupted behind you. A massive construction crane collapsed across the highway, causing a catastrophic chain reaction of mangled metal and crushed bodies. Cars slammed into the concrete slab, crumpling like tin cans, their occupants trapped within. The screams of the dying echoed through the wreckage.\n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 18,
+      "max": 45
+    },
+    "warnings": [
+      "DON'T GO ON THE RAMP! The sky is falling!",
+      "That crane... the cables are snapping! BRAKE, YOU FOOL!",
+      "SLAM THE BRAKES! NOW! Or we're part of that wreckage!",
+      "PULL OVER! DEAR GOD, THE CONCRETE IS COMING DOWN!"
+    ],
+    "visionary_explains": [
+      "I saw that crane cable snap! The concrete slab crushed the lanes, the tanker jackknifed, and then it was just fire and screaming!"
+    ],
+    "tags": [
+      "transportation_road",
+      "impact_blunt",
+      "construction_failure",
+      "generic_deaths"
+    ],
+    "visionary_category": [
+      "transport_staff", 
+      "bystanders_general",
+      "strangers_distinctive"
+    ],
+    "debris_pool": [
+      "a massive chunk of reinforced concrete",
+      "a frayed steel suspension cable",
+      "a crumpled car door",
+      "a shattered engine block"
+    ],
+    "related_evidence": [
+      "Overdue Crane Inspection Report",
+      "Shattered Windshield Fragment"
+    ],
+    "death_narrative": "but you couldn't out-drive fate.\nThe crushing weight of the design finally caught up to you.",
+    "environmental_omens": {
+      "television": "The static on the screen shows the brief, horrifying image of a steel cable snapping like a guitar string before cutting out.",
+      "radio": {
+        "description": "Through the static, you hear the unmistakable sound of screeching tires and a heavy, ground-shaking concrete impact.",
+        "sfx": "metal_groan_heavy",
+        "color_sting": "aa0000"
+      },
+      "window": "A passing truck's reflection in the window looks for a split second like a crane toppling downward."
+    }
+  },
+
+  "highway_pileup_logging": {
+    "name": "a devastating highway pile-up on Route 42",
+    "description": "You were merging onto Route 42 when a battered pickup truck screeched to a halt directly in front of you. You see {visionary} exit the passenger side, screaming, \n'{warning}'\n\n Just moments later, a cacophony of screeching tires, shattering glass, and twisting metal erupted behind you. A logging truck lost its load at sixty miles per hour, creating a meat grinder of splintered wood and crushed steel. Massive logs smashed through windshields, crushing people instantly. The air filled with the metallic tang of carnage.\n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 15,
+      "max": 38
+    },
+    "warnings": [
+      "LOG TRUCK! The chains are snapping! It's going to spill death everywhere!",
+      "ARE YOU BLIND?! That semi is going to OBLITERATE US!",
+      "Those logs... they're coming loose! It's going to be a bloodbath!",
+      "SLAM THE BRAKES! NOW! Or we're part of that wreckage!"
+    ],
+    "visionary_explains": [
+      "A logging truck lost its load! Massive logs smashing through windshields, crushing people instantly. It was a meat grinder out there!"
+    ],
+    "tags": [
+      "transportation_road",
+      "impact_blunt",
+      "cargo_spill",
+      "sharp_objects"
+    ],
+    "visionary_category": [
+      "transport_staff", 
+      "bystanders_general",
+      "strangers_distinctive"
+    ],
+    "debris_pool": [
+      "a splintered timber log stained with red",
+      "a snapped industrial securing chain",
+      "a detached semi-truck tire",
+      "a flying hubcap"
+    ],
+    "related_evidence": [
+      "Spilled Lumber Manifest",
+      "Shattered Windshield Fragment"
+    ],
+    "death_narrative": "but you couldn't out-drive fate.\nThe design of the road led to the design of your demise.",
+    "environmental_omens": {
+      "television": "The static on the screen shows the brief, horrifying image of a massive timber log crashing through a windshield before cutting out.",
+      "radio": {
+        "description": "Through the static, you hear the unmistakable sound of heavy chains snapping violently.",
+        "sfx": "metal_groan_heavy",
+        "color_sting": "aa0000"
+      },
+      "window": "For a split second, you see the reflection of a massive wooden log hurtling directly at your face."
+    }
+  },
+
+  "highway_pileup_fog": {
+    "name": "a devastating highway pile-up on Route 42",
+    "description": "You were merging onto Route 42 when a battered pickup truck screeched to a halt directly in front of you. You see {visionary} exit the passenger side, screaming, \n'{warning}'\n\n Seconds later, a freak fog bank blinded the highway. You heard it before you saw it: a cacophony of screeching tires, shattering glass, and twisting metal. Dozens of cars plowed blindly into an invisible wall of wreckage. Then, a spark found a ruptured fuel tank, and the fog glowed a hellish, burning orange. The screams of the dying echoed through the whiteout.\n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 40,
+      "max": 99
+    },
+    "warnings": [
+      "This fog isn't just thick, it's a SHROUD! We have to stop or die!",
+      "DON'T GO ON THE RAMP! It's a slaughterhouse waiting to happen!",
+      "You can't see them! They're crashing! BRAKE!",
+      "GET OFF THE HIGHWAY! The smoke... the fire!"
+    ],
+    "visionary_explains": [
+      "The fog blinded everyone! Cars just kept slamming into each other, piling up. Then the fuel ignited. I saw them burning in their seats!"
+    ],
+    "tags": [
+      "transportation_road",
+      "impact_blunt",
+      "weather_event",
+      "fire_related"
+    ],
+    "visionary_category": [
+      "transport_staff", 
+      "bystanders_general",
+      "strangers_distinctive"
+    ],
+    "debris_pool": [
+      "a charred steering wheel",
+      "a melted piece of a dashboard",
+      "a twisted piece of guardrail",
+      "a detached semi-truck tire"
+    ],
+    "related_evidence": [
+      "Scorched Trucker's Logbook",
+      "Melted License Plate"
+    ],
+    "death_narrative": "but you couldn't out-drive fate.\nYou drove blindly into the design of your own demise.",
+    "environmental_omens": {
+      "television": "The screen turns completely grey, filled with static fog. Slowly, two glowing red taillights emerge from the mist before the TV shorts out.",
+      "radio": {
+        "description": "Through the static, you hear the unmistakable sound of tires screeching, followed by a muffled, booming explosion.",
+        "sfx": "metal_groan_heavy",
+        "color_sting": "ff4400"
+      },
+      "window": "The glass suddenly fogs up from the outside. In the condensation, you see a handprint violently slam against the pane, then fade away."
+    }
+  },
+  "a luxury ferry sinking in Lake Serenity": {
+    "description": "You were on deck of the 'Queen Isabella' when {visionary} stumbled towards you, seizing your hand, pleading, \n'{warning}'\n\n Disembarking just minutes before its departure, you stood on the shore as the ferry tragically succumbed to the depths of Lake Serenity. The elegant vessel was swallowed by the dark, churning water, its lights flickering and then extinguished. The screams of the trapped passengers echoed across the still lake before being silenced forever by the cold, unforgiving water. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 80,
+      "max": 350
+    },
+    "warnings": [
+      "THE HULL IS BREACHED! We're taking on water fast!",
+      "TO THE LIFE RAFTS! NOW! Before we're all dragged to the bottom!",
+      "ABANDON SHIP! IT'S GOING DOWN! EVERYONE OFF!",
+      "It's sinking! JUMP! For your life, JUMP INTO THE FREEZING WATER!",
+      "That list... it's not just a list, it's a goddamn death spiral! GET OFF!",
+      "I CAN'T SWIM! Oh God, we're all going to drown in this icy grave!",
+      "This rust bucket isn't just old, it's cursed! We should never have boarded!"
+    ],
+    "tags": [
+      "transportation_water", 
+      "drowning_water", 
+      "mechanical_failure"
+    ],
+    "visionary_explains": [
+      "The water rushed in so fast when the speedboat hit! The lower decks flooded instantly, trapping people like rats. It's like I was living five minutes ahead; you have to believe me.",
+      "I saw the hull split open after this crazy fucker slammed right into us. The screaming echoed through the metal corridors so loud I can still hear it.",
+      "The boat got hit by another smaller boat and then rolled completely on its side. People were sliding across the deck into the freezing water. It was pitch black and wet, yet somehow bright and hot"
+    ],
+    "debris_pool": [
+      "pieces of flaming wreckage",
+      "twisted metal fragments",
+      "shattered glass shards",
+      "floating debris",
+      "scorched wooden planks"
+    ],
+    "visionary_category": [
+      "first_responders_emergency", 
+      "bystanders_general",
+      "strangers_distinctive"
+    ],
+    "related_evidence": [
+        "Leaking Life Vest",
+        "Captain's Log",
+        "Corroded Hull Plate"
+    ],
+    "death_narrative": "and the cold, dark water claims everyone eventually. You only delayed the inevitable plunge.",
+    "environmental_omens": {
+      "television": "A period drama on the screen shows people waving goodbye from the deck of a large ship. The image suddenly floods with blue-green static, and you hear the faint sound of a ship's horn, mournful and distant.",
+      "radio": "Through the static, you hear the distinct, panicked sound of a ship's bell ringing frantically, quickly muffled as if it's been submerged in water.",
+      "window": "Condensation on the window pane briefly forms the shape of a large vessel sinking bow-first into water before it drips away."
+    }
+  },
+  "a terrifying rollercoaster derailment": {
+    "description": "You stood in the queue for the 'Demon's Peak' coaster when {visionary} suddenly burst through the crowd, yelling, \n'{warning}'\n\n Before you could react, they grabbed your arm, pulling you away. Just as the first car began its ascent, a sickening screech echoed through the park. The coaster lurched violently, its wheels tearing free from the track. The cars twisted and plunged, sending passengers hurtling through the air. Bodies slammed against the twisted metal supports, their screams swallowed by the brutal impact. The air filled with the sickening crunch of bone and the metallic tang of blood. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 10,
+      "max": 20
+    },
+    "warnings": [
+      "DON'T GET ON THAT RIDE! It's a one-way ticket to oblivion!",
+      "THE TRACK IS WARPED! It's going to derail and kill everyone!",
+      "STOP THE COASTER! FOR THE LOVE OF GOD, STOP IT!",
+      "THE HARNESS IS FAULTY! It won't hold! You'll be thrown out!",
+      "IT'S GOING TOO FAST! The G-force will crush us, or the fall will!",
+      "HOLD ON TIGHT! PRAY! This ride is about to become a massacre!",
+      "This isn't a ride, it's a goddamn guillotine on rails! RUN!THE BOLTS! THEY'RE SHEARING OFF! The whole structure is compromised!",
+      "Maintained?! This thing is held together with spit and bad !luck!",
+      "I have a terrible feeling! The hydraulics are ruptured, the tracks will collapse!"
+    ],
+    "visionary_category": [
+      "first_responders_emergency", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths"
+    ],
+"visionary_explains": [
+      "We were fine for the start of the ride, but I saw the hydraulics, the broken track.. and then everybody just started flying off.",
+      "I saw the track snap! The cars flew off into the scaffolding, just crushing everyone inside.",
+      "The restraints failed. People were just dropping out of the sky into the pavement below. It was raining bodies!"
+    ],
+    "debris_pool": [
+      "a section of twisted track",
+      "a broken coaster car",
+      "a shattered safety harness",
+      "a mangled support beam",
+      "a splintered wooden plank"
+    ],
+    "tags": [
+        "impact_blunt",
+        "mechanical_failure",
+        "carnival"
+    ],
+    "related_evidence": [
+        "Sheared Rollercoaster Bolt",
+        "Park Maintenance Invoice",
+        "Victim's Dropped Camera"
+    ],
+    "death_narrative": "and while life has its ups and downs, this ride only had one stop: the end of the line.",
+    "environmental_omens": {
+      "television": "The static on the screen briefly clears to show a grainy, looping video of a rollercoaster car plummeting from a great height before dissolving back into snow.",
+      "radio": "A burst of static from the radio momentarily resolves into the cheerful, tinny music of a carnival, punctuated by a faint, metallic screech.",
+      "flickering fluorescent light": "The flickering light buzzes in a rhythmic pattern that sounds unnervingly like the *clack-clack-clack* of a rollercoaster chain lift."
+      }
+  },
+  "an inferno at the 'Crimson Lounge' nightclub": {
+    "description": "You were about to step into the 'Crimson Lounge' when {visionary} blocked your path, choking out, \n'{warning}'\n\n Moments later, screams erupted from inside as the nightclub became an inferno. Flames licked at the windows, their orange glow reflecting in the panicked eyes of those trapped within. The building became a tomb of charred remains, the air thick with smoke and the stench of burning flesh. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 11,
+      "max": 59
+    },
+    "warnings": [
+      "FIRE! GET OUT NOW! Don't even hesitate!",
+      "THE STAGE IS ENGULFED! The sprinklers aren't working!",
+      "THE EXIT IS BLOCKED BY FLAMES! We're trapped!",
+      "FLASHOVER IMMINENT! THE WHOLE PLACE IS GOING UP! EVERYONE OUT OR BURN!",
+      "I SMELL GAS! This isn't just a fire, it's a BOMB waiting to go off!",
+      "We're going to be cooked alive in here! Like rats in a furnace!",
+      "This place is a tinderbox! One spark and it's an inferno!"
+    ],
+    "tags": [
+      "entertainment_venue",
+      "fire_related",
+      "structural_collapse"
+    ],
+    "visionary_explains": [
+      "The foam on the ceiling caught fire. It rained burning plastic down on us. Everyone was trapped at the exit, trampling each other!",
+      "The smoke turned completely black. People were suffocating on the floor while the walls literally melted around them.",
+      "I saw the back wall explode. The sound of the music was completely drowned out by people screaming as they burned."
+    ],
+    "visionary_category": [
+      "first_responders_emergency", 
+      "bystanders_general",
+      "strangers_distinctive"
+    ],
+    "related_evidence": [
+        "Faulty Wiring Report",
+        "Melted Fire Sprinkler",
+        "Blocked Exit Sign"
+    ],
+    "death_narrative": "and you may have escaped the fire, but Death's embers always find a way to reignite.",
+    "environmental_omens": {
+      "television": "A music video playing on the screen shows a band surrounded by pyrotechnics. One of the flame jets surges unexpectedly high, just as the screen cuts to black.",
+      "radio": "A pulsing dance track is interrupted by the sound of a high-pitched fire alarm, which is quickly dismissed by the DJ as 'part of the new mix'.",
+      "window": "The reflection of the room's flickering overhead light momentarily looks like raging flames dancing behind the glass."
+    }
+  },
+  "a collapse of the {city_name} Memorial Bridge": {
+    "description": "You were driving onto the {city_name} Memorial Bridge when {visionary} ran into the road, waving their arms wildly, shrieking, \n'{warning}'\n\n Trusting your gut, you slammed on the brakes and reversed off just as the bridge buckled and plunged into the river below, a horrifying collapse. The concrete groaned and shattered, sending vehicles and bodies plummeting into the churning water, their screams swallowed by the roar of the collapsing structure. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 18,
+      "max": 99
+    },
+    "visionary_category": [
+      "transport_staff", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths"
+    ],
+    "warnings": [
+      "DON'T CROSS! THE BRIDGE IS UNSTABLE! IT'S GOING TO COLLAPSE!",
+      "THOSE NOISES! The structure is failing! Metal fatigue!",
+      "TURN BACK! NOW! Before we're all at the bottom of the river!",
+      "IT'S SHAKING! The bridge is coming apart beneath us!",
+      "DRIVE FASTER! OR WE'RE GOING DOWN WITH IT!",
+      "GET OFF THE BRIDGE! It's a death trap!",
+      "THE CABLES ARE SNAPPING! IT'S OVER! GO, GO, GO!",
+      "This bridge isn't just old, it's condemned by fate itself!",
+      "I CAN'T DO THIS! IT'S GOING TO PLUMMET! We're all going to die!",
+      "WE'RE GOING TO DROWN! Trapped in our cars at the bottom of the river!"
+    ],
+    "tags": [ 
+      "structural_collapse", 
+      "mechanical_failure",
+      "impact_blunt" 
+    ],
+    "visionary_explains": [
+      "The suspension cables started snapping like giant whipcords. They sliced right through the cars and everyone inside them!",
+      "The concrete just fell away. I watched a school bus slide backward into the river, swallowed whole by the current.",
+      "The whole center span twisted and inverted. People were falling hundreds of feet into the freezing water, trapped in their seatbelts."
+    ],
+    "related_evidence": [
+        "Fractured Suspension Cable",
+        "Bridge Stress Test Results",
+        "Traffic Camera Footage"
+    ],
+    "death_narrative": "but you can't burn bridges with Death.\nThe path to your end was always under construction.",
+    "environmental_omens": {
+      "television": "A car commercial shows a vehicle gracefully crossing a huge suspension bridge. The image suddenly glitches, showing the bridge deck buckling and twisting before the ad abruptly ends.",
+      "radio": "A traffic report mentions 'phantom vibrations' being reported by drivers on a local bridge, which engineers have dismissed as 'normal'.",
+      "window": "The reflection of a long, thin crack in the ceiling momentarily appears to be a massive, fatal fracture running across a bridge visible outside."
+    }
+  },
+  "an explosion at the {city_name} Chemical Plant": {
+    "description": "You were walking near the {city_name} Chemical Plant when {visionary} grabbed your arm, pulling you away, gasping, \n'{warning}'\n\n Barely out of range, you witnessed the devastating explosion that leveled the facility, a cloud of fire and debris erupting into the sky, sending shockwaves through the city. The air filled with the deafening roar of the explosion and the acrid stench of chemicals and burning metal. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 16,
+      "max": 39
+    },
+    "visionary_category": [
+      "maintenance_technical", 
+      "first_responders_emergency",
+      "fire_related",
+      "strangers_distinctive"
+    ],
+    "warnings": [
+      "EVACUATE! CHEMICAL BREACH! The whole plant is unstable!",
+      "TOXIC FUMES! It'll sear your lungs! RUN FOR YOUR LIFE!",
+      "RUN! DON'T LOOK BACK! It's about to go up like a nuke!",
+      "IT'S GONNA BLOW! A CHAIN REACTION! GET THE HELL OUT OF HERE, NOW!",
+      "They never fixed that damn leak! Now we all pay the price in blood!",
+      "MY LUNGS! I CAN'T BREATHE! The air is poison! We're dead!",
+      "This town is a chemical time bomb, and the fuse is lit!"
+    ],
+    "tags": [
+      "industrial_accident",
+      "chemical_hazard",
+      "explosion_related"
+    ],
+    "visionary_explains": [
+      "The pressure valves blew, and this green vapor flooded the floor. People's lungs were burning from the inside out!",
+      "A spark hit the main silo and the sky turned to fire. The shockwave turned the metal scaffolding into flying shrapnel.",
+      "I watched the containment tank rupture. It melted the flesh right off the technicians before the fire even started."
+    ],
+    "debris_pool": [
+      "a flaming chemical barrel",
+      "a ruptured pressure valve",
+      "a jagged piece of corrugated roofing",
+      "a heavy steel pipe"
+    ],
+    "related_evidence": [
+      "Leaking Chemical Barrel",
+      "Safety Violation Notice",
+      "Employee's Warning Letter"
+      ],
+    "death_narrative": "and the reaction was bound to be explosive; your chemistry with fate was always volatile.",
+    "environmental_omens": {
+      "television": "On a science show, a chemist in a lab coat mixes two clear liquids. He says, '...and if you add just one drop too many...' as the beaker in his hand begins to smoke violently before the channel changes on its own.",
+      "radio": "A test of the emergency broadcast system is interrupted by a distorted, guttural roar and a sound like a massive, metallic pressure vessel failing.",
+      "window": "For a split second, the reflection of a puffy white cloud in the sky looks like a billowing, yellow-green toxic mushroom cloud."
+    }  
+  },
+  "a wildfire swept through {city_name} National Forest": {
+    "description": "Deep within {city_name} National Forest, you paused when {visionary} emerged from the undergrowth, their face etched with worry, rasping, \n'{warning}'\n\n They gestured behind them, where a faint haze of smoke began to curl through the trees. The ground vibrated with the roar of the firestorm, and the sky turned an angry, blood-red as the forest was reduced to a blackened, smoldering wasteland. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 12,
+      "max": 32
+    },
+    "visionary_category": [
+      "outdoor_nature_authority", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "emergency_services"
+    ],
+    "warnings": [
+      "THE FIRE IS SPREADING TOO FAST! We're cut off!",
+      "TO THE RIVER! It's our only chance to survive the inferno!",
+      "DON'T GO DEEPER INTO THE WOODS! You'll be burned alive!",
+      "IT'S A CROWN FIRE! We're trapped in a furnace of trees!",
+      "Those damn campers! Their negligence is going to kill us all!",
+      "WE'RE GOING TO BURN ALIVE! I can feel the flesh crisping!",
+      "Smells like a crematorium... and we're the next batch."
+    ],
+    "tags": [
+      "natural_disaster",
+      "fire_related"
+    ],
+    "related_evidence": [
+      "Discarded Cigarette Pack",
+      "Park Ranger's Map",
+      "Melted Animal Figurine"
+    ],
+    "visionary_explains": [
+      "The wind shifted and the fire crowned. It leaped from treetop to treetop, trapping us in a literal cage of flame!",
+      "I saw the smoke overtake the hikers on the trail. They couldn't breathe, they just dropped, and then the fire washed over them.",
+      "The heat was so intense the trees were exploding. The fire roared like a jet engine, incinerating everything in seconds."
+    ],
+    "death_narrative": "but you can't escape a fire by running. Death's design simply surrounds you with flames.",
+    "environmental_omens": {
+      "television": "A nature documentary about local wildlife suddenly cuts to stock footage of a raging forest fire. You can almost feel the heat before the scene changes back to a deer peacefully grazing.",
+      "radio": "The sound of a gentle breeze whispering through trees is suddenly replaced by a deafening, crackling roar that lasts for a few seconds before fading back to normal.",
+      "window": "The reflection of the setting sun on the trees outside makes them glow a brilliant, fiery orange, as if the entire forest is on the verge of igniting."
+    }  
+  },
+  "a freak storm flooded downtown in a matter of minutes": {
+    "description": "You were in the center of downtown when {visionary} began shouting at the sky, \n'{warning}'.\nAn inexplicable feeling of unease made you seek higher ground. Minutes later, a freak storm unleashed torrential rain, flooding the streets, turning them into raging rivers that swept away cars and people alike. The air filled with the roar of the storm and the screams of those caught in the flood. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 11,
+      "max": 61
+    },
+    "visionary_category": [
+      "weather_authority", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "emergency_services"
+    ],
+    "warnings": [
+      "GET TO HIGHER GROUND! NOW! Before the streets become rivers!",
+      "THE WATER IS GOING TO RISE TOO QUICKLY! It's a flash flood!",
+      "STAY OUT OF THE BASEMENTS! You'll drown like rats!",
+      "FLASH FLOOD! RUN FOR YOUR LIVES!!",
+      "Those storm drains are useless! They're death traps in this deluge!",
+      "HELP! I'M BEING SWEPT AWAY! The current is too strong!",
+      "This isn't rain, it's a bloody biblical flood!"
+    ],
+    "tags": [
+      "urban_disaster",
+      "flood_related"
+    ],
+    "visionary_explains": [
+      "The water surged up from the grates like geysers. It swept cars away with whole families still trapped inside!",
+      "The current was so fast it dragged pedestrians under the buses. The water was brown, freezing, and full of debris.",
+      "Lightning hit the flooded intersection. The water electrified and everyone trying to wade across just seized up and died."
+    ],
+    "related_evidence": [
+        "Clogged Storm Drain Photo",
+        "Weather Alert Printout",
+        "Water-Damaged Family Photo"
+    ],
+    "death_narrative": "but when your time is up, Death will rain on your parade. And flood it.",
+    "environmental_omens": {
+      "television": "A weather forecast shows a clear day, but for a split second, a massive, dark red storm cell appears on the radar directly over the city before vanishing.",
+      "radio": "The sound of gentle rain in a commercial for tea is suddenly replaced by the sound of a powerful, rushing river, sweeping away everything in its path.",
+      "window": "The raindrops streaking down the glass briefly merge together, creating the illusion that the water level outside is rapidly rising up the pane."
+    }  
+  },
+  "a high-speed train collision outside {city_name} Central Station": {
+    "description": "You were waiting on the platform for the commuter train when {visionary} pushed you back from the edge, screaming, \n'{warning}'\n\n Just then, a freight train collided head-on with your train in a brutal impact, a mangled mess of steel and broken bodies. The air filled with the screech of metal, the shattering of glass, and the screams of the dying. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 23,
+      "max": 181
+    },
+    "visionary_category": [
+      "transport_staff", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths"
+    ],
+    "warnings": [
+      "THE SIGNALS ARE DEAD! There's another train on this track!",
+      "JUMP! GET OFF THE PLATFORM! NOW!",
+      "BRACE FOR IMPACT! THIS IS IT! WE'RE GOING TO BE CRUSHED!",
+      "WRONG TRACK! IT'S ON THE WRONG GODDAMN TRACK! OH MY GOD!",
+      "We're all going to be torn apart!"
+    ],
+    "tags": [
+      "transportation_rail",
+      "mechanical_failure",
+      "impact_blunt"
+    ],
+    "visionary_explains": [
+      "The oncoming train didn't even brake. It plowed straight through the first three cars, turning them into an accordion of steel!",
+      "The glass shattered inward and the metal floor buckled up, crushing everyone in the cabin before they even knew what hit them.",
+      "I saw the derailment. Sparks everywhere, carriages rolling over each other and tearing passengers apart."
+    ],
+    "related_evidence": [
+        "Faulty Signal Report",
+        "Engineer's Schedule",
+        "Bent Piece of Track"
+    ],
+    "death_narrative": "and while you may have dodged the initial impact, Death's design ensured that the tracks of fate would eventually lead you to your end.",
+    "environmental_omens": {
+      "television": [
+        "A scene in an old black-and-white movie shows two toy trains on a collision course. Just before they hit, the screen cuts to static.",
+        "A news ticker at the bottom of the screen reads: '...investigation into recent signal malfunctions continues...'"
+      ],
+      "radio": [
+        "The sound of a distant train horn blares through the broadcast, but it sounds distorted and ends in a sharp, metallic screech.",
+        "A frantic-sounding traffic report mentions a 'major blockage on all tracks' at {city_name} Central before being cut off by a commercial."
+      ],
+      "window": [
+        "The parallel lines of a window blind's reflection momentarily appear to converge in the distance, like train tracks leading to a single, inevitable point.",
+        "For a split second, the reflection of a passing bus looks like a freight train barreling down the street."
+      ]
+    }
+    },
+  "a ski lift malfunction": {
+    "description": "You were about to hop on the ski lift when {visionary} freaked out and said, \n'{warning}'\n\n A wave of dizziness washed over you, and you instinctively jumped out of the way just as the lift cable snapped, sending chairs plummeting down the slope. The screams of the falling skiers were lost in the wind, their bodies twisting and tumbling down the mountainside. The ones who held onto their seats were slammed into the mountain below when the cable caught and arced the string of seats through the air. \nThere were {killed_count} people killed when the lift malfunctioned. \nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 13,
+      "max": 64
+    },
+    "visionary_category": [
+      "family_friends", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths"
+    ],
+    "warnings": [
+      "DON'T GET ON THE LIFT! The cable is about to snap!",
+      "THE CABLE IS FRAYING! It's unraveling like a cheap sweater!",
+      "JUMP NOW! While you still can! Before you plummet to your death!",
+      "THAT CABLE! IT'S NOT SECURE! YOU'LL ALL FALL! DON'T DO IT!",
+      "The lift is swaying too much! It's going to break free!",
+      "That grinding noise... the gears are failing! It's going to drop!",
+      "THAT CABLE'S GONNA SNAP! We're all gonna be meat crayons down that slope!",
+      "This thing hasn't been inspected since the Mesozoic era! It's a deathtrap!",
+      "PLEASE, NO! IT'S NOT SAFE! We're going to die up there, dangling like puppets!",
+      "WHAT WAS THAT CRACK?! Oh, God, this is how it ends!"
+    ],
+    "tags": [
+      "winter_sports",
+      "mechanical_failure",
+      "heights"
+    ],
+    "visionary_explains": [
+      "The main cable snapped and whipped back, gondolas swung into the highway and dragged the rest of the lift towers down into the lodge! It was fucking chaos!",
+      "The emergency brake failed and the lift rolled backward at high speed. People were thrown into the bullwheel at the bottom! Gondolas were thrown from the cable due to the velocity!",
+      "I saw the chairs slipping off the line. Families dropping onto the road and trees below, impaled on the jagged branches."
+    ],
+    "related_evidence": [
+      "Ski Lift Safety Report",
+      "Resort Staff Badge",
+      "Frayed Steel Cable"
+    ],
+    "death_narrative": "but like those who plummeted from the ski lift as it came down, you found that gravity and Death are unforgiving forces.",
+    "environmental_omens": {
+      "television": [
+        "A winter sports highlight reel shows a skier taking a dramatic fall. The video freezes on their twisted body before the broadcast resumes.",
+        "A documentary about engineering failures shows a diagram of a frayed cable under immense stress. You hear a loud 'TWANG' sound effect."
+      ],
+      "radio": [
+        "A weather report for the mountains mentions 'unexpectedly high winds and mechanical stress warnings for all chairlifts'.",
+        "A cheerful pop song is interrupted by the high-pitched squeal of grinding metal and a sound like a cable snapping."
+      ],
+      "window": [
+        "The reflection of a dangling power line outside sways in the wind, for a moment looking exactly like a snapped ski lift cable.",
+        "A bird flying down past the window is reflected as a dark, tumbling shape, like a body falling from a great height."
+      ]
+    }
+  },
+  "an apartment collapse": {
+    "description": "You were about to enter your apartment building when {visionary} blocked the doorway, saying, \n'{warning}'\n\n A sudden wave of panic hit you, and you backed away rapidly as the entire structure imploded in a cloud of dust and debris, the screams of the trapped residents swallowed by the collapsing building. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 16,
+      "max": 124
+    },
+    "warnings": [
+      "GET OUT OF THE BUILDING! NOW! The whole thing is coming down!",
+      "THE CEILING IS CRACKING! The load-bearing walls are GONE!",
+      "USE THE FIRE ESCAPE! IF IT'S STILL THERE! HURRY!",
+      "IT'S COMING DOWN! The entire damn building is IMPLODING!",
+      "Shoddy construction! They built this place with paperclips and lies!",
+      "WE'RE GOING TO BE BURIED ALIVE! Crushed under tons of rubble! Help us!",
+      "Well, there goes the neighborhood... and our lives with it."
+    ],
+    "visionary_category": [
+      "building_maintenance", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths"
+    ],
+    "tags": [
+      "structural_collapse",
+      "urban_disaster",
+      "construction_failure"
+    ],
+    "visionary_explains": [
+      "The foundation groaned and the walls just folded inward. Whole floors pancaking down, crushing everyone in their beds!",
+      "I saw the ceiling split open. Rebar and concrete rained down, burying the entire lobby in seconds.",
+      "The building leaned and snapped in half. People were thrown out of their windows into the rubble below."
+    ],
+    "related_evidence": [
+      "Cracked Foundation Photo",
+      "Building Code Violation",
+      "Tenant's Complaint Letter"
+      ],
+    "death_narrative": "and home might be where the heart is, but sometimes it's also where the ceiling caves in.",
+    "environmental_omens": {
+      "television": [
+        "A news report about building safety features highlights the importance of proper construction materials.",
+        "A reality show about home renovations features a segment on the dangers of ignoring structural issues."
+      ],
+      "radio": [
+        "A public service announcement warns about the risks of living in older buildings without proper inspections.",
+        "A talk show host discusses a recent spate of building collapses, urging listeners to check their own homes."
+      ],
+      "window": [
+        "The reflection of a nearby construction site shows workers reinforcing a building's foundation.",
+        "A bird's nest in the eaves of a house sways precariously, as if hinting at the instability within."
+      ]
+    }
+  },
+  "an earthquake in your neighborhood": {
+    "description": "You were walking your garbage out to the street when {visionary} grabbed your hand, yelling, \n'{warning}'\n\n You dove under a sturdy awning just as the earthquake intensified, causing buildings to crumble around you. The air filled with the roar of collapsing structures and the cries of the injured, the ground shaking beneath you. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 15,
+      "max": 29
+    },
+    "warnings": [
+      "DROP, COVER, AND HOLD ON! PRAY IT'S NOT THE BIG ONE!",
+      "GET AWAY FROM WINDOWS! They'll shatter into a million daggers!",
+      "WATCH FOR FALLING DEBRIS! Power lines, bricks, everything!",
+      "IT'S THE BIG ONE! THE GROUND IS RIPPING APART! RUN FOR YOUR LIFE!",
+      "This whole city is built on a damn fault line! We're just waiting to die!",
+      "THE GROUND IS OPENING UP! It's swallowing everything whole!",
+      "My priceless Ming vase! Oh, the humanity... and the structural integrity!"
+    ],
+    "visionary_category": [
+      "emergency_services", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "family_friends",
+      "children_youths"
+    ],
+    "tags": [
+      "geological_event",
+      "structural_collapse"
+    ],
+    "visionary_explains": [
+      "The ground liquefied. The street literally tore open and swallowed cars whole while the buildings collapsed on top of us!",
+      "I watched the glass facades of the high-rises shatter and rain down like guillotines onto the crowds below.",
+      "The shockwave snapped the power lines, sparking fires everywhere. People were crushed under falling masonry."
+    ],
+    "related_evidence": [
+      "Seismograph Printout",
+      "Gas Line Warning Tag",
+      "Fallen Power Line"
+        ],
+    "death_narrative": "and you may have dodged the initial quake, but Death's design is unshakable.",
+    "environmental_omens": {
+      "television": [
+        "The image on the screen violently shakes and distorts for a few seconds, like a bad satellite signal during an earthquake.",
+        "A news report in the background shows a seismograph needle. As the camera pans away, the needle begins to jump erratically."
+      ],
+      "radio": [
+        "A sudden burst of low-frequency static fills the air, sounding less like interference and more like the earth groaning.",
+        "A song with the lyrics '...the ground beneath my feet is crumbling...' plays before being abruptly cut off."
+      ],
+      "window": [
+        "The entire reflection in the glass trembles and ripples for a second, even though the room is perfectly still.",
+        "You see the reflection of a framed picture on the wall tilt and fall, but when you turn to look, it's hanging perfectly straight."
+      ]
+    }
+  },
+  "a typhoon off the coast": {
+    "description": "You were near the coast when {visionary} pointed towards the horizon, saying, \n'{warning}'\n\n An inexplicable fear urged you to seek shelter inland, mere hours before a devastating typhoon made landfall, unleashing its fury on the coastline. The wind howled, the waves crashed, and the rain fell in sheets, tearing apart buildings and flooding entire towns. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 150,
+      "max": 508
+    },
+    "warnings": [
+      "BOARD UP THE WINDOWS! Or the storm will tear them out and us with them!",
+      "SEEK SHELTER! Inland! NOW! This isn't just a storm, it's a monster!",
+      "STAY AWAY FROM THE COAST! The storm surge will annihilate everything!",
+      "CATEGORY 5! WE'RE ALL GOING TO BE BLOWN TO KINGDOM COME!",
+      "They said it would turn north. They always lie until it's too late!",
+      "THE WAVES ARE HIGHER THAN THE HOUSES! We're going to be swept out to sea!",
+      "My yacht! My beautiful multi-million dollar yacht! It's going to be splinters!"
+    ],
+    "visionary_category": [
+      "weather_authority", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "emergency_services"
+    ],
+    "tags": [
+      "natural_disaster",
+      "coastal_disaster"
+    ],
+    "visionary_explains": [
+      "The storm surge didn't stop. It was a twenty-foot wall of black water that flattened the coastal houses like cardboard!",
+      "The wind tore the roofs off. Flying debris was decapitating people trying to run for shelter.",
+      "I saw the pier disintegrate. The waves dragged everyone out to sea. You couldn't even hear the screams over the wind."
+    ],
+    "related_evidence": [
+      "Broken Barometer",
+      "Evacuation Order",
+      "Ship in a Bottle"
+    ],
+    "death_narrative": "and you may have outrun the storm, but Death's design is as relentless as a typhoon's winds.",
+    "environmental_omens": {
+      "television": [
+        "A weather map on a news channel shows a massive, swirling hurricane graphic with a skull superimposed in the eye of the storm for just a frame.",
+        "A movie scene shows a character looking out a window at a raging storm. The glass suddenly shatters inwards from the wind's force."
+      ],
+      "radio": [
+        "The sound of howling wind completely drowns out the broadcast for a few terrifying seconds.",
+        "A coastal evacuation warning for a different state is accidentally played, its tone urgent and panicked."
+      ],
+      "window": [
+        "Raindrops on the glass are suddenly driven sideways with impossible force, as if by a hurricane-force gust.",
+        "The reflection in the window appears to ripple and distort, as if you're looking at it from underwater."
+      ]
+    }
+    },
+  "a sinkhole opened under the {city_name} business district": {
+    "description": "You were walking across the street on your lunch break to grab a bite when {visionary} tugged at your shirt, crying, \n'{warning}'\n\n You were in shock at this complete stranger having the audacity to insert themselves into your day, but ran as the ground started to open up in front of you, swallowing the area you were just standing on into a massive sinkhole. The ground collapsed like a gaping maw, the earth crumbling and falling into the darkness below. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 25,
+      "max": 350
+    },
+    "visionary_category": [
+      "maintenance_technical", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths"
+    ],
+    "warnings": [
+      "THE GROUND IS COLLAPSING! It's opening up right under us!",
+      "WHAT ARE YOU WAITING FOR?! RUN! Or be swallowed by the earth!",
+      "GET AWAY FROM THE EDGE! The whole street is caving in!",
+      "RUN! IT'S A SINKHOLE! The entire business district is going down!",
+      "GET OUT OF THERE! You're standing on your own grave!"
+    ],
+    "tags": [
+      "natural_disaster",
+      "seismic_activity"
+    ],
+    "visionary_explains": [
+      "The asphalt bowed inward and then just vanished. A whole city block dropped into a black abyss, taking the buses with it!",
+      "I heard a rumble, and then the pavement gave way. People were clawing at the edge before falling into the dark.",
+      "The water mains burst underground, washing away the foundation. The street fell away into a massive, muddy crater."
+    ],
+    "related_evidence": [
+        "Geological Survey Map",
+        "Broken Water Main Pipe",
+        "Security Camera Hard Drive"
+        ],
+    "death_narrative": "and while you may have escaped the initial fall, Death's design was to always pull you back down.",
+    "environmental_omens": {
+      "television": [
+        "A cartoon character paints a black circle on the ground, which then becomes a real hole that he falls into. The falling sound effect continues long after the scene has changed.",
+        "A documentary about geology shows an animated cross-section of the ground. A massive underground cavern suddenly collapses, causing the surface above to cave in."
+      ],
+      "radio": [
+        "A news report on infrastructure mentions 'recent concerns over ground subsidence' in the business district due to a leaking water main.",
+        "The sound of cracking rock and collapsing earth briefly interrupts a talk show."
+      ],
+      "window": [
+        "For a brief moment, the reflection of the flat street outside appears to dip into a deep, shadowy bowl.",
+        "A spiderweb crack in the corner of the windowpane looks exactly like a map of a sinkhole spreading outwards."
+      ]
+    }
+    },
+  "a cruise ship sunk after it was hit by a speedboat": {
+    "description": "You were enjoying the evening festivities on the cruise ship when {visionary} grabbed your arm, yelling, \n'{warning}'\n\n You grab a life jacket and prepare for the worst, just as the boat struck and flames erupted, engulfing a large section of the vessel. The screams of the burning passengers mingled with the crackling of the fire. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 48,
+      "max": 350
+    },
+    "visionary_category": [
+      "maintenance_technical", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths",
+      "service_workers_venue"
+    ],
+    "warnings": [
+      "THAT BOAT IS COMING AT US WAY TOO FAST!!",
+      "PUT ON YOUR LIFE JACKET AND JUMP! NOW!!",
+      "LOWER THE LIFEBOATS!! WE'RE GOING TO SINK!",
+      "THE WHOLE SHIP'S ABOUT TO EXPLODE! Into the water, now!",
+      "THE LIFEBOATS! WHERE ARE THEY?! Oh god, there aren't enough!",
+      "And I just renewed my vows... This is one hell of a honeymoon."
+    ],
+    "tags": [
+      "transportation_water",
+      "drowning_water"
+    ],
+    "visionary_explains": [
+      "The speedboat tore a massive hole in the side! Fuel ignited, and the lower cabins were instantly incinerated.",
+      "The list happened so fast. Lifeboats swung wildly and crushed the passengers trying to board them.",
+      "The water rushed in while the fire spread above. People had to choose between burning alive or drowning in the dark."
+    ],
+    "related_evidence": [
+      "Empty Lifeboat Davit",
+      "Ship's Itinerary",
+      "Speedboat Registration"
+        ],
+    "death_narrative": "and ended with you drowning in the depths of Death's cold embrace. Death's business always comes before pleasure",
+    "environmental_omens": {
+      "television": [
+        "A commercial for a luxury cruise shows people dancing on the deck. The ship's lights flicker and die, plunging the scene into darkness just before the ad ends.",
+        "A scene in a movie shows water seeping under a cabin door. The camera pans up to show the waterline rapidly rising outside a porthole."
+      ],
+      "radio": [
+        "A party song is interrupted by the loud, panicked blast of a ship's horn, followed by the sound of an explosion.",
+        "A travel show discusses the 'unsinkable' nature of modern cruise ships, but the host's voice is layered with a faint, gurgling sound."
+      ],
+      "window": [
+        "The room's reflection in the window seems to tilt at an alarming angle for a moment before righting itself.",
+        "Condensation on the glass forms the shape of a large ship, tilted with one end sinking beneath the 'waterline' of the windowsill."
+      ]
+    }
+    },
+  "a dam break flooded the nearby {city_name} Valley": {
+    "description": "You were picnicking by the river downstream from the massive dam when {visionary} ran towards you, shouting, \n'{warning}'\n\n A primal urge to flee washed over you, and you ran uphill as a wall of water surged towards you, the dam having catastrophically failed. The water roared, a terrifying torrent that swept away everything in its path. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 150,
+      "max": 350
+    },
+    "visionary_category": [
+      "maintenance_technical", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths"
+    ],
+    "warnings": [
+      "HEAD FOR THE HILLS! UPHILL! NOW! Or be swept away!",
+      "A WALL OF WATER IS COMING! The dam has burst! RUN!",
+      "DON'T STOP! Keep running until you can't see the valley!",
+      "THE DAM BROKE! IT'S COMING! A TSUNAMI OF FRESHWATER DEATH!",
+      "They said that dam would last a thousand years. It didn't last fifty!",
+      "I CAN'T OUTRUN IT! It's too fast! We're all going to be washed away!",
+      "My prize-winning petunias! Drowned! Oh, the humanity... and the hydrology!"
+    ],
+    "tags": [
+      "infrastructure_failure",
+      "flood_related"
+    ],
+    "visionary_explains": [
+      "The concrete face cracked open like an egg. A tidal wave of muddy water and debris wiped the valley off the map!",
+      "I saw the water tear the bridge away. It carried whole houses downstream, smashing them against the rocks.",
+      "The roar was deafening. The floodwaters stripped the trees bare and drowned the campers in their tents."
+    ],
+    "related_evidence": [
+      "Dam Inspection Report",
+      "Warning Siren Log",
+      "Waterlogged Picnic Basket"
+        ],
+    "death_narrative": "and while you may have escaped the initial flood, Death's undertow was always waiting to pull you back in.",
+    "environmental_omens": {
+      "television": [
+        "A documentary about great feats of engineering shows a time-lapse of a massive dam being built. For a single frame, the image is replaced with the dam crumbling and unleashing a wall of water.",
+        "A home insurance commercial shows a family happily canoeing on a placid lake. In the background, a massive concrete dam has a visible crack running down its center."
+      ],
+      "radio": [
+        "A public service announcement about water conservation is interrupted by the sound of a roaring flood and snapping trees.",
+        "The long, mournful sound of a warning siren echoes faintly behind the music, then is abruptly cut short."
+      ],
+      "window": [
+        "The reflection of the clear blue sky in the window suddenly darkens and is filled with the image of a churning, debris-filled wave.",
+        "You see the reflection of a glass of water on a table tip over. In the reflection, the spill doesn't stop, instead appearing to flood the entire reflected room."
+      ]
+    }
+    },
+  "a gas pipeline explosion": {
+    "description": "You were driving down a rural road when {visionary} flagged you down, yelling, \n'{warning}'\n\n An overwhelming sense of unease made you accelerate rapidly, narrowly escaping the massive fireball that erupted behind you as a gas pipeline exploded. The shockwave rocked your vehicle, the air filled with the booming roar and the stench of burning gas. \n\nReports indicate there were {killed_count} people who died in the blast. \nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 15,
+      "max": 35
+    },
+    "visionary_category": [
+      "maintenance_technical", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths"
+    ],
+    "warnings": [
+      "GET AWAY FROM THE PIPELINE! It's about to rupture!",
+      "DON'T LIGHT ANYTHING! NOT EVEN A SPARK! Or we're all incinerated!",
+      "CALL 911! Tell them the pipeline is compromised! NOW!",
+      "IT'S LEAKING GAS! One spark and this whole area becomes a crater!",
+      "Pipeline safety? Ha! That's a myth. This was inevitable.",
+      "THE PRESSURE! IT'S TOO HIGH! IT'S GONNA BLOW SKY HIGH!",
+      "Smells like rotten eggs... and the inside of a furnace."
+    ],
+    "tags": [
+      "industrial_accident",
+      "geological_event"
+    ],
+    "visionary_explains": [
+      "The smell of rotten eggs hit, and then the ground erupted! The fireball spanned three blocks, melting the cars.",
+      "The asphalt boiled. The explosion threw chunks of pavement into the air, crushing people trying to run.",
+      "I watched a wall of flame shoot out of the ground. The heat vaporized everything instantly."
+    ],
+    "related_evidence": [
+      "Corroded Pipe Section",
+      "Pipeline Pressure Gauge",
+      "Farmer's Complaint Letter"
+        ],
+    "death_narrative": "and you can't see it, you can't always smell it, but Death is always there - waiting for a spark.",
+    "environmental_omens": {
+      "television": [
+        "A cooking show demonstrates how to flambe a dish. The chef adds alcohol, and the resulting plume of fire is unnaturally large, filling the entire screen before cutting away.",
+        "On an old cartoon, a character strikes a match near a leaking pipe. The screen whites out with a comical 'KABOOM!' sound effect that is far louder than usual."
+      ],
+      "radio": [
+        "A public service announcement about gas safety plays, ending with the chillingly cheerful line: 'If you smell rotten eggs, it might be the last thing you ever smell!'",
+        "The sound of a low, deep hum, like a high-pressure pipeline about to fail, momentarily vibrates through the speakers before a song starts."
+      ],
+      "window": [
+        "The heat haze rising from the asphalt outside briefly distorts the air, making it shimmer in a way that looks exactly like a leaking gas vapor.",
+        "The reflection of a long, straight power line overhead appears to have a rupture in the middle, leaking an invisible energy."
+      ]
+    }
+    },
+  "a factory collapse": {
+    "description": "You were visiting a local factory when {visionary} rushed towards you, stammering, \n'{warning}'\n\n A sudden wave of claustrophobia made you rush towards the exit, just as the building's roof caved in, crushing everything below in a cascade of twisted metal and concrete, the screams of those trapped within echoing through the collapsing structure. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 18,
+      "max": 76
+    },
+    "warnings": [
+      "THE ROOF IS CAVING IN! The whole structure is failing!",
+      "RUN FOR THE EXIT! Don't look back, just run!",
+      "WATCH OUT FOR MACHINERY! It's all coming down on top of us!",
+      "THE SUPPORTS ARE FAILING! GET OUT! GET OUT NOW BEFORE YOU'RE CRUSHED!",
+      "OSHA is going to have a field day with what's about to happen.",
+      "So much for 'Made in {city_name}'. More like 'Buried Alive in {city_name}'."
+    ],
+    "visionary_category": [
+      "building_maintenance", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "maintenance_technical"
+    ],
+    "tags": [
+      "industrial_accident",
+      "machinery"
+    ],
+    "visionary_explains": [
+      "The roof trusses buckled. The heavy machinery on the top floor came crashing down through the ceiling onto the workers!",
+      "I saw the support beams snap. A wave of brick and concrete buried the assembly line in an instant.",
+      "The floor dropped out. Dust choked the air while people were crushed by falling I-beams."
+    ],
+    "related_evidence": [
+        "Overloaded Support Beam",
+        "Factory Floor Plan",
+        "Union Grievance Form"
+    ],
+    "death_narrative": "and while the factory promised productivity, it ultimately produced only despair.",
+    "environmental_omens": {
+      "television": [
+        "A documentary shows footage of a controlled demolition. The image of the building pancaking into a cloud of dust and debris lingers on screen for an uncomfortable amount of time.",
+        "On a children's show, a character builds a tower of blocks that wobbles precariously before crashing down. The sound of the falling blocks is a deep, resonant CRUNCH."
+      ],
+      "radio": [
+        "An industrial rock song plays, featuring the sounds of groaning metal and machinery under immense stress.",
+        "A news report discusses recent budget cuts to OSHA and workplace safety inspections, mentioning 'increased risk at aging industrial sites'."
+      ],
+      "window": [
+        "For a moment, the reflection of the ceiling appears to sag and bow downwards, as if under an immense, unseen weight.",
+        "A flock of birds suddenly takes flight from a nearby rooftop in a panicked cloud, as if startled by a sudden structural failure."
+      ]
+    }
+    },
+  "a ferris wheel malfunction": {
+    "description": "The towering Ferris wheel loomed before you. You were about to step into a gondola when {visionary} seized your arm, rasping,\n{warning}\n They pointed a trembling finger at the central hub. As the wheel began its slow rotation, a sickening grinding sound echoed through the park. Then, with a deafening screech, the central axis snapped. The massive wheel buckled, its gondolas twisting and hurling their occupants into the night air or slamming them into the night ground. The cheerful music was replaced by horrifying screams, metal repeatedly slamming into pavement, and sickening thuds. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n Afterwards, those who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 13,
+      "max": 23
+    },
+    "warnings": [
+      "STOP THE RIDE! THE AXIS IS SNAPPING! IT'S GOING TO COLLAPSE!",
+      "WE'RE GOING TO DIE! Get away from this death machine!",
+      "DON'T GET ON! It's a deathtrap waiting to spring!",
+      "GET THE FUCK AWAY FROM THERE! Unless you want to be a human pancake!",
+      "THE MAIN BEARING IS SHOT! It's tearing itself apart from the inside!",
+      "This thing is a relic! It belongs in a scrapyard, not carrying people!",
+      "WE'RE GOING TO FALL TO OUR DEATHS! Flung out like ragdolls!",
+      "My cotton candy! Oh, and also, we're all about to be splattered across the midway."
+    ],
+    "tags": [
+      "carnival",
+      "mechanical_failure"
+    ],
+    "visionary_category": [
+      "maintenance_technical", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths",
+      "service_workers_venue"
+    ],
+    "visionary_explains": [
+      "The central axle shrieked and snapped! The wheel collapsed in on itself, crushing the gondolas at the bottom.",
+      "The carriages broke loose and fell into the crowd! People were trapped inside as the metal frame twisted and crushed them.",
+      "I watched it roll off its supports. It tore through the midway, flattening the stalls and anyone in its path."
+    ],
+    "related_evidence": [
+      "Carnival Inspection Records",
+      "Ride Operator's Manual",
+      "Twisted Metal Fragment"
+    ],
+    "death_narrative": "and while the carnival promised joy, it ultimately delivered despair.\nThe Ferris wheel's descent was a cruel reminder that not all rides end happily.",
+    "environmental_omens": {
+      "television": [
+        "A game show features a large spinning prize wheel. As it spins, a loud, grinding screech is heard, and the wheel wobbles violently on its axis.",
+        "An old film shows a couple on a Ferris wheel at night. As their car reaches the top, all the lights on the ride flicker and die, leaving them in darkness."
+      ],
+      "radio": [
+        "A call-in contest has listeners guess a 'mystery sound'. The sound is a rhythmic, high-pitched metallic shriek.",
+        "A carnival jingle plays, but the melody is warped and out of tune, ending on a sour, clanging note."
+      ],
+      "window": [
+        "The reflection of a circular ceiling fan appears to wobble violently on its axis for a moment before looking still again.",
+        "A child's pinwheel, reflected in the glass, suddenly has all its colorful blades fly off in different directions."
+      ]
+    }
+  },
+  "a shopping mall escalator suddenly reversing at high speed": {
+    "description": "You were idly window shopping, about to step onto the escalator to the food court, when {visionary}, a mall security guard off-duty, hissed, \n'{warning}'\n\n You hesitated, and a moment later, the ascending escalator grotesquely bucked, then reversed direction at terrifying speed. Screams erupted as shoppers were violently flung downwards, a cascade of bodies tumbling over each other, limbs snapping like twigs against the churning metal steps. The bottom of the escalator became a horrifying meat grinder. \n\nReports indicate {killed_count} people were mangled or killed.\n \nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 10,
+      "max": 17
+    },
+    "warnings": [
+      "DON'T STEP ON IT! THE GEARS ARE SHREDDED!",
+      "IT'S GOING TO REVERSE! EVERYONE OFF, NOW!",
+      "THAT GRINDING NOISE! THE MOTOR'S SHOT! RUN!",
+      "THE EMERGENCY STOP ISN'T WORKING! IT'S A TRAP!",
+      "Look at the teeth on those steps! They're like a shark's jaw!",
+      "My shopping bags! Oh, the humanity... and the velocity!"
+    ],
+    "tags": [
+      "public_venue_accident",
+      "mechanical_failure"
+    ],
+    "visionary_explains": [
+      "The gears chewed themselves apart and reversed! It became a human meat grinder at the bottom, bodies piling up!",
+      "The steps flattened out into a metal slide. People tumbled down, getting their limbs caught in the grating at the base.",
+      "I saw the emergency brake fail. The weight of the crowd pulled the stairs down so fast, people were crushed."
+    ],
+    "related_evidence": [
+        "Sheared Escalator Gear",
+        "Maintenance Log",
+        "Mall Security Footage"
+    ],
+    "death_narrative": "and while you may have avoided the initial carnage, Death's design ensured that the escalator of fate would eventually bring you down.",
+    "environmental_omens": {
+      "television": [
+        "A news report on Black Friday shopping shows a chaotic crowd surging onto an escalator. The footage suddenly runs in reverse at high speed for a few seconds.",
+        "An animated show features a character on an escalator that turns into a slide, sending them hurtling downwards into a pile of jagged objects."
+      ],
+      "radio": [
+        "A department store commercial features the gentle, ambient sounds of a mall. Underneath it all, you can hear the faint, rhythmic sound of metal teeth grinding together.",
+        "A song with a repetitive, climbing beat suddenly reverses, the notes tumbling over each other in a chaotic descent."
+      ],
+      "window": [
+        "The reflection of a set of stairs momentarily appears to be moving downwards, its steps blurring into a smooth, metallic ramp.",
+        "In the reflection, people walking up a distant staircase all stumble and fall backwards at the same time."
+      ]
+    }
+    },
+  "a high-rise window washer platform collapsed onto a crowded plaza": {
+    "description": "Lunchtime in the bustling downtown plaza. You were about to sit on a bench when {visionary}, a street artist frantically sketching, yelled, \n'{warning}'\n\n and pointed skyward. High above, a window washing platform swung erratically, then with a sickening series of snaps, its cables gave way. The platform, with its occupants, plummeted dozens of stories, exploding like a bomb on impact with the crowded square. Bodies and debris were flung hundreds of feet. The picturesque scene turned into a bloodbath. \n{killed_count} were killed instantly.\n \nAfterwards, those who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 15,
+      "max": 35
+    },
+    "visionary_category": [
+      "maintenance_technical", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths",
+      "service_workers_venue"
+    ],
+    "warnings": [
+      "LOOK UP! THE CABLES ARE SNAPPING! IT'S COMING DOWN!",
+      "RUN! GET OUT OF THE PLAZA! IT'S NOT SAFE!",
+      "THEY'RE FALLING! OH GOD, THEY'RE FALLING!",
+      "That winch is screaming! It's about to give!",
+      "Move! For the love of God, MOVE!",
+      "My artisanal sandwich! And those poor souls..."
+    ],
+    "tags": [
+      "public_venue_accident",
+      "heights"
+    ],
+    "visionary_explains": [
+      "The cables snapped one by one. The platform dropped thirty stories and exploded like a bomb in the crowded plaza when it landed on the food trucks!",
+      "The metal rig swung out and smashed the glass before plummeting. It crushed the people eating lunch below before landing on the food trucks.\nThey blew up, we all died, and then I was back here like nothing happened.",
+      "I saw the workers falling, screaming, and then the heavy rig landed on the crowd. Shrapnel went everywhere."
+    ],
+    "related_evidence": [
+        "Snapped Support Cable",
+        "Building Maintenance Contract",
+        "Pigeon Feather"
+    ],
+    "death_narrative": "and look out below. Death comes from all angles, especially above.",
+    "environmental_omens": {
+      "television": [
+        "A news report shows a time-lapse of the city skyline, and for a brief moment, the window washing platform appears to sway dangerously before the footage cuts.",
+        "A commercial for a high-rise cleaning service features a worker saying, 'Safety first! Always check your gear!' just before the screen glitches.",
+        "A superhero movie is on, showing the hero scaling a skyscraper. A window washing platform in the background suddenly drops a few feet before the camera cuts away.",
+        "A home improvement show demonstrates how to use a rope and pulley system. The rope suddenly snaps, sending a heavy object crashing to the floor."
+      ],
+      "radio": [
+        "A traffic report mentions 'heavy pedestrian congestion in the downtown plaza' right before a loud crash interrupts the broadcast.",
+        "A weather update warns of 'high winds affecting tall buildings', followed by a sound like metal creaking.",
+        "The sound of a window being squeegeed clean is followed by a high-pitched metallic snap and a long, whistling fall.",
+        "A call-in show has a caller complaining about 'unsafe working conditions' for high-rise workers in the city."
+      ],
+      "window": [
+        "The reflection of a bird flying past the window looks like it's being sucked into an invisible vortex, as if something is about to fall.",
+        "The sunlight glinting off the glass of nearby skyscrapers creates an optical illusion that makes it look like one of them is leaning precariously.",
+        "A large bird lands on a ledge outside, and its reflection appears to plummet straight down.",
+        "A long, vertical streak of dirt on the window looks for a moment like the snapped cable of a falling platform."
+      ]
+    }
+    },
+  "a grain silo exploded at a rural processing plant": {
+    "description": "You were on a scenic drive through county farmland, passing by the towering {city_name} Grain Co-op, when {visionary} waved you down frantically, shouting \n'{warning}'\n\n Moments later, a deafening boom ripped through the air. One of the massive silos erupted in a colossal fireball, the shockwave flattening nearby structures and sending a rain of burning grain and twisted metal across the fields. The very air seemed to ignite. \n\nReports indicated {killed_count} workers and bystanders were killed.\n \nLater, those who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 9,
+      "max": 13
+    },
+    "warnings": [
+      "IT'S GONNA BLOW!",
+      "GET AWAY FROM THE SILOS! THEY'RE UNSTABLE!",
+      "THAT SPARK! NO! IT'LL IGNITE EVERYTHING!",
+      "RUN! SHE'S GONNA GO UP LIKE A VOLCANO!",
+      "They never cleaned out the conveyors! It's a powder keg!",
+      "This isn't just grain, it's a bomb waiting for a spark!"
+    ],
+    "tags": [
+      "structural_collapse",
+      "rural_disaster"
+    ],
+    "visionary_category": [
+      "maintenance_technical", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths",
+      "service_workers_venue"
+    ],
+    "visionary_explains": [
+      "The dust ignited! The pressure blew the concrete walls out, raining fiery shrapnel over the whole farm.",
+      "I saw the roof blow clean off. A massive shockwave knocked everyone down, followed by a shower of burning grain.",
+      "The silo didn't just burn, it detonated. The blast flattened the outbuildings and incinerated the workers."
+    ],
+    "related_evidence": [
+      "Overheated Bearing",
+      "Dust Collection System Report",
+      "Static Discharge Warning"
+    ],
+    "death_narrative": "and like the saying,'from dust you came..' -to a much larger, more explosive cloud of dust shall you return.",
+    "environmental_omens": {
+      "television": [
+        "A cooking show demonstrates baking with flour. The host claps their hands, sending a cloud of flour into the air, and says 'This stuff can be explosive, you know!'",
+        "A documentary about industrial accidents shows a diagram of a dust explosion, illustrating how a small spark can ignite an entire facility."
+      ],
+      "radio": [
+        "A farm report discusses grain prices and mentions local silos are 'filled to capacity, creating high-pressure conditions'.",
+        "A loud 'WHOOMPH' sound, like a gas furnace igniting, interrupts the broadcast for a second."
+      ],
+      "window": [
+        "A gust of wind blows a cloud of pollen past the window, which for a moment looks like a thick, yellow cloud of explosive dust.",
+        "The reflection of a cylindrical water tower in the distance appears to bulge at the seams, as if about to explode."
+      ]
+    }
+  },
+  "a catastrophic theater stage collapse during a live performance": {
+    "description": "You were in the audience, settled in for the premiere of 'McKinley: The Musical!' when {visionary}, next to an usher with a look of sheer terror, whispered, \n'{warning}'\n\n Just as the grand finale began, with pyrotechnics and complex hydraulics, the stage rigging above groaned ominously. With a sound like thunder, the entire proscenium arch and tons of equipment collapsed onto the stage, crushing performers and sending the audience into a panicked stampede. The air filled with dust, screams, and the smell of electrical fires. \n{killed_count} died in the initial collapse or ensuing chaos.\n \nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
+    "killed_count": {
+      "min": 48,
+      "max": 200
+    },
+    "warnings": [
+      "THE RIGGING IS FAILING! THE WHOLE STAGE IS COMING DOWN!",
+      "GET OUT! EVACUATE THE THEATER, NOW!",
+      "THOSE HYDRAULICS ARE OVERLOADED! IT CAN'T HOLD!",
+      "PYROTECHNICS NEAR THE CURTAINS?! ARE THEY INSANE?",
+      "It's not part of the show! RUN FOR YOUR LIVES!",
+      "My signed playbill! And the structural integrity!"
+    ],
+    "tags": [
+      "public_venue_accident",
+      "structural_collapse"
+    ],
+    "visionary_category": [
+      "service_workers_venue", 
+      "bystanders_general",
+      "strangers_distinctive",
+      "children_youths"
+    ],
+    "visionary_explains": [
+      "The overhead rigging failed. Tons of steel lights and sandbags plummeted directly onto the stage and the front rows!",
+      "The hydraulic lift collapsed, pulling the stage down. The pyrotechnics misfired into the panicked crowd.",
+      "I watched the heavy velvet curtain catch fire as the balcony gave way, crushing the audience below."
+    ],
+    "related_evidence": [
+      "Stage Production Schedule",
+      "Frayed Rigging Rope",
+      "Crushed Playbill"
+    ],
+    "death_narrative": "and now the final act has concluded.\nThe curtains fall, the lights go out, and your part in this play is over.",
+
+    "environmental_omens": {
+      "television": [
+          "A scene from a dramatic play appears on the screen. An actor passionately declares, 'The whole thing is coming down around us!' before the image dissolves into static.",
+          "A commercial for a home renovation show features a crew discussing load-bearing walls. 'If this goes, the whole second floor goes with it,' one of them says grimly."
+      ],
+      "radio": [
+          "A snippet of classical music is interrupted by the sound of a heavy object crashing, followed by a moment of dead air."
+      ]
+  }
+  }}

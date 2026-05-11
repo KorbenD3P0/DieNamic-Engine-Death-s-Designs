@@ -1,0 +1,1539 @@
+# NPCs & Dialogue System Guide
+**Version:** 1.0  
+**Last Updated:** 2025-11-06  
+**Game:** DieNamic Engine: Death's Designs - AR
+
+---
+
+## Table of Contents
+1. [Overview](#overview)
+2. [NPC Anatomy](#npc-anatomy)
+3. [Dialogue Trees](#dialogue-trees)
+4. [NPC States & Fates](#npc-states--fates)
+5. [Gifting Items](#gifting-items)
+6. [NPC Interaction Commands](#npc-interaction-commands)
+7. [Dynamic Dialogue](#dynamic-dialogue)
+8. [Survivor Fates](#survivor-fates)
+9. [Death's Dialogue](#deaths-dialogue)
+10. [Testing & Debugging](#testing--debugging)
+11. [Complete Examples](#complete-examples)
+
+---
+
+## Overview
+
+NPCs (Non-Player Characters) populate the game world, providing:
+- **Narrative depth**: Backstory, motivation, personality
+- **Player choices**: Save, ignore, or inadvertently doom NPCs
+- **Moral weight**: Decisions have consequences
+- **Information**: Hints, clues, warnings about hazards
+- **Companionship**: Reduce isolation in horror setting
+
+### Design Philosophy
+
+**NPCs should:**
+- Have clear personality and motivation
+- React to player actions and world events
+- Provide meaningful choices (save vs. self-preservation)
+- Face consequences tied to player decisions
+- Enhance narrative (not just quest dispensers)
+
+**NPCs should NOT:**
+- Be invincible (Death claims everyone eventually)
+- Solve puzzles for player (hints only)
+- Be numerous (quality over quantity)
+- Lack personality (generic dialogue)
+
+### NPC Types
+
+| Type | Purpose | Examples | Survives? |
+|------|---------|----------|-----------|
+| **Visionary** | Sees death coming, guides player | Corbin Wainwright | Sometimes |
+| **Survivor** | Fellow trapped victim | Fairgoers, patients | Rarely |
+| **Authority** | Doctor, security, staff | Dr. Ellis, Guard Mason | Rarely |
+| **Bystander** | Background character | Waiting room patient | Never |
+| **Death** | Antagonist, narrator | Death personified | Always |
+
+---
+
+## NPC Anatomy
+
+### File Location
+`data/npcs.json`
+
+### Minimal Required Schema
+```json
+{
+  "npc_name": {
+    "name": "NPC Name",
+    "description": "Brief description",
+    "dialogue": {
+      "first_encounter": {
+        "text": "What the NPC says on first meeting"
+      }
+    }
+  }
+}
+```
+
+### Complete Schema
+```json
+{
+  "npc_key": {
+    "name": "Display Name",
+    "description": "Physical description and demeanor",
+    "initial_state": "conscious",
+    "current_state": "conscious",
+    "location": "Room Name",
+    "is_visionary": false,
+    "personality_traits": ["cautious", "analytical"],
+    "dialogue": {
+      "first_encounter": {
+        "text": "First meeting dialogue",
+        "gives_item": "item_key",
+        "unlocks_achievement": "achievement_id",
+        "changes_npc_state": "state_key"
+      },
+      "repeat_encounter": {
+        "text": "Subsequent meetings dialogue"
+      },
+      "low_health": {
+        "text": "Dialogue when NPC is injured",
+        "condition": "health < 30"
+      },
+      "hazard_active": {
+        "text": "Dialogue when hazard nearby",
+        "condition": "hazard_active:ventilator"
+      },
+      "after_quest": {
+        "text": "Dialogue after specific event",
+        "condition": "quest_completed:save_corbin"
+      }
+    },
+    "interaction_options": {
+      "help": {
+        "prompt": "Help the NPC",
+        "result": "You help them. They're grateful.",
+        "changes_npc_state": "helped",
+        "gives_item": "reward_item"
+      },
+      "ignore": {
+        "prompt": "Ignore the NPC",
+        "result": "You walk away.",
+        "changes_npc_state": "ignored"
+      }
+    },
+    "possible_fates": ["saved", "died_natural", "died_hazard"],
+    "current_fate": null,
+    "health": 100,
+    "fear_level": 50,
+    "can_follow_player": false,
+    "inventory": ["item_key"],
+    "questgiver": false,
+    "quest_id": null,
+    "death_message": "How Death claims this NPC if they die",
+    "survival_message": "How this NPC escapes if they survive"
+  }
+}
+```
+
+### Field Descriptions
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | ✅ Yes | Display name (e.g., "Corbin Wainwright") |
+| `description` | string | ✅ Yes | Physical appearance, demeanor |
+| `initial_state` | string | ❌ No | Starting state (conscious, unconscious, injured) |
+| `current_state` | string | ❌ No | Runtime state (changes based on events) |
+| `location` | string | ❌ No | Room name where NPC is found |
+| `is_visionary` | boolean | ❌ No | Whether NPC has death visions |
+| `personality_traits` | array | ❌ No | Traits affecting dialogue (cautious, brave, panicked) |
+| `dialogue` | object | ✅ Yes | Dialogue tree (see Dialogue Trees section) |
+| `interaction_options` | object | ❌ No | Player action choices (help, ignore, question) |
+| `possible_fates` | array | ❌ No | Outcomes for this NPC (saved, died_natural, died_hazard) |
+| `current_fate` | string | ❌ No | Runtime fate (null until determined) |
+| `health` | int | ❌ No | HP (0-100, default: 100) |
+| `fear_level` | int | ❌ No | Fear (0-100, affects dialogue tone) |
+| `can_follow_player` | boolean | ❌ No | Whether NPC can move rooms with player |
+| `inventory` | array | ❌ No | Items NPC is carrying |
+| `questgiver` | boolean | ❌ No | Whether NPC gives quests |
+| `quest_id` | string | ❌ No | Quest ID if questgiver |
+| `death_message` | string | ❌ No | Narrative text if NPC dies |
+| `survival_message` | string | ❌ No | Narrative text if NPC survives |
+
+---
+
+## Dialogue Trees
+
+Dialogue trees define what NPCs say and how conversations branch based on conditions.
+
+### Basic Dialogue
+
+**Single Exchange:**
+```json
+{
+  "corbin_wainwright": {
+    "name": "Corbin Wainwright",
+    "dialogue": {
+      "first_encounter": {
+        "text": "He lies motionless in the hospital bed, breathing through a ventilator. His eyes flicker open briefly when you approach."
+      },
+      "repeat_encounter": {
+        "text": "Corbin is still unconscious, the ventilator humming steadily beside him."
+      }
+    }
+  }
+}
+```
+
+**Behavior:**
+```
+Player: "talk to corbin"
+First time: [first_encounter text]
+Subsequent times: [repeat_encounter text]
+```
+
+---
+
+### Branching Dialogue
+
+**Multiple Dialogue Nodes:**
+```json
+{
+  "dr_ellis": {
+    "name": "Dr. Ellis",
+    "dialogue": {
+      "first_encounter": {
+        "text": "A doctor in bloodstained scrubs looks up. 'You're still alive? We need to get out of here. Now.'",
+        "options": [
+          {
+            "key": "ask_what_happened",
+            "prompt": "What happened here?",
+            "response": "I don't know! Patients started dying—one after another. Accidents. Impossible accidents. Then I saw... something. A figure.",
+            "next_node": "explain_deaths"
+          },
+          {
+            "key": "ask_escape_route",
+            "prompt": "How do we escape?",
+            "response": "The main entrance is blocked. We need to find another way. The emergency exit, maybe?",
+            "next_node": "discuss_escape"
+          },
+          {
+            "key": "leave",
+            "prompt": "I have to go.",
+            "response": "Wait! Don't leave me here alone!",
+            "next_node": null
+          }
+        ]
+      },
+      "explain_deaths": {
+        "text": "Every death looked like an accident. A gas leak. A ventilator malfunction. But they're not accidents. There's a pattern.",
+        "options": [
+          {
+            "key": "ask_pattern",
+            "prompt": "What pattern?",
+            "response": "I can't explain it. But I know we're next if we don't leave. Now.",
+            "next_node": "discuss_escape"
+          }
+        ]
+      },
+      "discuss_escape": {
+        "text": "The emergency exit should be through the ER. But we'll need to navigate past... whatever is causing this.",
+        "options": [
+          {
+            "key": "agree_work_together",
+            "prompt": "Let's go together.",
+            "response": "Thank you. I won't slow you down, I promise.",
+            "changes_npc_state": "following",
+            "next_node": null
+          },
+          {
+            "key": "refuse",
+            "prompt": "I work alone.",
+            "response": "Fine. I hope you make it out.",
+            "changes_npc_state": "alone",
+            "next_node": null
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+**Behavior:**
+```
+Player: "talk to dr_ellis"
+> [first_encounter text]
+> [1] What happened here?
+> [2] How do we escape?
+> [3] I have to go.
+
+Player: "1"
+> [explain_deaths text]
+> [1] What pattern?
+
+Player: "1"
+> [discuss_escape text]
+> [1] Let's go together.
+> [2] I work alone.
+
+Player: "1"
+> [agree_work_together response]
+> [Dr. Ellis will now follow you]
+```
+
+---
+
+### Conditional Dialogue
+
+**Based on Game State:**
+```json
+{
+  "nurse_garcia": {
+    "name": "Nurse Garcia",
+    "dialogue": {
+      "first_encounter": {
+        "text": "A nurse huddles in the corner, visibly shaken."
+      },
+      "if_ventilator_cleared": {
+        "text": "You stopped the ventilator? How? That thing was a death trap!",
+        "condition": "hazard_cleared:malfunctioning_ventilator"
+      },
+      "if_mri_cleared": {
+        "text": "The MRI is powered down? Thank God. People were getting pulled into that room...",
+        "condition": "hazard_cleared:mri_malfunction"
+      },
+      "if_player_has_journal": {
+        "text": "Is that Corbin's journal? He... he knew, didn't he? He saw what was coming.",
+        "condition": "player_has_item:corbins_journal"
+      },
+      "if_high_fear": {
+        "text": "I can't take this anymore! I can't! We're all going to die!",
+        "condition": "player_fear > 70"
+      }
+    }
+  }
+}
+```
+
+**Condition Types:**
+- `hazard_cleared:<hazard_key>`: Hazard reached terminal success state
+- `hazard_active:<hazard_key>`: Hazard currently active
+- `player_has_item:<item_key>`: Item in player inventory
+- `player_fear > X`: Player fear level threshold
+- `player_health < X`: Player health threshold
+- `npc_state:<state>`: NPC in specific state
+- `quest_completed:<quest_id>`: Quest finished
+- `achievement_unlocked:<achievement_id>`: Achievement earned
+
+---
+
+### Dialogue with Actions
+
+**Items, State Changes, Achievements:**
+```json
+{
+  "corbin_wainwright": {
+    "name": "Corbin Wainwright",
+    "dialogue": {
+      "first_encounter": {
+        "text": "He stirs slightly, his eyes focusing on you. With effort, he reaches out, clutching a worn leather journal. He pushes it toward you, his breathing labored.",
+        "gives_item": "corbins_journal",
+        "unlocks_achievement": "the_visionary",
+        "changes_npc_state": "exhausted"
+      },
+      "after_giving_journal": {
+        "text": "Corbin's eyes close again. The ventilator hums steadily, but you sense it won't be steady for long.",
+        "condition": "player_has_item:corbins_journal"
+      }
+    }
+  }
+}
+```
+
+**Behavior:**
+```
+Player: "talk to corbin"
+> [first_encounter text]
+> [Item added to inventory: Corbin's Journal]
+> [Achievement Unlocked: The Visionary]
+> [Corbin's state changed: conscious → exhausted]
+```
+
+---
+
+## NPC States & Fates
+
+NPCs have dynamic states that change based on player actions and hazard outcomes.
+
+### Common NPC States
+
+| State | Description | Dialogue Tone |
+|-------|-------------|---------------|
+| `conscious` | Aware, can talk normally | Calm or fearful |
+| `unconscious` | Cannot interact | No dialogue |
+| `injured` | Wounded, limited interaction | Pained, urgent |
+| `panicked` | Extremely fearful | Frantic, irrational |
+| `helped` | Player assisted them | Grateful, helpful |
+| `ignored` | Player abandoned them | Bitter, resigned |
+| `following` | Traveling with player | Supportive, nervous |
+| `alone` | Refused player help | Independent, wary |
+| `dying` | Critical condition | Desperate, final words |
+| `dead` | Deceased | No dialogue (examine corpse) |
+| `escaped` | Successfully left level | Relief, gratitude |
+
+### State Transitions
+
+**Example: Injured → Helped → Following**
+```json
+{
+  "security_guard_mason": {
+    "name": "Security Guard Mason",
+    "initial_state": "injured",
+    "dialogue": {
+      "injured": {
+        "text": "A security guard lies on the floor, bleeding from a head wound. 'Help... I can't... stand...'",
+        "condition": "npc_state:injured"
+      },
+      "helped": {
+        "text": "Mason struggles to his feet, leaning on you. 'Thanks. I owe you one.'",
+        "condition": "npc_state:helped"
+      },
+      "following": {
+        "text": "Mason stays close behind you, one hand on his holstered radio.",
+        "condition": "npc_state:following"
+      }
+    },
+    "interaction_options": {
+      "help": {
+        "prompt": "Help Mason to his feet",
+        "result": "You bandage his wound and help him stand. He can walk now.",
+        "changes_npc_state": "helped",
+        "requires_item": "medical_supplies"
+      },
+      "leave": {
+        "prompt": "Leave him",
+        "result": "You leave Mason on the floor. He watches you go, eyes full of fear.",
+        "changes_npc_state": "ignored"
+      }
+    }
+  }
+}
+```
+
+**Flow:**
+```
+1. Player enters room → Mason is "injured"
+2. Player: "help mason" → Requires medical_supplies
+3. If player has item: Mason → "helped"
+4. Player: "talk to mason" → Dialogue options include "Come with me"
+5. Player chooses: Mason → "following"
+```
+
+---
+
+### NPC Fates
+
+Defined in `data/survivor_fates.json`.
+
+**Schema:**
+```json
+{
+  "fate_key": {
+    "name": "Fate Name",
+    "description": "What happens to NPC",
+    "is_positive": true,
+    "score_impact": 50,
+    "narrative_text": "Detailed outcome for ending screen"
+  }
+}
+```
+
+**Example Fates:**
+```json
+{
+  "saved": {
+    "name": "Saved",
+    "description": "The NPC escaped alive.",
+    "is_positive": true,
+    "score_impact": 100,
+    "narrative_text": "{npc_name} made it out safely, thanks to your actions. They'll never forget what you did."
+  },
+  "died_natural": {
+    "name": "Died Naturally",
+    "description": "The NPC died from natural causes (illness, injury).",
+    "is_positive": false,
+    "score_impact": -25,
+    "narrative_text": "{npc_name} succumbed to their injuries. There was nothing you could do."
+  },
+  "died_hazard": {
+    "name": "Died to Hazard",
+    "description": "The NPC was killed by a hazard.",
+    "is_positive": false,
+    "score_impact": -50,
+    "narrative_text": "{npc_name} was claimed by Death's design. You couldn't save them."
+  },
+  "sacrificed_self": {
+    "name": "Sacrificed Self",
+    "description": "The NPC died saving the player or another NPC.",
+    "is_positive": false,
+    "score_impact": 25,
+    "narrative_text": "{npc_name} gave their life to save yours. Their sacrifice won't be forgotten."
+  },
+  "left_behind": {
+    "name": "Left Behind",
+    "description": "The NPC was abandoned by the player.",
+    "is_positive": false,
+    "score_impact": -75,
+    "narrative_text": "{npc_name} was left behind. You heard their screams as you fled. That sound will haunt you."
+  },
+  "unknown": {
+    "name": "Unknown",
+    "description": "The NPC's fate is uncertain.",
+    "is_positive": false,
+    "score_impact": 0,
+    "narrative_text": "{npc_name}'s fate remains unknown. Did they escape? Or did Death claim them?"
+  }
+}
+```
+
+**Fate Assignment:**
+```python
+# When hazard kills NPC:
+npc["current_fate"] = "died_hazard"
+
+# When player helps NPC escape:
+npc["current_fate"] = "saved"
+
+# When player abandons NPC:
+npc["current_fate"] = "left_behind"
+```
+
+**End Game Summary:**
+```
+═══════════════════════════════════════
+        SURVIVORS & CASUALTIES
+═══════════════════════════════════════
+
+Corbin Wainwright: SAVED
+  Corbin made it out safely, thanks to your actions.
+  He'll never forget what you did.
+
+Dr. Ellis: DIED TO HAZARD
+  Dr. Ellis was claimed by Death's design.
+  You couldn't save them.
+
+Nurse Garcia: LEFT BEHIND
+  Nurse Garcia was left behind. You heard her
+  screams as you fled. That sound will haunt you.
+
+Final Score: -25 points (1 saved, 1 died, 1 abandoned)
+```
+
+---
+
+## Gifting Items
+
+NPCs can give items to the player during dialogue.
+
+### Simple Gift
+
+**On First Encounter:**
+```json
+{
+  "janitor_carl": {
+    "name": "Janitor Carl",
+    "dialogue": {
+      "first_encounter": {
+        "text": "An old janitor sits on an upturned bucket. 'You'll need this,' he says, tossing you a keyring.",
+        "gives_item": "janitor_keyring"
+      }
+    }
+  }
+}
+```
+
+**Behavior:**
+```
+Player: "talk to janitor_carl"
+> [first_encounter text]
+> [Item added to inventory: Janitor Keyring]
+```
+
+---
+
+### Conditional Gift
+
+**If Player Helps NPC:**
+```json
+{
+  "nurse_garcia": {
+    "name": "Nurse Garcia",
+    "interaction_options": {
+      "help_calm_down": {
+        "prompt": "Calm her down",
+        "result": "You talk to her softly. She takes a shaky breath and hands you something. 'Take this. It might help you.'",
+        "gives_item": "master_key",
+        "changes_npc_state": "calmed"
+      }
+    }
+  }
+}
+```
+
+**Behavior:**
+```
+Player: "help nurse_garcia"
+> [result text]
+> [Item added to inventory: Master Key]
+> [Nurse Garcia's state: panicked → calmed]
+```
+
+---
+
+### Quest Reward
+
+**After Completing Task:**
+```json
+{
+  "dr_ellis": {
+    "name": "Dr. Ellis",
+    "dialogue": {
+      "after_clearing_mri": {
+        "text": "You powered down the MRI? Incredible. Here, take this—you've earned it.",
+        "condition": "hazard_cleared:mri_malfunction",
+        "gives_item": "hospital_master_key",
+        "unlocks_achievement": "hero_of_the_hospital"
+      }
+    }
+  }
+}
+```
+
+**Behavior:**
+```
+# Player clears MRI hazard
+Player: "talk to dr_ellis"
+> [after_clearing_mri text]
+> [Item added to inventory: Hospital Master Key]
+> [Achievement Unlocked: Hero of the Hospital]
+```
+
+---
+
+## NPC Interaction Commands
+
+### Talk
+
+**Command:** `talk to <npc>` or `speak to <npc>`
+
+**Behavior:**
+```
+1. Check if NPC is in current room
+2. Check NPC current_state (must be conscious, not dead)
+3. Evaluate dialogue conditions
+4. Show appropriate dialogue node
+5. If dialogue has options, present choices
+6. If dialogue gives item, add to inventory
+7. If dialogue changes NPC state, update state
+```
+
+**Example:**
+```
+Player: "talk to corbin"
+> Corbin stirs slightly, his eyes focusing on you.
+> With effort, he reaches out, clutching a worn
+> leather journal. He pushes it toward you.
+> 
+> [Item added: Corbin's Journal]
+> [Achievement Unlocked: The Visionary]
+```
+
+---
+
+### Help
+
+**Command:** `help <npc>` or `assist <npc>`
+
+**Behavior:**
+```
+1. Check if NPC has interaction_options["help"]
+2. Check if player meets requirements (items, conditions)
+3. Apply result (state change, item gift)
+4. Show result message
+```
+
+**Example:**
+```
+Player: "help mason"
+> You need Medical Supplies to help Mason.
+
+[Player acquires Medical Supplies]
+
+Player: "help mason"
+> You bandage Mason's wound and help him stand.
+> He can walk now, though he's still weak.
+> 
+> [Mason's state: injured → helped]
+```
+
+---
+
+### Follow
+
+**Command:** `<npc> follow me` or `bring <npc>`
+
+**Behavior (if can_follow_player: true):**
+```
+1. Check if NPC can_follow_player
+2. Check if NPC is in appropriate state (helped, conscious)
+3. Set NPC state to "following"
+4. NPC moves with player to new rooms
+5. NPC appears in room descriptions
+```
+
+**Example:**
+```
+Player: "dr_ellis follow me"
+> Dr. Ellis nods. "I'm right behind you."
+> [Dr. Ellis is now following you]
+
+Player: "move north"
+> You enter the ER Hallway. Dr. Ellis follows close behind.
+```
+
+---
+
+### Examine (Dead NPCs)
+
+**Command:** `examine <npc>` when NPC state is "dead"
+
+**Behavior:**
+```
+1. Check if NPC is dead
+2. Show death_message or default death description
+3. List items on corpse (can be taken)
+```
+
+**Example:**
+```
+[Ventilator hazard kills Corbin]
+
+Player: "examine corbin"
+> Corbin lies motionless on the hospital bed. The
+> ventilator is silent. His journal rests on his chest.
+> 
+> You can take: Corbin's Journal
+```
+
+---
+
+## Dynamic Dialogue
+
+Dialogue changes based on game state, player actions, and NPC relationships.
+
+### Fear-Based Dialogue
+
+**NPC Reacts to Player Fear:**
+```json
+{
+  "security_guard_mason": {
+    "dialogue": {
+      "player_fearful": {
+        "text": "Mason notices your shaking hands. 'Hey, stay with me. We're getting out of here.'",
+        "condition": "player_fear > 60"
+      },
+      "player_terrified": {
+        "text": "Mason grabs your shoulders. 'LOOK AT ME! You lose it now, we both die. Focus!'",
+        "condition": "player_fear > 80"
+      }
+    }
+  }
+}
+```
+
+---
+
+### Hazard-Aware Dialogue
+
+**NPC Warns About Active Hazards:**
+```json
+{
+  "nurse_garcia": {
+    "dialogue": {
+      "ventilator_warning": {
+        "text": "Wait! Don't go in there! That ventilator in Room 101—it's malfunctioning. I've seen what it does.",
+        "condition": "hazard_active:malfunctioning_ventilator"
+      },
+      "mri_warning": {
+        "text": "Stay away from the MRI room! The magnetic field is out of control. Metal objects are being ripped off people!",
+        "condition": "hazard_active:mri_malfunction"
+      }
+    }
+  }
+}
+```
+
+---
+
+### Relationship-Based Dialogue
+
+**NPC Remembers Player Actions:**
+```json
+{
+  "dr_ellis": {
+    "dialogue": {
+      "grateful": {
+        "text": "You saved Corbin. I saw what you did. Maybe we have a chance after all.",
+        "condition": "npc_fate:corbin_wainwright:saved"
+      },
+      "disappointed": {
+        "text": "You left Corbin to die. I thought... never mind. We need to focus on getting out.",
+        "condition": "npc_fate:corbin_wainwright:died_hazard"
+      }
+    }
+  }
+}
+```
+
+---
+
+### Time-Based Dialogue
+
+**NPC Urgency Increases:**
+```json
+{
+  "dr_ellis": {
+    "dialogue": {
+      "early_game": {
+        "text": "We have time to figure this out. Let's be careful.",
+        "condition": "turn_count < 10"
+      },
+      "mid_game": {
+        "text": "We're running out of time. We need to move faster.",
+        "condition": "turn_count >= 10 AND turn_count < 30"
+      },
+      "late_game": {
+        "text": "It's now or never! If we don't escape in the next few minutes, we never will!",
+        "condition": "turn_count >= 30"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Survivor Fates
+
+### Fate Determination
+
+**Factors Affecting Fate:**
+1. **Player Actions**: Help, ignore, abandon
+2. **Hazard Outcomes**: NPC killed by hazard vs. player saves them
+3. **Quest Completion**: Did player fulfill NPC's request?
+4. **Time Constraints**: Did player reach NPC in time?
+5. **Resource Allocation**: Did player use items to save NPC?
+
+### Fate Examples
+
+**Corbin Wainwright (Visionary):**
+```json
+{
+  "corbin_wainwright": {
+    "possible_fates": [
+      "saved",           // Player powers down ventilator in time
+      "died_hazard",     // Ventilator fails, Corbin dies
+      "died_natural",    // Corbin's injuries claim him
+      "unknown"          // Player never entered room
+    ]
+  }
+}
+```
+
+**Fate Logic:**
+```python
+# If player clears ventilator hazard:
+if hazard["malfunctioning_ventilator"]["outcome"] == "success":
+    corbin["current_fate"] = "saved"
+
+# If ventilator fails:
+elif hazard["malfunctioning_ventilator"]["outcome"] == "failure":
+    corbin["current_fate"] = "died_hazard"
+
+# If player never enters room:
+elif not room["Patient Room 101"]["visited"]:
+    corbin["current_fate"] = "unknown"
+
+# Default:
+else:
+    corbin["current_fate"] = "died_natural"
+```
+
+---
+
+### Fate Score Impact
+
+**Scoring System:**
+```python
+fate_scores = {
+    "saved": +100,
+    "died_natural": -25,
+    "died_hazard": -50,
+    "sacrificed_self": +25,
+    "left_behind": -75,
+    "unknown": 0
+}
+
+total_npc_score = sum(fate_scores[npc["current_fate"]] for npc in npcs)
+```
+
+**Example:**
+```
+Level 1 NPCs:
+- Corbin Wainwright: saved (+100)
+- Dr. Ellis: died_hazard (-50)
+- Nurse Garcia: left_behind (-75)
+
+Total NPC Score: -25 points
+```
+
+---
+
+### Multiple Ending Paths
+
+**Corbin's Endings:**
+
+**Best Ending: Saved**
+```
+You managed to power down the ventilator before it
+failed. Corbin Wainwright survived, his visions of
+death proven wrong—at least this time. He'll carry
+the weight of his foreknowledge, but he's alive.
+
+Your intervention broke Death's design.
+```
+
+**Tragic Ending: Died to Hazard**
+```
+The ventilator failed. Corbin Wainwright's lungs
+collapsed, just as he'd foreseen. His journal—his
+final testament—warned you. But warnings aren't
+enough to stop Death's design.
+
+He saw his own death coming. And it came anyway.
+```
+
+**Neutral Ending: Unknown**
+```
+You never found Corbin Wainwright. Perhaps he's
+still in that room, waiting. Perhaps Death has
+already claimed him. You'll never know.
+
+Sometimes the worst fate is not knowing.
+```
+
+---
+
+## Death's Dialogue
+
+Death is a special NPC—the primary antagonist and narrator.
+
+### Death's Role
+
+**As Narrator:**
+- Introduces disasters (opening cinematics)
+- Comments on player failures
+- Taunts player during hazards
+- Provides ominous foreshadowing
+
+**As Character:**
+- Appears in visions, reflections, shadows
+- Cannot be killed or stopped
+- Patient, inevitable, creative
+
+### Death's Dialogue Examples
+
+**Opening (Train Derailment):**
+```
+"February 19th, 2019. A commuter train derails
+outside the city. Metal screams. Glass shatters.
+Passengers are thrown like ragdolls.
+
+87 dead. One survivor.
+
+Impossible odds. Impossible luck. Or... perhaps
+not luck at all. Perhaps someone cheated.
+
+I don't like cheaters."
+```
+
+**During Hazard:**
+```
+[Player struggling with MRI]
+"The magnetic field is beautiful, isn't it? So
+orderly. So inevitable. Everything metal will be
+drawn to it. Including that scalpel in your pocket.
+
+I wonder how fast it will move."
+```
+
+**After Player Success:**
+```
+[Player defuses bomb]
+"Clever. You stopped the bomb. But you can't stop
+time. You can't stop entropy. You can't stop me.
+
+All you've done is delay the inevitable. And that
+makes it so much sweeter when I finally claim you."
+```
+
+**After Player Failure:**
+```
+[Player dies to gas leak]
+"Asphyxiation. A quiet death. No screams. Just...
+silence. And then nothing.
+
+You should have smelled the gas. You should have
+noticed the signs. But you didn't.
+
+Design perfected."
+```
+
+---
+
+### Death's Personality
+
+**Traits:**
+- **Patient**: Never hurried, always waiting
+- **Creative**: Elaborate Rube Goldberg deaths
+- **Fair**: Provides omens, warnings, clues
+- **Inevitable**: Cannot be defeated, only delayed
+- **Personal**: Remembers every player "victory"
+
+**Tone:**
+- Calm, measured, poetic
+- Occasionally darkly humorous
+- Never angry (frustration is beneath Death)
+- Admiring of clever players (worthy opponents)
+
+---
+
+## Testing & Debugging
+
+### Log Analysis
+
+**NPC Interaction:**
+```
+GameLogic: Player talked to 'corbin_wainwright'
+GameLogic: Showing dialogue node: first_encounter
+GameLogic: Giving item to player: corbins_journal
+AchievementsSystem: Unlocked 'the_visionary'
+GameLogic: NPC state changed: conscious → exhausted
+```
+
+**NPC State Change:**
+```
+GameLogic: Player helped 'security_guard_mason'
+GameLogic: Checking requirements: medical_supplies
+GameLogic: Player has required item
+GameLogic: NPC state changed: injured → helped
+```
+
+**NPC Fate Assignment:**
+```
+HazardEngine: Hazard 'malfunctioning_ventilator' outcome: failure
+GameLogic: NPC 'corbin_wainwright' killed by hazard
+GameLogic: NPC fate assigned: died_hazard
+GameLogic: Score impact: -50 points
+```
+
+---
+
+### Common Issues
+
+#### **NPC Not Responding to Talk Command**
+**Symptoms:** `talk to <npc>` → "You don't see anyone by that name."  
+**Causes:**
+- NPC not in current room (location mismatch)
+- NPC key typo (doesn't match npcs.json)
+- NPC state is "dead" or "unconscious"
+
+**Debug:**
+```python
+# Check NPC location:
+npc["location"]  # Should match current room
+
+# Check NPC state:
+npc["current_state"]  # Should be "conscious" or similar
+
+# Check room NPCs:
+room["npcs"]  # Should contain "npc_key"
+```
+
+---
+
+#### **Dialogue Conditions Not Working**
+**Symptoms:** Expected dialogue doesn't show despite meeting condition  
+**Causes:**
+- Condition syntax error
+- Game state doesn't actually match condition
+- Dialogue node not evaluated in order
+
+**Debug:**
+```python
+# Check condition:
+dialogue["condition"]  # Should be valid syntax
+
+# Check game state:
+hazard["outcome"]  # For hazard_cleared conditions
+player.inventory  # For player_has_item conditions
+player.fear  # For player_fear conditions
+```
+
+---
+
+#### **NPC Not Giving Item**
+**Symptoms:** Dialogue triggers but item not added to inventory  
+**Causes:**
+- `gives_item` field missing or wrong item key
+- Item already in inventory (duplicate prevention)
+- Item doesn't exist in items.json
+
+**Debug:**
+```python
+# Check gives_item:
+dialogue["gives_item"]  # Should match items.json key
+
+# Check item definition:
+items.json["item_key"]  # Must exist
+
+# Check inventory:
+player.inventory  # Should contain item after dialogue
+```
+
+---
+
+#### **NPC Fate Not Assigned**
+**Symptoms:** NPC fate remains null at end of level  
+**Causes:**
+- Fate logic not implemented for this NPC
+- Hazard outcome doesn't trigger fate assignment
+- Player never interacted with NPC
+
+**Debug:**
+```python
+# Check possible_fates:
+npc["possible_fates"]  # Should have valid fate keys
+
+# Check current_fate:
+npc["current_fate"]  # Should be assigned by end of level
+
+# Check fate assignment logic:
+# Look for code that sets npc["current_fate"] = "..."
+```
+
+---
+
+### Testing Checklist
+
+**Before Committing New NPC:**
+- [ ] NPC key is unique (no duplicates)
+- [ ] `name` is memorable and distinct
+- [ ] `description` is evocative (2-3 sentences)
+- [ ] `initial_state` is appropriate
+- [ ] `location` matches existing room name
+- [ ] Dialogue has `first_encounter` and `repeat_encounter`
+- [ ] Dialogue conditions are valid and testable
+- [ ] `gives_item` items exist in items.json
+- [ ] `interaction_options` have clear prompts and results
+- [ ] `possible_fates` cover all outcomes
+- [ ] `death_message` and `survival_message` are written
+- [ ] NPC adds to narrative (not just functional)
+- [ ] Personality is consistent across dialogue nodes
+- [ ] No typos in NPC key or references
+
+---
+
+## Complete Examples
+
+### Example 1: Simple NPC (Bystander)
+
+**Patient in Waiting Room**
+
+**NPC Definition (npcs.json):**
+```json
+{
+  "waiting_room_patient": {
+    "name": "Elderly Patient",
+    "description": "An elderly man sits in a wheelchair, staring blankly at the wall. He doesn't seem to notice you.",
+    "initial_state": "unconscious",
+    "location": "ICU Waiting Area",
+    "dialogue": {
+      "first_encounter": {
+        "text": "The man doesn't respond. His breathing is shallow. You don't think he's aware of anything happening around him."
+      },
+      "repeat_encounter": {
+        "text": "The elderly patient remains unresponsive."
+      }
+    },
+    "possible_fates": ["died_natural", "unknown"],
+    "death_message": "The elderly patient in the waiting room never woke up. Death came quietly, as it often does for the old and weary."
+  }
+}
+```
+
+**Placement (rooms_level_1.json):**
+```json
+{
+  "ICU Waiting Area": {
+    "npcs": ["waiting_room_patient"]
+  }
+}
+```
+
+**Usage:**
+```
+Player: "enter waiting area"
+> A small waiting area with uncomfortable plastic chairs.
+> An elderly man sits in a wheelchair, staring blankly
+> at the wall. He doesn't seem to notice you.
+
+Player: "talk to elderly patient"
+> The man doesn't respond. His breathing is shallow.
+> You don't think he's aware of anything happening
+> around him.
+
+Player: "examine elderly patient"
+> He looks very ill. There's nothing you can do for him.
+```
+
+---
+
+### Example 2: Complex NPC (Questgiver with Branching Dialogue)
+
+**Dr. Ellis (Authority Figure)**
+
+**NPC Definition (npcs.json):**
+```json
+{
+  "dr_ellis": {
+    "name": "Dr. Sarah Ellis",
+    "description": "A doctor in her late 30s, wearing bloodstained scrubs. Her eyes are sharp, assessing, but tinged with fear.",
+    "initial_state": "conscious",
+    "location": "ER Hallway",
+    "personality_traits": ["analytical", "pragmatic", "brave"],
+    "is_visionary": false,
+    "dialogue": {
+      "first_encounter": {
+        "text": "Dr. Ellis looks up as you approach. 'You're still alive? Good. We need to get out of here before another... accident happens.'",
+        "options": [
+          {
+            "key": "ask_what_happened",
+            "prompt": "What happened here?",
+            "response": "Patients started dying. One after another. All accidents—gas leaks, equipment failures, falls. But they're not accidents. There's a pattern. Death itself is hunting us.",
+            "next_node": "explain_pattern"
+          },
+          {
+            "key": "ask_how_escape",
+            "prompt": "How do we escape?",
+            "response": "The main entrance is blocked by debris. We need to find another way—maybe through the emergency exit near the ambulance bay.",
+            "next_node": "discuss_escape"
+          },
+          {
+            "key": "leave",
+            "prompt": "I can't help you.",
+            "response": "Wait! Please don't leave me here alone! Fine. Go. I hope you make it.",
+            "changes_npc_state": "alone",
+            "next_node": null
+          }
+        ]
+      },
+      "explain_pattern": {
+        "text": "Every death followed the same logic: something breaks, someone dies. Escalation. Rube Goldberg machines of death. It's like someone is designing these accidents.",
+        "options": [
+          {
+            "key": "agree",
+            "prompt": "I've seen it too.",
+            "response": "Then you understand. We're next if we don't leave. Now.",
+            "next_node": "discuss_escape"
+          }
+        ]
+      },
+      "discuss_escape": {
+        "text": "The emergency exit should be accessible. But we'll need to power down the MRI first—its magnetic field is pulling metal objects toward it. People have died.",
+        "options": [
+          {
+            "key": "agree_work_together",
+            "prompt": "Let's work together.",
+            "response": "Thank you. I won't slow you down, I promise. Let's shut down that MRI.",
+            "changes_npc_state": "following",
+            "quest_id": "power_down_mri",
+            "next_node": null
+          },
+          {
+            "key": "refuse",
+            "prompt": "I work alone.",
+            "response": "Fine. I understand. Good luck.",
+            "changes_npc_state": "alone",
+            "next_node": null
+          }
+        ]
+      },
+      "after_mri_cleared": {
+        "text": "You did it! The MRI is powered down. The emergency exit should be accessible now. Here—take this. You've earned it.",
+        "condition": "hazard_cleared:mri_malfunction",
+        "gives_item": "hospital_master_key",
+        "unlocks_achievement": "hero_of_the_hospital"
+      },
+      "following_dialogue": {
+        "text": "I'm right behind you. Let's keep moving.",
+        "condition": "npc_state:following"
+      },
+      "alone_dialogue": {
+        "text": "You're back. Changed your mind? No? Then leave me alone.",
+        "condition": "npc_state:alone"
+      }
+    },
+    "interaction_options": {
+      "help": {
+        "prompt": "Ask Dr. Ellis to join you",
+        "result": "Dr. Ellis nods. 'I'll follow you. Let's get out of here alive.'",
+        "changes_npc_state": "following",
+        "requires_condition": "npc_state:alone"
+      }
+    },
+    "can_follow_player": true,
+    "questgiver": true,
+    "quest_id": "power_down_mri",
+    "possible_fates": [
+      "saved",
+      "died_hazard",
+      "left_behind"
+    ],
+    "death_message": "Dr. Sarah Ellis was claimed by the very hospital she worked to save. Death's design spared no one—not even those who understood it.",
+    "survival_message": "Dr. Sarah Ellis escaped the hospital, forever changed by what she witnessed. She knows now that Death is not random—it's designed. And it's patient."
+  }
+}
+```
+
+**Quest Definition (future feature):**
+```json
+{
+  "power_down_mri": {
+    "name": "Power Down the MRI",
+    "description": "Dr. Ellis needs you to shut down the malfunctioning MRI so you can escape.",
+    "objectives": [
+      {
+        "type": "clear_hazard",
+        "target": "mri_malfunction",
+        "description": "Power down the MRI"
+      }
+    ],
+    "rewards": {
+      "items": ["hospital_master_key"],
+      "achievements": ["hero_of_the_hospital"],
+      "score": 150
+    }
+  }
+}
+```
+
+---
+
+### Example 3: Visionary NPC (Central Character)
+
+**Corbin Wainwright**
+
+**NPC Definition (npcs.json):**
+```json
+{
+  "corbin_wainwright": {
+    "name": "Corbin Wainwright",
+    "description": "A man in his late 30s lies unconscious in the hospital bed, breathing through a ventilator. His face is pale, drawn. A leather journal rests on his chest.",
+    "initial_state": "unconscious",
+    "location": "Patient Room 101",
+    "is_visionary": true,
+    "personality_traits": ["perceptive", "fatalistic", "resigned"],
+    "health": 30,
+    "fear_level": 80,
+    "dialogue": {
+      "first_encounter": {
+        "text": "Corbin's eyes flutter open as you approach. He struggles to focus on you. With immense effort, he reaches out and pushes a worn journal toward you. 'Read... it...' he whispers. 'I saw... everything... couldn't stop it...' His eyes close again.",
+        "gives_item": "corbins_journal",
+        "unlocks_achievement": "the_visionary",
+        "changes_npc_state": "exhausted"
+      },
+      "repeat_encounter_alive": {
+        "text": "Corbin lies still, his breathing assisted by the ventilator. The machine hums steadily, but you sense it won't stay steady for long.",
+        "condition": "npc_state:exhausted"
+      },
+      "ventilator_warning": {
+        "text": "Corbin's eyes snap open. 'The... ventilator...' he gasps. 'Three... forty-seven... AM... it fails... you have to... stop it...'",
+        "condition": "hazard_active:malfunctioning_ventilator AND npc_state:exhausted"
+      },
+      "after_saving_him": {
+        "text": "Corbin breathes on his own now. The ventilator is silent. 'You... you changed it...' he whispers, eyes wide. 'You broke Death's design. How?'",
+        "condition": "hazard_cleared:malfunctioning_ventilator AND npc_state:exhausted"
+      },
+      "examining_corpse": {
+        "text": "Corbin Wainwright lies motionless. The ventilator is silent. He saw his own death coming, wrote it in his journal. But knowing wasn't enough to stop it.",
+        "condition": "npc_state:dead"
+      }
+    },
+    "interaction_options": {
+      "examine_journal": {
+        "prompt": "Read Corbin's journal",
+        "result": "The journal details visions of death—elaborate accidents, impossible coincidences. The final entry is dated today: 'The ventilator will fail at 3:47 AM. I will suffocate. There's nothing I can do.'",
+        "requires_item": "corbins_journal"
+      }
+    },
+    "inventory": ["corbins_journal"],
+    "can_follow_player": false,
+    "possible_fates": [
+      "saved",
+      "died_hazard",
+      "died_natural",
+      "unknown"
+    ],
+    "death_message": "Corbin Wainwright saw his own death coming. He wrote about it. He warned you. But knowing the future doesn't mean you can change it. Death's design is immutable. The ventilator failed, just as he'd foreseen. His last thought: 'I was right.'",
+    "survival_message": "Corbin Wainwright survived—something he never thought possible. You changed his fate. You broke Death's design. He'll spend the rest of his life wondering: if his death could be prevented, what else can be changed? The visions continue, but now they come with hope."
+  }
+}
+```
+
+**Associated Item (items.json):**
+```json
+{
+  "corbins_journal": {
+    "name": "Corbin's Journal",
+    "type": "quest_item",
+    "description": "A leather-bound journal filled with frantic handwriting.",
+    "examine_text": "The journal details Corbin's visions of death. He writes about patterns, omens, and the inevitability of fate. The final entry reads: 'I see it now. The ventilator will fail at 3:47 AM. I can't stop it. No one can. Death has a design.' The entry is dated today.",
+    "can_be_taken": true,
+    "is_quest_item": true,
+    "is_evidence": true,
+    "evidence_source": "hospital_incident",
+    "grants_achievement": "the_visionary",
+    "score_value": 100
+  }
+}
+```
+
+**Associated Hazard (hazards.json):**
+```json
+{
+  "malfunctioning_ventilator": {
+    "name": "Malfunctioning Ventilator",
+    "states": {
+      "functioning_normally": {
+        "description": "The ventilator hums steadily, keeping Corbin alive.",
+        "auto_progress_time": 5,
+        "next_state": "pressure_fluctuating"
+      },
+      "pressure_fluctuating": {
+        "description": "The ventilator's pressure gauge is fluctuating wildly.",
+        "auto_progress_time": 3,
+        "next_state": "alarm_triggered"
+      },
+      "alarm_triggered": {
+        "description": "The ventilator alarm screams. Corbin is gasping!",
+        "qte_id": "ventilator_repair_qte",
+        "on_qte_success": "repaired",
+        "on_qte_failure": "system_failure"
+      },
+      "repaired": {
+        "description": "The ventilator is stable. Corbin breathes easier.",
+        "is_terminal": true,
+        "outcome": "success",
+        "special_action": "npc_saved:corbin_wainwright"
+      },
+      "system_failure": {
+        "description": "The ventilator fails completely. Corbin convulses, then goes still.",
+        "is_terminal": true,
+        "outcome": "death",
+        "special_action": "npc_killed:corbin_wainwright"
+      }
+    }
+  }
+}
+```
+
+---
+
+### Example 4: Death (Special NPC)
+
+**Death Personified**
+
+**NPC Definition (npcs.json):**
+```json
+{
+  "death": {
+    "name": "Death",
+    "description": "A figure in the shadows. You can't quite make out its face, but you feel its presence—patient, inevitable, creative.",
+    "initial_state": "observing",
+    "location": null,
+    "is_visionary": false,
+    "personality_traits": ["patient", "creative", "inevitable", "fair"],
+    "dialogue": {
+      "opening_narration": {
+        "text": "February 19th, 2019. A commuter train derails outside the city. Metal screams. Glass shatters. 87 dead. One survivor. Impossible odds. Impossible luck. Or... perhaps not luck at all. Perhaps someone cheated. I don't like cheaters."
+      },
+      "after_player_success": {
+        "text": "Clever. You stopped the MRI. But you can't stop time. You can't stop entropy. You can't stop me. All you've done is delay the inevitable. And that makes it so much sweeter when I finally claim you.",
+        "condition": "hazard_cleared:mri_malfunction"
+      },
+      "after_player_failure": {
+        "text": "Asphyxiation. A quiet death. No screams. Just... silence. And then nothing. You should have noticed the signs. But you didn't. Design perfected.",
+        "condition": "player_died"
+      },
+      "taunting_ventilator": {
+        "text": "Listen to it. The ventilator's rhythm. In... out... in... out... But it won't stay steady. Machines break. Lungs collapse. It's inevitable. You can try to stop it, but you'll fail. You always do.",
+        "condition": "hazard_active:malfunctioning_ventilator"
+      },
+      "respecting_player": {
+        "text": "You're persistent. I'll give you that. You've survived longer than most. But persistence isn't immortality. Everyone falls eventually. Even you.",
+        "condition": "turn_count > 30"
+      }
+    },
+    "can_follow_player": false,
+    "possible_fates": ["eternal"],
+    "death_message": "Death cannot die. Death is eternal.",
+    "survival_message": "Death always survives. It always will."
+  }
+}
+```
+
+**Death's Appearances:**
+- Opening cinematics (narration)
+- Reflections in mirrors/windows
+- Shadows in doorways
+- Post-death screen (final taunt)
+- Victory screen (grudging respect)
+
+---
+
+## Change Log
+
+### Version 1.0 (2025-11-06)
+- Initial guide creation
+- Documented NPC schema, dialogue trees, states, and fates
+- Added interaction commands and dynamic dialogue
+- Covered item gifting and conditional dialogue
+- Included Death as special NPC (narrator/antagonist)
+- Provided 4 complete examples (bystander, questgiver, visionary, Death)
+- Testing and debugging section with common issues
+
+---
+
+**Questions or Improvements?**  
+Submit suggestions to: [project lead / game design team]
+
+**Related Documentation:**
+- `room_design_guide.txt` - For NPC placement in rooms
+- `items_inventory_guide.txt` - For items given by NPCs
+- `hazards_developer_guide.txt` - For NPCs affected by hazards
+- `environmental_omens_developer_guide.txt` - For NPC dialogue as omens
+
+---

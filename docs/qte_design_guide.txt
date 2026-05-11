@@ -1,0 +1,197 @@
+Here is the completely updated and modernized **QTE Design & Implementation Guide**. 
+
+This document has been entirely overhauled to reflect the massive UI decoupled architecture in the **Die-Namic Engine (v0.2)**. The previous version was heavily text-based and only had sequence QTEs fully implemented. This new guide details the rich library of visual UI widgets (Spirals, Memory Grids, Rhythm Bars, etc.), the completely new `qte_context` payload, and the dynamic character-trait overrides!
+
+***
+
+# QTE Design & Implementation Guide
+**Version:** 0.2  
+**Game:** DieNamic Engine: Death's Designs Version 0.2  
+**Engine:** Die-Namic Engine  
+**Lead Developer:** Dallas B Pancoast  
+
+---
+
+## Table of Contents
+1. [Overview](#overview)
+2. [QTE Anatomy & Context Schema](#qte-anatomy--context-schema)
+3. [UI Widget Types & Input Modes (Fully Implemented)](#ui-widget-types--input-modes-fully-implemented)
+4. [Character Trait Modifiers & Balancing](#character-trait-modifiers--balancing)
+5. [Success, Failure & Damage Routing](#success-failure--damage-routing)
+6. [Complete Examples](#complete-examples)
+
+---
+
+## Overview
+
+Quick Time Events (QTEs) are timed, interactive GUI challenges that determine the outcomes of high-stakes hazard interactions. 
+
+**V0.2 Engine Shift:** In the Die-Namic Engine v0.2, QTEs are no longer strictly text-based CLI prompts. The `QTE_Engine` is completely decoupled from the UI. Hazards define a `qte_context` payload which tells the `QTEPopup` class exactly which visual widget to render on the screen (e.g., a button to mash, a memory grid to repeat, or a spiral to trace).
+
+### When to Use QTEs
+- Escaping an active hazard state (e.g., dodging falling debris).
+- Performing a heroic save (e.g., forcing a jammed door, closing a burning valve).
+- Complex interactions requiring precision (e.g., stabilizing a power grid).
+
+---
+
+## QTE Anatomy & Context Schema
+
+A QTE is defined within a hazard's state under the `triggers_qte_on_entry` key. It pulls base data from `qte_definitions.json` but overrides the specifics via the `qte_context`.
+
+### The Standard Payload
+```json
+        "triggers_qte_on_entry": {
+          "qte_type": "button_mash",          // Points to qte_definitions.json baseline
+          "duration": 5.0,                    // Total time allowed
+          "qte_context": {
+            "ui_mode": "in-screen",
+            "ui_type": "tap_area",            // Dictates which Widget is drawn
+            "ui_prompt_message": "Type 'duck' or mash!",
+            
+            // QTE Specific mechanics
+            "target_mash_count": 15,
+            
+            // Branching Logic
+            "next_state_after_qte_success": "escaped",
+            "next_state_after_qte_failure": "crushed",
+            
+            // Damage Logic
+            "hp_damage_on_failure": 20,
+            "is_fatal_on_failure": false
+          }
+        }
+```
+
+---
+
+## UI Widget Types & Input Modes (Fully Implemented)
+
+The `QTEPopup` dynamic renderer in `widgets.py` supports a massive variety of mini-games. You determine the mini-game by pairing the `input_type` with the `ui_type`.
+
+### 1. The Classic Button Mash (`ui_type: "tap_area"`, `input_type: "mash"`)
+A giant button that the player must tap furiously to fill a quota before time runs out.
+* **Params:** `target_mash_count` (int)
+
+### 2. Text/Command Input (`ui_type: "text_input"`, `input_type: "word"|"code"`)
+An input field requiring the player to rapidly type a specific word or code sequence.
+* **Params:** `expected_input_word` (string), `valid_responses` (array), `alternative_input` (string)
+
+### 3. Trace Path / Spiral (`ui_type: "trace_path"`, `input_type: "spiral"|"drag"`)
+A visual path the player must follow with their mouse/finger. Can be a straight line or a circular spiral.
+* **Params:** `path_type` ("spiral" or "line")
+
+### 4. Memory Grid (`ui_type: "memory_grid"`, `input_type: "pattern"`)
+A Simon-Says style grid of buttons that flashes a pattern which the player must perfectly repeat.
+* **Params:** `grid_size` (int, e.g., 3 for a 3x3 grid), `pattern_length_default` (int)
+
+### 5. Rhythm Bar (`ui_type: "rhythm_bar"`, `input_type: "rhythm"`)
+A moving cursor sliding back and forth. The player must tap when the cursor is in the green "Target Zone".
+* **Params:** `target_zone` (array of two floats, e.g., `[0.4, 0.6]`), `beat_speed` (float), `target_beats` (int)
+
+### 6. Reaction Tap (`ui_type: "reaction_button"`, `input_type: "reaction"`)
+A button that sits red and idle, suddenly flashing green. The player must tap it instantly. Tapping early results in an instant fail.
+* **Params:** `wait_time_range` (array of two floats, e.g., `[2.0, 4.0]`)
+
+### 7. Hold & Release (`ui_type: "hold_release"`, `input_type: "hold_release"`)
+The player presses and holds a button, filling a progress bar. They must release the button *exactly* when the bar is inside a specific window.
+* **Params:** `release_window` (array of two floats, e.g., `[0.6, 0.8]` representing percentages of total duration)
+
+### 8. Aim Target (`ui_type: "aim_area"`, `input_type: "aim"`)
+Small targets pop up randomly inside a bounding box. The player must successfully tap/click a set amount of them before time expires.
+* **Params:** `target_count` (int)
+
+---
+
+## Character Trait Modifiers & Balancing
+
+The `QTE_Engine` automatically parses the active character class to modify QTE difficulty parameters. You can pass a dictionary instead of an integer for variables like `target_mash_count`, `required_tap_count`, and `required_hold_time`.
+
+### Character-Specific Parameter Mapping
+```json
+            "target_mash_count": {
+              "default": 20,
+              "ATHLETE": 12,
+              "ELDERLY": 30
+            }
+```
+
+### Hardcoded Perk Reductions
+The EMT class currently possesses a hardcoded perk in the `QTE_Engine` (`_effective_mash_target`) that automatically reduces any `target_mash_count` by 10 (down to a minimum of 1), simulating their adrenaline-fueled physical stamina.
+
+---
+
+## Success, Failure & Damage Routing
+
+QTE outcomes no longer just log text—they fully control the Hazard state machine.
+
+### The Branching Keys
+* `next_state_after_qte_success`: The hazard state to transition to if the QTE is beaten.
+* `next_state_after_qte_failure`: The hazard state to transition to if the timer expires or the wrong input is submitted.
+* `next_state_after_alternative_success`: Used if the player types the `alternative_input` string instead of the standard one (e.g., typing "close valve" instead of "run" to heroically stop a hazard).
+
+### Health & Death
+If a QTE is failed, the engine evaluates damage before changing states:
+* `hp_damage_on_failure` (int): Drains this much HP. If HP hits 0, triggers Death.
+* `is_fatal_on_failure` (bool): If true, skipping the HP check and instantly triggering the Game Over sequence with the hazard's designated `death_message`.
+
+---
+
+## Complete Examples
+
+### Example 1: The Frantic Button Mash (Forcing a Door)
+```json
+        "triggers_qte_on_entry": {
+          "qte_type": "button_mash",
+          "duration": 4.0,
+          "qte_context": {
+            "ui_mode": "in-screen",
+            "ui_type": "tap_area",
+            "ui_prompt_message": "Force the jammed door open!",
+            "input_type": "mash",
+            "target_mash_count": 18,
+            "success_message": "You wrench the door open just enough to slip through!",
+            "failure_message_wrong_input": "The door won't budge!",
+            "hp_damage_on_failure": 10
+          }
+        }
+```
+
+### Example 2: The Rhythm Defusal (Cutting the Right Wire)
+```json
+        "triggers_qte_on_entry": {
+          "qte_type": "rhythm",
+          "duration": 8.0,
+          "qte_context": {
+            "ui_mode": "in-screen",
+            "ui_type": "rhythm_bar",
+            "ui_prompt_message": "Carefully snip the wires on the beat!",
+            "input_type": "rhythm",
+            "target_zone": [0.45, 0.55],
+            "beat_speed": 1.8,
+            "target_beats": 3,
+            "success_message": "You snip the final wire and the timer stops.",
+            "next_state_after_qte_success": "bomb_defused",
+            "next_state_after_qte_failure": "detonation",
+            "is_fatal_on_failure": true
+          }
+        }
+```
+
+### Example 3: The Precision Memory Hack (Bypassing Security)
+```json
+        "triggers_qte_on_entry": {
+          "qte_type": "pattern_match",
+          "duration": 10.0,
+          "qte_context": {
+            "ui_mode": "in-screen",
+            "ui_type": "memory_grid",
+            "ui_prompt_message": "Repeat the security pattern!",
+            "input_type": "pattern",
+            "grid_size": 3,
+            "pattern_length_default": 5,
+            "success_message": "The keypad flashes green and the lock disengages.",
+            "failure_message_wrong_input": "The keypad flashes red. Lockdown initiated."
+          }
+        }
+```

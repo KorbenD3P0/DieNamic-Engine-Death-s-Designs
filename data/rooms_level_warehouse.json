@@ -1,0 +1,62 @@
+{
+  "Warehouse Loading Dock": {
+    "name": "City Shipping — Loading Dock",
+    "description": "A sprawling concrete expanse. Several massive roll-up doors are open to the elements. Forklifts sit idle, their keys still in the ignitions.",
+    "first_entry_text": "The warehouse is supposed to be operating on a skeleton crew today. The sheer scale of the place makes you feel very small.\n\nA rhythmic, metallic banging echoes from deep inside the aisles.",
+    "exits": {
+      "east": "Storage Aisles"
+    },
+    "furniture": [
+      {
+        "name": "Foreman's Desk",
+        "description": "A metal desk littered with manifests and shipping manifests. A heavy ring of keys sits near the edge.",
+        "is_container": true,
+        "items": [
+          "Warehouse Key"
+        ]
+      },
+      "idle forklift"
+    ],
+    "objects": [
+      {
+        "name": "dock radio",
+        "description": "A dusty radio sitting on a barrel. It's playing static that occasionally sounds like a deep, structural groan.",
+        "is_omen_provider": "radio",
+        "aliases": ["radio", "boombox", "stereo"]
+      },
+      "shipping pallets"
+    ],
+    "hazards_present": [
+      "gas_leak"
+    ],
+    "entry_room": true,
+    "npc_slots": 1
+  },
+  "Storage Aisles": {
+    "name": "Storage Aisles",
+    "description": "A maze of towering metal racks stretching forty feet to the ceiling. The crates are stacked dangerously high, leaning ominously into the narrow aisles.",
+    "exits": {
+      "west": "Warehouse Loading Dock",
+      "leave the warehouse": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "furniture": [
+      {
+        "name": "Medical Station",
+        "description": "A bright red emergency station mounted to the wall, holding an industrial defibrillator and first aid supplies.",
+        "is_container": true,
+        "items": [
+          "Defibrillator Pads"
+        ]
+      }
+    ],
+    "objects": [
+      "towering shelves",
+      "heavy crates"
+    ],
+    "hazards_present": [
+      "falling_scaffolding",
+      "loose_bolt"
+    ],
+    "npc_slots": 1
+  }
+}

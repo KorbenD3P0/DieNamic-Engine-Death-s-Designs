@@ -1,0 +1,98 @@
+{
+  "templates": {
+    "public_venue_accident": [
+      "{name} getting dragged violently into the exposed gears of a runaway escalator",
+      "{name} being crushed instantly when a massive glass atrium collapsed onto the concourse",
+      "{name} getting trampled to death in a blind, panicked crowd crush near the exits",
+      "{name} being decapitated when a massive decorative chandelier sheared off its mounts",
+      "{name} being pinned and suffocated beneath a heavy commercial display kiosk",
+      "{name} having their neck broken by a malfunctioning, high-speed revolving door"
+    ],
+    "carnival": [
+      "{name} plummeting into the midway after a safety harness unlatched mid-loop",
+      "{name} being bisected by a snapped high-tension cable that whipped across the ride platform",
+      "{name} getting violently pancaked between debris and a generator for a nearby ride",
+      "{name} being impaled on a heavy metal tent pole",
+      "{name} being ejected from their seat directly into a concrete pylon"
+    ],
+    "transportation_air": [
+      "{name} being sucked out of the fractured fuselage into the freezing void",
+      "{name} being shredded instantly by a rapidly spinning turbine blade",
+      "{name} asphyxiating as the cabin rapidly depressurized before the final impact",
+      "{name} being incinerated when the ruptured wing tanks ignited on the tarmac",
+      "{name} plummeting strapped to their seat after the floor sheared entirely away"
+    ],
+    "transportation_rail": [
+      "{name} getting caught and dragged under the sparking steel wheels of the train",
+      "{name} being crushed into the floorboards as the carriages accordioned into one another",
+      "{name} being thrown from the platform directly onto the highly electrified third rail",
+      "{name} being bisected by sliding train doors that violently short-circuited during the crash",
+      "{name} getting impaled by a length of steel track that punched up through the cabin floor"
+    ],
+    "transportation_water": [
+      "{name} drowning in the dark after being trapped inside a rapidly flooding lower cabin",
+      "{name} getting pulled under the churning surface and shredded by a massive ship propeller",
+      "{name} being dragged to the bottom of the lake by the immense undertow of the sinking vessel",
+      "{name} being crushed against the hull by a swinging, unmoored lifeboat",
+      "{name} succumbing to hypothermia in the freezing water while clinging to floating debris"
+    ],
+    "transportation_road": [
+      "{name} being ejected through the shattered windshield onto the unforgiving asphalt",
+      "{name} having their chest cavity crushed by a violently misfiring steering column",
+      "{name} getting dragged beneath the locked wheels of a jackknifing semi-truck",
+      "{name} being decapitated by a sheared guardrail that punched through the passenger window",
+      "{name} becoming pinned inside a burning vehicle as the roof crumpled inward"
+    ],
+    "structural_collapse": [
+      "{name} disappearing completely under tons of falling concrete and drywall",
+      "{name} being pancaked between two collapsing floors in a matter of seconds",
+      "{name} vanishing into the choking dust as the ground simply gave way beneath them",
+      "{name} being impaled by jagged rebar protruding from a crumbling cement support",
+      "{name} falling into a dark abyss as the entire foundation disintegrated around them"
+    ],
+    "industrial_accident": [
+      "{name} being pulled headfirst into the crushing rollers of a heavy industrial lathe in the chaos",
+      "{name} getting flattened instantly by a malfunctioning pneumatic press while trying to escape",
+      "{name} being bisected at the waist by a wildly swinging crane hook on their way for the exit",
+      "{name} suffocating after being buried alive under tons of spilled industrial materials",
+      "{name} being flayed by a burst high-pressure hydraulic line that whipped across the floor"
+    ],
+    "chemical_hazard": [
+      "{name} collapsing as inhaled toxic vapors dissolved their lungs from the inside out",
+      "{name} screaming as a splash of highly corrosive acid melted their flesh to the bone",
+      "{name} suffocating silently as an invisible, heavy gas displaced all the oxygen in the room",
+      "{name} stumbling blindly into an exposed hazard after being blinded by chemical exhaust"
+    ],
+    "geological_event": [
+      "{name} being swallowed whole by a sudden, gaping fissure that ripped through the earth",
+      "{name} getting crushed inside a vehicle as it tumbled backward into a massive sinkhole",
+      "{name} being buried alive under a sudden, suffocating wave of mud and debris",
+      "{name} plummeting into a dark, subterranean cavern when the bedrock gave out"
+    ],
+    "weather_event": [
+      "{name} being swept away and battered against parked cars by a raging flash flood",
+      "{name} getting impaled by a street sign launched at ballistic speed by hurricane winds",
+      "{name} being electrocuted by a downed power line hidden in the murky floodwaters",
+      "{name} drowning in a rapidly filling basement after the storm drains catastrophically failed"
+    ],
+    "fire_related": [
+      "{name} screaming as they were engulfed in a sudden flashover of roaring flames",
+      "{name} burning alive while hopelessly trapped behind a blocked fire exit",
+      "{name} becoming a human torch when a ruptured fuel line sprayed them with accelerant",
+      "{name} succumbing to superheated smoke inhalation before the fire even reached them"
+    ],
+    "explosion_related": [
+      "{name} being thrown like a ragdoll by the invisible wall of an incoming shockwave",
+      "{name} disintegrating almost instantly within the fiery epicenter of the blast radius",
+      "{name} being shredded by high-velocity shrapnel launched from the detonation",
+      "{name} being slammed fatally against a concrete wall by the concussive force"
+    ]
+  },
+  "generic_deaths": [
+    "{name} staring blankly in shock as they accepted their sudden, violent fate",
+    "{name} being completely lost to the chaos and confusion of the disaster",
+    "{name} taking the absolute worst of the impact in the opening seconds",
+    "{name} meeting a grim, sudden end in the choking smoke and blinding dust",
+    "{name} becoming just another tragic casualty of the unfolding nightmare"
+  ]
+}

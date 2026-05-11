@@ -1,0 +1,84 @@
+{
+  "Bowling Alley Entrance": {
+    "name": "Strike & Spare Lanes",
+    "description": "The hum of neon lights vibrates in your teeth. The polished wood of the lanes stretches out like a tongue waiting to be bitten. A dusty 'McKinley Speedway' arcade cabinet sits in the corner, its attract mode flashing endlessly. To the north is the mechanical darkness behind the pins. To the east is the Snack Bar.",
+    "first_entry_text": "You walked in just as the machinery jammed with a deafening screech.\n\nNow the lane manager is yelling, the music has stopped, and everyone is staring. You need to find who you're looking for before the lanes claim a victim.",
+    "exits": {
+      "north": "Pinsetter Room",
+      "east": "Snack Bar",
+      "out": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "furniture": [
+      {
+        "name": "Scoring Console",
+        "description": "A heavy, outdated CRT monitor sitting precariously on a metal stand. The screen flickers, stuck on a league schedule for May 2026.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "allowed_item_tags": ["paper", "clue"],
+        "items": []
+      }
+    ],
+    "objects": [
+      {
+        "name": "ball return",
+        "description": "It cycles with a rhythmic, grinding cough. The opening looks just wide enough for a human hand to get stuck inside."
+      }
+    ],
+    "hazards_present": [
+      "faulty_wiring",
+      "precarious_crt_monitor"
+    ],
+    "entry_room": true,
+    "npc_slots": 1
+  },
+  "Pinsetter Room": {
+    "name": "Pinsetter Room",
+    "description": "Deafening. The machinery here is a wall of churning steel and grease. It resets the pins with violence, indifferent to what might be standing in its way. It is dark, hot, and smells of burning rubber.",
+    "exits": {
+      "south": "Bowling Alley Entrance"
+    },
+    "furniture": [
+      {
+        "name": "Tool Cabinet",
+        "description": "Covered in grime. It rattles every time the machine drops the pins.",
+        "is_container": true,
+        "allowed_item_tags": ["tool", "hardware"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "rogue_pinsetter_machine",
+      "loose_flywheel_bolt"
+    ],
+    "npc_slots": 1,
+    "objects": ["maintenance_catwalk", "churning_gears"]
+  },
+  "Snack Bar": {
+    "name": "Lucky's Snack Bar",
+    "description": "The floor is slick with years of spilled soda and grease. The heat from the kitchen area is oppressive. A heat lamp glows over massive, oversized pizza slices, while the heavy scent of grilled chicken and Mexican spices wafts from the prep line. A neon sign buzzes aggressively.",
+    "exits": {
+      "west": "Bowling Alley Entrance"
+    },
+    "furniture": [
+      {
+        "name": "Condiment Station",
+        "description": "Sticky pumps for ketchup and mustard.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "allowed_item_tags": ["key", "paper"],
+        "items": []
+      }
+    ],
+    "objects": [
+      {
+        "name": "deep fryer",
+        "description": "The oil is dark and roiling. It pops and spits like an angry animal."
+      }
+    ],
+    "hazards_present": [
+      "kitchen_gas_leak",
+      "spilled_hot_oil"
+    ],
+    "npc_slots": 1
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "Citizen Detective": {
+    "description": "Skeptical, but can see signs others miss. Their self-appointed authority may make their arguments more persuasive to some...and less so to others.",
+    "max_hp": 50,
+    "observations": {
+      "inter_level_thought": "These people are lucky a \"professional\" is on the case."
+    },
+    "intuition": 5,
+    "perception": 4,
+    "strength": 2,
+    "agility": 3,
+    "luck": 2,
+    "affinities": {
+      "item_types": ["evidence"],
+      "hazard_tags": ["crime_scene", "forensic"],
+      "skilled_actions": ["talk", "persuade"]
+    }
+  },
+  "EMT": {
+    "description": "Trained on medical equipment and saving lives. Gets a bonus to medical supplies and certain QTEs (more health, less input needed).",
+
+    "max_hp": 60,
+    "observations": {
+      "inter_level_thought": "My job is literally keeping people alive in situations like this. I need to stay calm and do what I was trained to do."
+    },
+    "intuition": 2,
+    "perception": 3,
+    "strength": 6,
+    "affinities": {
+      "item_types": ["medical_supply"],
+      "hazard_tags": ["medical_equipment", "biohazard"],
+      "disaster_tags": ["public_venue_accident"]
+    }
+  },
+  "Journalist": {
+    "description": "Has this kind of thing happened before? There's a story here, and they know how to find it. (Can find clues in the environment that others miss).",
+    "max_hp": 45,
+    "observations": {
+      "inter_level_thought": "I can't shake the feeling that something terrible is about to happen. ..and may have before. I need to stay alert."
+    },
+    "intuition": 2,
+    "perception": 2,
+    "strength": 1,
+    "affinities": {
+      "item_types": ["document", "electronic_evidence"],
+      "disaster_tags": ["industrial_accident", "transportation_air"]
+    }
+  },
+  "Medium": {
+    "description": "Not quite a visionary, but they see the most warnings and omens (at a cost of fear and paranoia). Think Clear Rivers near the end of FD1 or all of FD2.",
+    "intuition": 5,
+    "perception": 5,
+    "strength": 2,
+    "max_hp": 40,
+    "observations": {
+      "inter_level_thought": "They don't see the signs like I do. The way the air shifts, the little hints that something's wrong.. I just hope I can stay one step ahead of it."
+    },
+    "affinities": {
+      "hazard_tags": ["paranormal", "deaths_breath"],
+      "item_types": ["cursed", "occult"]
+    }
+  },
+  "Mechanic": {
+    "description": "Can use tools in ways others can't.\n(Bonus to mechanical/electrical hazards, tools & fixes).",
+    "intuition": 2,
+    "perception": 4,
+    "strength": 6,
+    "max_hp": 50,
+    "affinities": {
+      "item_types": ["tool"],
+      "hazard_tags": ["mechanical", "electrical", "industrial"],
+      "skilled_actions": ["repair", "combine", "force"]
+    },
+    "observations": {
+      "inter_level_thought": "There isn't any such thing as a 'freak accident' in my line of work. Every failure has a cause, and I intend to find it."
+    }
+  },
+  "Athlete": {
+    "description": "Physically gifted, you 'just win', but can you outrun Fate?\n(More base health  ..wtf is a Bruin anyway?)",
+    "intuition": 1, 
+    "perception": 3, 
+    "strength": 8,
+    "max_hp": 70, 
+    "affinities": {
+      "hazard_tags": ["physical", "falling_object"],
+      "skilled_actions": ["force", "run", "climb"]
+    },
+    "observations": {
+      "inter_level_thought": "Baby I just win, that's all I know how to do."
+    }
+  }
+}

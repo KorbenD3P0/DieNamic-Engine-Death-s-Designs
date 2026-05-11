@@ -1,0 +1,35 @@
+{
+  "0": {
+    "name": "The Premonition",
+    "rooms_file": "rooms_level_0"
+  },
+  "1": {
+    "name": "The Hospital",
+    "rooms_file": "rooms_level_1",
+    "hazards": ["deaths_breath", "robo_vacuum", "mri", "hospital_exit", "oxygen_tank", "faulty_wiring"],
+    "npcs": ["dr_marcus_hall"],
+    "items_pool": "level_1",
+    "ambiance_key": "1"
+  },
+  "house": {
+    "name": "Bludworth's House",
+    "rooms_file": "rooms_level_house",
+    "hazards": ["deaths_breath", "gas_leak", "wrecking_ball", "faulty_wiring", "precarious_water_cup"],
+    "npcs": [],
+    "items_pool": "level_2",
+    "ambiance_key": "house"
+  },
+  "hub": {
+    "name": "Your Car",
+    "rooms_file": "rooms_level_hub",
+    "ambiance_key": "car"
+  },
+  "gym": {
+    "name": "Sandbox Gym",
+    "rooms_file": "rooms_gym",
+    "hazards": [],
+    "npcs": [],
+    "items_pool": "all",
+    "ambiance_key": "1"
+  }
+}

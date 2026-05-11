@@ -1,0 +1,95 @@
+{
+  "Site Entrance": {
+    "name": "Site Entrance",
+    "description": "The construction site entrance. Yellow caution tape sags across the fence opening. The skeleton of a half-finished high-rise looms ahead, a web of steel against the sky.",
+    "first_entry_text": "The site is louder than you expected. Jackhammers. Welding torches. The clang of steel.\n\nSomewhere in here, a person on the list is working their shift. You need to get to them before their time is up.",
+    "entry_room": true,
+    "exits": {
+      "north": "Scaffold Level A",
+      "east": "Material Storage",
+      "out": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "furniture": [
+      {
+        "name": "Site Office Trailer",
+        "description": "A battered portakabin with the door hanging open. Safety logs are scattered on the desk.",
+        "is_container": true,
+        "is_narrative_container": true,
+        "allowed_item_tags": ["paper", "key", "tool"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "faulty_wiring",
+      "water_puddle"
+    ],
+    "objects": [
+      {
+        "name": "Safety Poster",
+        "description": "A faded poster: '117 DAYS WITHOUT AN ACCIDENT'. The number has been scratched out and replaced with a zero."
+      }
+    ],
+    "npc_slots": 1
+  },
+  "Material Storage": {
+    "name": "Material Storage",
+    "description": "A covered area with stacked I-beams, rebar, and bags of concrete. A massive crane towers over this section, its heavy cable stretching up into the sky.",
+    "exits": {
+      "west": "Site Entrance",
+      "north": "Scaffold Level A"
+    },
+    "furniture": [
+      {
+        "name": "Heavy Job Box",
+        "description": "A massive, reinforced steel lockbox used to secure expensive tools overnight.",
+        "is_container": true,
+        "allowed_item_tags": ["tool", "hardware"],
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "unstable_rebar_stack",
+      "crane_winch_brake"
+    ],
+    "npc_slots": 1
+  },
+  "Scaffold Level A": {
+    "name": "Scaffold Level A",
+    "description": "Rickety metal scaffolding wraps around the partially built structure. The planks underfoot flex. Below, a massive industrial concrete mixer churns slowly. Above, the wind picks up significantly.",
+    "exits": {
+      "south": "Site Entrance",
+      "up": "Scaffold Level B"
+    },
+    "hazards_present": [
+      "weak_floorboards",
+      "unattended_welding_torch",
+      "concrete_mixer_pit"
+    ],
+    "objects": [
+      {
+        "name": "Plank Walkway",
+        "description": "Two planks wide. No safety rail on the east side. A thirty-foot drop to the mixer below."
+      }
+    ],
+    "npc_slots": 1
+  },
+  "Scaffold Level B": {
+    "name": "Scaffold Level B",
+    "description": "The highest accessible level of the scaffold. The wind up here is serious. The entire city spreads out below, looking like a toy model.",
+    "first_entry_text": "The wind howls through the exposed steel framework. The target is up here, looking out over the precipice. One strong gust or one snapping bolt could send them over the edge.",
+    "exits": {
+      "down": "Scaffold Level A"
+    },
+    "hazards_present": [
+      "swinging_wrecking_ball",
+      "deaths_breath"
+    ],
+    "objects": [
+      {
+        "name": "Scaffold Edge",
+        "description": "The outer edge of the platform. No railing. A drop from here would be instantly fatal."
+      }
+    ],
+    "npc_slots": 1
+  }
+}

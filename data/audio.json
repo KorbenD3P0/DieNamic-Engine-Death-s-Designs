@@ -1,0 +1,96 @@
+{
+  "sfx": {
+    "darov": {
+      "file": "assets/audio/sfx/07.ogg",
+      "volume": 0.8
+    },
+    "ui_click": {
+      "file": "assets/audio/ui/click_01.ogg",
+      "volume": 0.5
+    },
+    "elevator_begin": {
+      "file": "assets/audio/sfx/40.ogg",
+      "volume": 0.5
+    },
+    "elevator_end": {
+      "file": "assets/audio/sfx/41.ogg",
+      "volume": 0.5
+    },
+    "metal_object_hit": {
+      "file": "assets/audio/sfx/47.ogg",
+      "volume": 0.7
+    },
+    "hit": {
+      "file": "assets/audio/sfx/v01.ogg",
+      "volume": 0.7
+    },
+    "medium_hit": {
+      "file": "assets/audio/sfx/V03.ogg",
+      "volume": 0.7
+    },
+    "heavy_hit": {
+      "file": "assets/audio/sfx/V04.ogg",
+      "volume": 0.7
+    },
+    "final_hit": {
+      "file": "assets/audio/sfx/V05.ogg",
+      "volume": 0.7
+    },
+    "guy_groan": {
+      "file": "assets/audio/sfx/V06.ogg",
+      "volume": 0.6
+    },
+    "karate_throw": {
+      "file": "assets/audio/sfx/V07.ogg",
+      "volume": 0.8
+    },
+    "enemy_scream": {
+      "file": "assets/audio/sfx/V10.ogg",
+      "volume": 0.6
+    },
+    "goofy_villian_laugh": {
+      "file": "assets/audio/sfx/V19.ogg",
+      "volume": 0.5
+    },
+    "big_bubba_laugh": {
+      "file": "assets/audio/sfx/V33.ogg",
+      "volume": 0.5
+    },
+    "engine_rev": {
+      "file": "assets/audio/sfx/V20.ogg",
+      "volume": 0.7,
+      "loop": true
+    },
+    "get_the_claw": {
+      "file": "assets/audio/sfx/V22.ogg",
+      "volume": 0.6
+    },
+    "taco_bell_shits": {
+      "file": "assets/audio/sfx/V46.ogg",
+      "volume": 0.6
+    }
+  },
+  "music": {
+    "title_theme": {
+      "file": "assets/audio/music/title_theme.ogg",
+      "volume": 0.3,
+      "loop": true
+    },
+    "intro_theme": {
+      "file": "assets/audio/music/intro_theme.ogg",
+      "volume": 0.3,
+      "loop": true
+    },
+    "lobby_ambience": {
+      "file": "assets/audio/music/lobby_hum.ogg",
+      "volume": 0.3,
+      "loop": true
+    }
+  },
+  "ui": {
+    "button_click": {
+      "file": "assets/audio/ui/click_01.ogg",
+      "volume": 0.5
+    }
+  }
+}

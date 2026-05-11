@@ -1,0 +1,208 @@
+{
+  "Restaurant Foyer": {
+    "name": "Luigi's Italian Bistro - Entrance",
+    "description": "Red-checkered tablecloths and the smell of garlic and woodsmoke. Dean Martin croons from a speaker. To the north is the Dining Room, and the Bar Area sits to the east.",
+    "first_entry_text": "You push through the door just as {visionary} knocks over a tray of wine glasses, screaming about fire and falling glass.\n\nNow the host is furious, waving a towel and threatening to call the cops. The romantic atmosphere is completely dead.",
+    "entry_room": true,
+    "exits": {
+      "north": "Dining Room",
+      "east": "Bar Area",
+      "leave the restaurant": {
+        "target": "LEVEL_TRANSITION_HUB"
+      }
+    },
+    "furniture": [
+      {
+        "name": "Host Stand",
+        "description": "A heavy wooden podium with a reservation book. A massive, ornate glass chandelier hangs directly above it.",
+        "is_container": true,
+        "items": [
+          "flashlight"
+        ]
+      }
+    ],
+    "hazards_present": [
+      "wobbling_ceiling_fan",
+      "faulty_wiring"
+    ],
+    "objects": [
+      {
+        "name": "Host Radio",
+        "description": "A small radio playing Italian standards. It crackles with static, the music warping into a strange, low frequency.",
+        "is_omen_provider": "radio",
+        "aliases": [
+          "radio",
+          "speaker"
+        ]
+      },
+      {
+        "name": "Reservation Book",
+        "description": "Open to tonight. The last reservation is for a name you recognize - and it was marked as arrived three minutes ago."
+      }
+    ],
+    "npc_slots": 2
+  },
+  "Dining Room": {
+    "name": "Dining Room",
+    "description": "The main dining room. Eight tables, five occupied. A towering wine rack spans the west wall. A fireplace crackles warmly.",
+    "exits": {
+      "south": "Restaurant Foyer",
+      "west": "Kitchen",
+      "east": "Private Dining Room"
+    },
+    "furniture": [
+      {
+        "name": "Wine Rack",
+        "description": "A floor-to-ceiling wine rack. Some bottles are dusty. The top shelf is dangerously overloaded.",
+        "is_container": false
+      }
+    ],
+    "hazards_present": [
+      "precarious_object",
+      "unstable_shelf"
+    ],
+    "objects": [
+      {
+        "name": "Lit Fireplace",
+        "description": "A real wood-burning fireplace. The fire is high and the protective screen is not fully closed.",
+        "is_omen_provider": "window",
+        "aliases": [
+          "fireplace",
+          "fire",
+          "mirror above fireplace"
+        ]
+      },
+      {
+        "name": "Overhead Beam",
+        "description": "A decorative wooden beam runs the length of the ceiling. One of the mounting brackets looks recently loosened."
+      }
+    ],
+    "npc_slots": 1
+  },
+  "Bar Area": {
+    "name": "Bar Area",
+    "description": "A small bar at the side of the restaurant. Three bar stools. A TV above the bar showing a sports match. The bartender is watching the game more than the drinks.",
+    "exits": {
+      "west": "Restaurant Foyer"
+    },
+    "furniture": [
+      {
+        "name": "Bar Counter",
+        "description": "Polished wood with rings from wet glasses. The stools wobble.",
+        "is_container": true,
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "frayed_lamp_cord",
+      "precarious_water_cup"
+    ],
+    "objects": [
+      {
+        "name": "Bar TV",
+        "description": "The TV flickers twice during what should be a commercial. For a fraction of a second, it shows a blazing inferno that is definitely not sports.",
+        "is_omen_provider": "television",
+        "aliases": [
+          "tv",
+          "television",
+          "screen"
+        ]
+      }
+    ],
+    "npc_slots": 1
+  },
+  "Kitchen": {
+    "name": "Kitchen",
+    "description": "A proper commercial kitchen. Hot, loud, and dangerous. Two ranges, a deep fryer, a walk-in cold room, and enough open flame to be genuinely concerning. Staff move around each other with practiced efficiency.",
+    "exits": {
+      "east": "Dining Room",
+      "north": "Back Alley Exit"
+    },
+    "furniture": [
+      {
+        "name": "Prep Shelf",
+        "description": "A stainless steel shelf above the prep area.",
+        "is_container": true,
+        "items": [
+          "work_gloves",
+          "oil_rag"
+        ]
+      },
+      {
+        "name": "Deep Fryer",
+        "description": "At temperature. The oil shimmers. A basket of food sits half-submerged, forgotten."
+      }
+    ],
+    "hazards_present": [
+      "gas_leak",
+      "spilled_hot_oil",
+      "propane_tanks"
+    ],
+    "objects": [
+      {
+        "name": "Commercial Range",
+        "description": "Six gas burners, all lit, all high. The ventilation hood above is running but struggling."
+      },
+      {
+        "name": "Walk-In Door",
+        "description": "The door to the cold room has a heavy spring latch. The handle is frosty."
+      }
+    ],
+    "npc_slots": 1
+  },
+  "Private Dining Room": {
+    "name": "Private Dining Room",
+    "description": "A curtained-off room for larger parties. Currently empty and dim. The table is set for eight but nobody is here. At the far end, a door to the back alley stands open a crack.",
+    "exits": {
+      "west": "Dining Room",
+      "east": "Back Alley Exit"
+    },
+    "furniture": [
+      {
+        "name": "Set Table",
+        "description": "Eight place settings. Eight chairs. One chair has been pushed back slightly, as if someone just stood up.",
+        "is_container": false
+      }
+    ],
+    "hazards_present": [
+      "deaths_breath",
+      "water_puddle"
+    ],
+    "objects": [
+      {
+        "name": "Cracked Door",
+        "description": "The door to the back alley. Someone propped it open. Night air comes in."
+      }
+    ],
+    "npc_slots": 0
+  },
+  "Back Alley Exit": {
+    "name": "Back Alley Exit",
+    "description": "The service alley behind the restaurant. Bins, a delivery entrance, and a chain link fence at the far end. The alley connects to the main street.",
+    "exits": {
+      "west": "Kitchen",
+      "south": "Private Dining Room",
+      "leave the alley": {
+        "target": "LEVEL_TRANSITION_HUB"
+      }
+    },
+    "furniture": [
+      {
+        "name": "Dumpster",
+        "description": "The dumpster lid hangs open. Something moved inside it. Hopefully a raccoon.",
+        "is_container": true,
+        "items": []
+      }
+    ],
+    "hazards_present": [
+      "stray_cat"
+    ],
+    "objects": [
+      {
+        "name": "Delivery Ledger",
+        "description": "A clipboard hanging by the delivery door. The last delivery was signed for twenty minutes ago. The signature is illegible."
+      }
+    ],
+    "npc_slots": 0
+  }
+}

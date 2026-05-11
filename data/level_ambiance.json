@@ -1,0 +1,133 @@
+{
+  "1": {
+    "name": "Hospital",
+    "ambient_sounds": ["heart_monitor", "ventilator", "fluorescent_buzz", "gurney_wheels"],
+    "scents": ["antiseptic", "formaldehyde", "latex_gloves", "bleach"],
+    "textures": ["cold_steel", "sterile_plastic", "rough_concrete", "smooth_tile"],
+    "fear_multiplier": 1.0,
+    "hallucinations": {
+      "base": [
+        "For a split second, you see a shadowy figure at the edge of your vision, but it's gone when you turn.",
+        "You hear a faint, distorted whisper that sounds like your own name.",
+        "A sudden, inexplicable chill washes over you, raising goosebumps on your arms."
+      ],
+      "general": [
+        "The lights flicker violently for a moment, plunging the room into a disorienting strobe effect before returning to normal.",
+        "You hear the distant sound of a heart monitor flatlining, but there's no one else here.",
+        "The antiseptic smell suddenly becomes overwhelming, making your eyes water.",
+        "You hear the squeak of gurney wheels rolling down an empty hallway.",
+        "A ventilator's mechanical breathing echoes from somewhere nearby, though you see no machines.",
+        "The fluorescent lights buzz ominously, casting harsh shadows that seem to move.",
+        "You catch a glimpse of something pale moving past a doorway, but nothing's there when you look.",
+        "The smell of formaldehyde suddenly fills your nostrils, sharp and chemical."
+      ],
+      "room_specific": {
+        "morgue": [
+          "You hear the soft hiss of a refrigeration unit opening, but all doors remain closed.",
+          "The sound of running water echoes from the steel tables, though the room is dry."
+        ],
+        "mri": [
+          "You feel a strange tingling, as if invisible magnetic forces are pulling at your bones.",
+          "The MRI machine emits a low hum that seems to resonate in your skull."
+        ],
+        "patient": [
+          "You hear the soft beep of a heart monitor that isn't there.",
+          "The IV stand creaks softly, as if someone brushed against it."
+        ],
+        "icu": [
+          "You hear the soft beep of a heart monitor that isn't there.",
+          "The IV stand creaks softly, as if someone brushed against it."
+        ]
+      }
+    },
+    "fear_effects": {
+      "default": "The antiseptic smell is stronger here, almost overwhelming.",
+      "room_specific": {
+        "morgue": "The cold air carries the faint chemical tang of preservatives.",
+        "mri": "You feel a subtle magnetic pull, making your fillings ache.",
+        "emergency": "The silence is broken only by the hum of medical equipment."
+      }
+    }
+  },
+  "2": {
+    "name": "Bludworth's House",
+    "ambient_sounds": ["house_settling", "floorboard_creaks", "door_hinges", "wind_through_windows"],
+    "scents": ["dust", "old_wood", "stale_air", "family_cooking"],
+    "textures": ["worn_carpet", "smooth_wood", "cold_metal_doorknobs", "fabric_upholstery"],
+    "fear_multiplier": 1.2,
+    "hallucinations": {
+      "base": [
+        "For a split second, you see a shadowy figure at the edge of your vision, but it's gone when you turn.",
+        "You hear a faint, distorted whisper that sounds like your own name.",
+        "A sudden, inexplicable chill washes over you, raising goosebumps on your arms."
+      ],
+      "general": [
+        "A floorboard creaks in the room above you. You're supposed to be alone.",
+        "You hear the soft sound of footsteps padding across carpet in another room.",
+        "A door you're certain you left open is now closed.",
+        "The house settles with a groan that sounds almost like a sigh.",
+        "You smell something cooking, but the kitchen is empty and cold.",
+        "A child's laughter echoes faintly from upstairs, but there are no children here.",
+        "The television in another room turns on by itself, voices murmuring indistinctly.",
+        "You hear running water from the bathroom, but the taps are all dry."
+      ],
+      "room_specific": {}
+    },
+    "fear_effects": {
+      "default": "This place feels like it's holding its breath.",
+      "room_specific": {
+        "Living Room": "The shadows in the corners seem deeper than they should be.",
+        "Kitchen": "You can almost hear the echo of family meals that will never happen again.",
+        "Bedroom": "The bed looks as if someone just got up from it, though you know you're alone.",
+        "Basement": "Every creak of the house above sounds like footsteps."
+      }
+    }
+  },
+  "3": {
+    "name": "McKinley Fairground",
+    "ambient_sounds": ["carousel_music", "tent_flapping", "metal_creaking", "wind_chimes"],
+    "scents": ["cotton_candy", "popcorn", "rust", "hay_and_animals"],
+    "textures": ["splintered_wood", "rusted_metal", "canvas_fabric", "packed_dirt"],
+    "fear_multiplier": 1.5,
+    "hallucinations": {
+      "base": [
+        "For a split second, you see a shadowy figure at the edge of your vision, but it's gone when you turn.",
+        "You hear a faint, distorted whisper that sounds like your own name.",
+        "A sudden, inexplicable chill washes over you, raising goosebumps on your arms."
+      ],
+      "general": [
+        "Carnival music plays faintly in the distance, distorted and off-key.",
+        "You hear the creaking of a ferris wheel that isn't turning.",
+        "Children's laughter echoes from empty rides, but you see no one.",
+        "The smell of cotton candy and popcorn suddenly fills the air, sickeningly sweet.",
+        "Calliope music warbles through the air, as if played on a broken music box.",
+        "You hear the distant barking of a carnival barker, but can't make out the words.",
+        "The wind carries the scent of hay and animals, mixed with something less pleasant.",
+        "Bells and chimes tinkle softly, as if ghostly patrons are playing the games."
+      ],
+      "room_specific": {
+        "tent": [
+          "The canvas walls flutter with no wind, as if breathing."
+        ],
+        "ride": [
+          "You can almost hear the ghost of carnival music in the air."
+        ],
+        "carousel": [
+          "You can almost hear the ghost of carnival music in the air."
+        ],
+        "game": [
+          "The prizes seem to watch you with glassy, unblinking eyes."
+        ]
+      }
+    },
+    "fear_effects": {
+      "default": "The air smells of cotton candy and rust.",
+      "room_specific": {
+        "tent": "The canvas walls flutter with no wind, as if breathing.",
+        "ride": "You can almost hear the ghost of carnival music in the air.",
+        "carousel": "You can almost hear the ghost of carnival music in the air.",
+        "game": "The prizes seem to watch you with glassy, unblinking eyes."
+      }
+    }
+  }
+}

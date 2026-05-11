@@ -1,0 +1,406 @@
+{
+  "level_0": {
+    "name": "The Premonition",
+    "entry_room": null,
+    "use_disaster_template": true,
+    "auto_complete_on_disaster_view": true,
+    "on_exit_level_events": [
+      {
+        "type": "set_flag",
+        "flag": "survived_premonition"
+      }
+    ],
+    "conditional_transitions": [
+      {
+        "condition": "default",
+        "next_level_id": "level_1"
+      }
+    ]
+  },
+  "level_1": {
+    "name": "The Hospital",
+    "entry_room": "Hospital Emergency Entrance",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Hope River Hospital", "message": "The fluorescent lights hum overhead. You shouldn't be here... but you have to find answers."},
+      {"type": "play_music", "track": "hospital_ambience"},
+      {"type": "set_flag", "flag": "entered_hospital"}
+    ],
+    "on_exit_level_events": [
+      {"type": "unlock_achievement", "achievement": "survived_the_hospital"}
+    ],
+    "transition_narratives": {
+      "level_police_station": [
+        "You step out of the hospital and immediately raise your hands. The flashing red and blue lights are blinding.",
+        "They cuff you gently, but firmly. As they put you in the back of the cruiser, you look back at the destroyed morgue exit that they completely just glossed over.",
+        "You're safe for tonight. But the precinct is just another box, and Death knows exactly where you are."
+      ],
+      "house": [
+        "You grip the heavy brass key in your pocket. The sirens are getting closer, but you slip into the shadows before the cruisers pull in.",
+        "You navigate the back alleys of {city_name}, keeping your head down until you reach the city limits.",
+        "Bludworth's house looms ahead. If anyone knew the rules to this sick game, it was him."
+      ],
+      "_default": [
+        "You push through the heavy doors, the fluorescent lights of the hospital fading behind you.",
+        "The cool night air is a relief, but the silence feels oppressive. You survived the immediate danger, but the list still burns in your mind.",
+        "You have to keep moving."
+      ]
+    }
+  },
+  "level_house": {
+    "name": "Bludworth's House",
+    "entry_room": "Front Porch",
+    "conditional_transitions": [
+      {
+        "condition": "has_flag", 
+        "flag_name": "visionary_is_dead", 
+        "next_level_id": "level_hub"
+      },
+      {
+        "condition": "default", 
+        "next_level_id": "level_hub"
+      }
+    ],
+    "exit_room": "Back Porch",
+    "level_requirements": {
+      "required_items": ["bludworths_house_key"]
+    },
+    "intro_text": "You survived the hospital, but your answers pointed you here. Death isn't done with you yet...",
+    "completion_hazard": "wrecking_ball",
+    "completion_hazard_initial_state": "dormant",
+    "completion_narratives_by_state": {
+      "impact_floor_break": "Your combined weight is too much for the rotted porch! With a sharp crack, the floorboards give way and you stumble into the space beneath. As you look up, dazed, you see the massive wrecking ball swing silently through the space you just occupied... directly into you. The collapsing porch didn't kill you, but it put you right in Death's path. The wrecking ball finishes the job.",
+      "level_complete_survival": "You stand panting, adrenaline coursing through you, amid the wreckage of Bludworth's back porch.\nThe crane operator, horrified, quickly secures the crane and drives away before anyone can ask questions.\n\nYou're alive... and you have a new destination in mind.",
+      "obliterated_by_first_swing": "Your hesitation was fatal. The world dissolves into a symphony of crushing force and blinding pain. Obliterated by the initial swing of the wrecking ball.",
+      "impact_return_swing_death": "The return swing was faster, more brutal. You couldn't react in time. You cheated death for a second, but it always comes back around. The returning wrecking ball obliterates you.",
+      "death_by_falling_debris": "After all that, it wasn't the ball that got you. A jagged piece of the house's own facade, shaken loose by the chaos, plummets down and ends your story with an abrupt, brutal impact. Killed by falling debris after surviving the wrecking ball.",
+      "death_by_falling_ball": "The massive wrecking ball plummets from the broken crane, crushing you beneath its tremendous weight. So close to escape, yet Death found a way. Crushed by a falling wrecking ball after the crane cable snapped."
+    }
+  },
+  "level_police_station": {
+    "name": "The Precinct",
+    "entry_room": "Police Station Interview Room",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "In Custody", "message": "The fluorescent lights of the precinct buzz overhead. You are safe from Death in here... but you are trapped."},
+      {"type": "play_music", "track": "police_station_ambience"}
+    ],
+    "conditional_transitions": [
+      {
+        "condition": "default",
+        "next_level_id": "level_hub"
+      }
+    ]
+  },
+  "level_hub": {
+    "name": "Your Car (In Transit)",
+    "entry_room": "Your Car (In Transit)",
+    "conditional_transitions": [
+      {
+        "condition": "has_flag",
+        "flag_name": "plan_resurrection_locked",
+        "next_level_id": "level_finale_bridge"
+      },
+      {
+        "condition": "has_flag",
+        "flag_name": "learned_deaths_list",
+        "next_level_id": "level_auto_shop"
+      },
+      {
+        "condition": "default",
+        "next_level_id": "level_fairgrounds"
+      }
+    ]
+  },
+  "level_fairgrounds": {
+    "name": "McKinley County Fairgrounds",
+    "entry_room": "Midway (Center)",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "The Fairgrounds", "message": "The smell of fried food and livestock fills the air. You need to find who you're looking for before the rides become weapons."},
+      {"type": "play_music", "track": "carnival_theme"}
+    ],
+    "unlock_conditions": {
+      "or": [
+        {"npc_target_location": "fairgrounds"},
+        {"investigation_clue_found": "fairgrounds_ticket"}
+      ]
+    },
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_coffee": {
+    "name": "The Daily Grind",
+    "entry_room": "Coffee Shop Entrance",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "The Daily Grind", "message": "The bitter smell of roasted beans masks the scent of ozone. The hiss of the espresso wands sounds like a countdown. Get them out of here."},
+      {"type": "play_music", "track": "indie_folk_skip"}
+    ],
+    "unlock_conditions": {
+      "or": [
+        {"npc_target_location": "coffee_shop"},
+        {"investigation_clue_found": "bloodstained_punch_card"}
+      ]
+    },
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_vet": {
+    "name": "City Vet Clinic",
+    "entry_room": "Clinic Reception",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "City Vet Clinic", "message": "The harsh smell of bleach fails to cover the underlying scent of frightened animals and old copper. The quiet hum of the fluorescent lights feels like a trap waiting to spring."},
+      {"type": "play_music", "track": "sterile_dread_ambience"}
+    ],
+    "unlock_conditions": {
+      "or": [
+        {"npc_target_location": "clinic"},
+        {"investigation_clue_found": "true_companions_transfer_form"}
+      ]
+    },
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_clinic": {
+    "name": "Hope River Outpatient Clinic",
+    "entry_room": "Waiting Area",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Outpatient Clinic", "message": "Sterile and quiet. But Death doesn't make an appointment."}
+    ],
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_theater": {
+    "name": "McKineplex Theater",
+    "entry_room": "Cineplex Entrance",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "The McKineplex", "message": "The neon lights buzz overhead like angry hornets. The smell of stale popcorn and ozone hangs in the air. Death has front row seats."},
+      {"type": "play_music", "track": "theater_ambience"}
+    ],
+    "unlock_conditions": {
+      "or": [
+        {"npc_target_location": "theater"},
+        {"investigation_clue_found": "movie_stub"}
+      ]
+    },
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_bowling": {
+    "name": "Strike & Spare Lanes",
+    "entry_room": "Bowling Alley Entrance",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Strike & Spare", "message": "The thunderous crash of bowling pins echoes like distant artillery. The air is thick with the smell of floor wax and stale beer. Keep your eyes open."},
+      {"type": "play_music", "track": "synthwave_bowling_ambience"}
+    ],
+    "unlock_conditions": {
+      "or": [
+        {"npc_target_location": "bowling_alley"},
+        {"investigation_clue_found": "monogrammed_bowling_towel"}
+      ]
+    },
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_mall": {
+    "name": "McKinley Galleria",
+    "entry_room": "Center Atrium",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "McKinley Galleria", "message": "Muzak echoes hollowly through the cavernous shopping center. The glass ceiling above looks fragile, and the escalators grind with a sinister mechanical hum."},
+      {"type": "play_music", "track": "distorted_muzak"}
+    ],
+    "unlock_conditions": {
+      "or": [
+        {"npc_target_location": "mall"},
+        {"investigation_clue_found": "mall_directory_pamphlet"}
+      ]
+    },
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_community": {
+    "name": "McKinley Community Center",
+    "entry_room": "Rec Center Lobby",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Community Center", "message": "The heavy scent of chlorine burns your nose. The echoing thuds of basketballs and splashing water mask the sound of failing machinery. You need to hurry."},
+      {"type": "play_music", "track": "echoing_tile_ambience"}
+    ],
+    "unlock_conditions": {
+      "or": [
+        {"npc_target_location": "community_center"},
+        {"investigation_clue_found": "laminated_pool_pass"}
+      ]
+    },
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_food_truck": {
+    "name": "Taco Time Truck",
+    "entry_room": "Food Truck Line",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Food Truck Plaza", "message": "Generators humming, propane tanks baking in the sun, and boiling grease. What could go wrong?"}
+    ],
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_construction_site": {
+    "name": "McKinley Heights Construction Site",
+    "entry_room": "Site Entrance",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Construction Site", "message": "The air is thick with concrete dust. The groaning of stressed steel and the roar of heavy machinery make it hard to think. One wrong step here is a long way down."},
+      {"type": "play_music", "track": "industrial_grind_ambience"}
+    ],
+    "unlock_conditions": {
+      "or": [
+        {"npc_target_location": "construction_site"},
+        {"investigation_clue_found": "union_id_card"}
+      ]
+    },
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_warehouse": {
+    "name": "City Shipping Warehouse",
+    "entry_room": "Warehouse Loading Dock",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Shipping Warehouse", "message": "Towering racks of heavy crates lean precariously over the concrete floor. Forklifts dart blindly around corners."}
+    ],
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_office": {
+    "name": "Downtown Office Building",
+    "entry_room": "Office Lobby",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Office Building", "message": "Rows of cubicles and floor-to-ceiling glass windows. There are entirely too many ways to fall in a place like this."}
+    ],
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_hotel": {
+    "name": "Grand Central Hotel",
+    "entry_room": "Hotel Lobby",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Grand Central Hotel", "message": "A sprawling historic hotel with ancient wiring, heavy chandeliers, and a boiler room that hasn't been inspected in a decade."}
+    ],
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_restaurant": {
+    "name": "Luigi's Italian Bistro",
+    "entry_room": "Restaurant Foyer",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Italian Bistro", "message": "The clatter of dishes and the roar of industrial gas stoves from the kitchen leak into the dining area."}
+    ],
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_lighthouse": {
+    "name": "McKinley Point Lighthouse",
+    "entry_room": "Lighthouse Base",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "McKinley Point", "message": "The roar of the ocean is deafening. Salt spray stings your eyes. The skeletal remains of the lighthouse groan in the gale-force winds. The entire structure feels like it's waiting for an excuse to fall into the sea."},
+      {"type": "play_music", "track": "howling_gale_ambience"}
+    ],
+    "unlock_conditions": {
+      "or": [
+        {"npc_target_location": "lighthouse"},
+        {"investigation_clue_found": "coastal_survey_clipboard"}
+      ]
+    },
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_old_mill": {
+    "name": "The Old Mill",
+    "entry_room": "Mill Entrance",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "The Old Mill", "message": "Rotted floorboards, exposed rusted gears, and rushing water. This entire structure is a safety violation waiting to happen."}
+    ],
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_pier": {
+    "name": "Pier 9",
+    "entry_room": "Pier Entrance",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Pier 9", "message": "Heavy shipping containers sway on rusty crane cables overhead. The dark water slaps against the barnacle-covered pylons below."}
+    ],
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_printing_press": {
+    "name": "Presage Paper Mill",
+    "entry_room": "Loading Dock",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Presage Paper", "message": "The relentless, deafening rhythmic thud of the massive pulp presses vibrates through the soles of your shoes. There are a million ways to die in a place like this."},
+      {"type": "play_music", "track": "machinery_grind"}
+    ],
+    "unlock_conditions": {
+      "or": [
+        {"npc_target_location": "printing_press"},
+        {"investigation_clue_found": "presage_paper_memo"}
+      ]
+    },
+    "conditional_transitions": [
+      {"condition": "default", "next_level_id": "level_hub"}
+    ]
+  },
+  "level_funnel": {
+    "name": "The Funnel",
+    "exit_room": "Quarantine Zone Edge",
+    "conditional_transitions": [
+      {
+        "condition": "has_companion",
+        "companion_name": "Sergeant Miller",
+        "next_level_id": "level_police_station"
+      },
+      {
+        "condition": "has_item",
+        "item_name": "Defibrillator Pads",
+        "next_level_id": "level_vet"
+      },
+      {
+        "condition": "has_item",
+        "item_name": ["newspaper_clipping", "photo_of_kimberly_corman"],
+        "next_level_id": "level_finale"
+      },
+      {
+        "condition": "has_flag",
+        "flag_name": "visionary_is_dead",
+        "next_level_id": "level_morgue"
+      },
+      {
+        "condition": "default",
+        "next_level_id": "level_fairgrounds"
+      }
+    ]
+  },
+  "level_finale": {
+    "name": "The Final Design",
+    "entry_room": "crossroads_room",
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "The End of the Line", "message": "You have gathered what you need. It is time to make your play against Death."},
+      {"type": "play_music", "track": "finale_tension"}
+    ]
+  },
+  "level_gym": {
+    "name": "Body & Soul Fitness (Sandbox)",
+    "entry_room": "Gym Lobby",
+    "exit_room": "Gym Lobby"
+  }
+}

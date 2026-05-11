@@ -1,0 +1,169 @@
+{
+  "Midway (Center)": {
+    "name": "Midway (Center)",
+    "description": "The heart of the county fair. Games, rides, and food stalls surround you on all sides. The air is thick with the smell of cotton candy and fried dough. To the west, you hear the lowing of animals. To the north is the Food Court.",
+    "first_entry_text": "You push through the turnstiles into the blaring noise of the fair.\n\n{reaction} You made it in time. The person you are looking for is right here.",
+    "exits": {
+      "west": "Midway (West)",
+      "east": "Midway (East)",
+      "north": "Food Court",
+      "south": "Fairgrounds Entrance"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "stampeding_bull"
+    ],
+    "entry_room": true,
+    "npc_slots": 2
+  },
+  "Fairgrounds Entrance": {
+    "name": "Fairgrounds Entrance",
+    "description": "The brightly lit entrance to the {city_name} County Fair. A large banner reads 'A Celebration to Die For!'.",
+    "exits": {
+      "north": "Midway (Center)",
+      "leave the fair": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "furniture": [
+      {
+        "name": "ticket booth",
+        "description": "An abandoned ticket booth. Looks like the attendant went on break."
+      }
+    ],
+    "hazards_present": []
+  },
+  "Midway (West)": {
+    "name": "Midway (West)",
+    "description": "The midway stretches out before you, lined with colorful game stalls. To the west is the Livestock Pavilion.",
+    "exits": {
+      "east": "Midway (Center)",
+      "west": "Livestock Pavilion"
+    },
+    "furniture": [
+      {
+        "name": "game stalls",
+        "description": "Rows of rigged carnival games."
+      }
+    ],
+    "hazards_present": [
+      "faulty_generator",
+      "test_your_strength_game"
+    ],
+    "npcs": [
+      {
+        "name": "Rusty",
+        "role": "carny",
+        "description": "An old carnival worker with weathered skin and a permanent scowl. He's glaring at a sputtering power generator.",
+        "initial_state": "greeting",
+        "dialogue_states": {
+          "greeting": {
+            "text": "'Keep an eye on that generator, would ya? Voltage regulator's shot. One good surge and it'll blow everything connected to it.'",
+            "options": [
+              {
+                "text": "What is it connected to?",
+                "target_state": "fence_warning"
+              },
+              {
+                "text": "Can you shut it down?",
+                "target_state": "shutdown_request"
+              }
+            ]
+          },
+          "shutdown_request": {
+            "text": "'Management won't let me touch it. Insurance liability. But if that thing pops, it's gonna send a massive arc right into the wet dirt under the Livestock Pavilion.'",
+            "next_state": "fence_warning"
+          },
+          "fence_warning": {
+            "text": "'The electric fence around the prize bull's pen is grounded on the same grid. That bull gets shocked, he'll charge right through the gate.'",
+            "options": [
+              {
+                "text": "Where would the bull go?",
+                "target_state": "bull_escape_path"
+              }
+            ]
+          },
+          "bull_escape_path": {
+            "text": "'Straight line from the pen to the Food Court. That's where the crowds are thickest. If he hits those deep fryers and propane tanks... it's gonna be a bloodbath.'",
+            "options": [
+              {
+                "text": "I have to warn people.",
+                "target_state": "final_warning"
+              }
+            ]
+          },
+          "final_warning": {
+            "text": "'Good luck. Nobody listens to a crazy old carny. Maybe they'll listen to you.'"
+          }
+        }
+      }
+    ]
+  },
+  "Livestock Pavilion": {
+    "name": "Livestock Pavilion",
+    "description": "A large, open-air pavilion. The smell of hay and manure is strong. A massive prize bull occupies a prominent pen in the center, separated from the crowd by a heavy gate and an electric fence.",
+    "exits": {
+      "east": "Midway (West)"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "prize_bull",
+      "electrified_fence",
+      "bull_pen_gate"
+    ]
+  },
+  "Food Court": {
+    "name": "Food Court",
+    "description": "A bustling area filled with food stalls offering fair classics - corn dogs, funnel cakes, and deep-fried everything. Picnic tables are scattered around for patrons.",
+    "exits": {
+      "south": "Midway (Center)"
+    },
+    "furniture": [
+      {
+        "name": "picnic tables",
+        "description": "Greasy wooden tables bolted to the asphalt."
+      }
+    ],
+    "hazards_present": [
+      "food_stall_structure",
+      "propane_tanks",
+      "spilled_hot_oil"
+    ]
+  },
+  "Midway (East)": {
+    "name": "Midway (East)",
+    "description": "The eastern end of the midway. The towering silhouette of the Ferris Wheel looms to the north.",
+    "exits": {
+      "west": "Midway (Center)",
+      "north": "Ferris Wheel",
+      "south": "Photo Booth Area"
+    },
+    "furniture": [],
+    "hazards_present": []
+  },
+  "Ferris Wheel": {
+    "name": "Ferris Wheel",
+    "description": "A massive, towering Ferris Wheel spins slowly against the night sky, its neon lights pulsing rhythmically. The line of people waiting to board stretches down the midway.",
+    "exits": {
+      "south": "Midway (East)"
+    },
+    "furniture": [
+      {
+        "name": "control booth",
+        "description": "A small glass booth where the operator controls the ride's rotation."
+      }
+    ],
+    "hazards_present": [
+      "ferris_wheel_malfunction"
+    ]
+  },
+  "Photo Booth Area": {
+    "name": "Photo Booth Area",
+    "description": "A quieter corner of the fair with several vintage metal photo booths. Couples and friends pose for silly pictures, hidden behind drawn curtains.",
+    "exits": {
+      "north": "Midway (East)"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "photo_booth_electrocution"
+    ]
+  }
+}

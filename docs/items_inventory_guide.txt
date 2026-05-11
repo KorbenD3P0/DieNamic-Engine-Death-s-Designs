@@ -1,0 +1,1552 @@
+# Items & Inventory System Guide
+**Version:** 1.0  
+**Last Updated:** 2025-11-06  
+**Game:** DieNamic Engine: Death's Designs - AR
+
+---
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Item Anatomy](#item-anatomy)
+3. [Item Types](#item-types)
+4. [Taking & Dropping Items](#taking--dropping-items)
+5. [Using Items](#using-items)
+6. [Keys & Unlocking](#keys--unlocking)
+7. [Evidence & Collectibles](#evidence--collectibles)
+8. [Inventory Management](#inventory-management)
+9. [Item Discovery](#item-discovery)
+10. [Special Item Mechanics](#special-item-mechanics)
+11. [Testing & Debugging](#testing--debugging)
+12. [Complete Examples](#complete-examples)
+
+---
+
+## Overview
+
+Items are portable objects that players can take, carry, and use. They serve multiple purposes:
+- **Keys**: Unlock doors and furniture
+- **Tools**: Interact with hazards and objects
+- **Evidence**: Collectibles that unlock achievements
+- **Consumables**: Rare healing/fear reduction (minimal in FD Terminal)
+- **Narrative**: Journals, letters, charts that reveal story
+
+### Design Philosophy
+
+**Items should:**
+- Have clear, immediate purpose (or mystery worth investigating)
+- Be findable through exploration or logical deduction
+- Reward thoroughness (searching, examining)
+- Enable player agency (multiple solutions)
+
+**Items should NOT:**
+- Be required with no hints to their location
+- Have overly obscure use cases
+- Clutter inventory with useless junk
+- Trivialize all challenges (balance!)
+
+---
+
+## Item Anatomy
+
+### File Location
+`data/items.json`
+
+### Minimal Required Schema
+```json
+{
+  "item_key": {
+    "name": "Display Name",
+    "type": "tool",
+    "description": "What the player sees",
+    "can_be_taken": true
+  }
+}
+```
+
+### Complete Schema
+```json
+{
+  "item_key": {
+    "name": "Display Name",
+    "type": "tool",
+    "description": "Short description",
+    "examine_text": "Detailed examination text",
+    "can_be_taken": true,
+    "use_on": ["target_key"],
+    "unlocks": ["door_name", "furniture_key"],
+    "is_master_key": false,
+    "is_evidence": false,
+    "evidence_source": "disaster_name",
+    "grants_achievement": "achievement_id",
+    "score_value": 10,
+    "healing_amount": 0,
+    "fear_reduction": 0,
+    "is_consumable": false,
+    "is_quest_item": false,
+    "hidden_until_revealed": false,
+    "first_take_message": "Special text on first pickup",
+    "use_message": "Message when used successfully",
+    "weight": 1,
+    "is_fragile": false
+  }
+}
+```
+
+### Field Descriptions
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | ✅ Yes | Display name (e.g., "Flashlight") |
+| `type` | string | ✅ Yes | Category: tool, key, evidence, consumable, quest_item |
+| `description` | string | ✅ Yes | Brief description shown in inventory |
+| `examine_text` | string | ❌ No | Detailed text when player examines item |
+| `can_be_taken` | boolean | ✅ Yes | Whether item can be picked up (almost always true) |
+| `use_on` | array | ❌ No | Keys/names of targets this item affects |
+| `unlocks` | array | ❌ No | Room/furniture names this key unlocks |
+| `is_master_key` | boolean | ❌ No | Whether this key unlocks ALL locked things |
+| `is_evidence` | boolean | ❌ No | Whether this item is collectible evidence |
+| `evidence_source` | string | ❌ No | Which disaster this evidence relates to |
+| `grants_achievement` | string | ❌ No | Achievement ID unlocked when collected |
+| `score_value` | int | ❌ No | Points awarded when collected |
+| `healing_amount` | int | ❌ No | HP restored (rare in FD Terminal) |
+| `fear_reduction` | int | ❌ No | Fear reduced (rare in FD Terminal) |
+| `is_consumable` | boolean | ❌ No | Whether item is destroyed after use |
+| `is_quest_item` | boolean | ❌ No | Whether item is critical for progression |
+| `hidden_until_revealed` | boolean | ❌ No | Whether item is invisible until triggered |
+| `first_take_message` | string | ❌ No | Special popup text on first pickup |
+| `use_message` | string | ❌ No | Text shown when item used successfully |
+| `weight` | int | ❌ No | Encumbrance (future feature, currently unused) |
+| `is_fragile` | boolean | ❌ No | Whether item can break (future feature) |
+
+---
+
+## Item Types
+
+### Tool
+
+**Purpose:** Interact with hazards, furniture, or objects.
+
+**Example:**
+```json
+{
+  "fire_extinguisher": {
+    "name": "Fire Extinguisher",
+    "type": "tool",
+    "description": "A heavy red fire extinguisher. Fully charged.",
+    "examine_text": "The pressure gauge reads FULL. The pin is still in place.",
+    "can_be_taken": true,
+    "use_on": ["open_flame", "electrical_fire", "gas_leak"],
+    "use_message": "You discharge the fire extinguisher with a loud hiss!",
+    "weight": 3
+  }
+}
+```
+
+**Behavior:**
+- `use fire_extinguisher on open_flame` → Triggers hazard state transition
+- Can have multiple `use_on` targets
+- Usually not consumed (reusable)
+
+**Common Tool Examples:**
+- Wrench (tighten valves, open panels)
+- Flashlight (illuminate dark areas)
+- Crowbar (force doors, pry objects)
+- Wire cutters (cut wires, fences)
+
+---
+
+### Key
+
+**Purpose:** Unlock specific doors or furniture.
+
+**Example:**
+```json
+{
+  "patient_room_key": {
+    "name": "Patient Room Key",
+    "type": "key",
+    "description": "A small brass key labeled 'Room 101'.",
+    "examine_text": "The key is worn but functional. The label reads 'Patient Room 101'.",
+    "can_be_taken": true,
+    "unlocks": ["Patient Room 101"]
+  }
+}
+```
+
+**Behavior:**
+- `unlock north` (when facing locked door) → Checks if player has key in `unlocks` array
+- Key remains in inventory after use (not consumed)
+- Can unlock multiple doors/furniture if array has multiple entries
+
+**Master Key:**
+```json
+{
+  "master_key": {
+    "name": "Master Key",
+    "type": "key",
+    "description": "A universal master key. Opens any standard lock.",
+    "examine_text": "This key looks like it would fit any lock in the hospital.",
+    "can_be_taken": true,
+    "unlocks": ["*"],
+    "is_master_key": true
+  }
+}
+```
+
+**Behavior:**
+- `unlocks: ["*"]` → Unlocks ANY locked door/furniture
+- Powerful item (balance carefully!)
+- Should be rare or require significant effort to obtain
+
+---
+
+### Evidence
+
+**Purpose:** Collectibles that unlock achievements and reveal backstory.
+
+**Example:**
+```json
+{
+  "train_derailment_article": {
+    "name": "Train Derailment Article",
+    "type": "evidence",
+    "description": "A faded newspaper clipping about a train crash.",
+    "examine_text": "The article describes a fatal train derailment in 2019. One passenger survived against all odds. The photo shows a twisted metal wreck.",
+    "can_be_taken": true,
+    "is_evidence": true,
+    "evidence_source": "train_derailment",
+    "grants_achievement": "train_evidence_collector",
+    "score_value": 50,
+    "first_take_message": "You've found evidence of a past tragedy. Death's work never ends."
+  }
+}
+```
+
+**Behavior:**
+- Automatically grants achievement when taken
+- Adds to evidence collection count
+- Often has rich `examine_text` with backstory
+- `evidence_source` links to `disasters.json` entry
+
+**Evidence Sources:**
+- Disaster-related (train crash, plane crash, hotel fire)
+- Location-specific (hospital records, carnival photos)
+- NPC-related (journals, letters, wristbands)
+
+---
+
+### Consumable
+
+**Purpose:** Single-use items that provide benefits (rare in FD Terminal).
+
+**Example:**
+```json
+{
+  "medical_supplies": {
+    "name": "Medical Supplies",
+    "type": "consumable",
+    "description": "A small medkit with bandages and antiseptic.",
+    "examine_text": "The kit contains basic first aid supplies. Could stabilize injuries.",
+    "can_be_taken": true,
+    "healing_amount": 20,
+    "fear_reduction": 5,
+    "is_consumable": true,
+    "use_message": "You bandage your wounds. The pain subsides slightly."
+  }
+}
+```
+
+**Behavior:**
+- `use medical_supplies` → Restores 20 HP, reduces 5 fear
+- Item removed from inventory after use
+- Currently minimal in FD Terminal (focus on escape, not combat)
+
+---
+
+### Quest Item
+
+**Purpose:** Critical for progression or major puzzle solutions.
+
+**Example:**
+```json
+{
+  "corbins_journal": {
+    "name": "Corbin's Journal",
+    "type": "quest_item",
+    "description": "A leather-bound journal filled with frantic handwriting.",
+    "examine_text": "The journal details Corbin's visions of death. He writes about patterns, omens, and the inevitability of fate. The final entry reads: 'I see it now. The ventilator will fail. I can't stop it.'",
+    "can_be_taken": true,
+    "is_quest_item": true,
+    "is_evidence": true,
+    "evidence_source": "hospital_incident",
+    "grants_achievement": "the_visionary",
+    "score_value": 100,
+    "first_take_message": "You take the journal. Corbin's words chill you to the bone. He knew—he saw his own death coming."
+  }
+}
+```
+
+**Behavior:**
+- Cannot be dropped (may be enforced in future)
+- Often has rich narrative content
+- May be required for level completion
+- Dual purpose: evidence + quest progression
+
+---
+
+## Taking & Dropping Items
+
+### Taking Items
+
+**Command:** `take <item>` or `get <item>` or `pick up <item>`
+
+**Sources:**
+1. **Room Floor**: Items in `room["items"]` array
+2. **Furniture**: Items in `furniture["contains_items"]` array (after searching)
+3. **NPC**: Items gifted by NPCs (rare)
+4. **Hazard Rewards**: Items granted by hazard state transitions
+
+**Flow:**
+```
+1. Player: "take flashlight"
+2. Engine checks: Is "flashlight" in current room's items?
+3. Engine checks: Is "flashlight" in searched furniture?
+4. Engine checks: Does "flashlight" have can_be_taken: true?
+5. If all true:
+   - Add "flashlight" to player.inventory
+   - Remove "flashlight" from room/furniture
+   - Show success message: "You take the flashlight."
+6. If false:
+   - Show error: "You don't see that here." or "You can't take that."
+```
+
+**Edge Cases:**
+- **Hidden Items**: Items with `hidden_until_revealed: true` are invisible until triggered
+- **Quest Items**: May have special handling (can't be dropped)
+- **Weight Limits**: Not currently enforced (future feature)
+
+---
+
+### Dropping Items
+
+**Command:** `drop <item>` or `leave <item>`
+
+**Flow:**
+```
+1. Player: "drop wrench"
+2. Engine checks: Is "wrench" in player.inventory?
+3. If true:
+   - Remove "wrench" from player.inventory
+   - Add "wrench" to current room's items
+   - Show success: "You drop the wrench."
+4. If false:
+   - Show error: "You don't have that."
+```
+
+**Restrictions:**
+- Quest items may not be droppable (future feature)
+- Consumables are destroyed after use (not dropped)
+
+---
+
+### Inventory Command
+
+**Command:** `inventory` or `i` or `inv`
+
+**Output:**
+```
+You are carrying:
+  - Flashlight (tool)
+  - Patient Room Key (key)
+  - Corbin's Journal (quest_item)
+  - Medical Supplies (consumable)
+
+Total items: 4/10
+```
+
+**Details:**
+- Shows item name and type
+- May show weight/capacity (future feature)
+- Sorted by type (keys, tools, evidence, quest items, consumables)
+
+---
+
+## Using Items
+
+### Basic Use
+
+**Command:** `use <item>` or `use <item> on <target>`
+
+**Flow (Item Only):**
+```
+1. Player: "use medical_supplies"
+2. Engine checks: Is "medical_supplies" in player.inventory?
+3. Engine checks: Is item type "consumable"?
+4. If true:
+   - Apply healing_amount (restore HP)
+   - Apply fear_reduction (reduce fear)
+   - Show use_message: "You bandage your wounds..."
+   - Remove item from inventory (if is_consumable: true)
+5. If false:
+   - Show error: "You need to specify a target." or "You can't use that."
+```
+
+**Flow (Item on Target):**
+```
+1. Player: "use fire_extinguisher on open_flame"
+2. Engine checks: Is "fire_extinguisher" in player.inventory?
+3. Engine checks: Is "open_flame" in use_on array?
+4. Engine checks: Is "open_flame" a hazard in current room?
+5. If all true:
+   - Trigger hazard state transition (e.g., "blazing" → "extinguished")
+   - Show use_message: "You discharge the fire extinguisher..."
+   - Update hazard state
+6. If false:
+   - Show error: "You can't use that on that."
+```
+
+---
+
+### Use On Hazards
+
+**Example: Fire Extinguisher on Gas Leak**
+
+**Item (items.json):**
+```json
+{
+  "fire_extinguisher": {
+    "name": "Fire Extinguisher",
+    "type": "tool",
+    "use_on": ["open_flame", "gas_leak"],
+    "can_be_taken": true
+  }
+}
+```
+
+**Hazard (hazards.json):**
+```json
+{
+  "gas_leak": {
+    "name": "Gas Leak",
+    "states": {
+      "leaking": {
+        "player_actions": {
+          "use_fire_extinguisher": {
+            "next_state": "suppressed",
+            "success_message": "The CO2 from the extinguisher disperses the gas temporarily!"
+          }
+        }
+      },
+      "suppressed": {
+        "is_terminal": true,
+        "outcome": "success"
+      }
+    }
+  }
+}
+```
+
+**Flow:**
+```
+1. Player: "use fire_extinguisher on gas_leak"
+2. Engine: Hazard is in "leaking" state
+3. Engine: Checks player_actions["use_fire_extinguisher"]
+4. Engine: Transitions hazard to "suppressed" state
+5. Engine: Shows success_message
+6. Engine: Fire extinguisher remains in inventory (reusable)
+```
+
+---
+
+### Use On Furniture
+
+**Example: Key on Locked Cabinet**
+
+**Item (items.json):**
+```json
+{
+  "filing_cabinet_key": {
+    "name": "Filing Cabinet Key",
+    "type": "key",
+    "unlocks": ["filing_cabinet"],
+    "can_be_taken": true
+  }
+}
+```
+
+**Furniture (furniture.json):**
+```json
+{
+  "filing_cabinet": {
+    "name": "Filing Cabinet",
+    "is_container": true,
+    "locked": true,
+    "locking": {
+      "unlocks_with": "filing_cabinet_key"
+    },
+    "contains_items": ["patient_chart", "hospital_wristband"]
+  }
+}
+```
+
+**Flow:**
+```
+1. Player: "use filing_cabinet_key on filing_cabinet"
+   OR
+   Player: "unlock filing_cabinet"
+2. Engine: Checks if player has "filing_cabinet_key"
+3. Engine: Checks if "filing_cabinet" is locked
+4. Engine: Checks if key unlocks this furniture
+5. If true:
+   - Set furniture["locked"] = False
+   - Show unlock_message: "The cabinet unlocks with a click."
+   - Key remains in inventory
+6. Player can now: "search filing_cabinet" → find items
+```
+
+---
+
+### Use On Rooms/Exits
+
+**Example: Key on Locked Door**
+
+**Item (items.json):**
+```json
+{
+  "patient_room_key": {
+    "name": "Patient Room Key",
+    "type": "key",
+    "unlocks": ["Patient Room 101"],
+    "can_be_taken": true
+  }
+}
+```
+
+**Room (rooms_level_1.json):**
+```json
+{
+  "Patient Room 101": {
+    "locked": true,
+    "locking": {
+      "unlocks_with": "patient_room_key",
+      "unlock_message": "The door unlocks with a soft click."
+    },
+    "exits": {
+      "south": "ICU Waiting Area"
+    }
+  }
+}
+```
+
+**Flow:**
+```
+1. Player in "ICU Waiting Area", facing north to "Patient Room 101"
+2. Player: "unlock north"
+   OR
+   Player: "use patient_room_key on north"
+3. Engine: Checks if player has "patient_room_key"
+4. Engine: Checks if "Patient Room 101" is locked
+5. Engine: Checks if key unlocks this room
+6. If true:
+   - Set room["locked"] = False
+   - Show unlock_message
+   - Key remains in inventory
+7. Player can now: "move north" → enter room
+```
+
+---
+
+## Keys & Unlocking
+
+### Standard Keys
+
+**Design Pattern:**
+- One key → One lock (specific)
+- Key name hints at target (e.g., "Filing Cabinet Key")
+- Found near target or in logical location
+
+**Example:**
+```json
+{
+  "vending_machine_key": {
+    "name": "Vending Machine Key",
+    "type": "key",
+    "description": "A small key with a tag labeled 'Vending'.",
+    "unlocks": ["vending_machine"],
+    "can_be_taken": true
+  }
+}
+```
+
+**Location Hints:**
+- Behind reception desk (for vending machine key)
+- In janitor's closet (for utility room key)
+- On NPC corpse (for personal locker key)
+
+---
+
+### Master Keys
+
+**Design Pattern:**
+- One key → All locks (universal)
+- Rare and powerful
+- Requires significant effort to obtain
+
+**Example:**
+```json
+{
+  "hospital_master_key": {
+    "name": "Hospital Master Key",
+    "type": "key",
+    "description": "A universal key labeled 'MASTER - Authorized Personnel Only'.",
+    "examine_text": "This key looks like it would open any door in the hospital.",
+    "unlocks": ["*"],
+    "is_master_key": true,
+    "can_be_taken": true,
+    "score_value": 100
+  }
+}
+```
+
+**Balance Considerations:**
+- Place late in level (after player explores naturally)
+- Hide behind difficult puzzle or hazard
+- Alternatively: Grant as reward for saving NPC
+
+---
+
+### Conditional Keys
+
+**Design Pattern:**
+- Key only works if condition met
+- Used for narrative gates
+
+**Example (Future Feature):**
+```json
+{
+  "morgue_access_card": {
+    "name": "Morgue Access Card",
+    "type": "key",
+    "unlocks": ["Morgue Entrance"],
+    "requires_condition": "corbin_saved",
+    "can_be_taken": true
+  }
+}
+```
+
+**Behavior:**
+- Even with key, door won't unlock unless `player.conditions["corbin_saved"] == True`
+- Used for branching narrative paths
+
+---
+
+### Breakable Locks
+
+**Design Pattern:**
+- Lock can be broken with tool instead of key
+- Adds player agency (multiple solutions)
+
+**Furniture Example:**
+```json
+{
+  "filing_cabinet": {
+    "name": "Filing Cabinet",
+    "locked": true,
+    "locking": {
+      "unlocks_with": "filing_cabinet_key",
+      "is_breakable": true,
+      "break_with": ["crowbar", "fire_extinguisher"]
+    },
+    "contains_items": ["patient_chart"]
+  }
+}
+```
+
+**Flow:**
+```
+1. Player: "use crowbar on filing_cabinet"
+   OR
+   Player: "force filing_cabinet"
+2. Engine: Checks if item in break_with array
+3. If true:
+   - Set furniture["locked"] = False
+   - Show message: "You pry the cabinet open with a crunch!"
+   - May trigger QTE or noise (alert hazards)
+4. Player can now search cabinet
+```
+
+---
+
+## Evidence & Collectibles
+
+### Evidence System
+
+Evidence items unlock achievements and fill the "Evidence Board" (future UI feature).
+
+**Evidence Item:**
+```json
+{
+  "hospital_wristband": {
+    "name": "Hospital Wristband",
+    "type": "evidence",
+    "description": "A plastic wristband with a patient ID.",
+    "examine_text": "The wristband reads: 'WAINWRIGHT, CORBIN - DOB: 04/15/1987 - ADMIT: 11/03/2025'. Admitted just days ago.",
+    "can_be_taken": true,
+    "is_evidence": true,
+    "evidence_source": "hospital_incident",
+    "grants_achievement": "evidence_collector_tier_1",
+    "score_value": 25,
+    "first_take_message": "You've found evidence related to Corbin Wainwright. This might explain how he ended up here."
+  }
+}
+```
+
+**Behavior:**
+```
+1. Player takes evidence item
+2. Engine checks: is_evidence == true?
+3. If true:
+   - Add to player.evidence_collected array
+   - Increment evidence counter
+   - Grant achievement (if specified)
+   - Award score_value points
+   - Show first_take_message popup
+4. Engine logs: "Evidence collected: hospital_wristband (source: hospital_incident)"
+```
+
+---
+
+### Evidence Sources
+
+Defined in `disasters.json` and used to group evidence.
+
+**Disaster Entry:**
+```json
+{
+  "train_derailment": {
+    "name": "Train Derailment (2019)",
+    "description": "A commuter train derailed outside the city...",
+    "evidence_items": [
+      "train_derailment_article",
+      "train_ticket_stub",
+      "survivors_list"
+    ]
+  }
+}
+```
+
+**Evidence Items:**
+```json
+{
+  "train_derailment_article": {
+    "evidence_source": "train_derailment",
+    "is_evidence": true
+  },
+  "train_ticket_stub": {
+    "evidence_source": "train_derailment",
+    "is_evidence": true
+  },
+  "survivors_list": {
+    "evidence_source": "train_derailment",
+    "is_evidence": true
+  }
+}
+```
+
+**Achievement Trigger:**
+```json
+{
+  "train_case_closed": {
+    "name": "Train Case Closed",
+    "description": "Collect all evidence related to the train derailment.",
+    "unlock_conditions": {
+      "evidence_collected": {
+        "source": "train_derailment",
+        "count": 3
+      }
+    }
+  }
+}
+```
+
+**Flow:**
+```
+1. Player collects all 3 train-related evidence items
+2. Engine checks: player.evidence_collected["train_derailment"] == 3?
+3. If true: Unlock "train_case_closed" achievement
+```
+
+---
+
+### Evidence Locations
+
+**Design Principle:** Evidence should be:
+- **Findable**: Clear hints via examine text or omens
+- **Distributed**: Spread across level (encourages exploration)
+- **Rewarding**: Grants achievements and score
+
+**Location Strategies:**
+1. **Hidden in Furniture**: Filing cabinets, safes, bedside tables
+2. **On NPCs**: Wristbands, journals, personal effects
+3. **Room Floor**: Scattered papers, dropped items
+4. **Hazard Rewards**: Granted after clearing dangerous area
+5. **Quest Chain**: Given by NPC after completing objective
+
+**Example Distribution (Hospital Level):**
+- `hospital_wristband` → Bedside table in Patient Room 101
+- `corbins_journal` → Held by Corbin NPC (gifted after dialogue)
+- `patient_chart` → Filing cabinet in ER Hallway
+- `train_derailment_article` → Waiting room magazine pile
+- `hospital_incident_report` → Granted after clearing MRI hazard
+
+---
+
+## Inventory Management
+
+### Current System
+
+**Capacity:** Unlimited (for now)  
+**Weight:** Not enforced  
+**Organization:** Sorted by type in inventory display
+
+**Inventory Structure:**
+```python
+player.inventory = [
+    "flashlight",           # tool
+    "patient_room_key",     # key
+    "corbins_journal",      # quest_item
+    "train_derailment_article",  # evidence
+    "medical_supplies"      # consumable
+]
+```
+
+**Display:**
+```
+inventory
+> You are carrying:
+>   Keys:
+>     - Patient Room Key
+>   Tools:
+>     - Flashlight
+>   Evidence:
+>     - Train Derailment Article
+>   Quest Items:
+>     - Corbin's Journal
+>   Consumables:
+>     - Medical Supplies
+> 
+> Total items: 5
+```
+
+---
+
+### Future Features
+
+**Weight System:**
+```json
+{
+  "fire_extinguisher": {
+    "weight": 3
+  },
+  "crowbar": {
+    "weight": 2
+  },
+  "flashlight": {
+    "weight": 1
+  }
+}
+```
+
+**Capacity:**
+```python
+player.max_carry_weight = 10
+player.current_weight = sum(item["weight"] for item in inventory)
+```
+
+**Encumbrance:**
+- 0-5: No penalty
+- 6-10: Slight speed penalty
+- 11+: Cannot carry more, must drop something
+
+---
+
+### Item Sorting
+
+**Priority Order:**
+1. Quest Items (always visible, cannot drop)
+2. Keys (frequent use)
+3. Tools (frequent use)
+4. Evidence (collectibles)
+5. Consumables (single-use)
+
+**Display Logic:**
+```python
+def sort_inventory(inventory):
+    type_order = {
+        "quest_item": 1,
+        "key": 2,
+        "tool": 3,
+        "evidence": 4,
+        "consumable": 5
+    }
+    return sorted(inventory, key=lambda item: type_order[item["type"]])
+```
+
+---
+
+## Item Discovery
+
+### Searching
+
+**Command:** `search <furniture>` or `look in <furniture>`
+
+**Flow:**
+```
+1. Player: "search bedside_table"
+2. Engine checks: Is "bedside_table" in current room?
+3. Engine checks: Is "bedside_table" is_container: true?
+4. Engine checks: Is "bedside_table" locked?
+5. If unlocked and container:
+   - Reveal contains_items: ["patient_chart", "pill_bottle"]
+   - Show: "You search the bedside table and find: Patient Chart, Pill Bottle."
+   - Add items to room floor (player can then take)
+6. If locked:
+   - Show: "The bedside table is locked."
+7. If already searched:
+   - Show: "You've already searched that."
+```
+
+---
+
+### Examining
+
+**Command:** `examine <item>` or `inspect <item>` or `x <item>`
+
+**Flow:**
+```
+1. Player: "examine flashlight"
+2. Engine checks: Is "flashlight" in player.inventory OR current room?
+3. If found:
+   - Show examine_text: "The beam is strong and steady. The battery indicator shows full charge."
+4. If not found:
+   - Show: "You don't see that here."
+```
+
+**Design Principle:**
+- `examine_text` should be 2-3 sentences
+- Provide hints about use cases
+- Add flavor/world-building
+- Reveal hidden details on second examination (future feature)
+
+---
+
+### Hidden Items
+
+**Design Pattern:** Items invisible until triggered by event.
+
+**Example:**
+```json
+{
+  "loose_brick": {
+    "name": "Loose Brick",
+    "type": "tool",
+    "description": "A loose brick from the fireplace.",
+    "hidden_until_revealed": true,
+    "can_be_taken": true
+  }
+}
+```
+
+**Trigger:**
+```python
+# In game_logic.py, when player examines fireplace:
+if player_action == "examine fireplace":
+    reveal_item("loose_brick")
+    show_message("You notice one of the bricks is loose!")
+```
+
+**Flow:**
+```
+1. Player: "examine fireplace"
+2. Engine: Triggers reveal_item("loose_brick")
+3. Engine: Sets loose_brick["hidden_until_revealed"] = False
+4. Engine: Adds "loose_brick" to room items
+5. Player can now: "take loose brick"
+```
+
+---
+
+### First Take Messages
+
+**Design Pattern:** Special narrative on first pickup (dramatic moment).
+
+**Example:**
+```json
+{
+  "corbins_journal": {
+    "first_take_message": "You take the journal. Corbin's words chill you to the bone. He knew—he saw his own death coming. The final entry is dated today."
+  }
+}
+```
+
+**Behavior:**
+```
+1. Player: "take corbins_journal"
+2. Engine checks: Has player taken this item before? (save file)
+3. If first time:
+   - Show first_take_message as popup
+   - Mark item as "taken_before" in save file
+4. If subsequent times (dropped and re-taken):
+   - Show standard: "You take Corbin's Journal."
+```
+
+---
+
+## Special Item Mechanics
+
+### Multi-Use Tools
+
+**Design Pattern:** Tool with multiple valid targets.
+
+**Example:**
+```json
+{
+  "wrench": {
+    "name": "Wrench",
+    "type": "tool",
+    "use_on": [
+      "gas_valve",
+      "pipe_fitting",
+      "oxygen_tank_valve",
+      "maintenance_panel"
+    ],
+    "can_be_taken": true
+  }
+}
+```
+
+**Behavior:**
+- Each `use_on` target is a hazard or object
+- Wrench remains in inventory after use (reusable)
+- Different targets may have different outcomes
+
+---
+
+### Combination Items
+
+**Design Pattern:** Multiple items required simultaneously (future feature).
+
+**Example:**
+```json
+{
+  "use_combination": {
+    "items": ["wrench", "crowbar"],
+    "target": "rusted_door",
+    "success_message": "With the wrench and crowbar together, you pry the door open!"
+  }
+}
+```
+
+**Behavior:**
+- Player must have BOTH items in inventory
+- `use wrench and crowbar on rusted_door`
+- Both items remain (not consumed)
+
+---
+
+### Charged Items
+
+**Design Pattern:** Items with limited uses (future feature).
+
+**Example:**
+```json
+{
+  "flashlight": {
+    "name": "Flashlight",
+    "type": "tool",
+    "charges": 10,
+    "charges_remaining": 10,
+    "depletes_on_use": true,
+    "can_be_taken": true
+  }
+}
+```
+
+**Behavior:**
+```
+1. Player: "use flashlight"
+2. Engine: Decrement charges_remaining
+3. If charges_remaining > 0:
+   - Activate effect (illuminate dark room)
+4. If charges_remaining == 0:
+   - Show: "The flashlight flickers and dies. The battery is dead."
+   - Item becomes useless (or transforms to "dead_flashlight")
+```
+
+---
+
+### Transforming Items
+
+**Design Pattern:** Item changes after use.
+
+**Example:**
+```json
+{
+  "full_syringe": {
+    "name": "Full Syringe",
+    "type": "consumable",
+    "use_on": ["corbin_wainwright"],
+    "transforms_to": "empty_syringe",
+    "can_be_taken": true
+  },
+  "empty_syringe": {
+    "name": "Empty Syringe",
+    "type": "junk",
+    "description": "An empty syringe. No longer useful.",
+    "can_be_taken": true
+  }
+}
+```
+
+**Behavior:**
+```
+1. Player: "use full_syringe on corbin_wainwright"
+2. Engine: Removes "full_syringe" from inventory
+3. Engine: Adds "empty_syringe" to inventory
+4. Engine: Applies effect (stabilize Corbin)
+```
+
+---
+
+## Testing & Debugging
+
+### Log Analysis
+
+**Item Pickup:**
+```
+GameLogic: Player took 'flashlight' from room 'Storage Closet'
+GameLogic: Added 'flashlight' to inventory (total: 3 items)
+```
+
+**Item Use:**
+```
+GameLogic: Player used 'fire_extinguisher' on 'gas_leak'
+HazardEngine: Hazard 'gas_leak' transitioned: leaking → suppressed
+GameLogic: Showed use_message: "The CO2 disperses the gas!"
+```
+
+**Evidence Collection:**
+```
+GameLogic: Player took 'hospital_wristband' (evidence)
+GameLogic: Evidence source: hospital_incident
+AchievementsSystem: Unlocked 'evidence_collector_tier_1'
+GameLogic: Awarded 25 points (total: 150)
+```
+
+**Key Unlock:**
+```
+GameLogic: Player unlocked 'Patient Room 101' with 'patient_room_key'
+GameLogic: Room state: locked=False
+```
+
+---
+
+### Common Issues
+
+#### **Item Not Takeable**
+**Symptoms:** `take <item>` → "You can't take that."  
+**Causes:**
+- `can_be_taken: false` in items.json
+- Item key typo (doesn't match JSON)
+- Item not in current room or searched furniture
+
+**Debug:**
+```python
+# Check item definition:
+items.json["item_key"]["can_be_taken"]  # Should be True
+
+# Check room/furniture:
+room["items"]  # Should contain "item_key"
+furniture["contains_items"]  # Should contain "item_key" (if in container)
+```
+
+---
+
+#### **Key Not Unlocking**
+**Symptoms:** `unlock <door>` → "You don't have the right key."  
+**Causes:**
+- Key `unlocks` array doesn't match room/furniture name (spelling!)
+- Player doesn't have key in inventory
+- Room/furniture isn't actually locked
+
+**Debug:**
+```python
+# Check key definition:
+items.json["key_name"]["unlocks"]  # Should match exact room/furniture name
+
+# Check player inventory:
+player.inventory  # Should contain "key_name"
+
+# Check lock state:
+room["locked"]  # Should be True
+```
+
+---
+
+#### **Use On Not Working**
+**Symptoms:** `use <tool> on <target>` → "You can't use that on that."  
+**Causes:**
+- `use_on` array doesn't include target
+- Target not in current room
+- Hazard not in correct state for action
+
+**Debug:**
+```python
+# Check item definition:
+items.json["tool"]["use_on"]  # Should include "target_key"
+
+# Check hazard state:
+hazard["current_state"]  # Should have player_actions["use_<tool>"]
+```
+
+---
+
+#### **Evidence Not Granting Achievement**
+**Symptoms:** Player takes evidence but achievement doesn't unlock  
+**Causes:**
+- `is_evidence: false` (should be true)
+- `grants_achievement` field missing or wrong ID
+- Achievement already unlocked (not re-granted)
+
+**Debug:**
+```python
+# Check item definition:
+items.json["evidence_item"]["is_evidence"]  # Should be True
+items.json["evidence_item"]["grants_achievement"]  # Should match achievement ID
+
+# Check achievement definition:
+player_achievements.json["achievement_id"]  # Should exist
+```
+
+---
+
+### Testing Checklist
+
+**Before Committing New Item:**
+- [ ] Item key is unique (no duplicates)
+- [ ] `name` is descriptive and clear
+- [ ] `type` is appropriate (tool, key, evidence, consumable, quest_item)
+- [ ] `description` is concise (1-2 sentences)
+- [ ] `examine_text` adds detail (2-3 sentences)
+- [ ] `can_be_taken` is true (unless scenery)
+- [ ] `use_on` targets exist (hazards, furniture, objects)
+- [ ] `unlocks` rooms/furniture names match exactly (spelling!)
+- [ ] Evidence has `is_evidence: true` and `evidence_source`
+- [ ] Evidence grants appropriate achievement
+- [ ] `first_take_message` is dramatic (if used)
+- [ ] `use_message` is clear and satisfying
+- [ ] Item is placed in logical location (room, furniture, NPC)
+- [ ] No typos in keys/names
+
+---
+
+## Complete Examples
+
+### Example 1: Simple Tool (Flashlight)
+
+**Item Definition (items.json):**
+```json
+{
+  "flashlight": {
+    "name": "Flashlight",
+    "type": "tool",
+    "description": "A heavy-duty flashlight. Still has battery.",
+    "examine_text": "The beam is strong and steady. The battery indicator shows full charge. This would be useful in dark areas.",
+    "can_be_taken": true,
+    "use_on": ["dark_hallway", "shadow_figure"],
+    "use_message": "You shine the flashlight. The beam cuts through the darkness.",
+    "weight": 1,
+    "score_value": 10
+  }
+}
+```
+
+**Placement (rooms_level_1.json):**
+```json
+{
+  "Storage Closet": {
+    "description": "A cramped utility closet. Mops and cleaning supplies line the walls.",
+    "items": ["flashlight", "wrench"]
+  }
+}
+```
+
+**Usage:**
+```
+Player: "enter storage closet"
+> A cramped utility closet. Mops and cleaning supplies line the walls.
+> You see: Flashlight, Wrench.
+
+Player: "examine flashlight"
+> The beam is strong and steady. The battery indicator shows full charge. This would be useful in dark areas.
+
+Player: "take flashlight"
+> You take the flashlight. (Gained 10 points)
+
+Player: "use flashlight on dark_hallway"
+> You shine the flashlight. The beam cuts through the darkness.
+> [Hazard state changes, player can now see exits]
+```
+
+---
+
+### Example 2: Key with Lock (Patient Room Key)
+
+**Item Definition (items.json):**
+```json
+{
+  "patient_room_key": {
+    "name": "Patient Room Key",
+    "type": "key",
+    "description": "A small brass key labeled 'Room 101'.",
+    "examine_text": "The key is worn but functional. The label reads 'Patient Room 101' in faded marker.",
+    "can_be_taken": true,
+    "unlocks": ["Patient Room 101"],
+    "first_take_message": "You found the key to Patient Room 101. Whatever is inside, you have a feeling you need to see it.",
+    "score_value": 15
+  }
+}
+```
+
+**Room Definition (rooms_level_1.json):**
+```json
+{
+  "Patient Room 101": {
+    "description": "A typical hospital room. A single bed, an IV stand, and a bedside table.",
+    "locked": true,
+    "locking": {
+      "unlocks_with": "patient_room_key",
+      "unlock_message": "The door unlocks with a soft click. You hear the ventilator hum inside."
+    },
+    "exits": {
+      "south": "ICU Waiting Area"
+    }
+  }
+}
+```
+
+**Placement (furniture.json → in ICU Waiting Area):**
+```json
+{
+  "reception_desk": {
+    "name": "Reception Desk",
+    "is_container": true,
+    "contains_items": ["patient_room_key", "hospital_map"],
+    "locked": false,
+    "description": "A large reception desk, papers scattered everywhere."
+  }
+}
+```
+
+**Usage:**
+```
+Player: "search reception_desk"
+> You search the reception desk and find: Patient Room Key, Hospital Map.
+
+Player: "take patient_room_key"
+> [POPUP] You found the key to Patient Room 101. Whatever is inside, you have a feeling you need to see it.
+> You take the Patient Room Key. (Gained 15 points)
+
+Player: "move north"
+> The door to Patient Room 101 is locked.
+
+Player: "unlock north"
+> The door unlocks with a soft click. You hear the ventilator hum inside.
+
+Player: "move north"
+> You enter Patient Room 101.
+> [Room description appears]
+```
+
+---
+
+### Example 3: Evidence Item (Corbin's Journal)
+
+**Item Definition (items.json):**
+```json
+{
+  "corbins_journal": {
+    "name": "Corbin's Journal",
+    "type": "quest_item",
+    "description": "A leather-bound journal filled with frantic handwriting.",
+    "examine_text": "The journal details Corbin's visions of death. He writes about patterns, omens, and the inevitability of fate. The final entry reads: 'I see it now. The ventilator will fail at 3:47 AM. I can't stop it. No one can. Death has a design.' The entry is dated today.",
+    "can_be_taken": true,
+    "is_quest_item": true,
+    "is_evidence": true,
+    "evidence_source": "hospital_incident",
+    "grants_achievement": "the_visionary",
+    "score_value": 100,
+    "first_take_message": "You take the journal. Corbin's words chill you to the bone. He knew—he saw his own death coming. The final entry is dated today."
+  }
+}
+```
+
+**Placement (NPC gift in npcs.json):**
+```json
+{
+  "corbin_wainwright": {
+    "name": "Corbin Wainwright",
+    "dialogue": {
+      "first_encounter": {
+        "text": "He stirs slightly. His hand reaches out, clutching a journal. With effort, he pushes it toward you.",
+        "gives_item": "corbins_journal"
+      }
+    }
+  }
+}
+```
+
+**Achievement Definition (player_achievements.json):**
+```json
+{
+  "the_visionary": {
+    "name": "The Visionary",
+    "description": "Obtain Corbin's Journal and learn of his terrible visions.",
+    "unlock_conditions": {
+      "items_collected": ["corbins_journal"]
+    },
+    "score_reward": 50,
+    "icon": "journal_icon"
+  }
+}
+```
+
+**Usage:**
+```
+Player: "talk to corbin"
+> He stirs slightly. His hand reaches out, clutching a journal. With effort, he pushes it toward you.
+> [Item automatically added to inventory]
+> [POPUP] You take the journal. Corbin's words chill you to the bone...
+> [ACHIEVEMENT UNLOCKED: The Visionary] (Gained 150 points)
+
+Player: "examine corbins_journal"
+> The journal details Corbin's visions of death. He writes about patterns, omens, and the inevitability of fate. The final entry reads: 'I see it now. The ventilator will fail at 3:47 AM. I can't stop it. No one can. Death has a design.' The entry is dated today.
+
+Player: "inventory"
+> You are carrying:
+>   Quest Items:
+>     - Corbin's Journal
+>   [Evidence: 1/12 collected]
+```
+
+---
+
+### Example 4: Multi-Use Tool (Wrench)
+
+**Item Definition (items.json):**
+```json
+{
+  "wrench": {
+    "name": "Wrench",
+    "type": "tool",
+    "description": "A heavy steel wrench. Well-worn but sturdy.",
+    "examine_text": "The wrench is solid and reliable. It could tighten or loosen valves, bolts, and fittings.",
+    "can_be_taken": true,
+    "use_on": [
+      "gas_valve",
+      "oxygen_tank_valve",
+      "pipe_fitting",
+      "maintenance_panel",
+      "rusted_bolt"
+    ],
+    "use_message": "You apply the wrench. The metal groans as you turn it.",
+    "weight": 2,
+    "score_value": 20
+  }
+}
+```
+
+**Hazard 1: Gas Leak (hazards.json):**
+```json
+{
+  "gas_leak": {
+    "states": {
+      "leaking": {
+        "player_actions": {
+          "use_wrench": {
+            "next_state": "valve_closed",
+            "success_message": "You turn the valve with the wrench. The hissing stops."
+          }
+        }
+      },
+      "valve_closed": {
+        "is_terminal": true,
+        "outcome": "success"
+      }
+    }
+  }
+}
+```
+
+**Hazard 2: Oxygen Tank (hazards.json):**
+```json
+{
+  "oxygen_tank": {
+    "states": {
+      "pressurized": {
+        "player_actions": {
+          "use_wrench": {
+            "next_state": "pressure_released",
+            "success_message": "You carefully release the pressure valve. The tank hisses safely."
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+**Usage:**
+```
+[Scenario 1: Gas Leak]
+Player: "use wrench on gas_valve"
+> You apply the wrench. The metal groans as you turn it.
+> You turn the valve with the wrench. The hissing stops.
+> [Hazard 'gas_leak' cleared!]
+
+[Scenario 2: Oxygen Tank]
+Player: "use wrench on oxygen_tank_valve"
+> You apply the wrench. The metal groans as you turn it.
+> You carefully release the pressure valve. The tank hisses safely.
+> [Hazard 'oxygen_tank' defused!]
+
+[Scenario 3: Maintenance Panel]
+Player: "use wrench on maintenance_panel"
+> You apply the wrench. The metal groans as you turn it.
+> The bolts loosen. The panel swings open, revealing a hidden passage!
+> [New exit revealed: 'down' to Maintenance Tunnels]
+```
+
+---
+
+## Change Log
+
+### Version 1.0 (2025-11-06)
+- Initial guide creation
+- Documented item schema, types, and usage patterns
+- Added keys, evidence, tools, consumables, quest items
+- Included inventory management and item discovery
+- Provided 4 complete examples (tool, key, evidence, multi-use tool)
+- Covered testing, debugging, and common issues
+
+---
+
+**Questions or Improvements?**  
+Submit suggestions to: [project lead / game design team]
+
+**Related Documentation:**
+- `room_design_guide.txt` - For item placement in rooms
+- `hazards_developer_guide.txt` - For items interacting with hazards
+- `environmental_omens_developer_guide.txt` - For evidence and narrative items
+
+---

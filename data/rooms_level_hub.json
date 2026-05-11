@@ -1,0 +1,34 @@
+{
+  "Your Car": {
+    "tags": ["safe", "vehicle", "transit", "narrative_hub"],
+    "name": "Your Car (In Transit)",
+    "description": "The engine idles quietly. The streetlights wash over the dashboard. You're safe in here for the moment, but you can't stay parked forever. The surviving members of your group are gathered around, waiting for you to decide what to do next.",
+    "entry_room": true,
+    "is_narrative_container": true,
+    "exits": {
+      "surrender to police": {
+        "target": "LEVEL_TRANSITION_POLICE",
+        "locked_message": "You could pull over and wait for the police to arrive, but that doesn't sound like a great idea."
+      },
+      "Drive to Bludworth's House": {
+        "target": "LEVEL_TRANSITION_BLUDWORTH",
+        "requires_item": "bludworths_house_address",
+        "locked_message": "You know Bludworth might have answers, but without his address, you won't get very far."
+      },
+      "Find Next Target": {
+        "target": "LEVEL_TRANSITION_DYNAMIC_HUNT",
+        "requires_flag": "learned_deaths_list",
+        "locked_message": "You don't even know who is next on the list. Running blindly into the city is a death sentence."
+      },
+      "Execute The Plan": {
+        "target": "LEVEL_TRANSITION_FINALE", 
+        "requires_flag": "finale_plan_locked",
+        "locked_message": "You can't drive to the final location until the survivors have agreed on a definitive plan to cheat Death."
+      }
+    },
+    "furniture": [],
+    "items": [],
+    "objects": [],
+    "hazards_present": []
+  }
+}

@@ -1,0 +1,271 @@
+Perfect! Your keystore is already in your project directory. Here's how to sign your AAB with it:
+
+---
+before anything, ensure you can build your project in Buildozer; this means ensuring your environment 
+is set up with Python 3.10, ensuring Buildozer, Pillow and all other requirements are installed.
+
+sudo update-alternatives --config java
+sudo update-alternatives --config javac
+
+export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+
+## **1. Navigate to Your Project in WSL**
+~/FDT_Variant_Packaging/DE_FDT_AR
+~/FDT_Variant_Packaging/DE_YFD_AR
+
+## **2. Verify the Keystore Works**
+
+```bash
+# List the keystore contents to confirm alias and get certificate info
+keytool -list -v -keystore dep-fdt-release.keystore
+```
+
+**Enter your keystore password when prompted.**
+
+Look for:
+- **Alias name:** (should be `de_fdt` or 'de_yfd' based on your buildozer.spec)
+- **Certificate fingerprints:** (SHA1, SHA256 - save these!)
+
+---
+
+## **3. Find Your Unsigned AAB**
+
+```bash
+# Search for AAB files
+find . -name "*.aab" -type f
+
+# Most likely location after buildozer build:
+ls -lh bin/*.aab
+```
+
+Expected path:
+```
+./bin/de_fdt-x.x.x-arm64-v8a_armeabi-v7a-release.aab or .apk
+```
+
+---
+
+## **4. Sign the AAB**
+
+### **Option A: Interactive (Prompts for Password)**
+
+```bash
+jarsigner -verbose \
+  -sigalg SHA256withRSA \
+  -digestalg SHA-256 \
+  -keystore dep-fdt-release.keystore \
+  bin/de_fdt-x.x.x-arm64-v8a_armeabi-v7a-release.aab \
+  de_fdt
+```
+
+jarsigner -verbose   -sigalg SHA256withRSA   -digestalg SHA-256   -keystore dep-fdt-release.keystore   bin/dep_fdt-0.2.12-arm64-v8a_armeabi-v7a-release.aab   dep_fdt
+
+You'll be prompted:
+```
+Enter Passphrase for keystore: [TYPE PASSWORD]
+Enter key password for dep_fdt: [TYPE PASSWORD or ENTER if same]
+```
+
+### **Option B: Non-Interactive (Password in Command)**
+
+```bash
+jarsigner -verbose \
+  -sigalg SHA256withRSA \
+  -digestalg SHA-256 \
+  -keystore dep-fdt-release.keystore \
+  -storepass YOUR_KEYSTORE_PASSWORD \
+  -keypass YOUR_KEY_PASSWORD \
+  bin/dep_fdt-0.2.2-arm64-v8a_armeabi-v7a-release.aab \
+  de_fdt
+```
+
+### **Option C: Secure Script (Recommended)**
+
+Create a script:
+```bash
+nano sign-aab.sh
+```
+
+Add this content:
+```bash
+#!/bin/bash
+# sign-aab.sh - Signs AAB with keystore
+
+AAB_FILE="bin/dep_fdt-0.2.2-arm64-v8a_armeabi-v7a-release.aab"
+KEYSTORE="dep-fdt-release.keystore"
+ALIAS="dep_fdt"
+
+# Check AAB exists
+if [ ! -f "$AAB_FILE" ]; then
+    echo "Error: AAB not found at $AAB_FILE"
+    exit 1
+fi
+
+# Check keystore exists
+if [ ! -f "$KEYSTORE" ]; then
+    echo "Error: Keystore not found at $KEYSTORE"
+    exit 1
+fi
+
+# Prompt for passwords securely
+read -sp "Enter keystore password: " KEYSTORE_PASS
+echo
+read -sp "Enter key password (or press ENTER if same as keystore): " KEY_PASS
+echo
+
+# Use keystore password if key password is empty
+if [ -z "$KEY_PASS" ]; then
+    KEY_PASS="$KEYSTORE_PASS"
+fi
+
+# Sign the AAB
+echo "Signing $AAB_FILE..."
+jarsigner -verbose \
+  -sigalg SHA256withRSA \
+  -digestalg SHA-256 \
+  -keystore "$KEYSTORE" \
+  -storepass "$KEYSTORE_PASS" \
+  -keypass "$KEY_PASS" \
+  "$AAB_FILE" \
+  "$ALIAS"
+
+if [ $? -eq 0 ]; then
+    echo "✓ AAB signed successfully!"
+    
+    # Verify signature
+    echo "Verifying signature..."
+    jarsigner -verify -verbose -certs "$AAB_FILE"
+    
+    if [ $? -eq 0 ]; then
+        echo "✓ Signature verified!"
+    else
+        echo "✗ Signature verification failed!"
+        exit 1
+    fi
+else
+    echo "✗ Signing failed!"
+    exit 1
+fi
+```
+
+Make it executable and run:
+```bash
+chmod +x sign-aab.sh
+./sign-aab.sh
+```
+
+---
+
+## **5. Verify the Signature**
+
+```bash
+jarsigner -verify -verbose -certs bin/dep_fdt-0.2.2-arm64-v8a_armeabi-v7a-release.aab
+```
+
+**Expected output:**
+```
+sm     65536 Fri Nov 08 14:23:45 PST 2025 META-INF/MANIFEST.MF
+       65536 Fri Nov 08 14:23:45 PST 2025 META-INF/DEP_FDT.SF
+sm    65536 Fri Nov 08 14:23:45 PST 2025 META-INF/DEP_FDT.RSA
+
+s = signature was verified
+m = entry is listed in manifest
+
+jar verified.
+
+>>> Signer
+    X.509, CN=Your Name, OU=Die-namic Engine, O=Die-namic Engine, L=City, ST=State, C=US
+    [trusted certificate]
+
+The signer certificate will expire on 2052-XX-XX.
+```
+
+---
+
+## **6. Get Certificate Fingerprints for Google Play**
+
+```bash
+keytool -list -v -keystore dep-fdt-release.keystore -alias dep_fdt | grep -A2 "Certificate fingerprints"
+```
+
+**Save these values:**
+```
+Certificate fingerprints:
+         SHA1: AA:BB:CC:DD:EE:FF:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE
+         SHA256: 11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00
+```
+
+---
+
+## **7. Copy Signed AAB to Desktop for Upload**
+
+```bash
+cp bin/dep_fdt-0.2.2-arm64-v8a_armeabi-v7a-release.aab \
+   /mnt/c/Users/Korbe/Desktop/dep_fdt-0.2.2-signed.aab
+
+echo "✓ Signed AAB copied to Desktop!"
+```
+
+---
+
+## **8. Update [`buildozer.spec`](buildozer.spec ) to Auto-Sign**
+
+Your buildozer.spec already has the keystore configured! Just provide passwords via environment variables:
+
+```bash
+# Create a build script
+nano build-release.sh
+```
+
+Add:
+```bash
+#!/bin/bash
+# build-release.sh - Build and sign AAB automatically
+
+read -sp "Enter keystore password: " KEYSTORE_PASS
+echo
+export KEYSTORE_PASS
+export KEY_PASS="$KEYSTORE_PASS"  # or prompt separately if different
+
+# Build release AAB (buildozer will sign it automatically)
+buildozer android release
+
+echo "✓ Build complete! AAB signed with keystore."
+```
+
+Make executable:
+```bash
+chmod +x build-release.sh
+```
+
+Future builds:
+```bash
+./build-release.sh
+```
+
+---
+
+## **Quick Reference Commands**
+
+```bash
+# Verify keystore
+keytool -list -v -keystore dep-fdt-release.keystore
+
+# Sign AAB
+jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+  -keystore dep-fdt-release.keystore \
+  bin/dep_fdt-*.aab dep_fdt
+
+# Verify signature
+jarsigner -verify -verbose -certs bin/dep_fdt-*.aab
+
+# Get SHA fingerprints
+keytool -list -v -keystore dep-fdt-release.keystore -alias dep_fdt
+
+# Copy to Desktop
+cp bin/dep_fdt-*.aab /mnt/c/Users/Korbe/Desktop/
+```
+
+---
+
+Your AAB is now signed and ready to upload to Google Play Console! 🚀

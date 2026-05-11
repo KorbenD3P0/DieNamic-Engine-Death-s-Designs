@@ -1,0 +1,41 @@
+{
+  "water": [
+    "electrical",
+    "slip_and_fall"
+  ],
+  "electrical": [
+    "water",
+    "flammable_gas"
+  ],
+  "fire": [
+    "flammable_gas",
+    "flammable_liquid"
+  ],
+  "flammable_gas": {
+    "catalysts": ["fire", "electrical", "sparking", "ignition_source"],
+    "result": "explosive_ignition",
+    "message": "The saturated gas hits an ignition source and erupts!"
+  },
+  "flammable_liquid": [
+    "fire",
+    "sparking"
+  ],
+  "obstruct": [
+    "trip_wire",
+    "slip_and_fall"
+  ],
+  "slip_and_fall": [
+    "projectile",
+    "sharp_object"
+  ],
+  "synergies": [
+    {
+      "trigger_tags": ["flammable_gas"],
+      "catalyst_tags": ["ignition_source", "electrical_spark", "open_flame"],
+      "result": "instant_transition",
+      "target_state": "explosive_ignition",
+      "priority": 10,
+      "message": "A stray spark enters the gas-filled room!"
+    }
+  ]
+}

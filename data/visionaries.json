@@ -1,0 +1,66 @@
+{
+  "strangers_distinctive": [
+    "a gaunt, wide-eyed stranger",
+    "a woman with wild, tangled hair",
+    "a pale, trembling man",
+    "a wiry teenager with haunted eyes",
+    "a disheveled, elderly man",
+    "a transient man",
+    "an old man with weathered skin",
+    "an elderly woman with wild eyes",
+    "a nervous young man",
+    "a breathless young woman",
+    "the craziest bitch you ever did see",
+    "a blind street vendor",
+    "a street performer",
+    "one crazy bastard"
+  ],
+  "children_youths": [
+    "a frantic kid no more than 13 years old",
+    "a frantic teenager",
+    "a young child with a look of terror"
+  ],
+  "family_friends": [
+    "a frantic mother",
+    "a frantic father",
+    "a familiar face - your estranged sibling",
+    "a familiar face - your estranged parent",
+    "a familiar face - your estranged friend",
+    "a familiar face - your estranged lover",
+    "your best friend from childhood"
+  ],
+  "maintenance_technical": [
+    "a maintenance worker with a haunted look",
+    "a nervous engineer"
+  ],
+  "outdoor_nature_authority": [
+    "an old, grizzled park ranger",
+    "an old fisherman"
+  ],
+  "transport_staff": [
+    "a frantic steward",
+    "a frantic-looking bus driver",
+    "a frantic-looking taxi driver"
+  ],
+  "emergency_services": [
+    "a frantic-looking police officer",
+    "a frantic-looking firefighter",
+    "a frantic-looking paramedic",
+    "a frantic-looking doctor",
+    "a frantic-looking nurse"
+  ],
+  "service_workers_venue": [
+    "a frantic-looking security guard",
+    "a frantic-looking waiter",
+    "a frantic-looking waitress",
+    "a frantic-looking bartender",
+    "a carnival worker"
+  ],
+  "bystanders_general": [
+    "a frantic-looking pedestrian",
+    "a frantic-looking man",
+    "a frantic-looking tourist",
+    "a frantic-looking elderly person",
+    "a terrified looking woman"
+  ]
+}

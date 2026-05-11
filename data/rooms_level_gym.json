@@ -1,0 +1,326 @@
+{
+    "Gym Lobby": {
+        "description": "A grand entrance to 'Body & Soul Fitness'. A reception desk sits empty. To the east is the Weight Room. To the west, the Pool Deck. To the North, a Med Bay. An elevator waits to the southwest.",
+        "floor": 1,
+        "entry_room": true,
+        "exits": {
+            "east": "Weight Room",
+            "west": "Pool Deck",
+            "north": "Med Bay",
+            "south": "Boiler Room",
+            "southwest": "Elevator Lobby (Ground Floor)"
+        },
+        "furniture": [
+            {
+                "name": "reception_desk",
+                "description": "A sleek modern desk.",
+                "is_container": true,
+                "capacity": 100,
+                "items": [
+                    "attic_key",
+                    "desk_drawer_key",
+                    "radiology_key_card",
+                    "basement_key",
+                    "storage_room_key",
+                    "coroners_office_key",
+                    "morgue_key_card",
+                    "medical_director_key_card",
+                    "camera",
+                    "shattered_light_bulb",
+                    "miniature_toy_bus",
+                    "charred_mug",
+                    "bloody_piece_of_metal",
+                    "toy_pigeon",
+                    "nipple_ring",
+                    "dirty_hair_tie",
+                    "pool_ball_keychain",
+                    "clove_cigarette",
+                    "fuzzy_red_dice",
+                    "flashlight",
+                    "batteries",
+                    "duct_tape",
+                    "screwdriver",
+                    "hammer",
+                    "wrench"
+                ]
+            }
+        ],
+        "hazards_present": [
+            "hospital_exit",
+            "robo_vacuum",
+            "photo_booth_electrocution",
+            "test_your_strength_game"
+        ],
+        "items": [],
+        "locked": false,
+        "npcs_present": [
+            "finale_defib",
+            "finale_vet"
+            ],
+        "objects": [
+            "reception_desk"
+        ]
+    },
+    "Weight Room": {
+        "description": "Rows of heavy weights and machines. The air smells of sweat and iron. A ceiling fan wobbles precariously overhead. Scaffolding lines the back wall for repairs.",
+        "floor": 1,
+        "exits": {
+            "west": "Gym Lobby",
+            "south": "Bull Pen"
+        },
+        "hazards_present": [
+            "wobbling_ceiling_fan",
+            "falling_scaffolding",
+            "malfunctioning_ventilator",
+            "wrecking_ball"
+        ],
+        "items": [
+            "bloody_brick",
+            "heavy_dumbbell",
+            "protein_shake"
+        ],
+        "locked": false,
+        "objects": [
+            "weights",
+            "mirrors"
+        ]
+    },
+    "Pool Deck": {
+        "description": "A humid room with a large lap pool. Water puddles on the tiles. A lamp cord trails dangerously close to the water's edge.",
+        "floor": 1,
+        "exits": {
+            "east": "Gym Lobby"
+        },
+        "hazards_present": [
+            "water_puddle",
+            "frayed_lamp_cord",
+            "precarious_water_cup",
+            "electrified_fence"
+        ],
+        "items": [
+            "towel",
+            "pool_noodle",
+            "chlorine_tablets"
+        ],
+        "locked": false,
+        "objects": [
+            "pool",
+            "lounge_chair"
+        ]
+    },
+    "Boiler Room": {
+        "description": "Dark, hot, and noisy. Pipes hiss steam. A generator hums in the corner. Propane tanks are stacked against a wall near a vat of hot oil.",
+        "floor": 1,
+        "exits": {
+            "north": "Gym Lobby"
+        },
+        "hazards_present": [
+            "propane_tanks",
+            "spilled_hot_oil",
+            "faulty_generator",
+            "oxygen_tank",
+            "gas_leak",
+            "propane_tank_explosion"
+        ],
+        "items": [
+            "work_gloves",
+            "warning_sign",
+            "oil_rag"
+        ],
+        "locked": false,
+        "objects": [
+            "generator",
+            "pipes"
+        ]
+    },
+    "Med Bay": {
+        "description": "A sterile room for treating injuries, dominated by a repurposed MRI machine. The air is unnaturally cold here.",
+        "floor": 1,
+        "exits": {
+            "south": "Gym Lobby"
+        },
+        "hazards_present": [
+            "mri",
+            "deaths_breath"
+        ],
+        "items": [
+            "first_aid_kit",
+            "scalpel",
+            "tranquilizer",
+            "painkillers",
+            "bandages"
+        ],
+        "locked": false,
+        "objects": [
+            "medical_cot",
+            "mri_scanner"
+        ]
+    },
+    "Bull Pen": {
+        "description": "An outdoor enclosure connected to the gym (for some reason). A mechanical bull? No, a real prize bull stands there.",
+        "floor": 1,
+        "exits": {
+            "north": "Weight Room"
+        },
+        "hazards_present": [
+            "prize_bull",
+            "bull_pen_gate",
+            "stampeding_bull",
+            "food_stall_structure"
+        ],
+        "items": [
+            "rope",
+            "cowboy_hat"
+        ],
+        "locked": false,
+        "objects": [
+            "fence",
+            "hay_bale"
+        ]
+    },
+    "Elevator Lobby (Ground Floor)": {
+        "description": "A small alcove with a steel elevator door. The button panel glows softly.",
+        "floor": 1,
+        "exits": {
+            "northeast": "Gym Lobby",
+            "up": "Elevator Lobby (Upper Floor)",
+            "enter elevator": "Gym Elevator Car"
+        },
+        "hazards_present": [],
+        "items": [],
+        "locked": false,
+        "objects": [
+            "elevator_door"
+        ]
+    },
+    "Gym Elevator Car": {
+        "description": "A cramped steel elevator. The panel shows Floor 1 and Floor 2.",
+        "floor": 1,
+        "first_entry_text": "You step into the elevator. The panel shows buttons for Floor 1 (Ground) and Floor 2 (Upper).",
+        "exits": {
+            "out": {
+                "dynamic_destination": true,
+                "floor_mappings": {
+                    "1": "Elevator Lobby (Ground Floor)",
+                    "2": "Elevator Lobby (Upper Floor)"
+                }
+            },
+            "floor 1": {
+                "dynamic_destination": true
+            },
+            "floor 2": {
+                "dynamic_destination": true
+            }
+        },
+        "hazards_present": [
+            "elevator_freefall"
+        ],
+        "special_room_behavior": {
+            "type": "elevator",
+            "floors_accessible": [
+                1,
+                2
+            ]
+        },
+        "items": [],
+        "locked": false,
+        "objects": [
+            "control_panel"
+        ]
+    },
+    "Elevator Lobby (Upper Floor)": {
+        "description": "The second floor elevator lobby. Stairs lead down. The upper gym areas spread out before you.",
+        "floor": 2,
+        "exits": {
+            "east": "Yoga Studio",
+            "west": "Locker Room",
+            "down": "Elevator Lobby (Ground Floor)",
+            "enter elevator": "Gym Elevator Car"
+        },
+        "hazards_present": [],
+        "items": [],
+        "locked": false,
+        "objects": [
+            "staircase",
+            "elevator_door"
+        ]
+    },
+    "Yoga Studio": {
+        "description": "A peaceful room with mats and mirrors. Despite the calm facade, something feels wrong here.",
+        "floor": 2,
+        "exits": {
+            "west": "Elevator Lobby (Upper Floor)",
+            "north": "Observation Deck"
+        },
+        "hazards_present": [
+            "exposed_wiring"
+        ],
+        "items": [
+            "yoga_mat",
+            "meditation_cushion",
+            "incense"
+        ],
+        "locked": false,
+        "objects": [
+            "mirrors",
+            "speaker_system"
+        ]
+    },
+    "Locker Room": {
+        "description": "Rows of metal lockers. Steam drifts from the shower area. Water collects on the floor.",
+        "floor": 2,
+        "exits": {
+            "east": "Elevator Lobby (Upper Floor)"
+        },
+        "furniture": [
+            {
+                "name": "locker",
+                "description": "A dented metal locker.",
+                "is_container": true,
+                "locked": true,
+                "locked_msg": "The locker is secured with a combination lock.",
+                "force_threshold": 18,
+                "capacity": 20,
+                "items": [
+                    "gym_membership_card",
+                    "protein_bar",
+                    "water_bottle"
+                ]
+            }
+        ],
+        "hazards_present": [
+            "water_puddle",
+            "frayed_lamp_cord"
+        ],
+        "items": [
+            "dirty_towel",
+            "soap"
+        ],
+        "locked": false,
+        "objects": [
+            "lockers",
+            "benches",
+            "shower_stalls"
+        ]
+    },
+    "Observation Deck": {
+        "description": "A glass-walled room overlooking the gym floor below. Perfect for testing Death's Breath movement and multi-floor mechanics.",
+        "floor": 2,
+        "exits": {
+            "south": "Yoga Studio"
+        },
+        "hazards_present": [
+            "deaths_breath",
+            "ominous_phone_call"
+        ],
+        "items": [
+            "binoculars",
+            "clipboard"
+        ],
+        "locked": false,
+        "objects": [
+            "observation_window",
+            "phone"
+        ]
+    }
+}

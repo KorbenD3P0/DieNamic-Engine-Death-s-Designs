@@ -1,0 +1,577 @@
+# Environmental Omens Developer Guide
+**Version:** 1.0  
+**Last Updated:** 2025-11-06  
+**Game:** DieNamic Engine: Death's Designs - AR
+
+---
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Omen System Architecture](#omen-system-architecture)
+3. [Adding Omens to Disasters](#adding-omens-to-disasters)
+4. [Adding Omens to Hazards](#adding-omens-to-hazards)
+5. [Adding Omens to Rooms](#adding-omens-to-rooms)
+6. [Trigger Object Setup](#trigger-object-setup)
+7. [State-Aware Omens](#state-aware-omens)
+8. [Best Practices](#best-practices)
+9. [Testing & Debugging](#testing--debugging)
+10. [Common Trigger Keys](#common-trigger-keys)
+
+---
+
+## Overview
+
+Environmental omens are subtle atmospheric clues that foreshadow danger and build tension. When players examine certain objects (TVs, radios, windows, mirrors, etc.), they may witness disturbing glimpses of Death's design.
+
+**Key Concepts:**
+- **Trigger Objects**: Items/entities marked as `is_omen_provider` that can display omens
+- **Omen Library**: Compiled at level start from active disasters, spawned hazards, and room configs
+- **Fear System**: Examining omens increases player fear, which influences Death AI behavior
+- **State-Awareness**: Some omens change based on hazard state (e.g., "off" vs "active")
+
+---
+
+## Omen System Architecture
+
+### Execution Flow
+```
+1. Level Init → _compile_level_omens()
+2. Gather omens from:
+   a. Active intro disaster (player.intro_disaster)
+   b. Spawned hazards (hazard_engine.active_hazards)
+   c. Room environmental_omens_config
+3. Store in current_level_omens dict
+4. Player examines object → _examine_omen()
+5. Check if object.is_omen_provider exists in current_level_omens
+6. Display random/state-specific omen text
+7. Increase player fear
+```
+
+### Data Sources Priority
+1. **Disaster omens** (session-specific, 1 active per game)
+2. **Hazard omens** (dynamic, 2-5 spawned per level)
+3. **Room omens** (static, level-specific)
+
+**Important:** Only **active/spawned** disasters and hazards contribute omens. All disasters/hazards in master JSON are ignored unless present in current game session.
+
+---
+
+## Adding Omens to Disasters
+
+### File Location
+`data/disasters.json`
+
+### Schema
+```json
+{
+  "disaster_name": {
+    "environmental_omens": {
+      "trigger_key": [
+        "Omen text variant 1",
+        "Omen text variant 2",
+        "Omen text variant 3"
+      ],
+      "another_trigger": "Single omen text (string format also supported)"
+    }
+  }
+}
+```
+
+### Example: Earthquake Disaster
+```json
+{
+  "an earthquake in your neighborhood": {
+    "environmental_omens": {
+      "television": [
+        "The image on the screen violently shakes and distorts for a few seconds, like a bad satellite signal during an earthquake.",
+        "A news ticker at the bottom of the screen reads: '...investigation into recent signal malfunctions continues...'"
+      ],
+      "radio": [
+        "Static bursts from the radio momentarily resolve into the sound of falling debris.",
+        "An emergency broadcast tone plays briefly before cutting to static."
+      ],
+      "window": [
+        "The glass panes rattle slightly in their frames, though there's no wind.",
+        "For a moment, the reflection in the window shows cracks that aren't really there."
+      ],
+      "mirror": [
+        "The mirror's reflection warps subtly, as if the ground beneath it is shifting.",
+        "You see your reflection sway, though you're standing still."
+      ]
+    }
+  }
+}
+```
+
+### Guidelines
+- **Trigger Keys**: Use common room objects (TV, radio, window, mirror, etc.)
+- **Variants**: Provide 2-4 text variants per trigger for replayability
+- **Tone**: Subtle, unsettling, foreshadowing-focused
+- **Relevance**: Omens should thematically relate to the disaster (earthquake → shaking, tremors)
+
+---
+
+## Adding Omens to Hazards
+
+### File Location
+`data/hazards.json`
+
+### Schema
+```json
+{
+  "hazard_key": {
+    "environmental_omens": {
+      "trigger_key": [
+        "Omen text 1",
+        "Omen text 2"
+      ]
+    }
+  }
+}
+```
+
+### Example: Death's Breath Hazard
+```json
+{
+  "deaths_breath": {
+    "spawn_entities": ["cold breeze"],
+    "environmental_omens": {
+      "window": [
+        "Frost creeps across the glass in unnatural patterns, forming shapes that almost look like grasping hands.",
+        "Your reflection in the window shows your breath misting, even though the room feels warm."
+      ],
+      "mirror": [
+        "The edges of the mirror fog over, as if someone just breathed on it.",
+        "For a split second, you see another figure standing behind you in the reflection. When you turn, there's nothing there."
+      ],
+      "cold breeze": [
+        "The draft carries a whisper that sounds almost like your name.",
+        "The cold is painful now, seeping into your bones. Death's presence is undeniable."
+      ]
+    }
+  }
+}
+```
+
+### Guidelines
+- **Trigger Keys**: Use hazard's own spawn_entities as triggers (e.g., "cold breeze", "oxygen tank")
+- **Cross-Object Triggers**: Hazards can also trigger on common objects (TV, mirror, window)
+- **Escalation**: Later omen variants can be more intense/explicit
+- **Relevance**: Omens should reflect the hazard's nature (cold breeze → frost, whispers)
+
+---
+
+## Adding Omens to Rooms
+
+### File Location
+`data/rooms_level_X.json` (where X = level number)
+
+### Schema
+```json
+{
+  "Room Name": {
+    "environmental_omens_config": {
+      "trigger_key": [
+        "Room-specific omen 1",
+        "Room-specific omen 2"
+      ]
+    }
+  }
+}
+```
+
+### Example: Hospital Emergency Entrance
+```json
+{
+  "Hospital Emergency Entrance": {
+    "environmental_omens_config": {
+      "ambulance": [
+        "The ambulance's radio crackles to life for a moment, broadcasting a distorted emergency call before cutting to static.",
+        "The rear doors of the ambulance swing open slightly, as if inviting you inside. No one is near them."
+      ],
+      "revolving door": [
+        "The revolving door rotates once on its own, though no one is pushing it.",
+        "You hear the sound of footsteps entering through the door, but see no one."
+      ],
+      "reception desk": [
+        "The appointment book on the desk is open to today's date. Every time slot is marked 'CANCELLED'.",
+        "A Post-It note on the desk reads: 'They're all on Death's list now.'"
+      ]
+    },
+    "objects": [
+      {
+        "name": "ambulance",
+        "type": "omen_provider",
+        "is_omen_provider": "ambulance",
+        "description": "An ambulance sits parked outside, its lights off but engine still running."
+      },
+      {
+        "name": "revolving door",
+        "type": "omen_provider",
+        "is_omen_provider": "revolving door",
+        "description": "A large glass revolving door, surprisingly clean given the chaos outside."
+      }
+    ]
+  }
+}
+```
+
+### Guidelines
+- **Trigger Keys**: Use room-specific objects/furniture
+- **Context**: Omens should fit the room's theme/location
+- **Object Registration**: MUST add corresponding object with `is_omen_provider` field (see next section)
+
+---
+
+## Trigger Object Setup
+
+For omens to work, objects must be marked as omen providers.
+
+### Manual Room Objects
+Add to room's `objects` list in `data/rooms_level_X.json`:
+
+```json
+{
+  "Room Name": {
+    "objects": [
+      {
+        "name": "television",
+        "type": "omen_provider",
+        "is_omen_provider": "television",
+        "description": "A dusty TV mounted in the corner, flickering with static.",
+        "can_be_taken": false
+      },
+      {
+        "name": "window",
+        "type": "omen_provider",
+        "is_omen_provider": "window",
+        "description": "A large window overlooking the parking lot.",
+        "can_be_taken": false
+      }
+    ]
+  }
+}
+```
+
+### Automatic Hazard Entities
+If a hazard has `spawn_entities`, the engine automatically creates omen providers:
+
+```json
+{
+  "deaths_breath": {
+    "spawn_entities": ["cold breeze"]
+  }
+}
+```
+
+Engine creates:
+```json
+{
+  "name": "cold breeze",
+  "type": "hazard_entity",
+  "is_omen_provider": "cold breeze",
+  "hazard_key": "deaths_breath"
+}
+```
+
+### Key Points
+- `is_omen_provider` value = trigger key in omen definitions
+- `type: "omen_provider"` or `type: "hazard_entity"` enables omen checking
+- Objects without `is_omen_provider` will never trigger omens
+
+---
+
+## State-Aware Omens
+
+Some hazards have multiple states. Omens can change based on current hazard state.
+
+### Schema
+```json
+{
+  "hazard_key": {
+    "environmental_omens": {
+      "trigger_key": {
+        "state_name_1": "Omen text for state 1",
+        "state_name_2": "Omen text for state 2",
+        "state_name_3": "Omen text for state 3"
+      }
+    }
+  }
+}
+```
+
+### Example: MRI Hazard
+```json
+{
+  "mri": {
+    "initial_state": "off",
+    "states": {
+      "off": { "description": "..." },
+      "field_active_doors_locked": { "description": "..." },
+      "safely_powered_down": { "description": "..." }
+    },
+    "environmental_omens": {
+      "mri_machine": {
+        "off": "The MRI scanner sits dormant, its massive bore dark and silent.",
+        "field_active_doors_locked": "The machine emits a low, ominous hum. Metal objects on nearby surfaces vibrate and slide toward it.",
+        "safely_powered_down": "Scorch marks mar the machine's casing. Loose bolts and metal fragments litter the floor around it."
+      },
+      "metal_gurney": {
+        "off": "A metal gurney sits beside the MRI, its wheels locked.",
+        "field_active_doors_locked": "The gurney is pressed flat against the MRI room wall, held there by an invisible magnetic force.",
+        "safely_powered_down": "The gurney is twisted and warped, its metal frame permanently bent toward where the MRI once sat."
+      }
+    }
+  }
+}
+```
+
+### How It Works
+1. Player examines "mri_machine"
+2. Engine checks hazard's current state (e.g., "field_active_doors_locked")
+3. Displays state-specific omen text
+4. If state key doesn't exist, falls back to first available or generic text
+
+### When to Use
+- Multi-stage hazards (escalating danger)
+- Hazards with distinct phases (setup → danger → aftermath)
+- Post-event observations (pre-MRI vs post-MRI room descriptions)
+
+---
+
+## Best Practices
+
+### Writing Effective Omens
+
+#### DO:
+✅ Use subtle, atmospheric language  
+✅ Foreshadow without being explicit  
+✅ Match disaster/hazard themes  
+✅ Include sensory details (sound, sight, temperature)  
+✅ Create variety (3-4 variants per trigger)  
+✅ Use present tense, second-person ("You see...", "The mirror shows...")  
+
+#### DON'T:
+❌ Spoil upcoming danger explicitly  
+❌ Break character/fourth wall  
+❌ Use overly long text (keep under 2 sentences)  
+❌ Duplicate text across different triggers  
+❌ Mix disaster themes (earthquake omen shouldn't mention fire)  
+
+### Technical Considerations
+
+#### Trigger Key Naming
+- Use lowercase with underscores: `mri_machine`, `cold_breeze`
+- Match object names exactly (case-insensitive matching, but be consistent)
+- Avoid special characters
+
+#### Object Placement
+- Omen objects should be immovable (`can_be_taken: false`)
+- Place in rooms where players will naturally explore
+- Common objects (TV, radio, window, mirror) should be in most rooms
+
+#### Performance
+- Keep omen text under 200 characters
+- Limit variants to 2-5 per trigger (engine picks randomly)
+- Avoid deeply nested state logic
+
+---
+
+## Testing & Debugging
+
+### Log Verification
+Check `logs/session_YYYYMMDD_HHMMSS.txt` for:
+
+```
+_compile_level_omens: Compiling Omen Library for level 1...
+_compile_level_omens: Found omens in active disaster 'an earthquake in your neighborhood'
+_compile_level_omens: Found omens in active hazard 'deaths_breath'
+_compile_level_omens: Found 'environmental_omens_config' in room 'Hospital Emergency Entrance'
+_compile_level_omens: Omen Library compiled with 13 trigger types.
+```
+
+**Expected Counts:**
+- Level 1: ~8-15 trigger types (depending on spawned hazards)
+- Level 2: ~10-18 trigger types
+- Level 3: ~12-20 trigger types
+
+### Common Issues
+
+#### "Omen Library compiled with 0 trigger types"
+**Cause:** No omens defined or no hazards spawned  
+**Fix:**
+1. Verify disaster has `environmental_omens` block
+2. Check hazards spawned in level (look for "Spawned hazard" log entries)
+3. Ensure room has `environmental_omens_config`
+
+#### "Player examined TV but no omen triggered"
+**Cause:** Object not marked as omen provider or trigger key mismatch  
+**Fix:**
+1. Verify object has `is_omen_provider` field
+2. Check trigger key matches omen definition exactly
+3. Ensure object's `type` is `omen_provider` or `hazard_entity`
+
+#### "Same omen text shows every time"
+**Cause:** Only one variant defined  
+**Fix:** Add multiple text strings in array format
+
+### In-Game Testing Commands
+```
+> examine television
+> examine radio
+> examine window
+> examine mirror
+> examine cold breeze
+```
+
+Verify:
+1. Popup appears with title "A Glimpse of the Design"
+2. Fear increases (check status display)
+3. Different text on repeated examinations (if variants exist)
+
+---
+
+## Common Trigger Keys
+
+### Universal Objects (Use in all levels)
+- `television` / `tv`
+- `radio`
+- `window`
+- `mirror`
+- `flickering fluorescent light`
+- `security camera`
+- `computer monitor`
+- `phone` / `cell phone`
+
+### Level 1 (Hospital) Specific
+- `ambulance`
+- `revolving door`
+- `medical equipment`
+- `iv stand`
+- `mri machine`
+- `oxygen tank`
+- `ventilator`
+- `reception desk`
+
+### Level 2 (Fair) Specific
+- `ferris wheel`
+- `carousel`
+- `game booth`
+- `food stand`
+- `propane tank`
+- `prize display`
+
+### Level 3 (Morgue) Specific
+- `autopsy table`
+- `body drawer`
+- `cadaver`
+- `freezer`
+- `examination light`
+- `specimen jar`
+
+### Hazard-Specific Entities
+- `cold breeze` (deaths_breath)
+- `oxygen tank` (oxygen_tank hazard)
+- `propane tank` (propane_tank hazard)
+- `robo vacuum` (robo_vacuum hazard)
+
+---
+
+## Appendix: Example Complete Implementation
+
+### Disaster Definition
+```json
+{
+  "a train derailment outside town": {
+    "death_count_range": [50, 200],
+    "environmental_omens": {
+      "television": [
+        "A model train commercial plays, but the train jumps the tracks and bursts into flames.",
+        "The news shows a map of local rail lines. One segment pulses red, marked 'INCIDENT'."
+      ],
+      "radio": [
+        "A distant train horn blares through the broadcast, but it sounds distorted and ends in a sharp, metallic screech.",
+        "Static resolves into the rhythmic *clack-clack* of train wheels on tracks, growing faster until it becomes a roar."
+      ],
+      "window": [
+        "The parallel lines of the window blind's reflection momentarily appear to converge in the distance, like train tracks leading to a single, inevitable point."
+      ]
+    }
+  }
+}
+```
+
+### Hazard Definition
+```json
+{
+  "gas_leak": {
+    "spawn_entities": ["gas valve"],
+    "environmental_omens": {
+      "gas valve": {
+        "sealed": "The valve handle is tight, but you smell a faint chemical odor.",
+        "leaking": "Gas hisses from the valve in a thin, visible stream.",
+        "critical": "The valve screams with escaping gas. The air is thick with fumes."
+      },
+      "television": [
+        "A cooking show host lights a gas stove. The flame roars unnaturally high, filling the screen with orange.",
+        "The TV flickers, and for a moment, you see only static shaped like rising vapor."
+      ]
+    }
+  }
+}
+```
+
+### Room Definition
+```json
+{
+  "Hospital Boiler Room": {
+    "environmental_omens_config": {
+      "boiler": [
+        "The boiler's pressure gauge needle twitches into the red zone for a split second.",
+        "You hear a faint ticking sound from inside the boiler, like a countdown."
+      ],
+      "gas line": [
+        "The exposed gas line along the wall has a hairline crack. You can hear a faint hissing."
+      ]
+    },
+    "objects": [
+      {
+        "name": "boiler",
+        "type": "omen_provider",
+        "is_omen_provider": "boiler",
+        "description": "An old industrial boiler, covered in rust and warning stickers."
+      },
+      {
+        "name": "gas line",
+        "type": "omen_provider",
+        "is_omen_provider": "gas line",
+        "description": "A thick yellow pipe running along the ceiling, labeled 'NATURAL GAS'."
+      }
+    ],
+    "hazards_present": ["gas_leak"]
+  }
+}
+```
+
+---
+
+## Change Log
+
+### Version 1.0 (2025-11-06)
+- Initial guide creation
+- Documented all three omen sources (disasters, hazards, rooms)
+- Added state-aware omen instructions
+- Included testing/debugging section
+- Provided complete examples
+
+---
+
+**Questions or Improvements?**  
+Submit suggestions to: [project lead / game design team]
+
+**Related Documentation:**
+- `hazards_developer_guide.md` - For hazard state design
+- `qte_integration_guide.md` - For linking omens to QTE events
+- `fear_system_overview.md` - For Death AI behavior influenced by omens
+
+---

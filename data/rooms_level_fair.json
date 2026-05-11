@@ -1,0 +1,1087 @@
+{
+  "Fairgrounds Entrance": {
+    "description": "You stand at the brightly lit entrance to the McKinley 250th Anniversary County Fair. The sounds of cheerful music, excited crowds, and carnival games fill the air. A large banner reads 'A Celebration to Die For!'.",
+    "exits": {
+      "north": "Midway (West)"
+    },
+    "furniture": [
+      "ticket_booth",
+      "turnstile"
+    ],
+    "hazards_present": [],
+    "entry_room": true
+  },
+  "Midway (West)": {
+    "description": "The midway stretches out before you, lined with colorful game stalls and food vendors. To the west is a large, noisy pavilion, and to the east, the midway continues.",
+    "exits": {
+      "east": "Midway (Center)",
+      "west": "Livestock Pavilion",
+      "south": "Fairgrounds Entrance"
+    },
+    "furniture": [
+      "game_stalls"
+    ],
+    "hazards_present": [
+      {
+        "type": "faulty_generator",
+        "chance": 1.0
+      }
+    ],
+    "npcs": [
+      {
+        "id": "rusty_carny",
+        "name": "Rusty",
+        "description": "An old carnival worker with weathered skin and a permanent scowl. He's tending to the game equipment.",
+        "initial_state": "default",
+        "dialogue_states": {
+          "default": {
+            "text": "Keep an eye on that generator, would ya? Been acting up all day. I told 'em to fix it, but nobody listens to ol' Rusty.",
+            "options": [
+              {
+                "text": "What's wrong with the generator?",
+                "target_state": "generator_details"
+              },
+              {
+                "text": "How long have you worked here?",
+                "target_state": "experience"
+              },
+              {
+                "text": "Have you seen anything unusual today?",
+                "target_state": "observations"
+              }
+            ]
+          },
+          "generator_details": {
+            "text": "That old piece of junk has been sparking all morning. Voltage regulator's shot, and the grounding wire's frayed. One good surge and it'll blow everything connected to it - including that fence around the livestock pen.",
+            "options": [
+              {
+                "text": "What fence are you talking about?",
+                "target_state": "fence_warning"
+              },
+              {
+                "text": "Can you shut it down?",
+                "target_state": "shutdown_request"
+              },
+              {
+                "text": "Who else knows about this?",
+                "target_state": "who_knows"
+              }
+            ]
+          },
+          "fence_warning": {
+            "text": "The electric fence around the prize bull's pen. It's on the same circuit as these game stalls. When that generator blows, it'll send a massive surge through the fence. That bull gets spooked by electricity - seen it before. He'll charge right through.",
+            "options": [
+              {
+                "text": "Where would the bull go if it escaped?",
+                "target_state": "bull_escape_path"
+              },
+              {
+                "text": "How do you know so much about the bull?",
+                "target_state": "bull_knowledge"
+              },
+              {
+                "text": "Is there a way to prevent this?",
+                "target_state": "prevention"
+              }
+            ]
+          },
+          "bull_escape_path": {
+            "text": "Straight line from the pen to the food court. That's where the crowds are thickest. Bull sees red when it's panicked - literally. And wouldn't you know it, there's a girl in a bright red sweater hanging around the food stalls today.",
+            "on_talk_action": {
+              "gives_item": "rustys_warning_note"
+            },
+            "options": [
+              {
+                "text": "I need to warn people.",
+                "target_state": "final_warning"
+              },
+              {
+                "text": "Tell me more about what you've seen.",
+                "target_state": "complete_picture"
+              }
+            ]
+          },
+          "shutdown_request": {
+            "text": "Management won't let me touch it. Insurance liability, they say. Only licensed electricians can work on the power grid. But the electrician ain't due back until tomorrow - after the fair closes.",
+            "next_state": "fence_warning"
+          },
+          "who_knows": {
+            "text": "Nobody listens to me. I told the fair manager, told security, even told that kid Alex who was asking questions. That boy's got good instincts - he could sense something was wrong. The others just think I'm a crazy old carny.",
+            "options": [
+              {
+                "text": "What did Alexei say?",
+                "target_state": "alex_connection"
+              },
+              {
+                "text": "Where can I find the manager?",
+                "target_state": "manager_location"
+              }
+            ]
+          },
+          "alex_connection": {
+            "text": "Sharp kid. Cold, too. Said he calculated the disaster. Described the sequence like an engineer. The generator, the bull, the fire... hell, he even knew about the propane.",
+            "next_state": "fence_warning"
+          },
+          "experience": {
+            "text": "Forty-three years in the carnival business. I've seen every kind of accident you can imagine. Electrical fires, animal escapes, structural collapses - you name it. And I can smell disaster coming from a mile away.",
+            "options": [
+              {
+                "text": "What disasters have you prevented?",
+                "target_state": "past_saves"
+              },
+              {
+                "text": "What do you smell today?",
+                "target_state": "today_prediction"
+              }
+            ]
+          },
+          "past_saves": {
+            "text": "Saved lives in Bakersfield when I spotted a Ferris wheel bolt coming loose. Stopped a propane explosion in Riverside by noticing a gas leak. But nobody ever remembers the disasters that don't happen.",
+            "next_state": "today_prediction"
+          },
+          "today_prediction": {
+            "text": "Today feels different. Worse. Like all the little problems are gonna line up just right to create one big catastrophe. The generator, the bull, the crowds... it's all connected.",
+            "next_state": "generator_details"
+          },
+          "observations": {
+            "text": "That intense Russian kid—Alexei, I think—has been scanning everything all day. Taking notes. The teenagers think he's nuts, but that boy... he's got the look of a soldier waiting for a raid.",
+            "next_state": "generator_details"
+          },
+          "prevention": {
+            "text": "Maybe. If someone could get the crowd away from the food court, and if someone could calm that bull before the power surge hits... but it'd take perfect timing and a lot of luck.",
+            "on_talk_action": {
+              "gives_item": "emergency_shutdown_instructions"
+            },
+            "next_state": "final_warning"
+          },
+          "complete_picture": {
+            "text": "Here's the whole ugly picture: Generator blows, fence surges, bull panics and charges through the crowd toward anything red. Food stall propane tanks get knocked over, maybe spark a fire. And all those people packed in tight... it's gonna be a bloodbath.",
+            "next_state": "final_warning"
+          },
+          "manager_location": {
+            "text": "Manager's probably in the first aid tent dealing with paperwork. But he won't listen - too worried about liability and keeping the fair running. Money talks louder than safety around here.",
+            "next_state": "final_warning"
+          },
+          "final_warning": {
+            "text": "You seem like someone who actually gives a damn. If you can't stop this thing, at least try to get people out of the way. I'll do what I can from here, but I'm just one old man fighting the system."
+          }
+        }
+      }
+    ]
+  },
+  "Livestock Pavilion": {
+    "description": "A large, open-air pavilion houses various livestock exhibits. The prize bull occupies a prominent pen in the center, adorned with a blue ribbon.",
+    "exits": {
+      "east": "Midway (West)"
+    },
+    "furniture": [
+      "prize_bull_pen"
+    ],
+    "hazards_present": [
+      {
+        "type": "prize_bull",
+        "chance": 1.0
+      },
+      {
+        "type": "electrified_fence",
+        "chance": 1.0
+      }
+    ]
+  },
+  "Midway (Center)": {
+    "description": "The heart of the county fair. Games, rides, and food stalls surround you on all sides. The air is thick with the smell of cotton candy and excitement.",
+    "exits": {
+      "west": "Midway (West)",
+      "east": "Midway (East)",
+      "north": "Food Court",
+      "south": "Photo Booth Area"
+    },
+    "furniture": [],
+    "npcs": [
+      {
+        "id": "alexei_rosonov",
+        "name": "Alexei",
+        "description": "A tall, intense young man with a grim expression. He scans the crowd with practiced vigilance, anticipating the worst.",
+        "initial_state": "worried",
+        "dialogue_states": {
+          "worried": {
+            "text": "The pattern is complete. The generator, the beast, the fire... disaster is inevitable. We must evacuate immediately.",
+            "options": [
+              {
+                "text": "Tell me what you saw.",
+                "target_state": "vision_details"
+              },
+              {
+                "text": "Why should I believe you?",
+                "target_state": "credibility"
+              },
+              {
+                "text": "What exactly will happen?",
+                "target_state": "sequence_of_events"
+              }
+            ]
+          },
+          "vision_details": {
+            "text": "It was not a hallucination. It was a premonition. I saw the sequence with absolute clarity: electrical failure, containment breach, panic. The causality chain is set.",
+            "options": [
+              {
+                "text": "When does this happen?",
+                "target_state": "timing"
+              },
+              {
+                "text": "Who gets hurt?",
+                "target_state": "casualties"
+              },
+              {
+                "text": "Can it be prevented?",
+                "target_state": "prevention_hope"
+              }
+            ]
+          },
+          "sequence_of_events": {
+            "text": "First, the generator fails. Sparks ignite the panic. The surge hits the fence. The bull—Thunder—breaks loose. Chaos follows.",
+            "options": [
+              {
+                "text": "What happens after the bull escapes?",
+                "target_state": "bull_rampage"
+              },
+              {
+                "text": "How do you know the bull's name?",
+                "target_state": "research_obsession"
+              },
+              {
+                "text": "What triggers the generator to fail?",
+                "target_state": "generator_trigger"
+              }
+            ]
+          },
+          "bull_rampage": {
+            "text": "The beast charges the food court. He targets the red sweater—the girl, Brittany. He destroys the propane tanks. Fire follows blood.",
+            "options": [
+              {
+                "text": "What about the propane tanks?",
+                "target_state": "explosion_risk"
+              },
+              {
+                "text": "How many people get hurt?",
+                "target_state": "casualty_count"
+              },
+              {
+                "text": "Can we move Brittany to safety?",
+                "target_state": "save_brittany"
+              }
+            ]
+          },
+          "explosion_risk": {
+            "text": "Impact ruptures the potential bombs. A single spark turns the court into an inferno. Total devastation.",
+            "options": [
+              {
+                "text": "How do we prevent the explosion?",
+                "target_state": "explosion_prevention"
+              },
+              {
+                "text": "Give me your phone - I need evidence.",
+                "target_state": "phone_handover"
+              }
+            ]
+          },
+          "credibility": {
+            "text": "Skepticism is natural. But I warned them about the Millfield bridge. I saw the cable snap. They ignored me. Seventeen died. Do not make their mistake.",
+            "options": [
+              {
+                "text": "You predicted the Millfield bridge collapse?",
+                "target_state": "millfield_story"
+              },
+              {
+                "text": "How do these visions work?",
+                "target_state": "vision_mechanics"
+              },
+              {
+                "text": "What other disasters have you seen?",
+                "target_state": "other_predictions"
+              }
+            ]
+          },
+          "millfield_story": {
+            "text": "Three days prior. I reported it. I blocked traffic. They arrested me. The bridge fell on schedule.",
+            "on_talk_action": {
+              "gives_item": "millfield_newspaper_clipping"
+            },
+            "next_state": "vision_mechanics"
+          },
+          "vision_mechanics": {
+            "text": "I see the death design. The final draft of the universe. Details shift, but the outcome seeks completion.",
+            "options": [
+              {
+                "text": "What can we change about today?",
+                "target_state": "intervention_points"
+              },
+              {
+                "text": "Why are you telling me this?",
+                "target_state": "why_trust_player"
+              }
+            ]
+          },
+          "intervention_points": {
+            "text": "Three interventions: Save the generator. Calm the beast. Clear the impact zone. Precision is required. Death is persistent.",
+            "next_state": "phone_handover"
+          },
+          "why_trust_player": {
+            "text": "You listen. You do not mock. You have the eyes of someone who knows death.",
+            "options": [
+              {
+                "text": "Yes, I've dealt with Death's plans before.",
+                "target_state": "kindred_spirit"
+              },
+              {
+                "text": "I just want to help.",
+                "target_state": "phone_handover"
+              }
+            ]
+          },
+          "kindred_spirit": {
+            "text": "Then you understand. We are the glitch in the design. We must act.",
+            "next_state": "phone_handover"
+          },
+          "timing": {
+            "text": "Now. The pressure builds. The pieces align.",
+            "next_state": "casualties"
+          },
+          "casualties": {
+            "text": "Twelve dead. Brittany trampled. Chad gored. Kevin burned. Rusty electrocuted. Unacceptable losses.",
+            "options": [
+              {
+                "text": "We have to save them all.",
+                "target_state": "save_everyone"
+              },
+              {
+                "text": "Focus on the ones we can save.",
+                "target_state": "triage_reality"
+              }
+            ]
+          },
+          "save_everyone": {
+            "text": "A noble goal. But Death demands a balance. We save whom we can.",
+            "next_state": "phone_handover"
+          },
+          "triage_reality": {
+            "text": "You are a pragmatist. Good. We minimize the slaughter.",
+            "next_state": "phone_handover"
+          },
+          "phone_handover": {
+            "text": "Take this. My records. My proof. Use it. I must distance myself from the epicenter.",
+            "on_talk_action": {
+              "gives_item": "alexs_vision_phone"
+            },
+            "next_state": "fled"
+          },
+          "generator_trigger": {
+            "text": "Chad. His strength is his weakness. He strikes the bell, the vibration shorts the circuit. Causality.",
+            "next_state": "bull_rampage"
+          },
+          "research_obsession": {
+            "text": "I study the threats. Thunder is unstable. Medicated. Dangerous.",
+            "next_state": "bull_rampage"
+          },
+          "prevention_hope": {
+            "text": "Hope is not a strategy. Disruption is. We break the chain.",
+            "next_state": "sequence_of_events"
+          },
+          "casualty_count": {
+            "text": "Twelve confirmed. Potential for mass casualties if the fire spreads.",
+            "next_state": "explosion_risk"
+          },
+          "save_brittany": {
+            "text": "She ignores me. Chad threatens me. They are blind to their fate.",
+            "next_state": "explosion_risk"
+          },
+          "explosion_prevention": {
+            "text": "Cut the fuel. Divert the beast. Evacuate the zone. Any action is better than inaction.",
+            "next_state": "phone_handover"
+          },
+          "other_predictions": {
+            "text": "The elm street fire. The collision at Fifth and Main. Always ignored. Always too late.",
+            "next_state": "vision_mechanics"
+          },
+          "fled": {
+            "text": "Alexei has retreated, shouting final warnings as he vanishes into the crowd."
+          }
+        }
+      },
+      {
+        "id": "chad_jock",
+        "name": "Chad",
+        "description": "A tall, athletic guy with an air of arrogance. He's trying to look cool for his girlfriend, flexing his muscles near the game stalls.",
+        "initial_state": "default",
+        "dialogue_states": {
+          "default": {
+            "text": "Check this out, I'm gonna win my girl that giant stuffed bear. These carnival games are rigged, but not for someone with my skills.",
+            "options": [
+              {
+                "text": "Maybe you should take it easy on that strength test.",
+                "target_state": "challenged"
+              },
+              {
+                "text": "Have you noticed anything wrong with the generator?",
+                "target_state": "oblivious"
+              },
+              {
+                "text": "Your girlfriend might be safer away from the food court.",
+                "target_state": "protective_instinct"
+              }
+            ]
+          },
+          "challenged": {
+            "text": "Take it easy? Dude, I bench 340. This rinky-dink hammer game is nothing. Watch me ring that bell so hard it wakes up the whole county!",
+            "options": [
+              {
+                "text": "The equipment looks unstable. You could hurt someone.",
+                "target_state": "safety_concern"
+              },
+              {
+                "text": "Brittany would be more impressed if you kept her safe.",
+                "target_state": "appeal_to_ego"
+              },
+              {
+                "text": "There's going to be an electrical surge when you hit it.",
+                "target_state": "technical_warning"
+              }
+            ]
+          },
+          "oblivious": {
+            "text": "Generator? I don't know anything about generators, man. I just hit things hard and win prizes. That's what I do.",
+            "options": [
+              {
+                "text": "The sparking could be dangerous.",
+                "target_state": "dismissive_danger"
+              },
+              {
+                "text": "Maybe ask Rusty about it - he seems worried.",
+                "target_state": "rusty_mention"
+              }
+            ]
+          },
+          "protective_instinct": {
+            "text": "What are you talking about? The food court is where all the action is. Brittany loves corn dogs, and I promised to buy her one after I win this bear. Nothing's gonna happen to my girl.",
+            "options": [
+              {
+                "text": "There's going to be an accident involving the bull.",
+                "target_state": "bull_warning"
+              },
+              {
+                "text": "Show Alexei's phone evidence",
+                "target_state": "evidence_reaction"
+              }
+            ]
+          },
+          "safety_concern": {
+            "text": "Hurt someone? The only thing that's gonna get hurt is this game's profit margin when I win every prize they got. I know what I'm doing, alright?",
+            "next_state": "appeal_to_ego"
+          },
+          "appeal_to_ego": {
+            "text": "You think Brittany wants to see me back down from a challenge? She's counting on me to win that bear. I can't look weak in front of her.",
+            "options": [
+              {
+                "text": "Real strength is protecting the people you love.",
+                "target_state": "philosophy_lesson"
+              },
+              {
+                "text": "Win her a different prize - away from this area.",
+                "target_state": "alternative_suggestion"
+              }
+            ]
+          },
+          "technical_warning": {
+            "text": "Electrical surge? What are you, some kind of engineer? Look, I don't care about the technical stuff. I just care about impressing Brittany and showing these carnies what a real man looks like.",
+            "next_state": "dismissive_danger"
+          },
+          "dismissive_danger": {
+            "text": "Sparking, schmparking. These places always have electrical issues. If it was really dangerous, they wouldn't let people play, right? Stop being such a worry-wart.",
+            "next_state": "rusty_mention"
+          },
+          "rusty_mention": {
+            "text": "That old guy? He's been complaining about everything all day. 'This is broken, that's dangerous.' Probably just wants attention. I'm not gonna let some cranky carny ruin my day.",
+            "options": [
+              {
+                "text": "He knows what he's talking about - he's got 40 years experience.",
+                "target_state": "experience_respect"
+              },
+              {
+                "text": "Fine, but keep Brittany away from the livestock area.",
+                "target_state": "compromise_attempt"
+              }
+            ]
+          },
+          "bull_warning": {
+            "text": "The bull? That thing's locked up tight. You're starting to sound as paranoid as that Alexei guy who passed through here.",
+            "next_state": "evidence_reaction"
+          },
+          "evidence_reaction": {
+            "text": "What is this? Some experimental film? You and that Russian kid trying to prank the whole fair? I'm not buying it.",
+            "options": [
+              {
+                "text": "This is real. People are going to die.",
+                "target_state": "serious_warning"
+              },
+              {
+                "text": "Just move Brittany to the photo booth area instead.",
+                "target_state": "final_compromise"
+              }
+            ]
+          },
+          "philosophy_lesson": {
+            "text": "That's... actually not a bad point. But I already told everyone I was gonna ring that bell. If I back down now, I'll look like a total wimp. There's gotta be another way.",
+            "next_state": "alternative_suggestion"
+          },
+          "alternative_suggestion": {
+            "text": "Different prize? But I already psyched myself up for this one. And the strength test is like, the ultimate test of manliness. All the other games are just luck and skill.",
+            "options": [
+              {
+                "text": "Show your strength by protecting people instead of showing off.",
+                "target_state": "heroic_appeal"
+              },
+              {
+                "text": "Win the ring toss - that takes real skill.",
+                "target_state": "skill_challenge"
+              }
+            ]
+          },
+          "experience_respect": {
+            "text": "Forty years? Okay, maybe the old guy knows something. But he could still be wrong about this specific thing, right? I mean, what are the odds something actually goes wrong today?",
+            "next_state": "compromise_attempt"
+          },
+          "compromise_attempt": {
+            "text": "Look, I'll tell you what. After I win this bear, I'll take Brittany somewhere else, okay? But I'm not backing down from this challenge. A man's gotta do what a man's gotta do.",
+            "options": [
+              {
+                "text": "That might be too late. The accident happens when you hit the bell.",
+                "target_state": "cause_and_effect"
+              },
+              {
+                "text": "At least hit it gently?",
+                "target_state": "gentle_suggestion"
+              }
+            ]
+          },
+          "serious_warning": {
+            "text": "People die? Come on, man. This is a county fair, not a war zone. The worst thing that happens here is someone gets sick from too much cotton candy.",
+            "next_state": "final_compromise"
+          },
+          "final_compromise": {
+            "text": "Photo booth? That's... actually not a bad idea. Brittany loves taking pictures. But I'm still gonna play this game first. I can't let everyone see me back down.",
+            "options": [
+              {
+                "text": "Play it after you take Brittany to safety.",
+                "target_state": "safety_first"
+              },
+              {
+                "text": "Fine, but don't hit it at full strength.",
+                "target_state": "strength_limitation"
+              }
+            ]
+          },
+          "heroic_appeal": {
+            "text": "Protecting people... yeah, that is pretty manly. Like being a bodyguard or a superhero. But how am I supposed to protect people from a carnival game?",
+            "options": [
+              {
+                "text": "By not triggering the electrical surge that kills them.",
+                "target_state": "direct_explanation"
+              },
+              {
+                "text": "Help evacuate the food court instead.",
+                "target_state": "evacuation_help"
+              }
+            ]
+          },
+          "skill_challenge": {
+            "text": "Ring toss? That's like, a kid's game. Where's the glory in that? But... Brittany does like when I win her stuff, regardless of what game it is.",
+            "next_state": "final_compromise"
+          },
+          "cause_and_effect": {
+            "text": "When I hit the bell? That doesn't make any sense. It's just a hammer and a bell. How could that hurt anybody?",
+            "next_state": "gentle_suggestion"
+          },
+          "gentle_suggestion": {
+            "text": "Hit it gently? Do you hear yourself right now? The whole point is to hit it as hard as possible. That's literally the entire game. You might as well ask me to breathe gently.",
+            "options": [
+              {
+                "text": "Just trust me on this one thing.",
+                "target_state": "trust_appeal"
+              },
+              {
+                "text": "Then don't play the game at all.",
+                "target_state": "no_game"
+              }
+            ]
+          },
+          "safety_first": {
+            "text": "I guess... I could take some pictures with her first. Build up the suspense, you know? Make her wait for the big moment when I ring that bell. That could actually be more romantic.",
+            "on_talk_action": {
+              "gives_item": "chads_promise"
+            },
+            "next_state": "convinced"
+          },
+          "strength_limitation": {
+            "text": "Not full strength? But then I might not ring the bell, and everyone will think I'm weak. This is really important to me, man. Can't you understand that?",
+            "next_state": "trust_appeal"
+          },
+          "direct_explanation": {
+            "text": "Electrical surge? You really think hitting a bell can cause all that? This is starting to sound like some Final Destination movie plot. That stuff doesn't happen in real life.",
+            "next_state": "evacuation_help"
+          },
+          "evacuation_help": {
+            "text": "Evacuate the food court? For what, a theoretical electrical problem? People would think I'm crazy. But... if there really was a danger, and I helped save people... that would be pretty heroic.",
+            "options": [
+              {
+                "text": "Exactly. Be the hero Brittany deserves.",
+                "target_state": "hero_motivation"
+              },
+              {
+                "text": "You could be the one who prevents a disaster.",
+                "target_state": "prevention_glory"
+              }
+            ]
+          },
+          "trust_appeal": {
+            "text": "Trust you? I don't even know you, man. But... there's something about the way you're talking that makes me think you might actually know something. Alright, I'll consider it.",
+            "next_state": "safety_first"
+          },
+          "no_game": {
+            "text": "Not play the game at all? That's... that's asking a lot. This whole day has been building up to this moment. But if people could really get hurt... maybe I need to think about this differently.",
+            "next_state": "safety_first"
+          },
+          "hero_motivation": {
+            "text": "Be her hero... yeah, I like that. Instead of just winning her a prize, I could actually save her life. That's way more impressive than ringing some stupid bell.",
+            "on_talk_action": {
+              "gives_item": "chads_heroic_decision"
+            },
+            "next_state": "convinced"
+          },
+          "prevention_glory": {
+            "text": "Prevent a disaster... like a real-life action hero. That would definitely get me more respect than winning a carnival game. Alright, you've convinced me. What do you need me to do?",
+            "next_state": "convinced"
+          },
+          "convinced": {
+            "text": "Okay, I'm in. I'll get Brittany somewhere safe and help clear people out if needed. But if this turns out to be some elaborate prank, you and I are gonna have words."
+          }
+        }
+      },
+      {
+        "id": "brittany_girlfriend",
+        "name": "Brittany",
+        "description": "A pretty girl with long blonde hair, giggling at her boyfriend's antics. She's wearing a bright red sweater and seems to be having the time of her life.",
+        "initial_state": "default",
+        "dialogue_states": {
+          "default": {
+            "text": "Chad is so dreamy! He's going to win me that giant teddy bear. Have you seen it? It's almost as big as me!",
+            "options": [
+              {
+                "text": "You should move away from the food court area.",
+                "target_state": "safety_suggestion"
+              },
+              {
+                "text": "That red sweater looks great, but it might attract attention.",
+                "target_state": "color_concern"
+              },
+              {
+                "text": "What do you think about Alexei's warnings?",
+                "target_state": "alex_opinion"
+              }
+            ]
+          },
+          "safety_suggestion": {
+            "text": "Move away? But this is where all the fun is! The corn dogs smell amazing, and I want to be close enough to see Chad ring that bell. Why would I want to move?",
+            "options": [
+              {
+                "text": "There might be an accident with the livestock.",
+                "target_state": "animal_concern"
+              },
+              {
+                "text": "The photo booth area would be more romantic for pictures.",
+                "target_state": "romantic_appeal"
+              },
+              {
+                "text": "Show Alexei's phone evidence",
+                "target_state": "evidence_reaction"
+              }
+            ]
+          },
+          "color_concern": {
+            "text": "Attract attention? I hope so! Chad bought me this sweater because he said it makes me look stunning. Red is totally my color. Why, do you think it's too bright?",
+            "options": [
+              {
+                "text": "Bulls are attracted to red and movement.",
+                "target_state": "bull_explanation"
+              },
+              {
+                "text": "Maybe save it for later - after you're away from here.",
+                "target_state": "timing_suggestion"
+              }
+            ]
+          },
+          "alex_opinion": {
+            "text": "That weird Russian guy? He was super intense. Just stared at us and mumbled about death. Total killjoy. Chad told him to take a hike.",
+            "options": [
+              {
+                "text": "He might be trying to save your life.",
+                "target_state": "life_saving_claim"
+              },
+              {
+                "text": "What specifically did he say to you?",
+                "target_state": "alex_details"
+              },
+              {
+                "text": "Have you noticed the problems with the generator?",
+                "target_state": "generator_awareness"
+              }
+            ]
+          },
+          "animal_concern": {
+            "text": "An accident with livestock? The animals are all locked up in pens. What kind of accident could there be? You're starting to sound as paranoid as that Alex boy.",
+            "next_state": "romantic_appeal"
+          },
+          "romantic_appeal": {
+            "text": "Photo booth? Oh my gosh, that's such a cute idea! Chad and I could take some adorable couple photos. But I really want to see him win me that bear first. It's so romantic when he shows off his strength!",
+            "options": [
+              {
+                "text": "You could take photos first, then watch him win prizes.",
+                "target_state": "sequence_suggestion"
+              },
+              {
+                "text": "The bear will still be there later - your safety won't be.",
+                "target_state": "safety_priority"
+              }
+            ]
+          },
+          "evidence_reaction": {
+            "text": "What is this supposed to be? Some kind of movie? This looks totally fake. Are you and that Alex kid working together to prank people or something?",
+            "options": [
+              {
+                "text": "This is real footage of what's going to happen.",
+                "target_state": "reality_insistence"
+              },
+              {
+                "text": "Just humor me and move to the photo booth area.",
+                "target_state": "humor_request"
+              }
+            ]
+          },
+          "bull_explanation": {
+            "text": "Bulls are attracted to red? That's just in cartoons, isn't it? Besides, the bull is way over there in the livestock area. It can't even see me from here.",
+            "options": [
+              {
+                "text": "It's not just cartoons - it's real, and the bull might escape.",
+                "target_state": "escape_possibility"
+              },
+              {
+                "text": "You're right, but why take the chance?",
+                "target_state": "precaution_logic"
+              }
+            ]
+          },
+          "timing_suggestion": {
+            "text": "Save it for later? But I want to look good for the pictures Chad and I are gonna take after he wins! This sweater is perfect for today. I don't understand why everyone's being so weird about it.",
+            "next_state": "sequence_suggestion"
+          },
+          "life_saving_claim": {
+            "text": "Save my life? Now you're being as dramatic as he was. This is a county fair, not some action movie. The most dangerous thing here is getting a stomachache from too much fried food.",
+            "next_state": "alex_details"
+          },
+          "alex_details": {
+            "text": "He said something about visions of disaster, people getting hurt, electricity and explosions. It was all very doom and gloom. Chad got really mad and told him to stop scaring me.",
+            "options": [
+              {
+                "text": "Did any of what he said seem specific or detailed?",
+                "target_state": "detail_recognition"
+              },
+              {
+                "text": "Chad was trying to protect you - maybe you should listen.",
+                "target_state": "chad_wisdom"
+              }
+            ]
+          },
+          "generator_awareness": {
+            "text": "Generator? I haven't noticed anything wrong with it. It looks like it's working fine to me. Why, have you seen something weird about it?",
+            "options": [
+              {
+                "text": "It's sparking and overheating.",
+                "target_state": "danger_alert"
+              },
+              {
+                "text": "Rusty seemed really worried about it earlier.",
+                "target_state": "rusty_concern"
+              }
+            ]
+          },
+          "sequence_suggestion": {
+            "text": "Photos first? But what if someone else wins the bear while we're taking pictures? Chad has been talking about this all day. Can't we just take a few quick photos after he wins?",
+            "options": [
+              {
+                "text": "The photos will be better with good lighting away from here.",
+                "target_state": "lighting_appeal"
+              },
+              {
+                "text": "There won't be an 'after' if you stay here.",
+                "target_state": "dire_warning"
+              }
+            ]
+          },
+          "safety_priority": {
+            "text": "My safety? You're really starting to freak me out. This is supposed to be fun! What could possibly happen at a county fair that would be dangerous?",
+            "options": [
+              {
+                "text": "The bull could escape and charge through here.",
+                "target_state": "bull_stampede_explanation"
+              },
+              {
+                "text": "Just trust me - please move to the photo booth area.",
+                "target_state": "trust_plea"
+              }
+            ]
+          },
+          "reality_insistence": {
+            "text": "Real footage? This looks like something from a horror movie. Are you trying to scare me? Because it's working, but not in the way you probably want.",
+            "next_state": "humor_request"
+          },
+          "humor_request": {
+            "text": "Humor you? I guess... if it'll make you stop being so weird about this. But Chad is going to think I'm crazy if I just randomly decide to go take pictures instead of watching him.",
+            "options": [
+              {
+                "text": "Tell him you want couple photos before the crowds get bigger.",
+                "target_state": "crowd_excuse"
+              },
+              {
+                "text": "I'll talk to Chad for you.",
+                "target_state": "mediator_offer"
+              }
+            ]
+          },
+          "escape_possibility": {
+            "text": "The bull might escape? That sounds like something from a Western movie. Those fences look pretty sturdy to me. And there are people watching it, right?",
+            "options": [
+              {
+                "text": "The fence is electric and connected to the faulty generator.",
+                "target_state": "electrical_connection"
+              },
+              {
+                "text": "Even a small chance isn't worth risking your life.",
+                "target_state": "risk_assessment"
+              }
+            ]
+          },
+          "precaution_logic": {
+            "text": "Why take the chance? I suppose you have a point. But Chad would be so disappointed if I missed his big moment. This means a lot to him, you know?",
+            "next_state": "trust_plea"
+          },
+          "detail_recognition": {
+            "text": "Now that you mention it, he did seem to know a lot of specific things. Like he knew the bull's name was Thunder, and he knew exactly which food stalls would be affected. How would he know that unless...",
+            "options": [
+              {
+                "text": "Unless he really can see the future.",
+                "target_state": "dawning_realization"
+              },
+              {
+                "text": "He's been researching this place obsessively.",
+                "target_state": "research_explanation"
+              }
+            ]
+          },
+          "chad_wisdom": {
+            "text": "Chad was protecting me? Yeah, he always does that. He gets really defensive when people try to upset me. Maybe... maybe I should take his instincts more seriously.",
+            "options": [
+              {
+                "text": "He loves you and wants to keep you safe.",
+                "target_state": "love_motivation"
+              },
+              {
+                "text": "Smart boyfriends listen to warnings about danger.",
+                "target_state": "smart_decision"
+              }
+            ]
+          },
+          "danger_alert": {
+            "text": "Sparking and overheating? That does sound bad. I don't really know anything about electrical stuff, but sparks are never good, right? Should we tell someone?",
+            "options": [
+              {
+                "text": "We should get you away from here first.",
+                "target_state": "evacuation_priority"
+              },
+              {
+                "text": "Rusty already tried - nobody listens to him.",
+                "target_state": "authority_failure"
+              }
+            ]
+          },
+          "rusty_concern": {
+            "text": "Rusty? That old carnival worker? He did seem pretty agitated earlier. I thought he was just grumpy, but maybe he knows something we don't.",
+            "next_state": "danger_alert"
+          },
+          "lighting_appeal": {
+            "text": "Better lighting? You know what, you're right! The lighting over by the photo booth area is way better. And there are those cute decorative lights that would make the pictures look amazing!",
+            "on_talk_action": {
+              "gives_item": "brittanys_photo_idea"
+            },
+            "next_state": "convinced_safety"
+          },
+          "dire_warning": {
+            "text": "No 'after'? Okay, now you're really scaring me. What exactly do you think is going to happen? You're talking like someone's going to die or something.",
+            "options": [
+              {
+                "text": "Someone will die if you don't move.",
+                "target_state": "death_prediction"
+              },
+              {
+                "text": "I'm trying to prevent something terrible.",
+                "target_state": "prevention_mission"
+              }
+            ]
+          },
+          "bull_stampede_explanation": {
+            "text": "A bull stampede? At a county fair? That sounds... actually, that sounds terrifying. But surely they have safety measures in place to prevent that kind of thing?",
+            "options": [
+              {
+                "text": "The safety measures will fail when the generator overloads.",
+                "target_state": "system_failure"
+              },
+              {
+                "text": "Safety measures don't account for electrical surges.",
+                "target_state": "unexpected_failure"
+              }
+            ]
+          },
+          "trust_plea": {
+            "text": "You seem really sincere about this. And honestly, you're starting to scare me enough that maybe I should listen. But what do I tell Chad? He's been looking forward to this all day.",
+            "next_state": "mediator_offer"
+          },
+          "crowd_excuse": {
+            "text": "Couple photos before crowds get bigger? That's actually a really good excuse! Chad loves taking pictures with me, and he'd totally understand wanting to get good shots before it gets too crowded.",
+            "on_talk_action": {
+              "gives_item": "photo_booth_plan"
+            },
+            "next_state": "convinced_safety"
+          },
+          "mediator_offer": {
+            "text": "You'd talk to Chad for me? That might actually help. He seems to respect you more than most people who've tried to give him advice today. Maybe he'd listen to you.",
+            "next_state": "convinced_safety"
+          },
+          "electrical_connection": {
+            "text": "The fence is electric? And connected to the generator? Oh my god, I never thought about that. If the generator has problems, then the fence could fail, and then... oh no.",
+            "next_state": "dawning_realization"
+          },
+          "risk_assessment": {
+            "text": "Even a small chance... you're right. I don't want to be the girl who died at a county fair because she was too stubborn to move away from danger. That would be such a stupid way to go.",
+            "next_state": "convinced_safety"
+          },
+          "dawning_realization": {
+            "text": "Oh my god. This is real, isn't it? This isn't some prank or scare tactic. You really think something terrible is going to happen, and that weird Alex kid really can see it coming. I... I need to get out of here.",
+            "on_talk_action": {
+              "gives_item": "brittanys_realization"
+            },
+            "next_state": "convinced_safety"
+          },
+          "research_explanation": {
+            "text": "Researching obsessively? That's kind of creepy, but also... if he went to all that trouble to learn about this place, maybe he really did discover something dangerous. Either way, I don't want to stick around to find out.",
+            "next_state": "convinced_safety"
+          },
+          "love_motivation": {
+            "text": "He does love me. And he'd never forgive himself if something happened to me that he could have prevented. Maybe the best way to show I trust him is to take these warnings seriously.",
+            "next_state": "convinced_safety"
+          },
+          "smart_decision": {
+            "text": "Smart boyfriends do listen to warnings. And Chad is smart, even if he doesn't always act like it. If I'm the one suggesting we move somewhere safer, he might actually go along with it.",
+            "next_state": "convinced_safety"
+          },
+          "evacuation_priority": {
+            "text": "Get me away first? Yeah, that makes sense. If something's really wrong with the generator, I don't want to be anywhere near it when it fails. The photo booth area is sounding better and better.",
+            "next_state": "convinced_safety"
+          },
+          "authority_failure": {
+            "text": "Nobody listens to him? That's so typical. The person who actually knows what they're talking about gets ignored while everyone else just assumes everything will be fine. Well, I'm listening now.",
+            "next_state": "convinced_safety"
+          },
+          "death_prediction": {
+            "text": "Someone will die? You really think... oh god, you're serious. You actually think people are going to die today. I can't... I need to get Chad and get out of here right now.",
+            "on_talk_action": {
+              "gives_item": "urgent_evacuation_plan"
+            },
+            "next_state": "panicked_convinced"
+          },
+          "prevention_mission": {
+            "text": "Prevent something terrible? Like a guardian angel or something? This is all so surreal, but... thank you. Thank you for caring enough to warn me, even though I've been acting like you're crazy.",
+            "next_state": "convinced_safety"
+          },
+          "system_failure": {
+            "text": "When the generator overloads... it's all connected, isn't it? The games, the lights, the fence around the bull pen. If one thing fails, it could cause a chain reaction. This is like a disaster movie.",
+            "next_state": "dawning_realization"
+          },
+          "unexpected_failure": {
+            "text": "Electrical surges? I never would have thought of that. You know so much about this stuff - are you an engineer or something? Either way, I believe you. Let's get out of here.",
+            "next_state": "convinced_safety"
+          },
+          "convinced_safety": {
+            "text": "Okay, I'm convinced. Let's go to the photo booth area and get Chad to come with us. Maybe we can convince some other people to move too. Thank you for looking out for me."
+          },
+          "panicked_convinced": {
+            "text": "We need to get everyone away from here! The food court, the game stalls, anywhere near that generator! How do we warn people without causing a panic? Oh god, what if it's already too late?"
+          }
+        }
+      }
+    ]
+  },
+  "Food Court": {
+    "description": "A bustling area filled with food stalls offering fair classics - corn dogs, funnel cakes, and deep-fried everything. Picnic tables are scattered around for patrons.",
+    "exits": {
+      "south": "Midway (Center)"
+    },
+    "furniture": [
+      "food_stall",
+      "picnic_tables"
+    ],
+    "hazards_present": [
+      {
+        "type": "food_stall_structure",
+        "chance": 1.0
+      },
+      {
+        "type": "propane_tanks",
+        "chance": 1.0
+      }
+    ]
+  },
+  "Photo Booth Area": {
+    "description": "A quieter corner of the fair with several photo booths. Couples and friends pose for silly pictures, creating memories of the day.",
+    "exits": {
+      "north": "Midway (Center)"
+    },
+    "furniture": [
+      "photo_booth"
+    ],
+    "hazards_present": [
+      {
+        "type": "photo_booth_electrocution",
+        "chance": 0.5
+      }
+    ]
+  },
+  "Midway (East)": {
+    "description": "The eastern end of the midway, leading toward the exit. The crowd seems to thin out here as visitors begin to make their way home.",
+    "exits": {
+      "west": "Midway (Center)",
+      "east": "LEVEL_TRANSITION_TRIGGER",
+      "north": "First Aid Tent"
+    },
+    "furniture": [],
+    "hazards_present": []
+  },
+  "First Aid Tent": {
+    "description": "A white tent with a red cross emblazoned on top houses the fair's first aid station. Medical supplies and cots are neatly arranged inside.",
+    "exits": {
+      "south": "Midway (East)"
+    },
+    "furniture": [
+      "medical_cots",
+      "first_aid_supply_cabinet"
+    ],
+    "hazards_present": []
+  }
+}

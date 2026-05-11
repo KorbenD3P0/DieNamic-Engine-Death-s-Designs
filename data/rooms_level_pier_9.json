@@ -1,0 +1,168 @@
+{
+    "Pier Entrance": {
+        "description": "An old wooden pier extends into dark waters  The entrance is marked by weathered pilings and rotted rope barriers. Seagulls cry overhead. The boardwalk planks are warped and split, gaps showing the water below. Rusted bollards lean at odd angles. The smell of salt and decomposition is strong.",
+        "examine_details": {
+            "weathered pilings": "Massive wooden posts sunk into the seabed, green with algae and barnacles.",
+            "warped boardwalk": "The wooden walkway is twisted and splitting. Many boards are completely rotten.",
+            "rusted bollards": "Iron mooring posts, corroded and leaning from ship impacts over the years.",
+            "rope barriers": "Frayed nautical rope across the entrance. A faded 'CONDEMNED' sign hangs from it."
+        },
+        "exits": {
+            "onto pier": "Main Pier Deck"
+        },
+        "entry_room": true,
+        "first_entry_text": "The condemned pier stretches out over dark water. Every step will be a test - the structure is barely holding together.",
+        "furniture": [],
+        "hazards_present": [],
+        "items": [],
+        "name": "Pier Entrance",
+        "objects": [
+            "weathered_pilings",
+            "warped_boardwalk",
+            "rope_barriers"
+        ],
+        "state_flags": {
+            "floor": 0
+        }
+    },
+    "Main Pier Deck": {
+        "description": "The main walkway of Pier 9. Wooden planks creak alarmingly with every step. Puddles of seawater dot the surface. Old fishing equipment - nets, traps, buoys - lies abandoned and rotting. Metal railings are rusted through in places. Below, waves crash against the pilings with ominous regularity.",
+        "examine_details": {
+            "creaking planks": "The boards beneath your feet groan and flex. You can see water between many of them.",
+            "seawater puddles": "Standing water everywhere, making the wood slick and treacherous.",
+            "fishing equipment": "Tangled nets and broken traps create trip hazards.",
+            "rusted railings": "The safety barriers are more rust than metal. They won't stop a fall."
+        },
+        "exits": {
+            "back": "Pier Entrance",
+            "forward": "Pier Mid-Section",
+            "east": "Tackle Shop"
+        },
+        "furniture": [],
+        "hazards_present": [
+            {
+                "type": "weak_floorboards",
+                "chance": 0.3
+            },
+            {
+                "type": "water_puddle"
+            }
+        ],
+        "items": [],
+        "name": "Main Pier Deck",
+        "objects": [
+            "creaking_planks",
+            "fishing_equipment",
+            "rusted_railings"
+        ],
+        "state_flags": {
+            "floor": 1
+        }
+    },
+    "Tackle Shop": {
+        "description": "A small shack built on the pier. The roof sags dangerously. Broken windows let in wind and spray. Inside, shelves hold rusted hooks, moldy bait, and sun-faded lures. The floor is rotted through in the corners. Water has pooled in one section. Exposed wiring hangs from where a light fixture fell.",
+        "examine_details": {
+            "sagging roof": "The ceiling bows alarmingly. Visible cracks run along the support beams.",
+            "rusted fishing gear": "Hooks, lures, and tackle - all corroded beyond use.",
+            "rotted floor corners": "The planking has given way in multiple spots. Dark water visible below.",
+            "exposed wiring": "Electrical cables hanging loose from the ceiling. Still live, judging by the sparks."
+        },
+        "exits": {
+            "west": "Main Pier Deck"
+        },
+        "furniture": [
+            "tackle_shelves"
+        ],
+        "hazards_present": [
+            {
+                "type": "faulty_wiring",
+                "object_name_override": "exposed_ceiling_wires",
+                "support_object_override": "ceiling"
+            },
+            {
+                "type": "water_puddle",
+                "object_name_override": "seeping_floor_water",
+                "support_object_override": "floor"
+            }
+        ],
+        "items": [],
+        "name": "Tackle Shop",
+        "objects": [
+            "sagging_roof",
+            "rusted_fishing_gear",
+            "exposed_wiring"
+        ],
+        "state_flags": {
+            "floor": 1
+        }
+    },
+    "Pier Mid-Section": {
+        "description": "Further out over the water. The pier narrows here. Large sections of railing are missing entirely. The boards are even more deteriorated. Below, you can hear waves smashing against the pilings with increasing violence. The whole structure sways with each impact.",
+        "examine_details": {
+            "missing railings": "Long stretches with no barrier at all. One wrong step means a fall into dark water.",
+            "deteriorated planks": "More holes than boards. Crossing requires careful foot placement.",
+            "swaying supports": "The entire pier rocks with the wave action. Nauseating.",
+            "crashing waves": "The water below is violent and cold. Survival time would be minutes."
+        },
+        "exits": {
+            "back": "Main Pier Deck",
+            "end": "Pier End Platform"
+        },
+        "furniture": [],
+        "hazards_present": [
+            {
+                "type": "weak_floorboards",
+                "chance": 0.4
+            }
+        ],
+        "items": [],
+        "name": "Pier Mid-Section",
+        "objects": [
+            "missing_railings",
+            "deteriorated_planks",
+            "crashing_waves"
+        ],
+        "state_flags": {
+            "floor": 1
+        }
+    },
+    "Pier End Platform": {
+        "description": "The end of Pier 9. A wider platform that once held benches and a covered shelter. The roof has partially collapsed. The benches are long gone. The railings are twisted metal skeletons. And there - clinging to the last standing post - a figure! Above them, the shelter's roof is giving way!",
+        "examine_details": {
+            "collapsed shelter": "The wooden awning has caved in on one side. The rest is seconds from following.",
+            "twisted metal railings": "The safety barriers have been bent by storm damage into dangerous shapes.",
+            "figure on post": "Someone clings desperately to the support post! The collapsing roof will crush them!",
+            "platform edge": "The end of the pier. Beyond is open water and a 20-foot drop."
+        },
+        "exits": {
+            "back": "Pier Mid-Section"
+        },
+        "first_entry_text": "You've reached the end of the pier! There! Trapped as the shelter roof collapses! You have seconds to act!",
+        "furniture": [],
+        "hazards_present": [
+            {
+                "chance": 0.3,
+                "object_name_options": [
+                    "falling_shelter_beam"
+                ],
+                "support_object_override": "shelter_frame",
+                "type": "precarious_object"
+            }
+        ],
+        "items": [],
+        "name": "Pier End Platform",
+        "objects": [
+            "collapsed_shelter",
+            "twisted_metal_railings"
+        ],
+        "special_encounters": {
+            "level_house_target_encounter": {
+                "trigger": "on_entry",
+                "target_reference": "player.target_name"
+            }
+        },
+        "state_flags": {
+            "floor": 1
+        }
+    }
+}

@@ -1,0 +1,15 @@
+{
+  "Main Area": {
+    "name": "Main Area",
+    "description": "You arrive at the location, but it's eerily quiet. The person you are looking for isn't here right now, or maybe you are too late. You should head back to the Hub and regroup.",
+    "entry_room": true,
+    "first_entry_text": "You burst through the doors, scanning the area for the target.",
+    "exits": {
+      "Return to your car": "LEVEL_TRANSITION_HUB"
+    },
+    "furniture": [],
+    "items": [],
+    "objects": [],
+    "hazards_present": []
+  }
+}

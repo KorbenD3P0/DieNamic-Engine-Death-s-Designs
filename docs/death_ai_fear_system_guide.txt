@@ -1,0 +1,1509 @@
+# Death AI & Fear System Guide
+**Version:** 1.0  
+**Last Updated:** 2025-11-06  
+**Game:** DieNamic Engine: Death's Designs - AR
+
+---
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Death as Entity](#death-as-entity)
+3. [Fear System](#fear-system)
+4. [Death AI Logic](#death-ai-logic)
+5. [Narrative Generation](#narrative-generation)
+6. [Death Sequences](#death-sequences)
+7. [Cheating Detection](#cheating-detection)
+8. [Difficulty Scaling](#difficulty-scaling)
+9. [Testing & Debugging](#testing--debugging)
+10. [Complete Examples](#complete-examples)
+
+---
+
+## Overview
+
+The Death AI & Fear System transforms Death from a passive game-over mechanic into an **active antagonist** that:
+- **Narrates** the player's journey
+- **Taunts** the player's failures
+- **Respects** the player's successes
+- **Adapts** to player behavior
+- **Punishes** cheating or exploitation
+
+### Design Philosophy
+
+**Death should feel:**
+- **Omniscient**: Knows everything happening in the game
+- **Personal**: Comments directly on player choices
+- **Fair but Ruthless**: Respects skill, punishes mistakes
+- **Dynamic**: Adapts dialogue to context (fear level, hazards, NPCs)
+- **Inevitable**: Players can delay but not permanently escape
+
+**Death should NOT feel:**
+- Random or unpredictable (consistent rules)
+- Unfair or cheap (telegraphed threats)
+- Repetitive (varied dialogue)
+- Silent (always has something to say)
+
+### Core Responsibilities
+
+| System | Responsibility |
+|--------|----------------|
+| **Death AI** | Dialogue generation, player tracking, cheating detection |
+| **Fear System** | Fear accumulation, thresholds, fear-based events |
+| **Narrative Generator** | Context-aware Death dialogue, taunts, warnings |
+| **Death Sequences** | Game over screens, death animations, respawn logic |
+
+---
+
+## Death as Entity
+
+### Death's Character Profile
+
+**Identity:**
+- Personification of death itself
+- Narrator and antagonist
+- Architect of "The Design" (fate's plan)
+
+**Personality:**
+- **Confident**: Knows most players will fail
+- **Amused**: Enjoys watching struggles
+- **Respectful**: Acknowledges genuine skill
+- **Vengeful**: Hates cheaters and rule-breakers
+- **Patient**: Willing to wait for inevitable mistakes
+
+**Voice:**
+- Formal but conversational
+- Sarcastic when player fails
+- Impressed when player succeeds
+- Cold and threatening when player cheats
+
+---
+
+### Death's Appearances
+
+Death appears at key moments:
+
+| Moment | Appearance Type | Purpose |
+|--------|-----------------|---------|
+| **Game Start** | Opening Narration | Introduce Death, explain Design |
+| **Level Start** | Level Introduction | Set tone, hint at dangers |
+| **Player Death** | Death Screen | Taunt or acknowledge failure |
+| **Near-Death** | Warning Dialogue | Build tension, foreshadow |
+| **Hazard Cleared** | Occasional Comment | React to player success |
+| **NPC Dies** | Fate Commentary | Remind player of stakes |
+| **Cheating Detected** | Angry Warning | Threaten consequences |
+| **Level Complete** | Exit Narration | React to outcome |
+| **Game Complete** | Ending Narration | Final judgment |
+
+---
+
+### Death's Dialogue Modes
+
+**Mode 1: Narrator (Neutral)**
+```
+"The hospital halls echo with memories of the Design.
+180 souls taken in one night. But tonight, only one
+target remains..."
+```
+
+**Mode 2: Taunt (Player Failed)**
+```
+"Did you really think you could outrun fate? How
+delightful. I haven't laughed like that in centuries."
+```
+
+**Mode 3: Respect (Player Succeeded)**
+```
+"Impressive. You've delayed the inevitable once again.
+But the Design is patient... and so am I."
+```
+
+**Mode 4: Warning (Near Death/High Fear)**
+```
+"Your heart races. Your hands tremble. You can feel me
+drawing closer, can't you?"
+```
+
+**Mode 5: Anger (Cheating Detected)**
+```
+"You DARE to break the rules of the Design? There are
+consequences for those who cheat Death."
+```
+
+---
+
+## Fear System
+
+### Fear Mechanics
+
+**Fear Range:** 0-100%
+
+| Fear Level | Threshold | Effects |
+|------------|-----------|---------|
+| **Calm** | 0-20% | No penalties, optimal performance |
+| **Nervous** | 21-40% | Minor QTE time reduction (-5%) |
+| **Scared** | 41-60% | QTE time reduction (-10%), occasional trembling UI |
+| **Terrified** | 61-80% | QTE time reduction (-15%), NPC dialogue hints at fear |
+| **Panicked** | 81-100% | QTE time reduction (-20%), Death appears more often |
+
+---
+
+### Fear Sources
+
+**Exploration:**
+```python
+fear_sources = {
+    "dark_room": +5,           # Entering unlit room
+    "corpse_examine": +10,     # Examining dead body
+    "blood_pool": +8,          # Finding blood
+    "locked_door_rattle": +3,  # Door won't open
+    "strange_sound": +5,       # Ambient horror
+    "secret_room": +15,        # Discovering hidden horror
+}
+```
+
+**Hazards:**
+```python
+hazard_fear = {
+    "hazard_proximity": +5,      # Per turn near active hazard
+    "hazard_triggered": +15,     # Hazard activates
+    "hazard_damage": +20,        # Take damage from hazard
+    "qte_failed": +10,           # Fail QTE sequence
+    "qte_close_call": +5,        # Barely succeed QTE
+}
+```
+
+**NPCs:**
+```python
+npc_fear = {
+    "npc_injured": +10,          # NPC gets hurt
+    "npc_died_hazard": +25,      # NPC dies to hazard
+    "npc_died_abandon": +30,     # Player abandons injured NPC
+    "npc_corpse_found": +15,     # Find dead NPC
+}
+```
+
+**Death Appearances:**
+```python
+death_fear = {
+    "death_warning": +10,        # Death speaks during gameplay
+    "death_appears": +20,        # Death manifests visually
+    "near_death_experience": +25, # Player almost dies
+}
+```
+
+**Player State:**
+```python
+state_fear = {
+    "low_health": +5,            # Per turn below 30% health
+    "no_items": +3,              # Inventory empty
+    "no_escape": +10,            # All exits locked
+    "time_pressure": +5,         # Countdown active
+}
+```
+
+---
+
+### Fear Reduction
+
+**Positive Actions:**
+```python
+fear_reduction = {
+    "hazard_cleared": -10,       # Successfully clear hazard
+    "qte_perfect": -5,           # Perfect QTE performance
+    "npc_saved": -15,            # Save NPC from danger
+    "light_turned_on": -8,       # Illuminate dark room
+    "safe_room_entered": -10,   # Enter clearly safe area
+    "evidence_collected": -3,    # Progress toward understanding
+    "rest_action": -5,           # Deliberately calm down
+}
+```
+
+---
+
+### Fear Thresholds & Events
+
+**Threshold Event System:**
+
+**40% Fear - "Nervous Breakdown"**
+```python
+if fear >= 40 and not triggered["nervous_breakdown"]:
+    death_speaks(
+        "Your breathing quickens. I can hear your heart "
+        "pounding from here. Fear is a wonderful thing, "
+        "isn't it?"
+    )
+    qte_time_multiplier = 0.9
+    triggered["nervous_breakdown"] = True
+```
+
+**60% Fear - "Hallucinations Begin"**
+```python
+if fear >= 60 and not triggered["hallucinations"]:
+    death_speaks(
+        "Are you seeing things that aren't there? Or am I "
+        "showing you what's REALLY there? Hard to tell when "
+        "you're this terrified..."
+    )
+    # Occasional visual distortions
+    enable_fear_effects()
+    qte_time_multiplier = 0.85
+    triggered["hallucinations"] = True
+```
+
+**80% Fear - "Death Stalks You"**
+```python
+if fear >= 80 and not triggered["death_stalking"]:
+    death_speaks(
+        "I'm coming for you now. You can run. You can hide. "
+        "But I'm right behind you. Can you feel my breath "
+        "on your neck?"
+    )
+    # Death appears in background occasionally
+    enable_death_stalking()
+    qte_time_multiplier = 0.8
+    triggered["death_stalking"] = True
+```
+
+**100% Fear - "Heart Attack"**
+```python
+if fear >= 100:
+    death_speaks(
+        "Your heart can't take any more. The Design doesn't "
+        "even need a hazard to claim you. Your own terror "
+        "will do."
+    )
+    trigger_death("fear_death")
+```
+
+---
+
+## Death AI Logic
+
+### AI State Machine
+
+**Death AI States:**
+
+```python
+class DeathAIState(Enum):
+    OBSERVING = "observing"          # Silently watching
+    TAUNTING = "taunting"            # Mocking player
+    WARNING = "warning"              # Foreshadowing danger
+    RESPECTING = "respecting"        # Acknowledging skill
+    ANGRY = "angry"                  # Player cheated
+    CLAIMING = "claiming"            # Player died
+```
+
+**State Transitions:**
+```python
+# Player performing well → RESPECTING
+if hazards_cleared > 3 and npcs_saved > 1 and deaths == 0:
+    death_ai_state = DeathAIState.RESPECTING
+
+# Player struggling → TAUNTING
+if deaths > 2 or fear > 60:
+    death_ai_state = DeathAIState.TAUNTING
+
+# Player near danger → WARNING
+if hazard_proximity and fear > 40:
+    death_ai_state = DeathAIState.WARNING
+
+# Player cheating → ANGRY
+if cheating_detected:
+    death_ai_state = DeathAIState.ANGRY
+
+# Player died → CLAIMING
+if player_health <= 0:
+    death_ai_state = DeathAIState.CLAIMING
+```
+
+---
+
+### Dialogue Probability System
+
+**Death doesn't speak constantly** (becomes annoying). Uses probability:
+
+```python
+def should_death_speak(event_type):
+    """Determine if Death should comment on event."""
+    
+    base_probabilities = {
+        "hazard_cleared": 0.3,      # 30% chance
+        "npc_died": 0.7,            # 70% chance
+        "qte_failed": 0.4,          # 40% chance
+        "room_entered": 0.1,        # 10% chance
+        "player_death": 1.0,        # 100% chance (always)
+    }
+    
+    # Modify by Death AI state
+    if death_ai_state == DeathAIState.TAUNTING:
+        probability *= 1.5  # More talkative when taunting
+    elif death_ai_state == DeathAIState.OBSERVING:
+        probability *= 0.5  # Less talkative when observing
+    
+    # Modify by fear level (higher fear = more Death)
+    probability *= (1.0 + player.fear / 100)
+    
+    return random.random() < probability
+```
+
+---
+
+### Context-Aware Dialogue Selection
+
+**Death chooses dialogue based on:**
+- Current Death AI state
+- Player fear level
+- Recent events (hazard cleared, NPC died, etc.)
+- Player stats (deaths, successes, time played)
+- Current location (room type, level)
+
+**Example Logic:**
+```python
+def generate_death_dialogue(event_type, context):
+    """Generate appropriate Death dialogue for event."""
+    
+    # Filter dialogue pool by event type
+    dialogue_pool = death_dialogue[event_type]
+    
+    # Filter by Death AI state
+    dialogue_pool = [d for d in dialogue_pool if d["state"] == death_ai_state]
+    
+    # Filter by fear level
+    if player.fear < 40:
+        dialogue_pool = [d for d in dialogue_pool if "low_fear" in d["tags"]]
+    elif player.fear > 60:
+        dialogue_pool = [d for d in dialogue_pool if "high_fear" in d["tags"]]
+    
+    # Filter by context (if available)
+    if context.get("hazard_name"):
+        dialogue_pool = [d for d in dialogue_pool 
+                         if context["hazard_name"] in d.get("hazards", [])]
+    
+    # Pick random from filtered pool
+    if dialogue_pool:
+        return random.choice(dialogue_pool)["text"]
+    else:
+        return default_death_dialogue[event_type]
+```
+
+---
+
+## Narrative Generation
+
+### Dynamic Dialogue Templates
+
+**Template System:**
+```python
+death_dialogue_templates = {
+    "hazard_cleared": [
+        "You cleared the {hazard_name}. I didn't expect that. But the Design has more in store...",
+        "Impressive work with the {hazard_name}. But you know what they say about pride...",
+        "{hazard_name} defeated. But there are {remaining_hazards} more waiting for you.",
+    ],
+    "npc_died": [
+        "{npc_name} is mine now. The Design is perfect, after all.",
+        "Did you think you could save {npc_name}? How sweet. How naive.",
+        "Another soul claimed. {npc_name} was always meant to die here.",
+    ],
+}
+
+# Fill template with context:
+dialogue = death_dialogue_templates["npc_died"][0].format(npc_name="Dr. Ellis")
+# Result: "Dr. Ellis is mine now. The Design is perfect, after all."
+```
+
+---
+
+### Dialogue Tags & Filtering
+
+**Tags allow contextual filtering:**
+
+```python
+death_dialogue_database = [
+    {
+        "text": "Your heart races. I'm getting closer...",
+        "event": "fear_threshold",
+        "state": "warning",
+        "tags": ["high_fear", "suspense"],
+        "fear_min": 60,
+    },
+    {
+        "text": "You're doing better than I expected. But everyone makes a mistake eventually.",
+        "event": "hazard_cleared",
+        "state": "respecting",
+        "tags": ["low_fear", "skilled_player"],
+        "hazards_cleared_min": 3,
+    },
+    {
+        "text": "THAT'S IT. You've crossed the line. I'm not playing games anymore.",
+        "event": "cheating_detected",
+        "state": "angry",
+        "tags": ["cheating", "punishment"],
+    },
+]
+
+# Filter example:
+def get_dialogue(event, state, fear, hazards_cleared):
+    matches = [
+        d for d in death_dialogue_database
+        if d["event"] == event
+        and d["state"] == state
+        and d.get("fear_min", 0) <= fear
+        and d.get("hazards_cleared_min", 0) <= hazards_cleared
+    ]
+    return random.choice(matches) if matches else None
+```
+
+---
+
+### Personality Consistency
+
+**Death's voice should remain consistent:**
+
+**DO:**
+- Formal language ("you have failed" not "you screwed up")
+- Third-person references ("the Design" not "my plan")
+- Theatrical ("How delightful!" not "cool")
+- Patient tone ("Eventually..." not "hurry up")
+
+**DON'T:**
+- Modern slang ("lol", "yeet", "sus")
+- Breaking character (apologizing, being friendly)
+- Explaining mechanics (immersion-breaking)
+- Repetitive phrases (same taunt twice in a row)
+
+---
+
+## Death Sequences
+
+### Game Over Flow
+
+**When player dies:**
+
+```python
+def trigger_player_death(cause):
+    """Handle player death sequence."""
+    
+    # 1. Freeze gameplay
+    game_state = "death_sequence"
+    
+    # 2. Death speaks
+    death_dialogue = generate_death_dialogue("player_death", {"cause": cause})
+    display_death_dialogue(death_dialogue)
+    
+    # 3. Death animation
+    play_death_animation(cause)
+    
+    # 4. Death screen
+    show_death_screen(cause, stats)
+    
+    # 5. Player choice
+    choice = prompt_player(["Respawn", "Quit", "Main Menu"])
+    
+    # 6. Handle choice
+    if choice == "Respawn":
+        respawn_player()
+    elif choice == "Quit":
+        quit_game()
+    else:
+        return_to_main_menu()
+```
+
+---
+
+### Death Screen UI
+
+**Death Screen Layout:**
+```
+═══════════════════════════════════════
+              DEATH
+═══════════════════════════════════════
+
+"Did you think you could outrun fate? 
+The Design is perfect. You never stood 
+a chance."
+
+CAUSE OF DEATH: MRI Malfunction
+TURNS SURVIVED: 24
+HAZARDS CLEARED: 2
+NPCS SAVED: 1
+FEAR LEVEL: 68%
+
+═══════════════════════════════════════
+
+[Respawn at Last Checkpoint]
+[Return to Main Menu]
+[Quit Game]
+
+═══════════════════════════════════════
+```
+
+---
+
+### Respawn Logic
+
+**Checkpoint System:**
+```python
+checkpoints = {
+    "level_start": {
+        "room": "entrance",
+        "health": 100,
+        "fear": 20,
+        "inventory": [],
+        "hazards_cleared": [],
+    },
+    "mid_level": {
+        "room": "central_hub",
+        "health": 80,
+        "fear": 40,
+        "inventory": ["flashlight", "key_storage"],
+        "hazards_cleared": ["gas_leak"],
+    },
+}
+
+def respawn_player():
+    """Respawn player at last checkpoint."""
+    
+    checkpoint = get_last_checkpoint()
+    
+    # Restore state
+    player.current_room = checkpoint["room"]
+    player.health = checkpoint["health"]
+    player.fear = checkpoint["fear"]
+    player.inventory = checkpoint["inventory"].copy()
+    
+    # Don't reset hazards (already cleared)
+    for hazard_id in checkpoint["hazards_cleared"]:
+        hazards[hazard_id]["state"] = "terminal_success"
+    
+    # Increment death counter
+    player.deaths += 1
+    
+    # Death commentary on respawn
+    if player.deaths == 1:
+        death_speaks("Back already? Let's see if you do better this time.")
+    elif player.deaths == 3:
+        death_speaks("Three deaths. You're persistent, I'll give you that.")
+    elif player.deaths >= 5:
+        death_speaks("How many times must I claim you before you give up?")
+```
+
+---
+
+### Death Cause Categories
+
+**Different deaths have different dialogue:**
+
+```python
+death_causes = {
+    "hazard": {
+        "mri_malfunction": "The MRI's magnetic field crushed you.",
+        "gas_leak": "The gas overwhelmed your lungs.",
+        "malfunctioning_ventilator": "The ventilator failed. So did you.",
+    },
+    "environmental": {
+        "falling_debris": "The ceiling came down on you.",
+        "fire": "The flames consumed you.",
+        "electrocution": "Electricity stopped your heart.",
+    },
+    "fear": {
+        "fear_death": "Your own terror killed you.",
+    },
+    "special": {
+        "cheating_punishment": "I told you there would be consequences.",
+    },
+}
+
+# Death dialogue varies by cause:
+if cause in death_causes["hazard"]:
+    death_speaks("The Design's traps are flawless, aren't they?")
+elif cause in death_causes["fear"]:
+    death_speaks("Fear is just as deadly as any hazard. Remember that.")
+```
+
+---
+
+## Cheating Detection
+
+### Detectable Cheating
+
+**Death punishes players who exploit the game:**
+
+```python
+cheating_patterns = {
+    "save_scumming": {
+        "detection": "Reloading save >5 times in 10 minutes",
+        "punishment": "Death appears, mocks player, increases hazard difficulty",
+    },
+    "infinite_items": {
+        "detection": "Taking same item >3 times",
+        "punishment": "Item disappears, Death warns about 'breaking the rules'",
+    },
+    "invulnerability": {
+        "detection": "Taking damage but health not decreasing",
+        "punishment": "Instant death with angry Death dialogue",
+    },
+    "room_skipping": {
+        "detection": "Entering locked room without unlocking",
+        "punishment": "Teleport to hazard room, Death is furious",
+    },
+}
+```
+
+---
+
+### Cheat Detection Logic
+
+**Example: Save Scumming Detection**
+```python
+def detect_save_scumming():
+    """Detect if player is excessively reloading saves."""
+    
+    current_time = time.time()
+    
+    # Track reload timestamps
+    if "reload_timestamps" not in player.metadata:
+        player.metadata["reload_timestamps"] = []
+    
+    # Add current reload
+    player.metadata["reload_timestamps"].append(current_time)
+    
+    # Check last 10 minutes
+    recent_reloads = [
+        t for t in player.metadata["reload_timestamps"]
+        if current_time - t < 600  # 10 minutes
+    ]
+    
+    # If >5 reloads in 10 minutes, trigger punishment
+    if len(recent_reloads) > 5 and not player.metadata.get("save_scum_warned"):
+        trigger_cheating_punishment("save_scumming")
+        player.metadata["save_scum_warned"] = True
+```
+
+**Example: Infinite Item Detection**
+```python
+def on_item_taken(item_id, room_id):
+    """Track item taking for duplication exploits."""
+    
+    # Track item takes
+    if "item_takes" not in player.metadata:
+        player.metadata["item_takes"] = {}
+    
+    key = f"{item_id}_{room_id}"
+    player.metadata["item_takes"][key] = player.metadata["item_takes"].get(key, 0) + 1
+    
+    # If same item taken >3 times, player is duplicating
+    if player.metadata["item_takes"][key] > 3:
+        trigger_cheating_punishment("infinite_items")
+        # Remove item from game
+        items[item_id]["exists"] = False
+```
+
+---
+
+### Cheating Punishment System
+
+**Escalating Consequences:**
+
+```python
+def trigger_cheating_punishment(cheat_type):
+    """Punish player for cheating."""
+    
+    if cheat_type == "save_scumming":
+        death_speaks(
+            "I see you trying to undo my work. The Design "
+            "doesn't allow for do-overs. Let's make this "
+            "interesting..."
+        )
+        # Increase hazard difficulty
+        for hazard in hazards.values():
+            hazard["qte_time"] *= 0.8  # 20% less time
+        player.fear += 30
+    
+    elif cheat_type == "infinite_items":
+        death_speaks(
+            "Breaking the laws of reality, are we? I think "
+            "NOT. That item is mine now."
+        )
+        # Remove exploited item
+        # Already done in detection
+    
+    elif cheat_type == "invulnerability":
+        death_speaks(
+            "YOU DARE TO MAKE YOURSELF INVINCIBLE? I AM DEATH. "
+            "I decide who lives and who dies. And you... you DIE."
+        )
+        # Instant kill, no respawn at checkpoint (restart level)
+        player.health = 0
+        player.can_respawn = False
+        trigger_player_death("cheating_punishment")
+    
+    elif cheat_type == "room_skipping":
+        death_speaks(
+            "You think you can skip my carefully crafted Design? "
+            "Let me show you what happens when you take shortcuts."
+        )
+        # Teleport to dangerous hazard room
+        teleport_to_room("hazard_gauntlet")
+        spawn_hazard("surprise_hazard")
+```
+
+---
+
+## Difficulty Scaling
+
+### Adaptive Difficulty
+
+**Death AI adjusts difficulty based on player performance:**
+
+```python
+def calculate_difficulty_modifier():
+    """Adjust difficulty based on player performance."""
+    
+    # Base difficulty
+    modifier = 1.0
+    
+    # Player doing too well
+    if deaths == 0 and hazards_cleared > 3 and fear < 30:
+        modifier = 1.2  # Increase difficulty by 20%
+        death_speaks("You're doing too well. Time to raise the stakes.")
+    
+    # Player struggling
+    elif deaths > 3 and hazards_cleared < 2 and fear > 60:
+        modifier = 0.8  # Decrease difficulty by 20%
+        death_speaks("Let's give you a fighting chance. I want this to be fun.")
+    
+    return modifier
+
+# Apply modifier:
+qte_time *= difficulty_modifier
+hazard_damage *= difficulty_modifier
+fear_gain *= difficulty_modifier
+```
+
+---
+
+### Difficulty Settings
+
+**Player-Selected Difficulty:**
+
+```python
+difficulty_settings = {
+    "story_mode": {
+        "qte_time_multiplier": 1.5,
+        "damage_multiplier": 0.5,
+        "fear_gain_multiplier": 0.7,
+        "death_penalty": "none",  # No score loss
+        "description": "Focus on story, minimal challenge",
+    },
+    "normal": {
+        "qte_time_multiplier": 1.0,
+        "damage_multiplier": 1.0,
+        "fear_gain_multiplier": 1.0,
+        "death_penalty": "score_loss",
+        "description": "Balanced experience",
+    },
+    "hard": {
+        "qte_time_multiplier": 0.8,
+        "damage_multiplier": 1.5,
+        "fear_gain_multiplier": 1.3,
+        "death_penalty": "checkpoint_reset",
+        "description": "Challenging, punishing mistakes",
+    },
+    "nightmare": {
+        "qte_time_multiplier": 0.6,
+        "damage_multiplier": 2.0,
+        "fear_gain_multiplier": 1.5,
+        "death_penalty": "level_reset",
+        "permadeath": True,
+        "description": "Brutal difficulty for experts only",
+    },
+}
+```
+
+---
+
+## Testing & Debugging
+
+### Log Analysis
+
+**Death AI Logs:**
+```
+DeathAI: Player entered room 'morgue_freezer'
+DeathAI: Fear increased to 55% (crossed 40% threshold)
+DeathAI: Triggering 'nervous_breakdown' event
+DeathAI: State transition: OBSERVING → WARNING
+DeathAI: Dialogue probability check: 0.7 (rolled 0.45) → SPEAK
+DeathAI: Selected dialogue: "Your breathing quickens..."
+DeathAI: QTE time multiplier adjusted: 1.0 → 0.9
+```
+
+**Fear System Logs:**
+```
+FearSystem: Fear source: dark_room (+5)
+FearSystem: Current fear: 35% → 40%
+FearSystem: Threshold crossed: 40% (nervous_breakdown)
+FearSystem: Event triggered: death_warning_dialogue
+FearSystem: QTE time multiplier: 1.0 → 0.9
+```
+
+**Cheating Detection Logs:**
+```
+CheatDetector: Item 'flashlight' taken in room 'supply_closet'
+CheatDetector: Item take count: flashlight_supply_closet = 4
+CheatDetector: CHEAT DETECTED: infinite_items
+CheatDetector: Triggering punishment: infinite_items
+DeathAI: State transition: OBSERVING → ANGRY
+DeathAI: Cheating punishment dialogue triggered
+```
+
+---
+
+### Common Issues
+
+#### **Death Speaks Too Often**
+**Symptoms:** Death dialogue appearing constantly, breaking immersion  
+**Causes:**
+- Probability checks too high
+- Death AI state stuck in TAUNTING
+- Event triggers not properly rate-limited
+
+**Debug:**
+```python
+# Check dialogue probabilities:
+print(f"Base probability: {base_probabilities[event_type]}")
+print(f"Modified probability: {probability}")
+print(f"Should speak: {should_death_speak(event_type)}")
+
+# Check Death AI state:
+print(f"Death AI State: {death_ai_state}")
+print(f"State duration: {time_in_state}")
+
+# Add cooldown:
+if time.time() - last_death_dialogue_time < 30:  # 30 second cooldown
+    return False
+```
+
+---
+
+#### **Death Never Speaks**
+**Symptoms:** No Death dialogue appearing, game feels lifeless  
+**Causes:**
+- Probability checks too low
+- Dialogue pool empty after filtering
+- Event triggers not firing
+
+**Debug:**
+```python
+# Check dialogue pool:
+print(f"Dialogue pool size: {len(dialogue_pool)}")
+print(f"Filtered dialogue pool: {dialogue_pool}")
+
+# Check event triggers:
+print(f"Event type: {event_type}")
+print(f"Event should trigger Death: {event_type in death_events}")
+
+# Force Death to speak (testing):
+force_death_dialogue("Test dialogue")
+```
+
+---
+
+#### **Fear Not Accumulating**
+**Symptoms:** Fear stays at 0% or doesn't increase  
+**Causes:**
+- Fear sources not triggering
+- Fear calculation bug
+- Fear reduction too aggressive
+
+**Debug:**
+```python
+# Check fear sources:
+print(f"Fear sources triggered: {fear_sources_triggered}")
+print(f"Fear gain: +{fear_gain}")
+print(f"Fear reduction: -{fear_reduction}")
+print(f"Net fear change: {fear_gain - fear_reduction}")
+
+# Manually add fear (testing):
+player.fear += 20
+print(f"Fear after manual add: {player.fear}%")
+```
+
+---
+
+#### **Cheating False Positives**
+**Symptoms:** Cheating punishment triggered when player didn't cheat  
+**Causes:**
+- Detection thresholds too strict
+- Legitimate gameplay patterns misidentified
+- Bug in detection logic
+
+**Debug:**
+```python
+# Check detection thresholds:
+print(f"Item take count: {item_take_count}")
+print(f"Threshold: {CHEAT_THRESHOLD}")
+print(f"Reload count: {reload_count} (last 10 min)")
+
+# Adjust thresholds:
+CHEAT_THRESHOLD_ITEM_TAKES = 5  # Was 3, now 5
+CHEAT_THRESHOLD_RELOADS = 8     # Was 5, now 8
+
+# Add grace period:
+if player.metadata.get("first_time_player"):
+    # Don't detect cheating for first-time players
+    return False
+```
+
+---
+
+#### **Death Screen Not Appearing**
+**Symptoms:** Player dies but no death screen shown  
+**Causes:**
+- Death sequence not triggered
+- UI not rendering
+- Game state not transitioning correctly
+
+**Debug:**
+```python
+# Check death trigger:
+print(f"Player health: {player.health}")
+print(f"Death triggered: {death_triggered}")
+print(f"Game state: {game_state}")
+
+# Check UI:
+print(f"Death screen visible: {death_screen.visible}")
+print(f"Death screen UI elements: {death_screen.children}")
+
+# Force death screen (testing):
+show_death_screen("test_cause", player.stats)
+```
+
+---
+
+### Testing Checklist
+
+**Before Committing Death AI Changes:**
+- [ ] Death dialogue variety (no repetition)
+- [ ] Death AI state transitions work correctly
+- [ ] Fear accumulation is balanced (not too fast/slow)
+- [ ] Fear thresholds trigger events properly
+- [ ] Death speaks at appropriate frequency (not too often/rare)
+- [ ] Death screen displays correct information
+- [ ] Respawn system works (checkpoint restoration)
+- [ ] Cheating detection doesn't false positive
+- [ ] Cheating punishments are fair but impactful
+- [ ] Difficulty scaling adjusts appropriately
+- [ ] All death causes have unique dialogue
+- [ ] Death's personality remains consistent
+
+---
+
+## Complete Examples
+
+### Example 1: Opening Narration
+
+**Trigger:** Game start
+
+**Death Appears:**
+```
+═══════════════════════════════════════
+           DEATH SPEAKS
+═══════════════════════════════════════
+
+[Dark screen. Death's voice echoes.]
+
+"Welcome. You don't know me yet, but I know
+you. I know your fear. Your weaknesses. Your
+inevitable end.
+
+You see, I am Death. And you... you are part
+of my Design.
+
+On January 15th, 2019, 180 souls perished in
+this hospital. A fire, they said. An accident.
+
+But accidents don't exist. Everything follows
+the Design. Every death, perfectly orchestrated.
+
+But one soul escaped. One survivor who was
+SUPPOSED to die that night.
+
+That survivor is you.
+
+And now, I've brought you back. Back to where
+it all began. Back to finish what the Design
+started.
+
+You can run. You can struggle. You can even
+delay the inevitable.
+
+But in the end, everyone comes to me.
+
+Let's begin."
+
+═══════════════════════════════════════
+
+[Press any key to continue]
+```
+
+**Implementation:**
+```python
+def show_opening_narration():
+    """Display Death's opening narration."""
+    
+    # Set Death AI state
+    death_ai.state = DeathAIState.OBSERVING
+    
+    # Full screen overlay
+    dialogue_lines = [
+        "Welcome. You don't know me yet, but I know you...",
+        # ... (full narration)
+    ]
+    
+    for line in dialogue_lines:
+        display_death_dialogue(line, speed="slow")
+        wait_for_input()
+    
+    # Fade to game start
+    fade_to_black()
+    start_level_1()
+```
+
+---
+
+### Example 2: Player Death (Hazard)
+
+**Trigger:** Player dies to MRI malfunction
+
+**Death Screen:**
+```
+═══════════════════════════════════════
+              DEATH
+═══════════════════════════════════════
+
+[Image: Player crushed by MRI machine]
+
+"The magnetic field crushed you in an instant.
+Metal tools, keys, even the iron in your blood—
+all ripped from your body at once.
+
+Did you really think you could just walk past
+the MRI? The Design is in every detail.
+
+Every. Single. Detail."
+
+CAUSE OF DEATH: MRI Malfunction
+TURNS SURVIVED: 18
+HAZARDS CLEARED: 1 / 5
+NPCS SAVED: 0 / 3
+FEAR LEVEL: 42%
+
+SCORE: 150 points (-100 death penalty)
+
+═══════════════════════════════════════
+
+[Respawn at Checkpoint] [Main Menu] [Quit]
+
+═══════════════════════════════════════
+```
+
+**Implementation:**
+```python
+def trigger_player_death(cause="mri_malfunction"):
+    """Handle player death from MRI hazard."""
+    
+    # Freeze game
+    game_state = "death_sequence"
+    
+    # Death AI to CLAIMING state
+    death_ai.state = DeathAIState.CLAIMING
+    
+    # Select appropriate dialogue
+    death_dialogue = death_dialogue_database["player_death"]["mri_malfunction"]
+    
+    # Show death screen
+    death_screen = {
+        "image": "mri_death.png",
+        "dialogue": death_dialogue,
+        "cause": "MRI Malfunction",
+        "stats": {
+            "turns": player.turn_count,
+            "hazards_cleared": f"{player.hazards_cleared} / 5",
+            "npcs_saved": f"{player.npcs_saved} / 3",
+            "fear": f"{player.fear}%",
+            "score": player.score - 100,  # Death penalty
+        },
+    }
+    
+    display_death_screen(death_screen)
+    
+    # Wait for player choice
+    choice = prompt_player(["Respawn at Checkpoint", "Main Menu", "Quit"])
+    handle_death_choice(choice)
+```
+
+---
+
+### Example 3: Fear Threshold Event (60%)
+
+**Trigger:** Player fear reaches 60%
+
+**Death Warning:**
+```
+[Screen flickers. Shadows move in corners.]
+
+═══════════════════════════════════════
+           DEATH SPEAKS
+═══════════════════════════════════════
+
+"Are you seeing things that aren't there?
+
+Or am I showing you what's REALLY there?
+
+Hard to tell when you're this terrified..."
+
+[Shadows continue moving. Faint whispers.]
+
+═══════════════════════════════════════
+
+[Your hands are trembling.]
+[QTE time reduced by 15%]
+
+[Press any key to continue]
+```
+
+**Implementation:**
+```python
+def check_fear_thresholds():
+    """Check and trigger fear threshold events."""
+    
+    # 60% fear threshold
+    if player.fear >= 60 and not player.fear_thresholds["hallucinations"]:
+        # Mark triggered
+        player.fear_thresholds["hallucinations"] = True
+        
+        # Death AI to WARNING state
+        death_ai.state = DeathAIState.WARNING
+        
+        # Visual effects
+        enable_hallucination_effects()
+        
+        # Death speaks
+        death_dialogue = (
+            "Are you seeing things that aren't there?\n\n"
+            "Or am I showing you what's REALLY there?\n\n"
+            "Hard to tell when you're this terrified..."
+        )
+        display_death_warning(death_dialogue)
+        
+        # Mechanical penalty
+        player.qte_time_multiplier = 0.85  # 15% reduction
+        
+        # Notification
+        show_notification("[Your hands are trembling.]")
+        show_notification("[QTE time reduced by 15%]")
+```
+
+---
+
+### Example 4: Player Clears Hazard (Respecting)
+
+**Trigger:** Player successfully clears MRI malfunction (high skill)
+
+**Death Commentary:**
+```
+[MRI powers down. Hazard cleared.]
+
++100 points
+
+[Death's voice, impressed but patient:]
+
+"Impressive. You've delayed the inevitable
+once again.
+
+But the Design is patient... and so am I."
+
+[Achievement Unlocked: Defusal Expert]
+```
+
+**Implementation:**
+```python
+def on_hazard_cleared(hazard_id="mri_malfunction"):
+    """Handle hazard clearing with Death commentary."""
+    
+    # Award points
+    player.score += 100
+    show_notification("+100 points")
+    
+    # Check if player is performing well
+    if (
+        player.hazards_cleared >= 3 and
+        player.deaths == 0 and
+        player.fear < 40
+    ):
+        # Death AI to RESPECTING state
+        death_ai.state = DeathAIState.RESPECTING
+        
+        # Death speaks (30% chance)
+        if should_death_speak("hazard_cleared"):
+            death_dialogue = (
+                "Impressive. You've delayed the inevitable "
+                "once again.\n\n"
+                "But the Design is patient... and so am I."
+            )
+            display_death_commentary(death_dialogue)
+    
+    # Reduce fear
+    player.fear -= 10
+```
+
+---
+
+### Example 5: Cheating Detected (Save Scumming)
+
+**Trigger:** Player reloads save 6 times in 10 minutes
+
+**Death Punishment:**
+```
+[Screen glitches. Red overlay.]
+
+═══════════════════════════════════════
+           DEATH SPEAKS
+═══════════════════════════════════════
+
+[Death's voice, ANGRY:]
+
+"I SEE YOU.
+
+Trying to undo my work. Trying to cheat the
+Design.
+
+The Design doesn't allow for do-overs.
+
+Let's make this INTERESTING."
+
+═══════════════════════════════════════
+
+[All hazards are now more difficult.]
+[Fear +30%]
+
+[You have been warned.]
+
+═══════════════════════════════════════
+```
+
+**Implementation:**
+```python
+def on_save_loaded():
+    """Detect save scumming and punish if excessive."""
+    
+    # Track reload
+    player.metadata["reload_timestamps"].append(time.time())
+    
+    # Check for save scumming
+    recent_reloads = count_recent_reloads(window=600)  # 10 minutes
+    
+    if recent_reloads > 5 and not player.metadata.get("save_scum_warned"):
+        # Death AI to ANGRY state
+        death_ai.state = DeathAIState.ANGRY
+        
+        # Angry dialogue
+        death_dialogue = (
+            "I SEE YOU.\n\n"
+            "Trying to undo my work. Trying to cheat the Design.\n\n"
+            "The Design doesn't allow for do-overs.\n\n"
+            "Let's make this INTERESTING."
+        )
+        display_death_punishment(death_dialogue)
+        
+        # Punishment: Increase hazard difficulty
+        for hazard in hazards.values():
+            hazard["qte_time"] *= 0.8  # 20% harder
+        
+        # Fear penalty
+        player.fear += 30
+        
+        # Mark warned
+        player.metadata["save_scum_warned"] = True
+        
+        # Notification
+        show_notification("[All hazards are now more difficult.]")
+        show_notification("[Fear +30%]")
+        show_notification("[You have been warned.]", color="red")
+```
+
+---
+
+### Example 6: NPC Dies (Taunting)
+
+**Trigger:** Dr. Ellis dies to ventilator hazard
+
+**Death Taunt:**
+```
+[Dr. Ellis collapses. Ventilator alarm flatlines.]
+
+[Death's voice, amused:]
+
+"Dr. Ellis is mine now.
+
+Did you think you could save everyone?
+
+The Design is perfect, after all."
+
+[Fear +25%]
+[Score -50]
+```
+
+**Implementation:**
+```python
+def on_npc_died(npc_id="dr_ellis", cause="hazard"):
+    """Handle NPC death with Death commentary."""
+    
+    npc = npcs[npc_id]
+    
+    # Death AI to TAUNTING state
+    death_ai.state = DeathAIState.TAUNTING
+    
+    # Death speaks (70% chance for NPC deaths)
+    if should_death_speak("npc_died"):
+        death_dialogue = death_dialogue_templates["npc_died"][0].format(
+            npc_name=npc["name"]
+        )
+        display_death_commentary(death_dialogue)
+    
+    # Fear increase
+    player.fear += 25
+    show_notification("[Fear +25%]", color="red")
+    
+    # Score penalty
+    player.score -= 50
+    show_notification("[Score -50]", color="red")
+    
+    # Check for achievement failures
+    check_failed_achievements(npc_id)
+```
+
+---
+
+### Example 7: Level Complete (Mixed Outcome)
+
+**Trigger:** Player completes Level 1 (2 NPCs saved, 1 died)
+
+**Death Commentary:**
+```
+═══════════════════════════════════════
+         LEVEL 1 COMPLETE
+═══════════════════════════════════════
+
+You escaped the hospital.
+
+But not everyone made it out with you.
+
+═══════════════════════════════════════
+
+NPCS SAVED: 2 / 3
+HAZARDS CLEARED: 4 / 5
+DEATHS: 1
+SCORE: 625 points
+
+RANK: B - GOOD
+
+═══════════════════════════════════════
+
+[Death appears]
+
+"You survived. But at what cost?
+
+Dr. Ellis lies dead in the wreckage. You
+could have saved them, but you chose to
+run instead.
+
+The Design claims its due. One way or
+another.
+
+Level 2 awaits. Let's see if you can do
+better this time."
+
+═══════════════════════════════════════
+
+[Continue to Level 2]
+
+═══════════════════════════════════════
+```
+
+**Implementation:**
+```python
+def on_level_complete(level=1):
+    """Handle level completion with Death's judgment."""
+    
+    # Calculate score and rank
+    score = calculate_level_score()
+    rank = calculate_rank(score)
+    
+    # Show level complete screen
+    show_level_complete_screen(score, rank)
+    
+    # Death's judgment based on performance
+    if player.npcs_saved == 3 and player.deaths == 0:
+        # Perfect run
+        death_ai.state = DeathAIState.RESPECTING
+        death_dialogue = (
+            "Perfect. You saved everyone and escaped unscathed.\n\n"
+            "I'm impressed. But the Design has more in store...\n\n"
+            "Level 2 awaits."
+        )
+    elif player.npcs_saved >= 1:
+        # Mixed outcome
+        death_ai.state = DeathAIState.OBSERVING
+        death_dialogue = (
+            "You survived. But at what cost?\n\n"
+            f"{get_dead_npc_names()} lies dead in the wreckage. "
+            "You could have saved them, but you chose to run instead.\n\n"
+            "The Design claims its due. One way or another.\n\n"
+            "Level 2 awaits. Let's see if you can do better this time."
+        )
+    else:
+        # Everyone died
+        death_ai.state = DeathAIState.TAUNTING
+        death_dialogue = (
+            "You escaped. But everyone else died.\n\n"
+            "You call that survival? You call that winning?\n\n"
+            "You're not a hero. You're a coward.\n\n"
+            "Level 2 awaits. Try not to abandon everyone again."
+        )
+    
+    display_death_judgment(death_dialogue)
+```
+
+---
+
+## Change Log
+
+### Version 1.0 (2025-11-06)
+- Initial guide creation
+- Documented Death as entity (character profile, appearances, dialogue modes)
+- Covered fear system (mechanics, sources, reduction, thresholds)
+- Added Death AI logic (state machine, dialogue probability, context-aware selection)
+- Included narrative generation (templates, tags, personality consistency)
+- Documented death sequences (game over flow, death screen, respawn)
+- Added cheating detection (detectable patterns, detection logic, punishment)
+- Covered difficulty scaling (adaptive difficulty, settings)
+- Added 7 complete examples (opening narration, player death, fear threshold, hazard cleared, cheating detected, NPC died, level complete)
+- Testing and debugging section with common issues
+
+---
+
+**Questions or Improvements?**  
+Submit suggestions to: [project lead / game design team]
+
+**Related Documentation:**
+- `hazards_developer_guide.txt` - For hazard-triggered fear events
+- `qte_design_guide.txt` - For QTE difficulty modifiers
+- `npcs_dialogue_guide.txt` - For Death's dialogue as NPC
+- `achievements_scoring_guide.txt` - For score penalties and death impacts
+- `environmental_omens_developer_guide.txt` - For Death's narrative presence
+
+---
+
+**THE DESIGN IS COMPLETE.**

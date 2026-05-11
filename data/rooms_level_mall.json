@@ -1,0 +1,270 @@
+{
+  "McKinley Mall Entrance": {
+    "name": "McKinley Mall Entrance",
+    "description": "You stand just inside the South Entrance. The sliding glass doors are powered down and locked, save for the service gap you squeezed through. Leaves skitter across the tiled floor, blown in by the wind. The mall is cavernous and silent, illuminated only by moonlight filtering through the skylights and the red glow of emergency exit signs.",
+    "examine_details": {
+      "sliding glass doors": "They are turned off and manually locked. A sign reads 'CLOSED FOR RENOVATION'.",
+      "emergency exit signs": "The red glow reflects off the polished floor, looking like pools of blood.",
+      "service gap": "The doors were pried open just enough to let you in. It's a tight squeeze."
+    },
+    "entry_room": true,
+    "exits": {
+      "north": "Grand Atrium",
+      "south": "LEVEL_TRANSITION_HUB"
+    },
+    "floor": 1,
+    "furniture": [],
+    "hazards_present": [
+      {
+        "type": "loose_object",
+        "object_name_override": "heavy entry mat",
+        "initial_state": "precarious",
+        "chance": 0.1
+      }
+    ],
+    "items": [],
+    "locked": false,
+    "objects": [
+      "sliding_glass_doors",
+      "service_gap"
+    ],
+    "first_entry_text": "The silence is heavy. This is where hundreds of people would have died if Nick O'Bannon hadn't freaked out. It feels... paused. Like a breath held for too long."
+  },
+  "Grand Atrium": {
+    "name": "Grand Atrium",
+    "description": "The center of the mall. A dried-up fountain sits in the middle, filled with dust and pennies. To the west is the Food Court. To the east, the Cinema Lobby where you were that day. To the north, a dark corridor leads to the Staff/Security areas. Display mannequins in the shop windows seem to watch you from the shadows.",
+    "examine_details": {
+      "fountain": "Dry as a bone. The pennies inside are tarnished. Wishes that didn't come true.",
+      "mannequins": "They stand in the darkened store windows, their plastic limbs frozen in unnatural poses.",
+      "skylight": "A massive glass dome overhead. A few panes look cracked."
+    },
+    "exits": {
+      "south": "McKinley Mall Entrance",
+      "west": "Food Court",
+      "east": "Cinema Lobby",
+      "north": "Staff Corridor"
+    },
+    "furniture": [
+      {
+        "name": "information_kiosk",
+        "description": "A touchscreen kiosk displaying a faded map of the mall. The screen is cracked but still legible.",
+        "is_container": true,
+        "items": ["mall_directory_map"]
+      }
+    ],
+    "hazards_present": [
+      {
+        "type": "falling_object",
+        "object_name_override": "hanging promotional banner",
+        "support_object_override": "ceiling truss",
+        "initial_state": "precarious",
+        "chance": 0.3
+      },
+      {
+        "type": "robo_vacuum",
+        "object_name_override": "industrial floor polisher",
+        "initial_state": "patrolling",
+        "chance": 1.0
+      }
+    ],
+    "items": [],
+    "objects": [
+      "fountain",
+      "mannequins",
+      "skylight"
+    ]
+  },
+  "Cinema Lobby": {
+    "name": "Cinema Lobby",
+    "description": "The smell of stale popcorn is faint but persistent. Velvet ropes cordon off the ticket booths. Posters for 'Love Lays Dying' and other movies from that year still hang on the walls, peeling slightly. This is where you were standing when the alarms went off.",
+    "examine_details": {
+      "ticket booth": "Empty. The glass reflects your face. You remember the argument you had with your friend here about which movie to see.",
+      "movie posters": "Faded promotional posters. One hangs by a single corner, flapping in the ventilation draft.",
+      "popcorn machine": "Cleaned out, but greasy residue remains on the glass."
+    },
+    "exits": {
+      "west": "Grand Atrium"
+    },
+    "furniture": [
+      {
+        "name": "ticket_counter",
+        "description": "A glass-fronted counter where tickets were once sold. Dusty and empty except for a single stub.",
+        "is_container": true,
+        "items": ["torn_ticket_stub"]
+      }
+    ],
+    "hazards_present": [
+      {
+        "type": "loose_object",
+        "object_name_override": "heavy framed poster",
+        "support_object_override": "wall hook",
+        "initial_state": "wobbling",
+        "chance": 0.4
+      }
+    ],
+    "items": [],
+    "objects": [
+      "movie_posters",
+      "velvet_ropes"
+    ]
+  },
+  "Food Court": {
+    "name": "Food Court",
+    "description": "Tables are stacked upside down on top of each other. The 'Taco Fiesta' sign flickers erratically, casting a strobe effect. A large propane tank sits behind the counter of a pretzel stand. This area feels... charged. This is the blast radius.",
+    "examine_details": {
+      "stacked tables": "A barricade of furniture. It makes navigating the room difficult.",
+      "propane tank": "It looks secure, but there's a faint, sweet smell in the air nearby.",
+      "Taco Fiesta sign": "The neon buzzes angrily. It sounds like an insect trapped in a jar.",
+      "pretzel stand": "Just a cart, but in the vision Nick had, this was shrapnel."
+    },
+    "exits": {
+      "east": "Grand Atrium",
+      "kitchen": "Service Kitchen"
+    },
+    "furniture": [
+      {
+        "name": "trash_bin",
+        "description": "A large plastic bin overflowing with old wrappers and receipts.",
+        "is_container": true,
+        "items": ["receipt_with_date"]
+      }
+    ],
+    "hazards_present": [
+      {
+        "type": "gas_leak",
+        "object_name_override": "propane tank valve",
+        "support_object_override": "pretzel cart",
+        "initial_state": "faint_smell",
+        "chance": 0.8
+      },
+      {
+        "type": "water_puddle",
+        "object_name_override": "leaking refrigerator puddle",
+        "initial_state": "growing",
+        "chance": 0.6
+      }
+    ],
+    "items": [],
+    "objects": [
+      "propane_tank",
+      "neon_sign"
+    ],
+    "first_entry_text": "You stop. You recognize this spot. In the news footage of the 'almost-disaster', the camera panned right here. You stood exactly where that propane tank is now. You shiver."
+  },
+  "Service Kitchen": {
+    "name": "Service Kitchen",
+    "description": "A narrow, stainless steel corridor behind the food court. It smells of grease and industrial cleaner. Grease traps line the floor. It is dark and claustrophobic.",
+    "examine_details": {
+      "grease traps": "Slippery metal covers on the floor.",
+      "industrial dishwasher": "A massive machine that looks like an iron lung.",
+      "knife rack": "Empty, mostly. One rusted cleaver remains."
+    },
+    "exits": {
+      "out": "Food Court"
+    },
+    "furniture": [
+      {
+        "name": "metal_shelving",
+        "description": "Industrial metal shelves lined with cleaning supplies and spare parts.",
+        "is_container": true,
+        "items": ["wrench"]
+      }
+    ],
+    "hazards_present": [
+      {
+        "type": "water_puddle",
+        "object_name_override": "grease spill",
+        "initial_state": "slip_hazard",
+        "chance": 1.0
+      },
+      {
+        "type": "precarious_object",
+        "object_name_override": "stack of heavy pans",
+        "support_object_override": "top shelf",
+        "initial_state": "precarious",
+        "chance": 0.5
+      }
+    ],
+    "items": [],
+    "objects": [
+      "industrial_dishwasher"
+    ]
+  },
+  "Staff Corridor": {
+    "name": "Staff Corridor",
+    "description": "The glamour of the mall ends here. Concrete floors, exposed pipes, and flickering fluorescent tubes. A heavy steel fire door leads to the Security Office at the end of the hall. An electrical junction box on the wall hums loudly.",
+    "examine_details": {
+      "junction box": "It's vibrating. The cover is loose, revealing sparking wires inside.",
+      "exposed pipes": "Steam and water pipes running along the ceiling. Condensation drips on you.",
+      "fire door": "Solid steel. It looks heavy."
+    },
+    "exits": {
+      "south": "Grand Atrium",
+      "north": "Security Office"
+    },
+    "furniture": [],
+    "hazards_present": [
+      {
+        "type": "faulty_wiring",
+        "object_name_override": "overloaded junction box",
+        "support_object_override": "concrete wall",
+        "initial_state": "sparking",
+        "chance": 1.0
+      },
+      {
+        "type": "leaking_pipe",
+        "object_name_override": "overhead steam pipe",
+        "initial_state": "dripping",
+        "chance": 0.4
+      }
+    ],
+    "items": [],
+    "objects": [
+      "junction_box",
+      "fire_door"
+    ]
+  },
+  "Security Office": {
+    "name": "Security Office",
+    "description": "A small room packed with monitors. Most are static, but one bank shows looping footage of the mall. A heavy rolling shutter separates this room from the corridor, currently raised. Guard Miller is pacing nervously near the desk.",
+    "examine_details": {
+      "monitors": "Dozens of screens. You see yourself in the corridor on one. Another shows the Food Court.",
+      "rolling shutter": "A heavy steel security gate designed to seal the room in an emergency. The motor housing looks damaged.",
+      "control desk": "Cluttered with tapes, logbooks, and half-eaten donuts."
+    },
+    "exits": {
+      "south": "Staff Corridor"
+    },
+    "furniture": [
+      {
+        "name": "security_desk",
+        "description": "A battered desk covered in paperwork and old coffee cups.",
+        "is_container": true,
+        "items": ["security_log_book", "flashlight"]
+      },
+      {
+        "name": "file_cabinet",
+        "description": "A dented metal cabinet with several drawers, some stuck halfway open.",
+        "is_container": true,
+        "items": ["maintenance_request_form"]
+      }
+    ],
+    "hazards_present": ["shutter_guillotine"],
+    "items": [],
+    "npcs": ["mall_cop_miller"],
+    "objects": [
+      "monitors","rolling_shutter"
+    ],
+    "state_descriptions": {
+      "guard_dead": "The Security Office is silent, save for the hum of the monitors. Guard Miller's body lies crushed beneath the heavy steel shutter."
+    },
+    "state_examine_details": {
+      "guard_dead": {
+        "rolling shutter": "The shutter is down, crushing the guard. Blood pools on the floor."
+      }
+    },
+    "state_flags": {
+      "guard_status": "alive"
+    }
+  }
+}

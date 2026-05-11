@@ -1,0 +1,1443 @@
+# Achievements & Scoring System Guide
+**Version:** 1.0  
+**Last Updated:** 2025-11-06  
+**Game:** DieNamic Engine: Death's Designs - AR
+
+---
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Achievement Anatomy](#achievement-anatomy)
+3. [Achievement Categories](#achievement-categories)
+4. [Unlock Conditions](#unlock-conditions)
+5. [Scoring System](#scoring-system)
+6. [Progression Tracking](#progression-tracking)
+7. [Hidden Achievements](#hidden-achievements)
+8. [Achievement UI](#achievement-ui)
+9. [Testing & Debugging](#testing--debugging)
+10. [Complete Examples](#complete-examples)
+
+---
+
+## Overview
+
+The Achievements & Scoring System rewards players for:
+- **Exploration**: Finding secrets, evidence, hidden rooms
+- **Mastery**: Clearing hazards, completing QTEs, saving NPCs
+- **Survival**: Escaping levels, managing fear/health
+- **Collection**: Gathering all evidence from a disaster
+- **Narrative**: Making specific story choices
+
+### Design Philosophy
+
+**Achievements should:**
+- Reward skill and exploration (not just completion)
+- Encourage multiple playthroughs (varied approaches)
+- Respect player time (not grindy)
+- Tell stories (meaningful names and descriptions)
+- Balance common vs. rare (some easy, some challenging)
+
+**Achievements should NOT:**
+- Be impossible (unfair requirements)
+- Contradict each other (mutually exclusive)
+- Require random chance (luck-based)
+- Spoil narrative (hidden achievements for twists)
+
+### Achievement Rarity
+
+| Rarity | % Players | Examples |
+|--------|-----------|----------|
+| **Common** | 60-90% | Complete Level 1, Unlock first room |
+| **Uncommon** | 30-60% | Save one NPC, Clear 3 hazards |
+| **Rare** | 10-30% | Collect all evidence, Save all NPCs |
+| **Epic** | 3-10% | Complete game without dying, Perfect QTE streak |
+| **Legendary** | <3% | Speedrun, No fear gained, Secret ending |
+
+---
+
+## Achievement Anatomy
+
+### File Location
+`data/player_achievements.json`
+
+### Minimal Required Schema
+```json
+{
+  "achievement_id": {
+    "name": "Achievement Name",
+    "description": "What the player accomplished",
+    "unlock_conditions": {
+      "type": "value"
+    }
+  }
+}
+```
+
+### Complete Schema
+```json
+{
+  "achievement_id": {
+    "name": "Display Name",
+    "description": "Detailed description",
+    "hidden": false,
+    "hidden_description": "??? - Complete a secret objective",
+    "category": "exploration",
+    "rarity": "uncommon",
+    "icon": "icon_filename",
+    "score_reward": 50,
+    "unlock_conditions": {
+      "hazards_cleared": 3,
+      "npcs_saved": 1,
+      "items_collected": ["item_key"],
+      "evidence_collected": {
+        "source": "disaster_name",
+        "count": 3
+      },
+      "rooms_visited": 10,
+      "level_completed": 1,
+      "qte_success_streak": 3,
+      "no_deaths": true,
+      "fear_below": 30,
+      "health_above": 70,
+      "turns_under": 50,
+      "special_action": "secret_ending"
+    },
+    "unlock_message": "Achievement Unlocked: {name}!",
+    "prerequisites": ["other_achievement_id"],
+    "unlocked": false,
+    "unlock_timestamp": null,
+    "progress": {
+      "current": 0,
+      "target": 3,
+      "trackable": true
+    }
+  }
+}
+```
+
+### Field Descriptions
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | ✅ Yes | Display name (e.g., "The Visionary") |
+| `description` | string | ✅ Yes | What player accomplished |
+| `hidden` | boolean | ❌ No | Whether achievement is secret (default: false) |
+| `hidden_description` | string | ❌ No | Placeholder text before unlock |
+| `category` | string | ❌ No | exploration, mastery, survival, collection, narrative |
+| `rarity` | string | ❌ No | common, uncommon, rare, epic, legendary |
+| `icon` | string | ❌ No | Icon filename (future feature) |
+| `score_reward` | int | ❌ No | Points awarded (default: 50) |
+| `unlock_conditions` | object | ✅ Yes | Conditions to unlock (see Unlock Conditions) |
+| `unlock_message` | string | ❌ No | Custom message on unlock |
+| `prerequisites` | array | ❌ No | Achievement IDs required first |
+| `unlocked` | boolean | ❌ No | Runtime state: has player unlocked? |
+| `unlock_timestamp` | string | ❌ No | Runtime: when unlocked |
+| `progress` | object | ❌ No | Trackable progress (current/target) |
+
+---
+
+## Achievement Categories
+
+### Exploration
+
+**Focus:** Discovering secrets, visiting all areas, finding hidden content.
+
+**Examples:**
+- "Cartographer": Visit all rooms in Level 1
+- "Secrets of the Hospital": Find all hidden items
+- "Off the Beaten Path": Discover a secret room
+
+**Unlock Conditions:**
+- `rooms_visited: X`
+- `secret_rooms_found: X`
+- `items_collected: [...]`
+
+---
+
+### Mastery
+
+**Focus:** Skill-based challenges, hazard clearing, QTE performance.
+
+**Examples:**
+- "Defusal Expert": Clear 5 hazards without failing
+- "Perfect Timing": Complete 3 QTEs in a row without errors
+- "Calm Under Pressure": Clear MRI hazard on first try
+
+**Unlock Conditions:**
+- `hazards_cleared: X`
+- `qte_success_streak: X`
+- `qte_perfect_count: X`
+
+---
+
+### Survival
+
+**Focus:** Staying alive, managing resources, minimizing damage.
+
+**Examples:**
+- "Survivor": Complete Level 1 without dying
+- "Fearless": Finish with fear below 30%
+- "Hardy": Complete level with health above 70%
+
+**Unlock Conditions:**
+- `no_deaths: true`
+- `fear_below: X`
+- `health_above: X`
+
+---
+
+### Collection
+
+**Focus:** Gathering evidence, finding all items of a type.
+
+**Examples:**
+- "Train Case Closed": Collect all train derailment evidence
+- "Evidence Collector": Gather 10 pieces of evidence
+- "Key Master": Collect all keys in Level 1
+
+**Unlock Conditions:**
+- `evidence_collected: {source: "...", count: X}`
+- `items_collected: [...]`
+- `item_type_count: {type: "evidence", count: X}`
+
+---
+
+### Narrative
+
+**Focus:** Story choices, NPC interactions, special endings.
+
+**Examples:**
+- "The Visionary": Obtain Corbin's Journal
+- "Hero of the Hospital": Save all NPCs in Level 1
+- "Design Breaker": Unlock the secret ending
+
+**Unlock Conditions:**
+- `npcs_saved: X`
+- `special_action: "..."`
+- `items_collected: ["quest_item"]`
+
+---
+
+## Unlock Conditions
+
+Achievements unlock when all specified conditions are met.
+
+### Single Condition Types
+
+#### Hazards Cleared
+```json
+{
+  "unlock_conditions": {
+    "hazards_cleared": 3
+  }
+}
+```
+**Behavior:** Unlock when player successfully clears 3 hazards (terminal success state).
+
+---
+
+#### NPCs Saved
+```json
+{
+  "unlock_conditions": {
+    "npcs_saved": 1
+  }
+}
+```
+**Behavior:** Unlock when 1 NPC reaches "saved" fate.
+
+---
+
+#### Items Collected
+```json
+{
+  "unlock_conditions": {
+    "items_collected": ["corbins_journal", "patient_chart"]
+  }
+}
+```
+**Behavior:** Unlock when player has collected ALL listed items.
+
+---
+
+#### Evidence Collection (Specific Source)
+```json
+{
+  "unlock_conditions": {
+    "evidence_collected": {
+      "source": "train_derailment",
+      "count": 3
+    }
+  }
+}
+```
+**Behavior:** Unlock when player has collected 3 evidence items from "train_derailment" disaster.
+
+---
+
+#### Evidence Collection (Any Source)
+```json
+{
+  "unlock_conditions": {
+    "evidence_count": 10
+  }
+}
+```
+**Behavior:** Unlock when player has collected 10 evidence items total (any source).
+
+---
+
+#### Rooms Visited
+```json
+{
+  "unlock_conditions": {
+    "rooms_visited": 12
+  }
+}
+```
+**Behavior:** Unlock when player has visited 12 unique rooms.
+
+---
+
+#### Level Completed
+```json
+{
+  "unlock_conditions": {
+    "level_completed": 1
+  }
+}
+```
+**Behavior:** Unlock when player completes Level 1 (reaches level exit).
+
+---
+
+#### QTE Success Streak
+```json
+{
+  "unlock_conditions": {
+    "qte_success_streak": 3
+  }
+}
+```
+**Behavior:** Unlock when player completes 3 QTEs in a row without failure.
+
+---
+
+#### QTE Perfect Count
+```json
+{
+  "unlock_conditions": {
+    "qte_perfect_count": 5
+  }
+}
+```
+**Behavior:** Unlock when player completes 5 QTEs with zero errors (perfect performance).
+
+---
+
+#### No Deaths
+```json
+{
+  "unlock_conditions": {
+    "no_deaths": true
+  }
+}
+```
+**Behavior:** Unlock when player completes level without dying (no Game Over screens).
+
+---
+
+#### Fear Threshold
+```json
+{
+  "unlock_conditions": {
+    "fear_below": 30
+  }
+}
+```
+**Behavior:** Unlock when player completes level with fear ≤ 30%.
+
+---
+
+#### Health Threshold
+```json
+{
+  "unlock_conditions": {
+    "health_above": 70
+  }
+}
+```
+**Behavior:** Unlock when player completes level with health ≥ 70%.
+
+---
+
+#### Turn/Time Limit
+```json
+{
+  "unlock_conditions": {
+    "turns_under": 50
+  }
+}
+```
+**Behavior:** Unlock when player completes level in under 50 turns (speedrun).
+
+---
+
+#### Special Action
+```json
+{
+  "unlock_conditions": {
+    "special_action": "secret_ending_unlocked"
+  }
+}
+```
+**Behavior:** Unlock when specific narrative trigger fires (custom event).
+
+---
+
+### Multiple Conditions (AND Logic)
+
+All conditions must be met.
+
+```json
+{
+  "hero_of_the_hospital": {
+    "name": "Hero of the Hospital",
+    "description": "Save all NPCs and clear all hazards in Level 1 without dying.",
+    "unlock_conditions": {
+      "npcs_saved": 3,
+      "hazards_cleared": 5,
+      "no_deaths": true,
+      "level_completed": 1
+    }
+  }
+}
+```
+
+**Behavior:**
+- Player must save 3 NPCs
+- AND clear 5 hazards
+- AND not die
+- AND complete level
+
+---
+
+### Prerequisites
+
+Achievement requires another achievement first.
+
+```json
+{
+  "master_evidence_collector": {
+    "name": "Master Evidence Collector",
+    "description": "Collect all evidence from all disasters.",
+    "prerequisites": [
+      "train_case_closed",
+      "plane_case_closed",
+      "hotel_case_closed"
+    ],
+    "unlock_conditions": {
+      "evidence_count": 15
+    }
+  }
+}
+```
+
+**Behavior:**
+- Player must first unlock "train_case_closed", "plane_case_closed", "hotel_case_closed"
+- THEN collect 15 total evidence items
+- Only then will "master_evidence_collector" unlock
+
+---
+
+## Scoring System
+
+### Score Sources
+
+| Source | Points | Frequency |
+|--------|--------|-----------|
+| **Hazard Cleared** | 50-150 | Per hazard |
+| **QTE Success** | 10-30 | Per QTE |
+| **NPC Saved** | 100 | Per NPC fate: saved |
+| **NPC Died** | -25 to -75 | Per NPC fate: died/abandoned |
+| **Evidence Collected** | 25-50 | Per evidence item |
+| **Achievement Unlocked** | 50-200 | Per achievement |
+| **Level Completed** | 200-500 | Per level |
+| **Item Found** | 5-20 | Per item taken |
+| **Death Penalty** | -100 | Per death |
+
+---
+
+### Score Calculation
+
+**Base Formula:**
+```python
+total_score = (
+    hazards_cleared_score +
+    qte_success_score +
+    npc_fate_score +
+    evidence_score +
+    achievement_score +
+    level_completion_score +
+    item_score -
+    death_penalty
+)
+```
+
+**Example: Level 1 Playthrough**
+```
+Hazards Cleared:
+  - MRI Malfunction: +100
+  - Malfunctioning Ventilator: +150
+  - Gas Leak: +75
+  Total: +325
+
+QTE Success:
+  - 3 QTEs completed: +30
+
+NPC Fates:
+  - Corbin Wainwright (saved): +100
+  - Dr. Ellis (died_hazard): -50
+  - Nurse Garcia (left_behind): -75
+  Total: -25
+
+Evidence Collected:
+  - 5 evidence items: +125
+
+Achievements Unlocked:
+  - The Visionary: +50
+  - Survivor: +100
+  Total: +150
+
+Level Completion:
+  - Level 1 Complete: +200
+
+Items Found:
+  - 8 items: +80
+
+Deaths:
+  - 0 deaths: 0
+
+TOTAL SCORE: 885 points
+```
+
+---
+
+### Score Ranks
+
+**End-of-Level Rank:**
+
+| Rank | Score Range | Description |
+|------|-------------|-------------|
+| **S** | 800+ | Perfect - Saved everyone, cleared all hazards |
+| **A** | 600-799 | Excellent - Minimal mistakes |
+| **B** | 400-599 | Good - Some NPCs lost, decent performance |
+| **C** | 200-399 | Average - Survived but with heavy losses |
+| **D** | 0-199 | Poor - Barely escaped |
+| **F** | <0 | Failure - Died or abandoned everyone |
+
+**Rank Display:**
+```
+═══════════════════════════════════════
+           LEVEL 1 COMPLETE
+═══════════════════════════════════════
+
+Final Score: 885 points
+
+Rank: S - PERFECT
+
+You escaped the hospital with all survivors.
+Death's design was shattered by your skill.
+
+Hazards Cleared: 5 / 5
+NPCs Saved: 3 / 3
+Evidence Collected: 5 / 8
+Deaths: 0
+
+Play Again?
+```
+
+---
+
+### Score Modifiers
+
+**Difficulty Multipliers (Future Feature):**
+```json
+{
+  "easy": 0.75,
+  "normal": 1.0,
+  "hard": 1.5,
+  "nightmare": 2.0
+}
+```
+
+**Character Class Bonuses (Future Feature):**
+```json
+{
+  "the_survivor": {
+    "bonus": "No death penalty on first death"
+  },
+  "the_analyst": {
+    "bonus": "+50% evidence collection score"
+  },
+  "the_medic": {
+    "bonus": "+50% NPC saving score"
+  }
+}
+```
+
+---
+
+## Progression Tracking
+
+### Trackable Achievements
+
+Some achievements show progress bars.
+
+**Schema:**
+```json
+{
+  "achievement_id": {
+    "progress": {
+      "current": 2,
+      "target": 5,
+      "trackable": true
+    }
+  }
+}
+```
+
+**UI Display:**
+```
+Evidence Collector
+Collect 10 pieces of evidence
+[■■■■■□□□□□] 5 / 10
+```
+
+---
+
+### Common Trackable Types
+
+**Hazards Cleared:**
+```json
+{
+  "hazard_master": {
+    "name": "Hazard Master",
+    "description": "Clear 5 hazards successfully.",
+    "unlock_conditions": {
+      "hazards_cleared": 5
+    },
+    "progress": {
+      "current": 0,
+      "target": 5,
+      "trackable": true
+    }
+  }
+}
+```
+
+**Evidence Collection:**
+```json
+{
+  "evidence_collector": {
+    "name": "Evidence Collector",
+    "description": "Collect 10 pieces of evidence.",
+    "unlock_conditions": {
+      "evidence_count": 10
+    },
+    "progress": {
+      "current": 0,
+      "target": 10,
+      "trackable": true
+    }
+  }
+}
+```
+
+**NPCs Saved:**
+```json
+{
+  "lifesaver": {
+    "name": "Lifesaver",
+    "description": "Save 3 NPCs from certain death.",
+    "unlock_conditions": {
+      "npcs_saved": 3
+    },
+    "progress": {
+      "current": 0,
+      "target": 3,
+      "trackable": true
+    }
+  }
+}
+```
+
+---
+
+### Progress Updates
+
+**Runtime Updates:**
+```python
+# When player clears hazard:
+achievements["hazard_master"]["progress"]["current"] += 1
+if achievements["hazard_master"]["progress"]["current"] >= 5:
+    unlock_achievement("hazard_master")
+
+# When player collects evidence:
+achievements["evidence_collector"]["progress"]["current"] += 1
+if achievements["evidence_collector"]["progress"]["current"] >= 10:
+    unlock_achievement("evidence_collector")
+```
+
+**Progress Notifications:**
+```
+[Hazard cleared: MRI Malfunction]
+Achievement Progress: Hazard Master (3 / 5)
+```
+
+---
+
+## Hidden Achievements
+
+Hidden achievements are not revealed until unlocked (prevent spoilers).
+
+### Hidden Achievement Schema
+
+```json
+{
+  "secret_ending": {
+    "name": "Design Breaker",
+    "description": "Unlock the secret ending by saving all NPCs and collecting all evidence.",
+    "hidden": true,
+    "hidden_description": "??? - Uncover the deepest secret of Death's design.",
+    "unlock_conditions": {
+      "npcs_saved": 3,
+      "evidence_count": 8,
+      "special_action": "secret_ending_unlocked"
+    },
+    "rarity": "legendary",
+    "score_reward": 500
+  }
+}
+```
+
+---
+
+### Hidden Achievement Display
+
+**Before Unlock:**
+```
+═══════════════════════════════════════
+          ACHIEVEMENTS (8 / 15)
+═══════════════════════════════════════
+
+✓ Survivor
+✓ The Visionary
+✓ Evidence Collector
+✗ Hazard Master (3 / 5)
+✗ Hero of the Hospital
+? ??? - Complete a secret objective
+? ??? - Uncover the deepest secret
+```
+
+**After Unlock:**
+```
+═══════════════════════════════════════
+    ACHIEVEMENT UNLOCKED!
+═══════════════════════════════════════
+
+★ DESIGN BREAKER ★
+
+Unlock the secret ending by saving all
+NPCs and collecting all evidence.
+
+You broke Death's design. You changed
+fate. You proved that even the inevitable
+can be challenged.
+
++500 points
+```
+
+---
+
+### Hidden Achievement Types
+
+**Narrative Secrets:**
+- Secret endings
+- Hidden lore discoveries
+- Easter eggs
+
+**Challenge Secrets:**
+- Speedrun achievements
+- No-damage runs
+- Perfect playthroughs
+
+**Exploration Secrets:**
+- Secret rooms
+- Hidden items
+- Alternate paths
+
+---
+
+## Achievement UI
+
+### Achievement List Screen
+
+**Layout:**
+```
+═══════════════════════════════════════
+     ACHIEVEMENTS (12 / 20)
+     Total Score: 1,250 points
+═══════════════════════════════════════
+
+EXPLORATION (4 / 6)
+  ✓ Cartographer - Visit all rooms
+  ✓ Secrets of the Hospital - Find hidden items
+  ✗ Off the Beaten Path - Discover secret room
+  ✗ Master Explorer - Complete all exploration
+
+MASTERY (3 / 5)
+  ✓ Defusal Expert - Clear 5 hazards
+  ✓ Perfect Timing - 3 QTE streak
+  ✗ Calm Under Pressure - Clear MRI first try
+  ✗ QTE Master - 10 perfect QTEs
+
+SURVIVAL (2 / 3)
+  ✓ Survivor - No deaths
+  ✗ Fearless - Fear below 30%
+  ✗ Hardy - Health above 70%
+
+COLLECTION (2 / 3)
+  ✓ Train Case Closed - All train evidence
+  ✗ Evidence Collector - 10 evidence items
+  ✗ Key Master - All keys
+
+NARRATIVE (1 / 3)
+  ✓ The Visionary - Obtain Corbin's Journal
+  ✗ Hero of the Hospital - Save all NPCs
+  ? ??? - Hidden achievement
+
+[Back to Main Menu]
+```
+
+---
+
+### Achievement Popup
+
+**On Unlock:**
+```
+┌─────────────────────────────────────┐
+│                                     │
+│      🏆 ACHIEVEMENT UNLOCKED 🏆     │
+│                                     │
+│         THE VISIONARY               │
+│                                     │
+│   Obtain Corbin's Journal and      │
+│   learn of his terrible visions.   │
+│                                     │
+│         +100 points                 │
+│                                     │
+│          [Continue]                 │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+---
+
+### In-Game Progress Notifications
+
+**Subtle Progress Updates:**
+```
+[You collected: Patient Chart]
+Achievement Progress: Evidence Collector (6 / 10)
+```
+
+**Milestone Notifications:**
+```
+[Hazard cleared: Gas Leak]
+Achievement Progress: Hazard Master (5 / 5)
+🏆 Achievement Unlocked: Hazard Master!
+```
+
+---
+
+## Testing & Debugging
+
+### Log Analysis
+
+**Achievement Unlock:**
+```
+AchievementsSystem: Checking unlock conditions for 'the_visionary'
+AchievementsSystem: Condition met: player_has_item:corbins_journal = True
+AchievementsSystem: Unlocking achievement: the_visionary
+AchievementsSystem: Score awarded: +100 (total: 450)
+```
+
+**Progress Update:**
+```
+AchievementsSystem: Updated progress: evidence_collector (6 / 10)
+AchievementsSystem: Progress notification: Evidence Collector (6 / 10)
+```
+
+**Score Calculation:**
+```
+GameLogic: Hazard cleared: mri_malfunction
+GameLogic: Score awarded: +100 (total: 350)
+AchievementsSystem: Checking achievements for hazards_cleared trigger
+AchievementsSystem: hazard_master progress: 4 / 5
+```
+
+---
+
+### Common Issues
+
+#### **Achievement Not Unlocking**
+**Symptoms:** Player meets conditions but achievement doesn't unlock  
+**Causes:**
+- Condition syntax error
+- Game state doesn't match expected values
+- Prerequisites not met
+- Achievement already unlocked (duplicate prevention)
+
+**Debug:**
+```python
+# Check unlock conditions:
+achievement["unlock_conditions"]  # Verify syntax and values
+
+# Check game state:
+player.npcs_saved_count  # Should match unlock_conditions["npcs_saved"]
+player.hazards_cleared_count  # Should match unlock_conditions["hazards_cleared"]
+
+# Check prerequisites:
+achievement["prerequisites"]  # All must be unlocked first
+
+# Check unlock status:
+achievement["unlocked"]  # Should be False before unlock
+```
+
+---
+
+#### **Score Not Adding Correctly**
+**Symptoms:** Score doesn't increase or decreases unexpectedly  
+**Causes:**
+- Negative score sources (death penalty, NPC fates)
+- Score already awarded (duplicate)
+- Score calculation bug
+
+**Debug:**
+```python
+# Check score sources:
+# Log each score addition/subtraction
+print(f"Score: +{amount} for {reason} (total: {total_score})")
+
+# Check NPC fates:
+npc["current_fate"]  # "died_hazard" = -50, "saved" = +100
+
+# Check death count:
+player.death_count  # Each death = -100
+```
+
+---
+
+#### **Progress Not Tracking**
+**Symptoms:** Achievement progress bar doesn't update  
+**Causes:**
+- `trackable: false` or missing
+- Progress not incremented in code
+- UI not refreshing
+
+**Debug:**
+```python
+# Check trackable flag:
+achievement["progress"]["trackable"]  # Should be True
+
+# Check progress values:
+achievement["progress"]["current"]  # Should increment
+achievement["progress"]["target"]  # Should match unlock_conditions
+
+# Manual update test:
+achievement["progress"]["current"] += 1
+print(f"Progress: {current} / {target}")
+```
+
+---
+
+#### **Hidden Achievement Revealed**
+**Symptoms:** Hidden achievement shows name/description before unlock  
+**Causes:**
+- `hidden: false` or missing
+- UI not checking hidden flag
+- Achievement unlocked (should now be revealed)
+
+**Debug:**
+```python
+# Check hidden flag:
+achievement["hidden"]  # Should be True
+
+# Check unlock status:
+achievement["unlocked"]  # If True, should show full details
+
+# Check UI logic:
+if achievement["hidden"] and not achievement["unlocked"]:
+    display(achievement["hidden_description"])
+else:
+    display(achievement["description"])
+```
+
+---
+
+### Testing Checklist
+
+**Before Committing New Achievement:**
+- [ ] Achievement ID is unique
+- [ ] `name` is memorable and thematic
+- [ ] `description` clearly explains requirement
+- [ ] `category` is appropriate
+- [ ] `rarity` matches difficulty
+- [ ] `unlock_conditions` are achievable
+- [ ] `score_reward` is balanced
+- [ ] `prerequisites` are correct (if any)
+- [ ] `hidden` flag is set correctly
+- [ ] `hidden_description` is intriguing (if hidden)
+- [ ] `progress` is trackable if appropriate
+- [ ] No typos in keys or references
+- [ ] Tested in-game (can be unlocked)
+
+---
+
+## Complete Examples
+
+### Example 1: Simple Achievement (Exploration)
+
+**Cartographer**
+
+**Achievement Definition:**
+```json
+{
+  "cartographer": {
+    "name": "Cartographer",
+    "description": "Visit all 12 rooms in Level 1.",
+    "category": "exploration",
+    "rarity": "uncommon",
+    "score_reward": 75,
+    "unlock_conditions": {
+      "rooms_visited": 12
+    },
+    "progress": {
+      "current": 0,
+      "target": 12,
+      "trackable": true
+    },
+    "unlocked": false
+  }
+}
+```
+
+**Unlock Logic:**
+```python
+# When player enters room:
+room["visited"] = True
+player.rooms_visited_count += 1
+
+# Check achievement:
+if player.rooms_visited_count >= 12:
+    unlock_achievement("cartographer")
+```
+
+**Unlock Message:**
+```
+🏆 Achievement Unlocked: Cartographer!
+
+Visit all 12 rooms in Level 1.
+
+You've explored every corner of the hospital.
+There are no secrets left... or are there?
+
++75 points
+```
+
+---
+
+### Example 2: Complex Achievement (Mastery)
+
+**Perfect Timing**
+
+**Achievement Definition:**
+```json
+{
+  "perfect_timing": {
+    "name": "Perfect Timing",
+    "description": "Complete 3 QTEs in a row without any mistakes.",
+    "category": "mastery",
+    "rarity": "rare",
+    "score_reward": 150,
+    "unlock_conditions": {
+      "qte_success_streak": 3
+    },
+    "progress": {
+      "current": 0,
+      "target": 3,
+      "trackable": true
+    },
+    "unlocked": false
+  }
+}
+```
+
+**Unlock Logic:**
+```python
+# When QTE succeeds:
+if qte_errors == 0:
+    player.qte_success_streak += 1
+    achievements["perfect_timing"]["progress"]["current"] = player.qte_success_streak
+    
+    if player.qte_success_streak >= 3:
+        unlock_achievement("perfect_timing")
+else:
+    player.qte_success_streak = 0
+    achievements["perfect_timing"]["progress"]["current"] = 0
+
+# When QTE fails:
+player.qte_success_streak = 0
+achievements["perfect_timing"]["progress"]["current"] = 0
+```
+
+**Unlock Message:**
+```
+🏆 Achievement Unlocked: Perfect Timing!
+
+Complete 3 QTEs in a row without any mistakes.
+
+Your reflexes are impeccable. Death's traps
+can't catch you off-guard.
+
++150 points
+```
+
+---
+
+### Example 3: Multi-Condition Achievement (Narrative)
+
+**Hero of the Hospital**
+
+**Achievement Definition:**
+```json
+{
+  "hero_of_the_hospital": {
+    "name": "Hero of the Hospital",
+    "description": "Save all NPCs and clear all hazards in Level 1 without dying.",
+    "category": "narrative",
+    "rarity": "epic",
+    "score_reward": 300,
+    "unlock_conditions": {
+      "npcs_saved": 3,
+      "hazards_cleared": 5,
+      "no_deaths": true,
+      "level_completed": 1
+    },
+    "progress": {
+      "current": 0,
+      "target": 1,
+      "trackable": false
+    },
+    "unlocked": false
+  }
+}
+```
+
+**Unlock Logic:**
+```python
+# Check on level completion:
+if (
+    player.npcs_saved_count >= 3 and
+    player.hazards_cleared_count >= 5 and
+    player.death_count == 0 and
+    player.current_level == 1 and
+    level_completed
+):
+    unlock_achievement("hero_of_the_hospital")
+```
+
+**Unlock Message:**
+```
+🏆 Achievement Unlocked: Hero of the Hospital!
+
+Save all NPCs and clear all hazards in Level 1
+without dying.
+
+You didn't just survive—you saved everyone.
+Death's design was completely shattered by
+your heroism.
+
++300 points
+```
+
+---
+
+### Example 4: Evidence Collection Achievement
+
+**Train Case Closed**
+
+**Achievement Definition:**
+```json
+{
+  "train_case_closed": {
+    "name": "Train Case Closed",
+    "description": "Collect all evidence related to the 2019 train derailment.",
+    "category": "collection",
+    "rarity": "uncommon",
+    "score_reward": 100,
+    "unlock_conditions": {
+      "evidence_collected": {
+        "source": "train_derailment",
+        "count": 3
+      }
+    },
+    "progress": {
+      "current": 0,
+      "target": 3,
+      "trackable": true
+    },
+    "unlocked": false
+  }
+}
+```
+
+**Evidence Items (items.json):**
+```json
+{
+  "train_derailment_article": {
+    "is_evidence": true,
+    "evidence_source": "train_derailment"
+  },
+  "train_ticket_stub": {
+    "is_evidence": true,
+    "evidence_source": "train_derailment"
+  },
+  "survivors_list": {
+    "is_evidence": true,
+    "evidence_source": "train_derailment"
+  }
+}
+```
+
+**Unlock Logic:**
+```python
+# When player takes evidence:
+if item["is_evidence"] and item["evidence_source"] == "train_derailment":
+    player.evidence_by_source["train_derailment"] += 1
+    achievements["train_case_closed"]["progress"]["current"] = player.evidence_by_source["train_derailment"]
+    
+    if player.evidence_by_source["train_derailment"] >= 3:
+        unlock_achievement("train_case_closed")
+```
+
+**Unlock Message:**
+```
+🏆 Achievement Unlocked: Train Case Closed!
+
+Collect all evidence related to the 2019
+train derailment.
+
+You've uncovered the full story of the train
+derailment. 87 dead. One survivor. And now
+you know why Death is hunting them.
+
++100 points
+```
+
+---
+
+### Example 5: Hidden Achievement (Secret)
+
+**Design Breaker**
+
+**Achievement Definition:**
+```json
+{
+  "design_breaker": {
+    "name": "Design Breaker",
+    "description": "Unlock the secret ending by saving all NPCs and collecting all evidence across all levels.",
+    "hidden": true,
+    "hidden_description": "??? - Uncover the deepest secret of Death's design.",
+    "category": "narrative",
+    "rarity": "legendary",
+    "score_reward": 500,
+    "unlock_conditions": {
+      "npcs_saved": 10,
+      "evidence_count": 24,
+      "special_action": "secret_ending_unlocked",
+      "level_completed": 3
+    },
+    "prerequisites": [
+      "survivor_level_1",
+      "survivor_level_2",
+      "survivor_level_3"
+    ],
+    "progress": {
+      "current": 0,
+      "target": 1,
+      "trackable": false
+    },
+    "unlocked": false
+  }
+}
+```
+
+**Unlock Logic:**
+```python
+# Check on game completion:
+if (
+    player.npcs_saved_count >= 10 and
+    player.evidence_count >= 24 and
+    all_levels_completed and
+    all([achievements[prereq]["unlocked"] for prereq in prerequisites])
+):
+    trigger_special_ending()
+    unlock_achievement("design_breaker")
+```
+
+**Unlock Message:**
+```
+🏆 LEGENDARY ACHIEVEMENT UNLOCKED! 🏆
+
+★ DESIGN BREAKER ★
+
+Unlock the secret ending by saving all NPCs
+and collecting all evidence across all levels.
+
+You didn't just survive Death's design—you
+broke it completely. You saved everyone. You
+uncovered every secret. You proved that fate
+is not inevitable.
+
+Death will remember you.
+
++500 points
+
+[Continue to Secret Ending]
+```
+
+---
+
+### Example 6: Speedrun Achievement
+
+**Against the Clock**
+
+**Achievement Definition:**
+```json
+{
+  "against_the_clock": {
+    "name": "Against the Clock",
+    "description": "Complete Level 1 in under 30 turns.",
+    "category": "mastery",
+    "rarity": "epic",
+    "score_reward": 200,
+    "unlock_conditions": {
+      "turns_under": 30,
+      "level_completed": 1
+    },
+    "progress": {
+      "current": 0,
+      "target": 1,
+      "trackable": false
+    },
+    "unlocked": false
+  }
+}
+```
+
+**Unlock Logic:**
+```python
+# Check on level completion:
+if player.turn_count < 30 and level_completed:
+    unlock_achievement("against_the_clock")
+```
+
+**Unlock Message:**
+```
+🏆 Achievement Unlocked: Against the Clock!
+
+Complete Level 1 in under 30 turns.
+
+You moved with incredible speed and efficiency.
+Death couldn't keep up. Your time: {turn_count} turns.
+
++200 points
+```
+
+---
+
+### Example 7: Survival Achievement
+
+**Fearless**
+
+**Achievement Definition:**
+```json
+{
+  "fearless": {
+    "name": "Fearless",
+    "description": "Complete Level 1 with fear below 30%.",
+    "category": "survival",
+    "rarity": "rare",
+    "score_reward": 125,
+    "unlock_conditions": {
+      "fear_below": 30,
+      "level_completed": 1
+    },
+    "progress": {
+      "current": 0,
+      "target": 1,
+      "trackable": false
+    },
+    "unlocked": false
+  }
+}
+```
+
+**Unlock Logic:**
+```python
+# Check on level completion:
+if player.fear <= 30 and level_completed:
+    unlock_achievement("fearless")
+```
+
+**Unlock Message:**
+```
+🏆 Achievement Unlocked: Fearless!
+
+Complete Level 1 with fear below 30%.
+
+You kept your composure even as Death's design
+unfolded around you. Nothing rattles you.
+Final fear level: {fear}%
+
++125 points
+```
+
+---
+
+## Change Log
+
+### Version 1.0 (2025-11-06)
+- Initial guide creation
+- Documented achievement schema and categories
+- Added unlock conditions (single and multi-condition)
+- Covered scoring system with formula and ranks
+- Included progression tracking and hidden achievements
+- Provided achievement UI mockups
+- Added 7 complete examples (exploration, mastery, multi-condition, collection, hidden, speedrun, survival)
+- Testing and debugging section with common issues
+
+---
+
+**Questions or Improvements?**  
+Submit suggestions to: [project lead / game design team]
+
+**Related Documentation:**
+- `hazards_developer_guide.txt` - For hazard-clearing achievements
+- `items_inventory_guide.txt` - For evidence collection achievements
+- `npcs_dialogue_guide.txt` - For NPC-saving achievements
+- `qte_design_guide.txt` - For QTE mastery achievements
+
+---
