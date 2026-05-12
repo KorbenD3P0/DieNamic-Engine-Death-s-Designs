@@ -46,37 +46,7 @@
       ]
     }
   },
-  "level_house": {
-    "name": "Bludworth's House",
-    "entry_room": "Front Porch",
-    "conditional_transitions": [
-      {
-        "condition": "has_flag", 
-        "flag_name": "visionary_is_dead", 
-        "next_level_id": "level_hub"
-      },
-      {
-        "condition": "default", 
-        "next_level_id": "level_hub"
-      }
-    ],
-    "exit_room": "Back Porch",
-    "level_requirements": {
-      "required_items": ["bludworths_house_key"]
-    },
-    "intro_text": "You survived the hospital, but your answers pointed you here. Death isn't done with you yet...",
-    "completion_hazard": "wrecking_ball",
-    "completion_hazard_initial_state": "dormant",
-    "completion_narratives_by_state": {
-      "impact_floor_break": "Your combined weight is too much for the rotted porch! With a sharp crack, the floorboards give way and you stumble into the space beneath. As you look up, dazed, you see the massive wrecking ball swing silently through the space you just occupied... directly into you. The collapsing porch didn't kill you, but it put you right in Death's path. The wrecking ball finishes the job.",
-      "level_complete_survival": "You stand panting, adrenaline coursing through you, amid the wreckage of Bludworth's back porch.\nThe crane operator, horrified, quickly secures the crane and drives away before anyone can ask questions.\n\nYou're alive... and you have a new destination in mind.",
-      "obliterated_by_first_swing": "Your hesitation was fatal. The world dissolves into a symphony of crushing force and blinding pain. Obliterated by the initial swing of the wrecking ball.",
-      "impact_return_swing_death": "The return swing was faster, more brutal. You couldn't react in time. You cheated death for a second, but it always comes back around. The returning wrecking ball obliterates you.",
-      "death_by_falling_debris": "After all that, it wasn't the ball that got you. A jagged piece of the house's own facade, shaken loose by the chaos, plummets down and ends your story with an abrupt, brutal impact. Killed by falling debris after surviving the wrecking ball.",
-      "death_by_falling_ball": "The massive wrecking ball plummets from the broken crane, crushing you beneath its tremendous weight. So close to escape, yet Death found a way. Crushed by a falling wrecking ball after the crane cable snapped."
-    }
-  },
-  "level_police_station": {
+    "level_police_station": {
     "name": "The Precinct",
     "entry_room": "Police Station Interview Room",
     "on_enter_level_events": [
@@ -110,6 +80,62 @@
       }
     ]
   },
+  "level_auto_shop": {
+    "name": "Pete's Auto Repair",
+    "description": "The smell of oil and gasoline is overwhelming. The air is thick with the hum of machinery and the hiss of leaking compressors. The floor is slick with oil stains, and the walls are adorned with faded posters of classic cars and neon signs that buzz aggressively.",
+    "entry_room": "Garage Forecourt",
+    "conditional_transitions": [
+      {
+        "condition": "has_flag", 
+        "flag_name": "visionary_is_dead", 
+        "next_level_id": "level_hub"
+      },
+      {
+        "condition": "default", 
+        "next_level_id": "level_hub"
+      }
+    ],
+    "unlock_conditions": {
+      "or": [
+        {"npc_target_location": "auto_shop"},
+        {"investigation_clue_found": "true_companions_transfer_form"}
+      ]
+    },
+    "on_enter_level_events": [
+      {"type": "show_popup", "title": "Pete's Auto Repair", "message": "The smell of oil and gasoline is overwhelming. The air is thick with the hum of machinery and the hiss of leaking compressors. The floor is slick with oil stains, and the walls are adorned with faded posters of classic cars and neon signs that buzz aggressively."},
+      {"type": "play_music", "track": "industrial_grind_ambience"}
+    ]
+  },
+  "level_house": {
+    "name": "Bludworth's House",
+    "entry_room": "Front Porch",
+    "conditional_transitions": [
+      {
+        "condition": "has_flag", 
+        "flag_name": "visionary_is_dead", 
+        "next_level_id": "level_hub"
+      },
+      {
+        "condition": "default", 
+        "next_level_id": "level_hub"
+      }
+    ],
+    "level_requirements": {
+      "required_items": ["bludworths_house_key"]
+    },
+    "intro_text": "You survived the hospital, but your answers pointed you here. Death isn't done with you yet...",
+    "completion_hazard": "wrecking_ball",
+    "completion_hazard_initial_state": "dormant",
+    "completion_narratives_by_state": {
+      "impact_floor_break": "Your combined weight is too much for the rotted porch! With a sharp crack, the floorboards give way and you stumble into the space beneath. As you look up, dazed, you see the massive wrecking ball swing silently through the space you just occupied... directly into you. The collapsing porch didn't kill you, but it put you right in Death's path. The wrecking ball finishes the job.",
+      "level_complete_survival": "You stand panting, adrenaline coursing through you, amid the wreckage of Bludworth's back porch.\nThe crane operator, horrified, quickly secures the crane and drives away before anyone can ask questions.\n\nYou're alive... and you have a new destination in mind.",
+      "obliterated_by_first_swing": "Your hesitation was fatal. The world dissolves into a symphony of crushing force and blinding pain. Obliterated by the initial swing of the wrecking ball.",
+      "impact_return_swing_death": "The return swing was faster, more brutal. You couldn't react in time. You cheated death for a second, but it always comes back around. The returning wrecking ball obliterates you.",
+      "death_by_falling_debris": "After all that, it wasn't the ball that got you. A jagged piece of the house's own facade, shaken loose by the chaos, plummets down and ends your story with an abrupt, brutal impact. Killed by falling debris after surviving the wrecking ball.",
+      "death_by_falling_ball": "The massive wrecking ball plummets from the broken crane, crushing you beneath its tremendous weight. So close to escape, yet Death found a way. Crushed by a falling wrecking ball after the crane cable snapped."
+    }
+  },
+
   "level_fairgrounds": {
     "name": "McKinley County Fairgrounds",
     "entry_room": "Midway (Center)",

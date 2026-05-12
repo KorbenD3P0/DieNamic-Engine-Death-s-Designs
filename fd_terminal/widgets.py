@@ -1099,20 +1099,46 @@ class QTEPopup(Popup):
                 grid.add_widget(btn)
             layout.add_widget(grid)
 
+
         elif ui_type == "memory_grid":
             grid_size = qctx.get('grid_size', 3)
-            pattern_length = qctx.get('pattern_length_default', 4)
-            pattern = qctx.get('pattern') or qctx.get('required_pattern')
-            if not pattern:
-                import random as _rand
-                length = qctx.get('target_sequence_length') or qctx.get('target_count') or 4
-                pattern = [random.randint(0, 8) for _ in range(length)]
-                qctx['pattern'] = pattern
-            qctx['pattern'] = pattern
-            
+            button_labels = qctx.get('button_labels', [])
+            pattern = qctx.get('pattern') or qctx.get('required_pattern') or qctx.get('required_sequence')
+
+            if pattern:
+                # Normalize: if pattern contains strings, convert to int indices via button_labels map.
+                # This handles hazards that supply ['left','up','down','right'] instead of [0,1,2,3].
+                if pattern and isinstance(pattern[0], str):
+                    # Build a case-insensitive label -> index map
+                    label_to_idx = {lbl.lower(): i for i, lbl in enumerate(button_labels)}
+                    converted = []
+                    for p in pattern:
+                        key = str(p).lower()
+                        if key in label_to_idx:
+                            converted.append(label_to_idx[key])
+                        else:
+                            # Fallback: try to parse as int, else use 0
+                            try:
+                                converted.append(int(p))
+                            except (ValueError, TypeError):
+                                converted.append(0)
+                                self.logger.warning(
+                                    f"memory_grid: could not map pattern label '{p}' "
+                                    f"to an index. Available labels: {button_labels}. Defaulting to 0."
+                                )
+                    pattern = converted
+            else:
+                # Auto-generate if absent
+                length = qctx.get('target_sequence_length') or qctx.get('pattern_length_default') or 4
+                max_idx = (grid_size * grid_size) - 1
+                pattern = [random.randint(0, max_idx) for _ in range(length)]
+
+            qctx['pattern'] = pattern  # Write back normalized ints for engine validation
+
             mg = MemoryGridWidget(
                 callback=self.submit_callback,
                 pattern=pattern,
+                button_labels=button_labels,  # Pass labels so buttons can be labelled
                 grid_size=grid_size,
                 size_hint_y=None, height=dp(250)
             )
@@ -1691,56 +1717,77 @@ class PrecisionGaugeWidget(Widget):
             Color(1, 0.2, 0.2) if not (self.target_range[0] <= self.value <= self.target_range[1]) else Color(0.2, 1, 0.2)
             Rectangle(pos=self.pos, size=(self.width, self.height * norm_val))
 
+
 class MemoryGridWidget(GridLayout):
-    """Grid of buttons that flash a pattern."""
-    def __init__(self, callback, pattern, grid_size=3, **kwargs):
+    """Grid of buttons that flash a pattern.
+    
+    pattern must be a list of INTEGER indices (0..grid_size²-1).
+    The _create_qte_interface branch is responsible for converting string labels to ints
+    before passing them here.
+    """
+    def __init__(self, callback, pattern, grid_size=3, button_labels=None, **kwargs):
         super().__init__(**kwargs)
         self.cols = grid_size
-        
+
         from kivy.metrics import dp
         self.spacing = dp(5)
         self.padding = dp(5)
-        
+
         self.callback = callback
-        self.pattern = pattern # list of indices [0, 3, 1...]
+        self.pattern = pattern  # guaranteed list of ints by the time we get here
         self.buttons = []
         self.input_enabled = False
-        
-        for i in range(grid_size * grid_size):
-            # PATCH: background_normal='' prevents Android from tinting the button black
-            btn = Button(background_normal='', background_color=(0.3, 0.3, 0.3, 1))
+
+        # If button_labels are provided and match grid count, use them; else number the tiles.
+        max_tiles = grid_size * grid_size
+        labels = list(button_labels or [])
+
+        for i in range(max_tiles):
+            label_text = labels[i] if i < len(labels) else str(i)
+            btn = Button(
+                text=label_text,
+                background_normal='',
+                background_color=(0.3, 0.3, 0.3, 1)
+            )
             btn.bind(on_press=lambda x, idx=i: self._on_btn_press(idx))
             self.add_widget(btn)
             self.buttons.append(btn)
-            
+
         Clock.schedule_once(self._play_pattern, 1.0)
 
     def _play_pattern(self, dt):
-        # Simple coroutine-like sequence using Clock
-        delay = 0
+        delay = 0.0
         for idx in self.pattern:
+            # Guard: idx must be a valid int index. Skip and warn if not.
+            if not isinstance(idx, int) or idx < 0 or idx >= len(self.buttons):
+                import logging
+                logging.getLogger("MemoryGridWidget").warning(
+                    f"_play_pattern: invalid index {idx!r} (type={type(idx).__name__}), "
+                    f"buttons count={len(self.buttons)}. Skipping."
+                )
+                delay += 0.8
+                continue
             Clock.schedule_once(lambda dt, i=idx: self._flash_btn(i), delay)
             delay += 0.8
         Clock.schedule_once(lambda dt: self._enable_input(), delay)
 
     def _flash_btn(self, idx):
+        # Belt-and-suspenders int guard so a stale scheduled callback never crashes.
+        if not isinstance(idx, int) or idx < 0 or idx >= len(self.buttons):
+            return
         btn = self.buttons[idx]
-        # Flash the thematic green color
-        btn.background_color = (0.1, 0.8, 0.1, 1) 
+        btn.background_color = (0.1, 0.8, 0.1, 1)
         Clock.schedule_once(lambda dt: setattr(btn, 'background_color', (0.3, 0.3, 0.3, 1)), 0.5)
 
     def _enable_input(self):
         self.input_enabled = True
 
     def _on_btn_press(self, idx):
-        if not self.input_enabled: return
-        
-        # Flash the button white briefly to acknowledge the player's tap
+        if not self.input_enabled:
+            return
         btn = self.buttons[idx]
         btn.background_color = (0.8, 0.8, 0.8, 1)
         Clock.schedule_once(lambda dt: setattr(btn, 'background_color', (0.3, 0.3, 0.3, 1)), 0.2)
-        
-        # Pass the dynamically generated pattern back to the engine
         self.callback({'event': 'memory_input', 'index': idx, 'pattern': self.pattern})
 
 class SpiralInputWidget(Widget):

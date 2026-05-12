@@ -390,6 +390,7 @@ class InventoryMixin:
         except Exception as e:
             self.logger.error(f"_command_use: Unexpected error: {e}", exc_info=True)
             return self._build_response(message="Something went wrong while trying to use that.", turn_taken=False, success=False)
+    
     def _command_combine(self, target_str: str) -> dict:
         """
         Combines two items from inventory. 

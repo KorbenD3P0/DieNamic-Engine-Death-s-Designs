@@ -1,57 +1,70 @@
 {
   "crossroads_room": {
     "name": "The Crossroads",
-    "description": "This is it. You can feel the air growing heavy. Death is closing in, and running is no longer an option. The tools to break the design are laid out before you on a stainless steel table.",
-    "first_entry_text": "The detective locks the door behind you. You are completely alone.\n\nYou have gathered what you need. It is time to make your play against Death.",
+    "description": "This is it. The end of the line. The air is thick with the scent of ozone and copper. On the stainless steel table lie the tools you've gathered to cheat the design. One path leads to life, one to a gamble, and one into darkness.",
+    "first_entry_text": "You lock the warehouse doors. Outside, the world feels distant, like a dream you're finally waking up from. You have the tools. Now, you just have to use them.",
     "exits": {},
     "furniture": [
       {
         "name": "stainless steel table",
-        "description": "A cold metal table holding your grim instruments of salvation.",
-        "is_container": false
+        "description": "A cold metal surface holding your instruments of salvation.",
+        "is_container": true,
+        "capacity": 10,
+        "_comment": "The Loot Populator will drop your collected tools here."
       }
     ],
     "objects": [
-      "medical defibrillator",
-      "chemical sedation kit",
-      "heavy revolver"
-    ],
-    "examine_details": {
-      "medical defibrillator": "Plan A. A high-voltage industrial defibrillator. The machine hums with lethal voltage. To pull this off, you need the Warehouse Key and Defibrillator Pads.",
-      "chemical sedation kit": "Plan B. Heavy veterinary sedatives and adrenaline. Enough to stop a heart, and restart it. You need the Vet Sedatives and Adrenaline.",
-      "heavy revolver": "Plan C. A heavy, loaded revolver. The metal is cold. The math is simple: a life for a life. You need the Loaded Revolver to pull this off."
-    },
-    "interactable_triggers": {
-      "medical defibrillator": {
-        "on_action": "use",
-        "triggers_hazard_state_change": {},
-        "requires_all_evidence": false,
-        "on_talk_action": {
-          "action_effect": "trigger_finale_override",
-          "requires_items": ["warehouse_key", "defibrillator_pads"]
+      {
+        "name": "industrial battery array",
+        "hazard_key": "finale_defibrillator",
+        "player_interaction": {
+          "use": [
+            {
+              "required_item_name": "defibrillator_pads",
+              "required_item_type": "tool",
+              "target_state": "finale_triggered_revive",
+              "message_success": "You slap the pads onto your chest and grip the leads. 'Clear!' you scream into the empty warehouse. Everything goes white.",
+              "on_success": { "action_effect": "trigger_finale_override" }
+            }
+          ]
         }
       },
-      "chemical sedation kit": {
-        "on_action": "use",
-        "triggers_hazard_state_change": {},
-        "requires_all_evidence": false,
-        "on_talk_action": {
-          "action_effect": "trigger_finale_flatline",
-          "requires_items": ["vet_sedatives", "adrenaline"]
+      {
+        "name": "veterinary medical kit",
+        "hazard_key": "finale_chemical",
+        "player_interaction": {
+          "use": [
+            {
+              "required_item_name": "vet_sedatives",
+              "required_item_type": "medical_supply",
+              "target_state": "finale_triggered_flatline",
+              "message_success": "You plunge the syringe into your arm. Your heart rate slows... slows... stops. You are dead. Now it's up to the adrenaline to bring you back.",
+              "on_success": { "action_effect": "trigger_finale_flatline" }
+            }
+          ]
         }
       },
-      "heavy revolver": {
-        "on_action": "use",
-        "triggers_hazard_state_change": {},
-        "requires_all_evidence": false,
-        "on_talk_action": {
-          "action_effect": "trigger_finale_dark_path",
-          "requires_items": ["loaded_revolver"]
+      {
+        "name": "heavy revolver",
+        "player_interaction": {
+          "use": [
+            {
+              "required_item_name": "loaded_revolver",
+              "required_item_type": "weapon",
+              "target_state": "finale_triggered_dark",
+              "message_success": "The steel is cold against your palm. A life for a life. That's the only rule that ever mattered. You find your target and pull the trigger.",
+              "on_success": { "action_effect": "trigger_finale_dark_path" }
+            }
+          ]
         }
       }
+    ],
+    "examine_details": {
+      "industrial battery array": "The core of Plan A. If you have the Defibrillator Pads, you can use them here to stop and restart your heart with raw voltage.",
+      "veterinary medical kit": "Plan B. Using the Vet Sedatives here will induce clinical death. You'll need to hope your companions know when to hit the adrenaline.",
+      "heavy revolver": "Plan C. The 'New Life' rule is a lie. The only way to stop the list is to take someone else's place."
     },
     "hazards_present": [],
-    "locked": false,
     "entry_room": true
   }
 }

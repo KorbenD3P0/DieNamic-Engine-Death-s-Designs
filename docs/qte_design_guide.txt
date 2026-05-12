@@ -195,3 +195,32 @@ If a QTE is failed, the engine evaluates damage before changing states:
           }
         }
 ```
+
+
+### Example 4: npc targeting
+'''
+"triggers_qte_on_entry": {
+  "dynamic_selection": true,
+  "qte_variants": {
+    "npc_present": {
+      "condition": "room_has_survivor",
+      "qte_type": "[TYPE]",
+      "qte_context": { 
+        "ui_prompt_message": "[NPC VERSION]",
+        "npc_fatal_on_failure": true,
+        "next_state_after_qte_success": "[STATE]",
+        "next_state_after_qte_failure": "[STATE]"
+      }
+    },
+    "player_solo": {
+      "condition": "default",
+      "qte_type": "[TYPE]",
+      "qte_context": {
+        "ui_prompt_message": "[SOLO VERSION]",
+        "next_state_after_qte_success": "[STATE]",
+        "next_state_after_qte_failure": "[DEATH_STATE]"
+      }
+    }
+  }
+}
+'''

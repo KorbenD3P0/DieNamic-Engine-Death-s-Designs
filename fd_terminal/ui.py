@@ -3389,9 +3389,9 @@ class InterLevelScreen(BaseScreen):
                 f"It's been about a week since {color_text(disaster_name, 'special', rm)} killed {color_text(killed_count, 'warning', rm)}. "
                 f"The news called it a freak tragedy. Not wrong. You called it a miracle that you walked away with just a minor concussion.\n\n"
                 f"You are still a little weirded out about {color_text(visionary_name, 'special', rm)} and their crashing out right before everyone died, but that problem died with them so you try not to think about it too much. "
-                f"You're alive and well! Life is finally starting to feel normal again. You just got that promotion at work, you finally met a quality guy.. Dying didn't really fit into your 5-year plan, you know?\n\nYou've just arrived at {color_text(hospital, 'location', rm)} "
+                f"{color_text('You\'re alive and well!', 'success', rm)} Life is finally starting to feel normal again. You just got that promotion at work, you finally met a quality guy.. {color_text('Dying didn\'t really fit into your 5-year plan, you know?', 'furniture', rm)}\n\nYou've just arrived at {color_text(hospital, 'location', rm)} "
                 f"for a routine follow-up scan in the {color_text('Radiology department', 'special', rm)}, just to be safe, and then you can go home.\n\n"
-                f"Whatever you escaped from in {color_text(city, 'location', rm)}... You're glad it's in the past!\n\n"
+                f"Whatever you escaped from in {color_text(city, 'location', rm)}... {color_text('You\'re glad it\'s in the past!', 'success', rm)}\n\n"
                 f"Commands: type {color_text('help', 'special', rm)} to see everything you can do.\n"
                 f"Find keys, examine clues, and {color_text('have an awesome life!', 'warning', rm)}\n\n"
             )
@@ -4183,6 +4183,7 @@ class GameScreen(BaseScreen):
                 return None
             qte_ctx = dict(qte_entry.get("qte_context") or {})
             qte_ctx["qte_source_hazard_id"] = hid
+            self.logger.info(f"Synthesizing QTE for state {state}")
             return {"qte_type": qte_entry.get("qte_type"), "qte_context": qte_ctx}
         except Exception as e:
             self.logger.error(f"_synthesize_deferred_qte_if_missing error: {e}", exc_info=True)
@@ -4303,6 +4304,18 @@ class GameScreen(BaseScreen):
         try:
             # 1. Normalize and validate events
             events = self._normalize_ui_events(events)
+
+            # --- THE FIX: Clear stale popup locks for QTE chains ---
+            # If the batch contains a QTE show event, clear any stale popup lock
+            # so it isn't blocked by a popup that was just dismissed.
+            has_qte_event = any(
+                (e.get('event_type') or e.get('type', '')) in ('show_qte', 'trigger_qte')
+                for e in events
+            )
+            if has_qte_event:
+                self._popup_is_active = False
+            # -------------------------------------------------------
+
             self.logger.info(f"\n{'='*40}\nUI EVENT BATCH INCOMING: {len(events)} events\n{'='*40}")
             for i, e in enumerate(events):
                 e_type = e.get('event_type') or e.get('type', 'UNKNOWN')
@@ -4315,6 +4328,7 @@ class GameScreen(BaseScreen):
                 if not isinstance(e, dict):
                     continue
                 e_type = e.get('event_type') or e.get('type', '')
+                
                 if e_type == "schedule_transit":
                     duration = e.get("duration", 4.0)
                     try:
@@ -4323,7 +4337,9 @@ class GameScreen(BaseScreen):
                     except Exception as e:
                         self.logger.error(f"_handle_ui_events: Failed scheduling elevator transit: {e}", exc_info=True)
                     continue
+                    
                 valid_events.append(e)
+                
             sorted_events = sorted(valid_events, key=lambda e: e.get('priority', 0), reverse=True)
             self.logger.debug(f"_handle_ui_events: Processing {len(sorted_events)} valid events")
 
@@ -4372,6 +4388,7 @@ class GameScreen(BaseScreen):
             if t == 'game_over':  return 99   # Handled by pre-check; push to end to be safe
             if t == 'show_popup': return 0    # Info popups before QTEs
             if t == 'trigger_qte': return 1   # Changed to match your trigger key
+            if t == 'show_qte':    return 1 
             return -1
 
         sorted_events.sort(key=_priority_key)
@@ -4390,6 +4407,10 @@ class GameScreen(BaseScreen):
                 if event_type in {"show_popup", "trigger_qte"}:
                     self._popup_is_active = True
                     batch_tail = sorted_events[i + 1:]
+
+                if event_type == 'show_qte':       # ← ADD
+                    self._handle_show_qte(event)
+                    return inventory_changed
 
                 # Setup continuation if we hit a blocking event
                 if batch_tail:
@@ -5070,65 +5091,72 @@ class GameScreen(BaseScreen):
         self._pending_open_popup_event = Clock.schedule_once(open_new_popup, 0.1)
 
     def _handle_destroy_qte_popup(self, event):
-        self.logger.info(f"_handle_destroy_qte_popup: popup={id(self.active_qte_popup) if self.active_qte_popup else None}, "
-                f"is_dismissed={getattr(self.active_qte_popup, 'is_dismissed', 'N/A')}")
         if self.active_qte_popup:
             try:
-                self.active_qte_popup.dismiss()
+                if not getattr(self.active_qte_popup, 'is_dismissed', False):
+                    self.active_qte_popup.dismiss()
             except Exception as e:
                 self.logger.error(f"Error dismissing QTE popup: {e}", exc_info=True)
             self.active_qte_popup = None
-            self.logger.info("QTE popup destroyed successfully")
+        # Ensure the flag is always cleared so the next QTE can start
+        if self.game_logic:
+            self.game_logic.player['qte_active'] = False
+        self.logger.info("QTE popup destroyed successfully")
 
     def _handle_show_qte(self, event):
-        """Displays a QTE popup. Overwrites any existing QTEs to allow rapid chains."""
+        """Displays a QTE popup. Always routes through qte_engine.start_qte."""
         
-        # ── Visionary Pre-Cog Flash ───────────────────────────────────────────
-        # Half a second before the QTE appears, briefly flash the correct input
-        # so the Visionary has a reaction-time advantage.
-        if (self.game_logic and
-                self.game_logic.player.get('is_visionary') and
-                self.game_logic.player.get('premonition_already_died')):  # only on real run
-            qte_ctx = event.get('qte_context', {})
-            input_type = event.get('input_type', '')
-            hint_text = None
+        # 1. THE SHIELD: Dismiss everything that isn't a QTE
+        app = App.get_running_app()
+        for child in [c for c in app.root.children if isinstance(c, ModalView)]:
+            if not isinstance(child, QTEPopup):
+                child.dismiss()
 
-            if input_type == 'mash':
-                hint_text = "[color=00ff00]TAP FAST![/color]"
-            elif input_type == 'word':
-                hint_text = f"[color=00ff00]{qte_ctx.get('expected_input_word', '').upper()}[/color]"
-            elif input_type == 'choice':
-                choices = qte_ctx.get('choices', [])
-                if choices:
-                    hint_text = f"[color=00ff00]{choices[0].upper()}[/color]"
+        # 2. OVERWRITE GUARD
+        if getattr(self, 'active_qte_popup', None):
+            self.active_qte_popup.dismiss()
+            self.active_qte_popup = None
+
+        # 3. ROUTE THROUGH ENGINE if event came from trigger_qte (engine not yet started)
+        qte_engine = getattr(self.game_logic, 'qte_engine', None) if self.game_logic else None
+        if qte_engine and not qte_engine.active_qte:
+            # Engine doesn't know about this QTE yet — start it so active_qte gets set
+            qte_type = event.get('qte_type')
+            qte_ctx  = event.get('qte_context', {})
+            if qte_type:
+                try:
+                    self.logger.info(f"_handle_show_qte: Bootstrapping engine for '{qte_type}'")
+                    qte_engine.start_qte(qte_type, qte_ctx)
+                    # start_qte will emit 'show_qte' back to the queue, which will call us again.
+                    # Return now so we don't double-create the popup.
+                    return
+                except Exception as e:
+                    self.logger.error(f"_handle_show_qte: engine bootstrap failed: {e}", exc_info=True)
+
+        # 4. VISIONARY HINT — only runs when engine already has active_qte set
+        if self.game_logic and self.game_logic.player.get('is_visionary'):
+            qte_ctx    = event.get('qte_context', {})
+            input_type = event.get('input_type', '')
+            hint_text  = None
+
+            if self.game_logic.player.get('premonition_already_died'):
+                if input_type == 'mash':
+                    hint_text = "[color=00ff00]TAP FAST![/color]"
+                elif input_type == 'word':
+                    hint_text = f"[color=00ff00]{qte_ctx.get('expected_input_word', '').upper()}[/color]"
+                elif input_type == 'choice':
+                    choices = qte_ctx.get('choices', [])
+                    if choices:
+                        hint_text = f"[color=00ff00]{choices[0].upper()}[/color]"
 
             if hint_text:
                 self.add_ui_event_immediate({
                     "event_type": "show_message",
                     "message": f"\n[color=555555][Sight]: {hint_text}[/color]\n"
                 })
-        # ─────────────────────────────────────────────────────────────────────
-        
-        # Clear any hanging active popups
-        if getattr(self, 'active_qte_popup', None):
-            self.logger.warning("Overwriting old QTE popup to make room for the new chain link!")
-            try:
-                self.active_qte_popup.dismiss()
-            except Exception as e:
-                self.logger.error(f"Error dismissing old QTE: {e}")
-            self.active_qte_popup = None
 
-        # Clear any hanging active popups
-        if getattr(self, 'active_qte_popup', None):
-            self.logger.warning("Overwriting old QTE popup to make room for the new chain link!")
-            try:
-                self.active_qte_popup.dismiss()
-            except Exception as e:
-                self.logger.error(f"Error dismissing old QTE: {e}")
-            self.active_qte_popup = None
-
+        # 5. CREATE POPUP
         try:
-            # 1. Create the popup instance (Matches your first line)
             popup = QTEPopup(
                 prompt=event.get("prompt", "React!"),
                 duration=event.get('duration', 5.0),
@@ -5136,18 +5164,9 @@ class GameScreen(BaseScreen):
                 submit_callback=self.on_qte_input_submit,
                 qte_context=event.get('qte_context', {})
             )
-
-            # 2. Bind the new method to the open event (Matches your second line)
-            # This ensures the timer doesn't start until the window is fully visible.
             popup.bind(on_open=lambda *a: popup.start_countdown())
-            
-            # 3. Open the popup (Matches your third line)
             popup.open()
-            
-            # 4. Record it as the active popup for management
             self.active_qte_popup = popup
-            self.logger.info(f"QTE popup shown successfully. Timer deferred until on_open. id={id(popup)}")
-            
         except Exception as e:
             self.logger.error(f"Failed to create QTEPopup: {e}", exc_info=True)
 
@@ -5165,13 +5184,19 @@ class GameScreen(BaseScreen):
             self.game_logic.qte_engine.activate_current_timer()
 
     def _handle_level_complete(self, event):
-        app = App.get_running_app()
-        # Stash the IDs on the app so the next screen can find them
-        app.interlevel_previous_level_id = event.get('level_id', self.game_logic.player.get('current_level'))
-        app.interlevel_next_level_id = event.get('next_level_id')
         """
         Handles the transition to the InterLevelScreen after a level is completed.
         """
+        app = App.get_running_app()
+        if not app:
+            self.logger.error("_handle_level_complete: Could not get running App instance.")
+            return
+            
+        # Stash the IDs on the app so the next screen can find them
+        current_lvl = self.game_logic.player.get('current_level') if self.game_logic else 'Unknown'
+        app.interlevel_previous_level_id = event.get('level_id', current_lvl)
+        app.interlevel_next_level_id = event.get('next_level_id')
+
         # --- THE FIX: Dedicated UI Lock ---
         # We check our local UI lock instead of the GameLogic lock
         if getattr(self, '_ui_transition_lock', False):
@@ -5198,11 +5223,6 @@ class GameScreen(BaseScreen):
                     self.logger.warning(f"Failed to dismiss active QTE popup: {e}")
                 self.active_qte_popup = None
 
-            app = App.get_running_app()
-            if not app:
-                self.logger.error("_handle_level_complete: Could not get running App instance.")
-                return
-
             # Set all required attributes with robust error handling
             try:
                 app.last_level_complete = event
@@ -5212,7 +5232,6 @@ class GameScreen(BaseScreen):
                 app.interlevel_turns_taken_for_level = event.get('turns_taken', 0)
                 app.interlevel_evidence_found_for_level_count = event.get('evidence_count', 0)
                 app.interlevel_evaded_hazards = event.get('evaded_hazards', [])
-                app.interlevel_next_level_id = event.get('next_level_id')
                 app.interlevel_next_start_room = event.get('next_start_room')
                 
                 self.logger.info(f"Level complete data set for: {app.interlevel_completed_level_name}")
@@ -5360,7 +5379,10 @@ class GameScreen(BaseScreen):
             self.game_logic.player['qte_active'] = False
 
     def _handle_consequences_sequentially(self, consequences: list):
-        """Process consequences one at a time with robust logging and error handling."""
+        """
+        Main orchestrator to process consequences one at a time.
+        Delegates to specific helpers based on consequence type for clean asynchronous chaining.
+        """
         try:
             if not consequences:
                 self.logger.debug("_handle_consequences_sequentially: No consequences to process.")
@@ -5368,88 +5390,134 @@ class GameScreen(BaseScreen):
 
             first, rest = consequences[0], consequences[1:]
             ctype = first.get("type") or first.get("event_type")
-            self.logger.debug(f"_handle_consequences_sequentially: Processing consequence type '{ctype}' with data: {first!r}")
+            self.logger.debug(f"_handle_consequences_sequentially: Processing type '{ctype}' with data: {first!r}")
 
+            # Route to the appropriate helper
             if ctype == "show_popup":
-                title = first.get("title", "Notice")
-                message = first.get("message", "")
-                self.logger.info(f"Sequential consequence: Showing popup '{title}' with message '{message[:80]}...'")
-                try:
-                    popup = InfoPopup(title=title, message=message)
-                    self._bind_popup_defers(popup, first)
-
-                    def _continue(*_):
-                        try:
-                            if rest:
-                                self.logger.debug("Continuing with remaining consequences after popup.")
-                                self._handle_consequences_sequentially(rest)
-                        except Exception as e:
-                            self.logger.error(f"Error in popup continuation: {e}", exc_info=True)
-
-                    popup.bind(on_dismiss=_continue)
-                    popup.open()
-                except Exception as e:
-                    self.logger.error(f"Error showing popup: {e}", exc_info=True)
-                    if rest:
-                        self._handle_consequences_sequentially(rest)
-                return
-
-            if ctype == "start_qte":
-                self.logger.info(f"Sequential consequence: Starting QTE '{first.get('qte_type')}' with context {first.get('qte_context', {})}")
-                if self.game_logic and self.game_logic.qte_engine:
-                    try:
-                        qte_ctx = first.get("qte_context", {})
-                        
-                        # --- FIX: Inject the hazard ID so chained QTEs know who to transition! ---
-                        hid = first.get("hazard_id")
-                        if hid and "qte_source_hazard_id" not in qte_ctx:
-                            qte_ctx["qte_source_hazard_id"] = hid
-                        # -------------------------------------------------------------------------
-                            
-                        self.game_logic.qte_engine.start_qte(first.get("qte_type"), qte_ctx)
-                        self.logger.debug("QTE started successfully. Remaining consequences will be handled by QTE resolution.")
-                        return
-                    except Exception as e:
-                        self.logger.error(f"Seq: failed to start QTE: {e}", exc_info=True)
-                else:
-                    self.logger.warning("QTE engine not available, cannot start QTE.")
-                if rest:
-                    self.logger.debug("Continuing with remaining consequences after failed QTE start.")
-                    self._handle_consequences_sequentially(rest)
-                return
-
-            if ctype == "hazard_state_change":
-                self.logger.info(f"Sequential consequence: Changing hazard state for hazard_id '{first.get('hazard_id')}' to '{first.get('target_state')}'")
-                if self.game_logic and self.game_logic.hazard_engine:
-                    try:
-                        res = self.game_logic.hazard_engine.set_hazard_state(first.get("hazard_id"), first.get("target_state"))
-                        nxt = (res or {}).get("consequences", [])
-                        self.logger.debug(f"Hazard state changed. Next consequences: {nxt!r}")
-                        self._handle_consequences_sequentially((nxt or []) + rest)
-                        return
-                    except Exception as e:
-                        self.logger.error(f"Seq: hazard_state_change error: {e}", exc_info=True)
-                else:
-                    self.logger.warning("Hazard engine not available, cannot change hazard state.")
-                if rest:
-                    self.logger.debug("Continuing with remaining consequences after failed hazard state change.")
-                    self._handle_consequences_sequentially(rest)
-                return
-
-            # Fallback: let GameLogic handle other consequence types immediately then continue
-            if hasattr(self.game_logic, 'handle_hazard_consequence'):
-                try:
-                    self.logger.info(f"Sequential consequence: Passing to game_logic.handle_hazard_consequence: {first!r}")
-                    self.game_logic.handle_hazard_consequence(first)
-                except Exception as e:
-                    self.logger.error(f"Seq: handle_hazard_consequence error: {e}", exc_info=True)
+                self._seq_handle_show_popup(first, rest)
+            elif ctype == "start_qte":
+                self._seq_handle_start_qte(first, rest)
+            elif ctype == "hazard_state_change":
+                self._seq_handle_hazard_state_change(first, rest)
             else:
-                self.logger.warning("game_logic.handle_hazard_consequence not available.")
-            if rest:
-                self.logger.debug("Continuing with remaining consequences after fallback handler.")
-                self._handle_consequences_sequentially(rest)
+                self._seq_handle_fallback(first, rest)
+
         except Exception as e:
             self.logger.error(f"Unexpected error in _handle_consequences_sequentially: {e}", exc_info=True)
+
+
+    # ==========================================
+    # SEQUENTIAL CONSEQUENCE HELPERS
+    # ==========================================
+
+    def _seq_handle_show_popup(self, first: dict, rest: list):
+        """Handles rendering UI popups safely and chains the next consequence on dismiss."""
+        title = first.get("title", "Notice")
+        message = first.get("message")
+
+        # --- THE FIX: Fallback to QTE payload fields ---
+        if not message:
+            message = first.get('popup_message')
+            
+        if not message and 'qte_context' in first:
+            message = first.get('qte_context', {}).get('ui_prompt_message')
+            
+        if not message and 'on_close_emit_ui_events' in first:
+            for sub_event in first.get('on_close_emit_ui_events', []):
+                if 'qte_context' in sub_event:
+                    message = sub_event.get('qte_context', {}).get('ui_prompt_message')
+                    break
+
+        # Guarantee it's a string before slicing so the logger never crashes
+        safe_msg = str(message) if message else "No message provided"
+        # ------------------------------------------------
+
+        self.logger.info(f"Sequential consequence: Showing popup '{title}' with message '{safe_msg[:80]}...'")
+        
+        try:
+            popup = InfoPopup(title=title, message=safe_msg)
+            self._bind_popup_defers(popup, first)
+
+            def _continue(*_):
+                try:
+                    if rest:
+                        self.logger.debug("Continuing with remaining consequences after popup.")
+                        self._handle_consequences_sequentially(rest)
+                except Exception as e:
+                    self.logger.error(f"Error in popup continuation: {e}", exc_info=True)
+
+            popup.bind(on_dismiss=_continue)
+            popup.open()
+            
+        except Exception as e:
+            self.logger.error(f"Error showing popup: {e}", exc_info=True)
+            if rest:
+                self._handle_consequences_sequentially(rest)
+
+    def _seq_handle_start_qte(self, first: dict, rest: list):
+        """Passes QTE payloads to the engine. Halts sequence chain (relies on QTE resolve to continue)."""
+        self.logger.info(f"Sequential consequence: Starting QTE '{first.get('qte_type')}' with context {first.get('qte_context', {})}")
+        
+        if self.game_logic and self.game_logic.qte_engine:
+            try:
+                qte_ctx = first.get("qte_context", {})
+                
+                # Inject the hazard ID so chained QTEs know who to transition!
+                hid = first.get("hazard_id")
+                if hid and "qte_source_hazard_id" not in qte_ctx:
+                    qte_ctx["qte_source_hazard_id"] = hid
+                    
+                self.game_logic.qte_engine.start_qte(first.get("qte_type"), qte_ctx)
+                self.logger.debug("QTE started successfully. Remaining consequences will be handled by QTE resolution.")
+                return  # DO NOT call rest here; the QTE resolution takes over the chain
+            except Exception as e:
+                self.logger.error(f"Seq: failed to start QTE: {e}", exc_info=True)
+        else:
+            self.logger.warning("QTE engine not available, cannot start QTE.")
+            
+        # Only continue if the QTE failed to start
+        if rest:
+            self.logger.debug("Continuing with remaining consequences after failed QTE start.")
+            self._handle_consequences_sequentially(rest)
+
+    def _seq_handle_hazard_state_change(self, first: dict, rest: list):
+        """Forces a hazard state shift and dynamically prepends the resulting consequences to the queue."""
+        hazard_id = first.get('hazard_id')
+        target_state = first.get('target_state')
+        self.logger.info(f"Sequential consequence: Changing hazard state for '{hazard_id}' to '{target_state}'")
+        
+        if self.game_logic and getattr(self.game_logic, 'hazard_engine', None):
+            try:
+                res = self.game_logic.hazard_engine.set_hazard_state(hazard_id, target_state)
+                nxt = (res or {}).get("consequences", [])
+                self.logger.debug(f"Hazard state changed. Next consequences: {nxt!r}")
+                
+                # Prepend the new consequences to the remaining queue
+                self._handle_consequences_sequentially((nxt or []) + rest)
+                return
+            except Exception as e:
+                self.logger.error(f"Seq: hazard_state_change error: {e}", exc_info=True)
+        else:
+            self.logger.warning("Hazard engine not available, cannot change hazard state.")
+            
+        if rest:
+            self.logger.debug("Continuing with remaining consequences after failed hazard state change.")
+            self._handle_consequences_sequentially(rest)
+
+    def _seq_handle_fallback(self, first: dict, rest: list):
+        """Passes unsupported generic consequences to GameLogic, then continues the chain."""
+        if hasattr(self.game_logic, 'handle_hazard_consequence'):
+            try:
+                self.logger.info(f"Sequential consequence: Passing to game_logic.handle_hazard_consequence: {first!r}")
+                self.game_logic.handle_hazard_consequence(first)
+            except Exception as e:
+                self.logger.error(f"Seq: handle_hazard_consequence error: {e}", exc_info=True)
+        else:
+            self.logger.warning("game_logic.handle_hazard_consequence not available.")
+            
+        if rest:
+            self.logger.debug("Continuing with remaining consequences after fallback handler.")
+            self._handle_consequences_sequentially(rest)
 
     def _populate_main_action_buttons(self):
         """Use context-sensitive dock instead of flat button grid."""

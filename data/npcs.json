@@ -3,7 +3,6 @@
   "social_worker": {
     "name": "Social Worker",
     "role": "social_worker",
-    "archetype": "social_worker",
     "description": "A tired-looking woman in a lanyard and cardigan. She has a clipboard and the expression of someone who has seen too much today already.",
     "workplace": "level_1",
     "workplace_name": "The Hospital",
@@ -181,7 +180,6 @@
   "hospital_nurse": {
     "name": "Nurse",
     "role": "hospital_nurse",
-    "archetype": "hospital_nurse",
     "description": "Moving fast, always. Doesn't stop walking while she talks to you.",
     "workplace": "level_1",
     "workplace_name": "The Hospital",
@@ -193,42 +191,100 @@
         "text": "'Family only past this point. Unless you're press — in which case, especially not you.'",
         "options": [
           {
-            "text": "I was near the mass-casualty disaster that happened recently. I need to know if anyone else from that day came through here.",
+            "text": "[color=#ffff00]I was almost in the mass-casualty disaster that happened recently. I need to know if anyone else from that day came through here.[/color]",
             "target_state": "softened"
           },
           {
-            "text": "I need to know if anyone from the recent mass-casualty disaster came through here.",
+            "text": "[color=#ffa500]I need to know if anyone from the recent mass-casualty disaster came through here.[/color]",
             "target_state": "records"
           }
         ]
       },
       "softened": {
-        "text": "'From THAT? We had six admitted in the last two hours alone. One was DOA.\n\nIf you know them, the social worker down the hall has the contact list. She's been trying to reach people.'\n\n*She lowers her voice.*\n\n'Between you and me — the DOA came in with no ID. Young. Weird injuries. The coroner downstairs is going to have questions.'",
+        "text": "'From THAT? We had six admitted.\nA lot more were DOA.\n\nIf you know them, the social worker down the hall has the contact list. She's been trying to reach people. ..once they've all been identified.'\n\n*She lowers her voice.*\n\n'But between you and me: [color=#ff0000]you're going to the morgue[/color].'",
         "options": [
           {
-            "text": "What kind of weird injuries?",
-            "target_state": "weird_injuries"
+            "text": "[color=#ff0000]WHAT? Why would you say that??[/color]",
+            "target_state": "find_coroner"
           },
           {
-            "text": "Where is the social worker?",
+            "text": "[color=#00ff00]Where is the social worker? They might be able to help me.[/color]",
             "target_state": "direct_to_social_worker"
           }
         ]
       },
       "records": {
-        "text": "'I can't pull records for you. HIPAA. But the social worker two doors down is doing outreach for exactly this. She has a clipboard with every name.',",
+        "text": "'I can't pull records for you. HIPAA. But social work is doing outreach for exactly this; she's temporarily staying in an office in Radiology. She has a clipboard with every name.',",
         "next_state": "direct_to_social_worker"
       },
-      "weird_injuries": {
-        "text": "'Consistent with the disaster, technically. But the sequence is wrong. These injuries didn't happen all at once — they happened in a chain. Like dominoes.\n\nI've seen accident trauma. This felt... deliberate. Not by a person. By something else.\n\nAnyway. I didn't say that.'",
+      "find_coroner": {
+        "text": "[color=#cc9900]OH, I thought you were one of *those* people, thinking that Dea-[/color]\n[color=ff00ff]..nevermind.[/color]\n\nThe coroner's office is down the elevator at the end of the hall to the left, past the cafeteria. Can't miss it.\n\n*She points down the hall, not breaking stride.*\n\nHe's a nice guy, but he's been pretty shaken up since the passing of his boss.",
         "next_state": "direct_to_social_worker"
       },
       "direct_to_social_worker": {
-        "text": "'Social worker is in the family consultation room, end of the hall. Name's on the door. She'll help you if you're a survivor — she's good people.'\n\n*She's already walking away.*"
+        "text": "[color=#00ff00]'The social worker is temporarily staying in an office in Radiology[/color]; end of the hall, upstairs, first department on the left.\nShe'll help you if you're a survivor — she's good people.'\n\n*She's already walking away.*",
+        "on_talk_action": {
+          "special_effect": ["despawn_npc"]
         }
       }
     }
   },
+  "detective_ween": {
+    "name": "Detective Ween",
+    "role": "detective",
+    "description": "A grizzled detective in a trench coat. He has a cigarette permanently attached to his mouth and a look that says he's seen it all.",
+    "workplace_name": "The Precinct",
+    "is_static_employee": true,
+    "companion_eligible": false,
+    "conditional_entry_state": [
+      { "condition": {"has_authority_ally": true}, "state": "greeting_with_ally" }
+    ],
+    "initial_state": "interrogation_start",
+    "dialogue_states": {
+      "interrogation_start": {
+        "text": "'Alright. Let's cut the bullshit.\n\nYou were at the scene, and you knew it was going down before it did. You're sitting in my interview room. Start talking.'",
+        "options": [
+          { "text": "I can't explain it. {visionary} started freaking out saying they had a vision, and I decided I believed them.", "target_state": "ween_skeptical" },
+          { "text": "People are still in danger. You have to let me go.", "target_state": "ween_annoyed" }
+        ]
+      },
+      "ween_skeptical": {
+        "text": "'A vision. Right. Look, I've got the DA breathing down my neck and a pile of bodies. \"Psychic premonition\" doesn't exactly hold up in court.'\n\nHe sighs, rubbing his temples. 'But I also just got the forensics report. It was a catastrophic failure, completely out of your hands.'",
+        "options": [
+          { "text": "So I'm free to go?", "target_state": "ween_release" }
+        ]
+      },
+      "ween_annoyed": {
+        "text": "'I don't *have* to do anything except book you for causing a public disturbance.'\n\nHe takes a long drag of his cigarette. 'Unfortunately for me, the lab boys just confirmed the disaster was a catastrophic mechanical failure. Nothing you could have sabotaged.'",
+        "options": [
+          { "text": "So I'm free to go?", "target_state": "ween_release" }
+        ]
+      },
+      "ween_release": {
+        "text": "He waves his hand dismissively. 'Yeah, yeah. There's no evidence holding you here. Get out of my precinct. But don't leave town. If I find out you had a hand in this, I'm coming for you.'",
+        "on_talk_action": {
+          "set_player_flag": "released_from_precinct",
+          "special_effect": ["despawn_npc"]
+        }
+      },
+
+      "greeting_with_ally": {
+        "text": "'Alright, kid. Let's cut the—'\n\nWeen pauses, noticing {authority_figure} standing right behind you. 'Well, well. If it isn't my favorite bleeding heart. You vouching for this suspect now?'\n\n{authority_figure} steps forward. 'They aren't a suspect, Ween. There's no evidence tying them to what's happened. Something else is going on.'",
+        "options": [
+          { "text": "They're right. I'm trying to stop whatever is happening.", "target_state": "ween_concedes_ally" },
+          { "text": "[Let your companion handle this]", "target_state": "ween_concedes_ally" }
+        ]
+      },
+      "ween_concedes_ally": {
+        "text": "Ween scowls, looking between the two of you. 'You're both crazy. But the forensics report backs you up. Zero evidence of foul play.'\n\nHe stubs out his cigarette. 'Get them out of my precinct before I change my mind and book you both for wasting my time.'",
+        "on_talk_action": {
+          "set_player_flag": "released_from_precinct",
+          "special_effect": ["despawn_npc"]
+        }
+      }
+    }
+  }
+},
 "archetype_dialogue": {
   "act_1_survival": {
     "visionary": {
@@ -282,13 +338,17 @@
         ]
       },
       "desperate_hope": {
-        "text": "'Bludworth? I've heard that name. Please — whatever you find, tell me. I can't go through this blind again.'"
+        "text": "'Bludworth? I've heard that name. I'm coming with you; let's figure out what the hell is going on.'",
+        "on_talk_action": {
+          "special_effect": ["recruit_companion", "despawn_npc"]
+        }
       }
     },
 
     "friend": {
       "first_meeting": {
         "text": "'Thank God you're okay. I've been going crazy in here. The doctors keep asking what happened but how do you explain... THAT?'",
+
         "options": [
           {
             "text": "Have you heard from {visionary}?",
@@ -329,34 +389,108 @@
       },
       "hopeful": {
         "text": "'Find him. Find whatever he knew. I'll be here when you get back.'"
-      },
-      "act_1_survival": {
+      }
+    },
+    "panicking": {
+      "first_meeting": {
         "text": "'Thank God you're okay. I've been going crazy in here. The doctors keep asking what happened...'",
         "options": [
-          { "text": "Something is wrong. People are dying.", "target_state": "about_deaths" }
+          { "text": "Something is wrong. People are dying.", 
+            "on_talk_action": {
+              "special_effect": ["recruit_companion", "despawn_npc"]
+            },
+          "target_state": "about_deaths" }
         ]
-      },
-      "act_2_investigation": {
-        "text": "'I came as fast as I could. This place is creepy. What are we looking for?'",
-        "options": [
-          { "text": "Bludworth's research. Anything about Death's List.", "target_state": "searching" }
-          ]
-        }
       },
       "skeptic": {
         "first_meeting": {
           "text": "'Oh. It's you. The one who caused that scene right before everything went to hell. ...I guess I should thank you.'",
+          "on_talk_action": {
+            "special_effect": ["recruit_companion", "despawn_npc"]
+          },
           "next_state": "standard_loop"
         },
         "standard_loop": {
           "text": "'How sweet. I still think there's a rational explanation for all of this.'",
           "options": [
-            { "text": "It's not over. More people are going to die.", "target_state": "denial" }
+            { "text": "It's not over. More people are going to die.", 
+              "on_talk_action": {
+                "special_effect": ["recruit_companion", "despawn_npc"]
+              },
+              "target_state": "denial" }
           ]
         }
       }
     },
 
+    "authority_figure": {
+      "conditional_entry_state": [
+        { "condition": {"police_status": "fought"}, "state": "greeting_fought" },
+        { "condition": {"is_fugitive": true}, "state": "greeting_sneaking" }
+      ],
+      "first_meeting": {
+        "text": "'I'm glad you came in peacefully. I wanted to protect you from the press out there, but my captain thinks you look like a suspect. Explain yourself.'",
+        "next_state": "standard_loop"
+      },
+      "standard_loop": {
+        "text": "'What's the situation? Tell me what you need.'",
+        "options": [
+          { "text": "Something bigger is happening. I need your help.", "target_state": "reluctant_ally" }
+        ]
+      },
+      "greeting_fought": {
+        "text": "They walk in rubbing a bruised jaw. 'You fought my officers. That was incredibly stupid. You just gave them every reason to lock you up.'",
+        "options": [
+          { "text": "I panicked. I'm sorry. But if I stay locked in here, I'm going to die.", "target_state": "reluctant_ally" }
+        ]
+      },
+      "greeting_sneaking": {
+        "text": "They jump as you step out of the shadows. 'How the hell did you get past the front desk?!'",
+        "options": [
+          { "text": "I need to see the files from the coroner. Before someone else dies.", "target_state": "reluctant_ally" }
+        ]
+      },
+      "reluctant_ally": { 
+        "text": "'Bigger? Like what? ...Look, I'm already in hot water. But if people are in danger, I can't just sit here.'",
+        "on_talk_action": {
+            "set_player_flag": "has_authority_ally",
+            "special_effect": ["recruit_companion", "despawn_npc"]
+          } 
+      }
+    },
+    "bystander_1": {
+      "first_meeting": {
+        "text": "'I know you. You told me to leave. I almost didn't listen. I almost...'",
+        "next_state": "standard_loop"
+      },
+      "standard_loop": {
+        "text": "'Thank you. I don't know what else to say. Is it true? Are we all still in danger?'"
+      },
+        "options": [
+            { "text": "I don't know. I'm trying to find answers.", 
+              "on_talk_action": {
+                "special_effect": ["recruit_companion", "despawn_npc"]
+              },
+            "target_state": "uncertain" }
+          ]
+    },
+    "bystander_2": {
+      "first_meeting": {
+        "text": "'I can't sleep. Every time I close my eyes I see it. The sound, the — I just can't.'",
+        "next_state": "standard_loop"
+      },
+      "standard_loop": {
+        "text": "'I'll do whatever you say. Just keep us alive.'"
+      },
+      "options": [
+        { "text": "I don't know how to do that yet. I'm trying to find answers.", 
+          "on_talk_action": {
+            "special_effect": ["recruit_companion", "despawn_npc"]
+          },
+        "target_state": "uncertain" }
+      ]
+    },
+    "distracted": {
       "first_meeting": {
         "text": "'Oh my god, you're alive! I've been looking everywhere for you since we got out of there. The doctors keep asking what happened...'",
         "next_state": "standard_loop"
@@ -364,12 +498,52 @@
       "standard_loop": {
         "text": "'I'm just glad you're okay. But I have a really bad feeling.'",
         "options": [
-          { "text": "Something is wrong. People are dying.", "target_state": "about_deaths" }
+          { "text": "Something is wrong. People are dying.", 
+          "on_talk_action": {
+            "special_effect": ["recruit_companion", "despawn_npc"]
+          },
+          "target_state": "about_deaths" }
         ]
       }
     },
-
+    "fatalist": {
+      "first_meeting": {
+        "text": "[WRITE THIS: First time meeting the fatalist survivor after the disaster]",
+        "next_state": "standard_loop"
+      },
+      "standard_loop": {
+        "text": "[WRITE THIS: Default loop for fatalist survivor in Act 1]",
+        "options": [
+          { "text": "People are dying. We have to find out why.", 
+            "on_talk_action": {
+              "special_effect": ["recruit_companion", "despawn_npc"]
+            },
+          "target_state": "resigned" }
+        ]
+      }
+    },
+    "selfish": {
+      "first_meeting": {
+        "text": "[WRITE THIS: First time meeting the selfish survivor after the disaster]",
+        "next_state": "standard_loop"
+      },
+      "standard_loop": {
+        "text": "[WRITE THIS: Default loop for selfish survivor in Act 1]",
+        "options": [
+          { "text": "People are dying. We have to find out why.", 
+            "on_talk_action": {
+              "special_effect": ["recruit_companion", "despawn_npc"]
+            },
+          "target_state": "concerned_for_self" }
+         ]
+      }
+    }
+    },
   "act_2_investigation": {
+    "visionary": {
+        "first_meeting": { "text": "[WRITE THIS: Meeting the visionary during Act 2]", "next_state": "standard_loop" },
+        "standard_loop": { "text": "[WRITE THIS: Default loop for visionary in Act 2]" }
+      },
     "friend": {
       "first_meeting": {
         "text": "'I came as fast as I could! When I saw your name on the survivor contact sheet, I had to find you. This place is creepy though. What are we looking for?'",
@@ -384,15 +558,39 @@
     },
     "skeptic": {
       "first_meeting": {
-        "text": "'Well, look who it is. The social worker had your contact info, so I figured I'd track you down. Are you looking into what happened?'",
-        "next_state": "standard_loop"
-      },
-      "standard_loop": {
-        "text": "'I can't believe I'm here. Breaking into a dead man's house looking for... what, exactly? Proof that Death is a person?'",
+        "text": "'I came as fast as I could. This place is creepy. What are we looking for?'",
         "options": [
-            { "text": "Proof that Death is hunting us.", "target_state": "searching" }
-        ]
-      }
+          { "text": "Bludworth's research. Anything about Death's List.", "target_state": "standard_loop" }
+          ]
+        },
+      "standard_loop": {
+        "text": "'Bludworth's research? You really think some old guy's notes are going to explain all this?'"
+        }
+      },
+
+    "fatalist": {
+      "first_meeting": { "text": "[WRITE THIS: Meeting the fatalist survivor in Act 2]", "next_state": "standard_loop" },
+      "standard_loop": { "text": "[WRITE THIS: Default loop for fatalist survivor in Act 2]" }
+    },
+    "selfish": {
+      "first_meeting": { "text": "[WRITE THIS: Meeting the selfish survivor in Act 2]", "next_state": "standard_loop" },
+      "standard_loop": { "text": "[WRITE THIS: Default loop for selfish survivor in Act 2]" }
+    },
+    "distracted": {
+      "first_meeting": { "text": "[WRITE THIS: Meeting the distracted survivor in Act 2]", "next_state": "standard_loop" },
+      "standard_loop": { "text": "[WRITE THIS: Default loop for distracted survivor in Act 2]" }
+    },
+    "authority_figure": {
+      "first_meeting": { "text": "[WRITE THIS: Meeting the authority figure in Act 2]", "next_state": "standard_loop" },
+      "standard_loop": { "text": "[WRITE THIS: Default loop for authority figure in Act 2]" }
+    },
+    "bystander_1": {
+      "first_meeting": { "text": "[WRITE THIS]", "next_state": "standard_loop" },
+      "standard_loop": { "text": "[WRITE THIS]" }
+    },
+    "bystander_2": {
+      "first_meeting": { "text": "[WRITE THIS]", "next_state": "standard_loop" },
+      "standard_loop": { "text": "[WRITE THIS]" }
     }
   },
   "act_3_hunted_workplace": {
@@ -534,7 +732,6 @@
     },
 
 
-
   "_default": {
     "_context": "Fallback dialogue for any level not explicitly defined.",
 
@@ -571,4 +768,4 @@
     }
   }
   }
-  
+}

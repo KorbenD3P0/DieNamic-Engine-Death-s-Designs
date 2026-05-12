@@ -5,6 +5,7 @@ class InteractionMixin:
         # --- NPC commands ---
 
     def _command_talk(self, target_name_str: str) -> dict:
+
         """
         Talk to an NPC: logs the conversation to the output panel AND shows a popup.
         """
@@ -33,17 +34,22 @@ class InteractionMixin:
             if not npc or isinstance(npc, str):
                 return self._build_response(message=f"You don't see {target_name_str} here.", turn_taken=False)
 
-            # 1.5 Check First Meeting Status
+            # --- THE FIX: Record that you met them! ---
             npc_name = npc.get('name', target_name_str).title()
-            is_first_meeting = npc_name not in self.player.setdefault('met_npcs', [])
-            
-            # 2. Resolve State (Pass the boolean!)
-            current_state = self._resolve_npc_dialogue_entry_state(npc, room_id, is_first_meeting)
-
-            # --- Record that you met them AFTER resolving ---
-            if is_first_meeting:
+            if npc_name not in self.player.setdefault('met_npcs', []):
                 self.player['met_npcs'].append(npc_name)
             # ------------------------------------------
+            npc_name = npc.get('name', target_name_str).title()
+            met_npcs = self.player.setdefault('met_npcs', [])
+            is_first_meeting = npc_name not in met_npcs      # ← compute BEFORE appending
+            if is_first_meeting:
+                met_npcs.append(npc_name)
+
+            # Pass is_first_meeting into the resolver
+            current_state = self._resolve_npc_dialogue_entry_state(npc, room_id, is_first_meeting=is_first_meeting)
+            # 2. Resolve State
+            dialogue_states = npc.get('dialogue_states') or {}
+            node = dialogue_states.get(current_state)
 
             # --- THE FIX: Engine-level Companion Fallback with Tags ---
             is_companion = npc.get('name', '').lower() == self.player.get('current_companion', '').lower()

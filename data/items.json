@@ -1,74 +1,4 @@
 {
-  "movie_stub": {
-    "name": "Torn Movie Stub",
-    "type": "item",
-    "description": "A ticket stub for a midnight showing at the McKineplex. The seat number is smudged with something dark and sticky.",
-    "is_distributable_in_containers": true,
-    "tags": ["clue", "narrative", "paper"]
-  },
-  "greasy_work_order": {
-    "name": "Greasy Work Order",
-    "type": "item",
-    "description": "A crumpled invoice from McKinley Auto Repair. The mechanic's signature, 'Sarah', is circled in red ink repeatedly.",
-    "is_distributable_in_containers": true,
-    "tags": ["clue", "narrative", "paper"]
-  },
-  "presage_paper_memo": {
-    "name": "Presage Paper Memo",
-    "type": "item",
-    "description": "A corporate memo from Presage Paper regarding 'recent workplace accidents'. The recipient's name has been violently scratched out.",
-    "is_distributable_in_containers": true,
-    "tags": ["clue", "narrative", "paper"]
-  },
-  "mall_directory_pamphlet": {
-    "name": "Mall Directory",
-    "type": "item",
-    "description": "A glossy map of the McKinley Galleria. A red 'X' has been drawn over the escalator icon in the center atrium.",
-    "is_distributable_in_containers": true,
-    "tags": ["clue", "narrative", "paper"]
-  },
-  "monogrammed_bowling_towel": {
-    "name": "Monogrammed Bowling Towel",
-    "type": "item",
-    "description": "A microfiber towel smelling of lane wax. The logo for 'Strike & Spare Lanes' is embroidered on the front, with a name scrawled in sharpie on the tag.",
-    "is_distributable_in_containers": true,
-    "tags": ["clue", "narrative", "fabric"]
-  },
-  "bloodstained_punch_card": {
-    "name": "Bloodstained Punch Card",
-    "type": "item",
-    "description": "A 'Daily Grind' loyalty card. Nine out of ten coffees are punched. The last punch looks suspiciously like a drop of dried blood.",
-    "is_distributable_in_containers": true,
-    "tags": ["clue", "narrative", "paper"]
-  },
-  "true_companions_transfer_form": {
-    "name": "True Companions Transfer Form",
-    "type": "item",
-    "description": "A medical transfer sheet from the True Companions adoption center. The receiving veterinarian's signature is scribbled hastily at the bottom, stained with a few drops of dark liquid.",
-    "is_distributable_in_containers": true,
-    "tags": ["clue", "narrative", "paper"]
-  },
-  "laminated_pool_pass": {
-    "name": "Laminated Pool Pass",
-    "type": "item",
-    "description": "A faded membership card for the McKinley Community Center. It smells faintly of chlorine and cheap plastic.",
-    "is_distributable_in_containers": true,
-    "tags": ["clue", "narrative", "plastic"]
-  },
-  "union_id_card": {
-    "name": "Union ID Card",
-    "type": "item",
-    "description": "A plastic identification card for Local 404 Ironworkers. The portrait is smudged with dried cement, but the McKinley Heights project site is clearly stamped on the back.",
-    "is_distributable_in_containers": true,
-    "tags": ["clue", "narrative", "plastic"]
-  },
-  "coastal_survey_clipboard": {
-    "name": "Coastal Survey Clipboard",
-    "type": "item",
-    "description": "A weather-resistant clipboard holding architectural schematics for the Old McKinley Lighthouse. A bright red 'CONDEMNED' stamp is visible on the top page.",
-    "is_distributable_in_containers": true,
-    "tags": ["clue", "narrative", "paper"]
-  },
   "attic_key": {
     "name": "Attic Key",
     "description": "A small, tarnished brass key labeled 'Attic'.",
@@ -94,6 +24,10 @@
       "attic key",
       "key to attic"
     ],
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "",
     "unlocks": [
       "Attic Entrance"
@@ -177,7 +111,6 @@
       "key to desk drawer",
       "drawer key"
     ],
-    "character_connection": "",
     "unlocks": [
       "Mahogany Desk",
       "mahogany_desk"
@@ -218,149 +151,6 @@
     "is_distributable_in_containers": false,
     "custom_fields": {}
   },
-  "vet_sedatives": {
-    "name": "Vet Sedatives",
-    "description": "A sealed vial of veterinary-grade sedative. Enough to stop a large animal's heart — or a human's. Handle with extreme care.",
-    "type": "medical",
-    "subtype": "chemical",
-    "takeable": true,
-    "is_key_item": true,
-    "is_unique": true,
-    "is_critical": true,
-    "is_evidence": true,
-    "weight": "featherweight",
-    "is_distributable_in_containers": false,
-    "custom_fields": {}
-  },
-  "adrenaline": {
-    "name": "Adrenaline",
-    "description": "A pre-loaded epinephrine auto-injector. For cardiac emergency use only. Do not use unless prepared for the consequences.",
-    "type": "medical",
-    "subtype": "chemical",
-    "takeable": true,
-    "is_key_item": true,
-    "is_unique": true,
-    "is_critical": true,
-    "is_evidence": true,
-    "weight": "featherweight",
-    "is_distributable_in_containers": false,
-    "custom_fields": {}
-  },
-  "poster_scrap": {
-    "name": "Poster Scrap",
-    "description": "A torn strip from a movie poster. On the back, someone has written a partial phone number and the words CALL AFTER 9.",
-    "type": "evidence",
-    "subtype": "paper",
-    "takeable": true,
-    "is_key_item": false,
-    "is_evidence": true,
-    "weight": "featherweight",
-    "is_distributable_in_containers": false,
-    "custom_fields": {}
-  },
-  "crumpled_note": {
-    "name": "Crumpled Note",
-    "description": "A note hastily written on theater napkin. It reads: 'He knows. Booth. Do NOT go to the booth. Trust me.'",
-    "type": "evidence",
-    "subtype": "paper",
-    "takeable": true,
-    "is_key_item": false,
-    "is_evidence": true,
-    "weight": "featherweight",
-    "is_distributable_in_containers": false,
-    "custom_fields": {}
-  },
-  "note_from_concessions": {
-    "name": "Note from Concessions",
-    "description": "Scrawled on a receipt: 'Projector overheating AGAIN. Called maintenance. Nobody answered. Going to check it myself.' It is dated today.",
-    "type": "evidence",
-    "subtype": "paper",
-    "takeable": true,
-    "is_key_item": false,
-    "is_evidence": true,
-    "weight": "featherweight",
-    "is_distributable_in_containers": false,
-    "custom_fields": {}
-  },
-  "movie_ticket": {
-    "name": "Movie Ticket",
-    "description": "A ticket stub for Theater 7. Seat J14. Someone left this at the will-call. It is in your name.",
-    "type": "document",
-    "subtype": "ticket",
-    "takeable": true,
-    "is_key_item": false,
-    "is_evidence": true,
-    "weight": "featherweight",
-    "is_distributable_in_containers": false,
-    "custom_fields": {}
-  },
-  "leather_journal": {
-    "name": "Leather Journal",
-    "description": "A weathered leatherbound journal belonging to Corbin Wainright. The pages are filled with observations and theories about the survivors of a beach plane crash in Hawaii.",
-    "examine_details": "The journal details the aftermath of a beachfront plane crash, noting how the survivors began dying in a series of bizarre, seemingly random accidents.\n\nCorbin's entries grow increasingly paranoid, convinced that something is hunting them all. The last page ends abruptly.",
-    "type": "evidence",
-    "subtype": "book",
-    "takeable": true,
-    "is_key_item": true,
-    "is_unique": true,
-    "is_critical": true,
-    "is_evidence": true,
-    "weight": "light",
-    "narrative_flag_on_collect": "found_leather_journal",
-    "is_distributable_in_containers": false,
-    "custom_fields": {}
-  },
-  "gym_membership_card": {
-    "name": "Gym Membership Card",
-    "description": "A Body and Soul Fitness membership card. It belongs to someone whose name is on the list. It was in the locker.",
-    "type": "evidence",
-    "subtype": "card",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight",
-    "is_distributable_in_containers": false,
-    "custom_fields": {}
-  },
-  "protein_bar": {
-    "name": "Protein Bar",
-    "description": "A half-eaten protein bar left on a locker bench. Still fresh.",
-    "type": "consumable",
-    "subtype": "food",
-    "takeable": true,
-    "is_distributable_in_containers": true,
-    "weight": "featherweight",
-    "custom_fields": {}
-  },
-  "water_bottle": {
-    "name": "Water Bottle",
-    "description": "A plastic water bottle, still sealed.",
-    "type": "consumable",
-    "subtype": "drink",
-    "takeable": true,
-    "is_distributable_in_containers": true,
-    "weight": "featherweight",
-    "custom_fields": {}
-  },
-  "heavy_dumbbell": {
-    "name": "Heavy Dumbbell",
-    "description": "A 25-pound cast iron dumbbell. Could be used as a weapon. Definitely could be used to break something.",
-    "type": "tool",
-    "subtype": "weight",
-    "takeable": true,
-    "is_distributable_in_containers": false,
-    "weight": "heavy",
-    "custom_fields": {}
-  },
-  "protein_shake": {
-    "name": "Protein Shake",
-    "description": "A sealed shaker cup of protein powder mixed with water. Still cold.",
-    "type": "consumable",
-    "subtype": "drink",
-    "takeable": true,
-    "is_distributable_in_containers": true,
-    "weight": "featherweight",
-    "custom_fields": {}
-  },
   "radiology_key_card": {
     "name": "Radiology Key Card",
     "description": "A plastic key card labeled 'Radiology'.",
@@ -382,6 +172,10 @@
       "master access card",
       "medical director card"
     ],
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Hospital Administration",
     "unlocks": [
       "Stairwell",
@@ -437,6 +231,10 @@
       "key to basement",
       "basement entrance key"
     ],
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "",
     "unlocks": [
       "Basement Stairs"
@@ -496,6 +294,10 @@
       "key to storage room",
       "storage key"
     ],
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "",
     "unlocks": [
       "Storage Room"
@@ -567,6 +369,10 @@
       "key to coroner's office",
       "Bludworth's office key"
     ],
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "William Bludworth",
     "unlocks": [
       "Coroner's Office"
@@ -624,6 +430,10 @@
       "morgue key card",
       "morgue access card"
     ],
+    "spawn_rules": {
+      "allowed_acts": ["act_1_survival"],
+      "spawn_limit": 1
+    },
     "character_connection": "",
     "unlocks": [
       "Morgue Autopsy Suite",
@@ -690,670 +500,6 @@
       "security_clearance": "morgue_level"
     }
   },
-"truckers_logbook": {
-    "name": "Trucker's Logbook",
-    "type": "evidence",
-    "description": "A worn, coffee-stained logbook from a long-haul trucker.",
-    "examine_details": "The final entries detail concerns about faulty brakes and pressure to make impossible deadlines. 'This rig is a deathtrap,' reads the last line.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "shattered_windshield_fragment": {
-    "name": "Shattered Windshield Fragment",
-    "type": "evidence",
-    "description": "A piece of safety glass from a car windshield, crazed with impact fractures.",
-    "examine_details": "Etched into the glass is a faint, almost invisible symbol, like a premonition of the crash itself.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "spilled_lumber_manifest": {
-    "name": "Spilled Lumber Manifest",
-    "type": "evidence",
-    "description": "A shipping manifest, soaked in a dark, sticky substance.",
-    "examine_details": "The manifest lists improperly secured logs, far exceeding the legal weight limit for the truck involved in the pile-up.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "ski_lift_safety_report": {
-    "name": "Ski Lift Safety Report",
-    "type": "evidence",
-    "description": "A technical report bound in a faded blue cover, stamped 'McKinley Resort'.",
-    "examine_details": "The report, dated three weeks before the accident, explicitly warns of 'critical metal fatigue' in the main cable and recommends immediate replacement. A handwritten note in the margin says 'Postpone until after the holiday rush'.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "resort_staff_badge": {
-    "name": "Resort Staff Badge",
-    "type": "evidence",
-    "description": "A laminated staff ID badge for a McKinley Resort maintenance worker.",
-    "examine_details": "The name on the badge is 'Glen McNamara'. On the back, scratched hastily, are the words 'They won't listen. Cable is bad.'",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "frayed_steel_cable": {
-    "name": "Frayed Steel Cable",
-    "type": "evidence",
-    "description": "A thick, heavy piece of steel cable, its ends a mess of snapped wires.",
-    "examine_details": "The wires are rusted and frayed, a clear sign of long-term neglect. This was not a sudden failure; it was an inevitability.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light",
-    "is_metallic": true
-  },
-  "carnival_inspection_records": {
-    "name": "Carnival Inspection Records",
-    "type": "evidence",
-    "description": "A clipboard holding inspection records for the McKinley County Fair.",
-    "examine_details": "The safety inspection for the 'Devil's Wheel' is pencil-whipped. The inspector's signature is a lazy, illegible squiggle, and several critical checks are marked 'N/A'.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "ride_operators_manual": {
-    "name": "Ride Operator's Manual",
-    "type": "evidence",
-    "description": "A grease-stained manual for the Ferris Wheel, its pages dog-eared and worn.",
-    "examine_details": "A highlighted section warns against operating the ride during high winds. A handwritten note next to it reads, 'Boss says run it anyway. Don't want to lose money.'",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "twisted_metal_fragment": {
-    "name": "Twisted Metal Fragment",
-    "type": "evidence",
-    "description": "A jagged piece of painted red metal, clearly from a large structure.",
-    "examine_details": "The metal is twisted into an unnatural shape. You can see a serial number stamped on it, matching the one for the collapsed Ferris Wheel.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "default",
-    "is_metallic": true
-  },
-  "burnt_fuselage_panel": {
-    "name": "Burnt Fuselage Panel",
-    "type": "evidence",
-    "description": "A piece of an airplane's fuselage, blackened and warped by intense heat.",
-    "examine_details": "Scratched into the soot is a single word: 'FAULT'. It seems someone knew something was wrong before the end.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "medium",
-    "is_metallic": true
-  },
-  "passengers_diary": {
-    "name": "Passenger's Diary",
-    "type": "evidence",
-    "description": "A small, leather-bound diary, singed at the edges but mostly intact.",
-    "examine_details": "The last entry reads: 'Strange turbulence today. There was a loud bang from the wing a few minutes ago. The flight attendants look nervous.'",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "black_box_transcript": {
-    "name": "Black Box Transcript",
-    "type": "evidence",
-    "description": "A printed transcript of the cockpit voice recorder from Flight 180.",
-    "examine_details": "The final moments are a chilling record of confusion and terror. 'What was that noise?' the pilot asks. 'Hydraulics are gone... we're losing...'",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "stage_production_schedule": {
-    "name": "Stage Production Schedule",
-    "type": "evidence",
-    "description": "A detailed schedule for the production of 'McKinley: The Musical!'.",
-    "examine_details": "Notes in the margin indicate that the weight of the new lighting rig was never tested with the old stage supports. A circled note reads: 'Is this safe???'",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "frayed_rigging_rope": {
-    "name": "Frayed Rigging Rope",
-    "type": "evidence",
-    "description": "A thick, coarse rope used for stage rigging. It's frayed almost to the breaking point.",
-    "examine_details": "This rope was clearly old and overloaded. It's a miracle it held as long as it did. It smells of dust and negligence.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "crushed_playbill": {
-    "name": "Crushed Playbill",
-    "type": "evidence",
-    "description": "A playbill for the show, crushed and stained with something dark.",
-    "examine_details": "On the back, a list of the cast and crew. Every name has been crossed out in red ink, except for one: the visionary who tried to warn everyone.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "leaking_life_vest": {
-    "name": "Leaking Life Vest",
-    "type": "evidence",
-    "description": "A bright orange life vest, still damp. It has a small, almost unnoticeable puncture near the seam.",
-    "examine_details": "The puncture mark is clean, as if made by a sharp object. It wouldn't have held air for long. A small, cruel detail in a large tragedy.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "captains_log": {
-    "name": "Captain's Log",
-    "type": "evidence",
-    "description": "A water-damaged logbook from the 'Queen Isabella'.",
-    "examine_details": "The last entry, written in a shaky hand, reads: 'Took on a strange vibration after that speedboat incident. Should be fine. The owner insists we stay on schedule.'",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "corroded_hull_plate": {
-    "name": "Corroded Hull Plate",
-    "type": "evidence",
-    "description": "A piece of the ferry's hull, recovered from the wreckage. It's covered in rust.",
-    "examine_details": "The metal is thin and brittle, eaten away by years of corrosion. It's clear the ferry's maintenance was severely neglected.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "medium",
-    "is_metallic": true
-  },
-  "sheared_rollercoaster_bolt": {
-    "name": "Sheared Rollercoaster Bolt",
-    "type": "evidence",
-    "description": "A massive, heavy steel bolt, sheared clean in two.",
-    "examine_details": "The break is clean, a sign of catastrophic metal fatigue. This bolt was a ticking time bomb.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "default",
-    "is_metallic": true
-  },
-  "park_maintenance_invoice": {
-    "name": "Park Maintenance Invoice",
-    "type": "evidence",
-    "description": "A crumpled invoice from a third-party maintenance company.",
-    "examine_details": "The invoice is for 'superficial cosmetic repairs' to the 'Demon's Peak' ride. A recommendation for a full structural analysis is marked 'declined by client'.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "victims_dropped_camera": {
-    "name": "Victim's Dropped Camera",
-    "type": "evidence",
-    "description": "A small digital camera, its screen cracked but still functional.",
-    "examine_details": "The last photo taken is a blurry shot of the rollercoaster's support structure. In the corner of the frame, a crucial bolt is visibly loose.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "faulty_wiring_report": {
-    "name": "Faulty Wiring Report",
-    "type": "evidence",
-    "description": "A report from the city fire inspector about the 'Crimson Lounge'.",
-    "examine_details": "The report cites numerous fire code violations, including 'outdated and hazardous wiring'. It's dated six months before the fire.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "melted_fire_sprinkler": {
-    "name": "Melted Fire Sprinkler",
-    "type": "evidence",
-    "description": "The head of a fire sprinkler, melted and deformed by intense heat.",
-    "examine_details": "The sprinkler head is clogged with what looks like paint. It was never going to work.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light",
-    "is_metallic": true
-  },
-  "blocked_exit_sign": {
-    "name": "Blocked Exit Sign",
-    "type": "evidence",
-    "description": "An 'EXIT' sign, covered in soot. The plastic is warped.",
-    "examine_details": "Someone had placed a large, decorative plant in front of this emergency exit. It would have been impossible to see in the smoke.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "fractured_suspension_cable": {
-    "name": "Fractured Suspension Cable",
-    "type": "evidence",
-    "description": "A section of thick steel cable from the McKinley Memorial Bridge.",
-    "examine_details": "A clean fracture reveals a dark, rusted core. The cable was rotting from the inside out.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "heavy",
-    "is_metallic": true
-  },
-  "bridge_stress_test_results": {
-    "name": "Bridge Stress Test Results",
-    "type": "evidence",
-    "description": "A folder containing the results of the last stress test on the bridge.",
-    "examine_details": "The results show the bridge failed to meet safety standards, but a handwritten note says 'Politically unfeasible to close for repairs. Monitor closely.'",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "traffic_camera_footage": {
-    "name": "Traffic Camera Footage",
-    "type": "evidence",
-    "description": "A USB drive containing footage from a traffic camera overlooking the bridge.",
-    "examine_details": "The footage shows the bridge swaying unnaturally in the wind for hours before the collapse. The disaster was not sudden; it was inevitable.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "leaking_chemical_barrel": {
-    "name": "Leaking Chemical Barrel",
-    "type": "evidence",
-    "description": "A 55-gallon drum with a chemical warning label. A dark fluid leaks from a corroded seam.",
-    "examine_details": "The warning label is for a highly volatile chemical. The leak is slow but steady, a disaster waiting for a catalyst.",
-    "takeable": false,
-    "is_evidence": true,
-    "weight": "immovable"
-  },
-  "safety_violation_notice": {
-    "name": "Safety Violation Notice",
-    "type": "evidence",
-    "description": "An official notice of safety violations issued to the McKinley Chemical Plant.",
-    "examine_details": "The notice lists 'improper storage of volatile chemicals' as a critical issue. The fine was paid, but the problem was never fixed.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "employees_warning_letter": {
-    "name": "Employee's Warning Letter",
-    "type": "evidence",
-    "description": "A crumpled, tear-stained letter from a plant employee to management.",
-    "examine_details": "The letter desperately warns of the dangerous conditions and predicts a catastrophic failure. 'You're going to kill us all,' it ends.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "discarded_cigarette_pack": {
-    "name": "Discarded Cigarette Pack",
-    "type": "evidence",
-    "description": "An empty pack of cigarettes, found near the origin point of the wildfire.",
-    "examine_details": "It's a small, careless mistake that led to a massive tragedy. A single spark is all it takes.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "park_rangers_map": {
-    "name": "Park Ranger's Map",
-    "type": "evidence",
-    "description": "A map of McKinley National Forest, with handwritten notes.",
-    "examine_details": "The ranger has circled several areas, noting 'high fire risk' and 'dry conditions'. The origin of the fire is in one of these circled areas.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "melted_animal_figurine": {
-    "name": "Melted Animal Figurine",
-    "type": "evidence",
-    "description": "A small, plastic figurine of a deer, melted into an unrecognizable shape by intense heat.",
-    "examine_details": "A poignant reminder of the innocent lives, both human and animal, caught in the inferno.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "clogged_storm_drain_photo": {
-    "name": "Clogged Storm Drain Photo",
-    "type": "evidence",
-    "description": "A photo showing a downtown storm drain completely clogged with leaves and debris.",
-    "examine_details": "The photo is dated one week before the flood. The city was warned, but nothing was done.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "weather_alert_printout": {
-    "name": "Weather Alert Printout",
-    "type": "evidence",
-    "description": "A printout of a severe weather alert for McKinley.",
-    "examine_details": "The alert warns of 'unprecedented rainfall' and 'high risk of flash flooding'. It was issued hours before the storm hit.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "water_damaged_family_photo": {
-    "name": "Water-Damaged Family Photo",
-    "type": "evidence",
-    "description": "A family photo, warped and stained by floodwater.",
-    "examine_details": "A happy family smiles at the camera, oblivious to the fate that awaits them. A reminder of the human cost of the disaster.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "faulty_signal_report": {
-    "name": "Faulty Signal Report",
-    "type": "evidence",
-    "description": "A maintenance report for the McKinley rail system.",
-    "examine_details": "The report details a 'persistent malfunction' in the signal system at the site of the collision. It was deemed 'non-critical'.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "engineers_schedule": {
-    "name": "Engineer's Schedule",
-    "type": "evidence",
-    "description": "A work schedule for one of the train engineers.",
-    "examine_details": "The schedule shows the engineer had been working for 18 hours straight. Fatigue was a contributing factor.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "bent_piece_of_track": {
-    "name": "Bent Piece of Track",
-    "type": "evidence",
-    "description": "A heavy piece of steel rail, bent into a slight curve.",
-    "examine_details": "The bend is subtle, but enough to cause a high-speed derailment. A flaw that went unnoticed until it was too late.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "very_heavy",
-    "is_metallic": true
-  },
-  "cracked_foundation_photo": {
-    "name": "Cracked Foundation Photo",
-    "type": "evidence",
-    "description": "A photo of the apartment building's foundation, showing a large crack.",
-    "examine_details": "The photo is time-stamped a year before the collapse. The building was dying long before it fell.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "building_code_violation": {
-    "name": "Building Code Violation",
-    "type": "evidence",
-    "description": "An official notice of a building code violation for the apartment complex.",
-    "examine_details": "The violation is for using substandard building materials. A fine was paid, but the structural issues were never addressed.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "tenants_complaint_letter": {
-    "name": "Tenant's Complaint Letter",
-    "type": "evidence",
-    "description": "A letter from a tenant to the building manager, complaining about strange noises.",
-    "examine_details": "'The building groans at night,' the letter reads. 'It sounds like it's in pain.' The letter is unanswered.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "seismograph_printout": {
-    "name": "Seismograph Printout",
-    "type": "evidence",
-    "description": "A printout from a local seismograph, showing minor tremors in the days leading up to the earthquake.",
-    "examine_details": "The tremors were too small to be felt, but they were a clear warning sign of the larger event to come.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "gas_line_warning_tag": {
-    "name": "Gas Line Warning Tag",
-    "type": "evidence",
-    "description": "A yellow warning tag from a gas line in the neighborhood.",
-    "examine_details": "The tag warns that the gas line is old and needs to be replaced. It's dated two years before the earthquake.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "fallen_power_line": {
-    "name": "Fallen Power Line",
-    "type": "evidence",
-    "description": "A section of heavy-duty power line, snapped in two.",
-    "examine_details": "The break is clean, a sign of the immense force of the earthquake. This was a major source of post-quake fires.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "heavy",
-    "is_metallic": true
-  },
-  "broken_barometer": {
-    "name": "Broken Barometer",
-    "type": "evidence",
-    "description": "An old-fashioned barometer, its glass cracked and needle stuck at the lowest possible pressure.",
-    "examine_details": "It was a clear sign of the approaching storm, a warning that went unheeded.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "evacuation_order": {
-    "name": "Evacuation Order",
-    "type": "evidence",
-    "description": "A mandatory evacuation order for the coastal areas of McKinley.",
-    "examine_details": "The order was issued just hours before the typhoon hit, too late for many to escape.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "ship_in_a_bottle": {
-    "name": "Ship in a Bottle",
-    "type": "evidence",
-    "description": "A small, intricate model of a ship inside a glass bottle, miraculously unbroken.",
-    "examine_details": "A tiny, perfect world, safe from the storm outside. A reminder of the fragility of life.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "geological_survey_map": {
-    "name": "Geological Survey Map",
-    "type": "evidence",
-    "description": "A geological map of the McKinley area, showing a network of underground caves.",
-    "examine_details": "The business district was built directly on top of an unstable cave system. The sinkhole was a geological certainty.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "broken_water_main_pipe": {
-    "name": "Broken Water Main Pipe",
-    "type": "evidence",
-    "description": "A section of a massive water main pipe, cracked and corroded.",
-    "examine_details": "The pipe had been leaking for years, slowly eroding the ground beneath the city. The sinkhole was a man-made disaster.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "very_heavy",
-    "is_metallic": true
-  },
-  "security_camera_hard_drive": {
-    "name": "Security Camera Hard Drive",
-    "type": "evidence",
-    "description": "A hard drive from a security camera that overlooked the sinkhole area.",
-    "examine_details": "The footage shows the ground beginning to sag and crack for days before the collapse. The warnings were there, but no one was watching.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "empty_lifeboat_davit": {
-    "name": "Empty Lifeboat Davit",
-    "type": "evidence",
-    "description": "A heavy-duty davit for a lifeboat, its release mechanism rusted shut.",
-    "examine_details": "The lifeboat could never have been launched. It was a piece of safety equipment that was purely for show.",
-    "takeable": false,
-    "is_evidence": true,
-    "weight": "immovable"
-  },
-  "ships_itinerary": {
-    "name": "Ship's Itinerary",
-    "type": "evidence",
-    "description": "The official itinerary for the cruise ship, showing a planned route change.",
-    "examine_details": "The route was changed at the last minute to pass through a narrow, dangerous channel, a shortcut to save time and fuel.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "speedboat_registration": {
-    "name": "Speedboat Registration",
-    "type": "evidence",
-    "description": "The registration papers for the speedboat that collided with the cruise ship.",
-    "examine_details": "The boat was stolen. The collision was not an accident; it was a deliberate act of sabotage.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "dam_inspection_report": {
-    "name": "Dam Inspection Report",
-    "type": "evidence",
-    "description": "A report on the structural integrity of the {city_name} Valley dam.",
-    "examine_details": "The report shows evidence of 'significant structural stress' and recommends immediate repairs. The report is a year old.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "warning_siren_log": {
-    "name": "Warning Siren Log",
-    "type": "evidence",
-    "description": "A logbook for the dam's warning siren system.",
-    "examine_details": "The last test of the siren was six months before the dam break. The entry is marked 'failed'.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "waterlogged_picnic_basket": {
-    "name": "Waterlogged Picnic Basket",
-    "type": "evidence",
-    "description": "A wicker picnic basket, warped and stained by river water.",
-    "examine_details": "Inside is a single, uneaten sandwich. A tragic reminder of a day that started with such promise.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "corroded_pipe_section": {
-    "name": "Corroded Pipe Section",
-    "type": "evidence",
-    "description": "A section of the exploded gas pipeline, its metal thin and corroded.",
-    "examine_details": "The pipe is paper-thin in places, a clear sign of decades of neglect. The explosion was inevitable.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "medium",
-    "is_metallic": true
-  },
-  "pipeline_pressure_gauge": {
-    "name": "Pipeline Pressure Gauge",
-    "type": "evidence",
-    "description": "A pressure gauge from the pipeline, its needle frozen in the red zone.",
-    "examine_details": "The pressure in the pipeline was dangerously high. The explosion was not just a leak; it was a catastrophic failure.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light",
-    "is_metallic": true
-  },
-  "farmers_complaint_letter": {
-    "name": "Farmer's Complaint Letter",
-    "type": "evidence",
-    "description": "A letter from a local farmer to the gas company, complaining about a strange smell.",
-    "examine_details": "'It smells like gas out here,' the letter reads. 'I'm worried something's wrong.' The letter is dated two weeks before the explosion.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "overloaded_support_beam": {
-    "name": "Overloaded Support Beam",
-    "type": "evidence",
-    "description": "A section of a steel support beam from the factory, bent and twisted.",
-    "examine_details": "The beam is bent at an impossible angle, a sign of the immense weight it was forced to bear. The collapse was a matter of when, not if.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "very_heavy",
-    "is_metallic": true
-  },
-  "factory_floor_plan": {
-    "name": "Factory Floor Plan",
-    "type": "evidence",
-    "description": "A blueprint of the factory floor, showing the placement of heavy machinery.",
-    "examine_details": "The machinery was placed directly over the weakest part of the floor, a clear violation of safety regulations.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "union_grievance_form": {
-    "name": "Union Grievance Form",
-    "type": "evidence",
-    "description": "A grievance form filed by the factory workers' union.",
-    "examine_details": "The form complains of 'unsafe working conditions' and 'structural instability'. The company's response is a single word: 'denied'.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "sheared_escalator_gear": {
-    "name": "Sheared Escalator Gear",
-    "type": "evidence",
-    "description": "A heavy, metal gear from the escalator's motor, its teeth sheared off.",
-    "examine_details": "The gear is made of a cheap, brittle alloy. It was never designed to handle the stress of a crowded shopping mall.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "medium",
-    "is_metallic": true
-  },
-  "maintenance_log": {
-    "name": "Maintenance Log",
-    "type": "evidence",
-    "description": "A maintenance log for the mall's escalators.",
-    "examine_details": "The log shows that the escalator had been reported as 'making strange noises' for weeks. The last entry reads: 'Needs full replacement. Mgmt denied.'",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "mall_security_footage": {
-    "name": "Mall Security Footage",
-    "type": "evidence",
-    "description": "A USB drive containing security footage of the escalator.",
-    "examine_details": "The footage shows the escalator shuddering and lurching for days before the accident. The disaster was not a surprise; it was an ignored warning.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "snapped_support_cable": {
-    "name": "Snapped Support Cable",
-    "type": "evidence",
-    "description": "A thick steel cable from the window washer platform, its end a mess of snapped wires.",
-    "examine_details": "The cable is frayed and rusted, a clear sign of neglect. It was a tragedy waiting to happen.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "heavy",
-    "is_metallic": true
-  },
-  "building_maintenance_contract": {
-    "name": "Building Maintenance Contract",
-    "type": "evidence",
-    "description": "A contract for the building's maintenance, showing the lowest possible bidder was chosen.",
-    "examine_details": "The contract explicitly excludes 'regular safety inspections' of the window washing equipment. A cost-cutting measure that proved fatal.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "pigeon_feather": {
-    "name": "Pigeon Feather",
-    "type": "evidence",
-    "description": "A single, grey pigeon feather, found near the snapped cable.",
-    "examine_details": "A seemingly innocent object, but it was a pigeon landing on the frayed cable that caused the final, fatal snap. A perfect example of Death's design.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "featherweight"
-  },
-  "overheated_bearing": {
-    "name": "Overheated Bearing",
-    "type": "evidence",
-    "description": "A metal bearing from the grain silo's conveyor system, scorched and warped.",
-    "examine_details": "The bearing seized from the heat, creating the spark that ignited the grain dust. A tiny failure that led to a massive explosion.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light",
-    "is_metallic": true
-  },
-  "dust_collection_system_report": {
-    "name": "Dust Collection System Report",
-    "type": "evidence",
-    "description": "A report on the silo's dust collection system.",
-    "examine_details": "The report shows the system was 'critically malfunctioning' and 'creating an explosive atmosphere'. The report was never acted upon.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
-  "static_discharge_warning": {
-    "name": "Static Discharge Warning",
-    "type": "evidence",
-    "description": "A warning sign from inside the silo, almost completely obscured by grain dust.",
-    "examine_details": "The sign warns of the danger of static discharge in a dusty environment. The irony is palpable.",
-    "takeable": true,
-    "is_evidence": true,
-    "weight": "light"
-  },
   "medical_director_key_card": {
     "name": "Medical Director Key Card",
     "description": "A master key card for Lakeview Hospital. Bears the insignia of the Medical Director.",
@@ -1375,6 +521,10 @@
       "master access card",
       "medical director card"
     ],
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Hospital Administration",
     "unlocks": [
       "Stairwell",
@@ -1405,6 +555,31 @@
       "security_clearance": "master_level"
     }
   },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   "bloody_brick": {
     "name": "Bloody Brick",
     "description": "A dirty brick, one corner covered with dried blood, hair and chunks of gore. Writing scratched into it reads: 'Alex B. - Didn't see it coming.' ",
@@ -1431,6 +606,10 @@
     "is_readable": true,
     "procedural": false,
     "alias": [],
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Alex Browning",
     "unlocks": [],
     "use_on": [
@@ -1475,6 +654,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Tod Waggner",
     "franchise_source": "Final Destination 1"
   },
@@ -1491,6 +674,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Wendy Christensen",
     "franchise_source": "Final Destination 3",
     "special_properties": [
@@ -1508,6 +695,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Carter Horton"
   },
   "miniature_toy_bus": {
@@ -1521,6 +712,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Terry Chaney"
   },
   "charred_mug": {
@@ -1534,6 +729,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Valerie Lewton"
   },
   "bloody_piece_of_metal": {
@@ -1547,6 +746,10 @@
     "is_metallic": true,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Billy Hitchcock"
   },
   "toy_pigeon": {
@@ -1560,6 +763,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Tim Carpenter"
   },
   "nipple_ring": {
@@ -1573,6 +780,10 @@
     "is_metallic": true,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Evan Lewis"
   },
   "dirty_hair_tie": {
@@ -1586,6 +797,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Nora Carpenter"
   },
   "pool_ball_keychain": {
@@ -1599,6 +814,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Eugene Dix"
   },
   "clove_cigarette": {
@@ -1612,6 +831,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Kat Jennings"
   },
   "fuzzy_red_dice": {
@@ -1625,6 +848,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Rory Peters"
   },
   "photo_of_officer_burke": {
@@ -1638,6 +865,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Thomas Burke"
   },
   "photo_of_kimberly_corman": {
@@ -1651,6 +882,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Kimberly Corman",
     "special_property": "critical_clue"
   },
@@ -1665,6 +900,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Brian Gibbons"
   },
   "white_rose": {
@@ -1678,6 +917,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Isabella Hudson",
     "special_property": "red_herring"
   },
@@ -1692,6 +935,10 @@
     "is_metallic": false,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Clear Rivers",
     "special_property": "background_lore"
   },
@@ -1707,6 +954,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Carrie Dreyer"
   },
   "photo_of_jason_on_devils_flight": {
@@ -1721,6 +972,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Jason Wise"
   },
   "photo_of_the_ashleys": {
@@ -1735,6 +990,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Ashley Freund & Ashlyn Halperin"
   },
   "mud_flap_girl_necklace": {
@@ -1749,6 +1008,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Franklin Cheeks"
   },
   "photo_of_lewis_from_ring_the_bell_game": {
@@ -1763,6 +1026,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Lewis Romero"
   },
   "photo_of_ian_with_banners": {
@@ -1777,6 +1044,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Ian McKinley"
   },
   "strip_of_nails": {
@@ -1791,6 +1062,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Erin Ulmer"
   },
   "overexposed_photo_of_kevin": {
@@ -1805,6 +1080,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Kevin Fischer"
   },
   "photo_of_julie_giving_the_finger": {
@@ -1819,6 +1098,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Julie Christensen"
   },
   "photo_of_perry": {
@@ -1833,6 +1116,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Perry Malinowski"
   },
   "photo_of_amber": {
@@ -1847,6 +1134,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Amber Regan"
   },
   "unlucky_coin": {
@@ -1861,6 +1152,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Hunt Wynorski"
   },
   "can_of_hice_pale_ale": {
@@ -1875,6 +1170,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Carter Daniels"
   },
   "horseshoe_ornament": {
@@ -1889,6 +1188,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Carter Daniels"
   },
   "safety_goggles": {
@@ -1903,6 +1206,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Andy Kewzer"
   },
   "hair_clip": {
@@ -1917,6 +1224,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Samantha Lane"
   },
   "movie_ticket_stub": {
@@ -1931,6 +1242,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Janet Cunningham"
   },
   "confederate_flag_patch": {
@@ -1945,6 +1260,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Cynthia Daniels"
   },
   "binocular_flask": {
@@ -1959,6 +1278,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Nadia Monroy"
   },
   "cowboy_hat": {
@@ -1973,6 +1296,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Jonathan Groves"
   },
   "security_guard_flashlight": {
@@ -1987,6 +1314,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "George Lanter"
   },
   "bloody_arm_cast": {
@@ -2001,6 +1332,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Nick O'Bannon"
   },
   "womans_shoe": {
@@ -2015,6 +1350,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Lori Milligan"
   },
   "pair_of_glasses": {
@@ -2029,6 +1368,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Olivia Castle"
   },
   "rubber_band": {
@@ -2043,6 +1386,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Candice Hooper"
   },
   "accupuncture_needle": {
@@ -2057,6 +1404,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Isaac Palmer"
   },
   "metal_spike": {
@@ -2071,6 +1422,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Roy Carson"
   },
   "chefs_knife": {
@@ -2085,6 +1440,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Dennis Lapman"
   },
   "airplane_ticket_paris": {
@@ -2099,6 +1458,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Sam Lawton, Molly Harper, Peter Friedkin, Nathan Sears"
   },
   "damaged_police_badge": {
@@ -2113,6 +1476,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Agent Jim Block"
   },
   "bent_meat_skewer": {
@@ -2127,6 +1494,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Peter Friedkin"
   },
   "charred_vintage_earrings": {
@@ -2141,6 +1512,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Evie Bludworth"
   },
   "bent_elevator_call_button": {
@@ -2155,6 +1530,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Mr. Fuller"
   },
   "scuffed_dress_shoe": {
@@ -2169,6 +1548,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Chet"
   },
   "broken_ivory_piano_key": {
@@ -2183,6 +1566,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Penny Kid"
   },
   "gammy_death_book": {
@@ -2197,6 +1584,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Iris Campbell",
     "special_property": "research_notes"
   },
@@ -2212,6 +1603,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Howard Campbell"
   },
   "torn_vest_fragment": {
@@ -2226,6 +1621,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Julia Campbell"
   },
   "septum_ring": {
@@ -2240,6 +1639,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Erik Campbell"
   },
   "candy_wrapper": {
@@ -2254,6 +1657,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Bobby Campbell"
   },
   "cracked_rv_side_mirror": {
@@ -2268,6 +1675,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Darlene Campbell"
   },
   "splintered_log_piece_stefani": {
@@ -2282,6 +1693,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Stefani Reyes"
   },
   "damaged_prom_corsage": {
@@ -2296,6 +1711,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Charlie Reyes"
   },
   "drumstick": {
@@ -2310,6 +1729,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Jamie"
   },
   "flask": {
@@ -2324,6 +1747,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Ben"
   },
   "club_kitty_name_tag": {
@@ -2338,6 +1765,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Macy"
   },
   "officer_hewlett_badge": {
@@ -2352,6 +1783,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Officer Marina Hewlett"
   },
   "car_keys": {
@@ -2366,6 +1801,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Charlie Delgado"
   },
   "compact": {
@@ -2380,6 +1819,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Amber"
   },
   "cigarette_lighter": {
@@ -2394,6 +1837,10 @@
     "is_metallic": true,
     "is_evidence": true,
     "procedural": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Sebastian Lebecque",
     "use_on": [
       "gas_leak"
@@ -2415,6 +1862,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Eric"
   },
   "engraved_locket": {
@@ -2429,6 +1880,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Juliet Collins"
   },
   "bill_sangster_knife": {
@@ -2443,6 +1898,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Bill Sangster"
   },
   "scalpel": {
@@ -2457,6 +1916,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Stewart Tubbs"
   },
   "cobra_totem": {
@@ -2471,6 +1934,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Andrew Caine"
   },
   "brooch": {
@@ -2485,6 +1952,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Jane Stanley"
   },
   "magnifying_glass": {
@@ -2499,6 +1970,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Hector Barnes"
   },
   "ink_pen": {
@@ -2513,6 +1988,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Matthew Upton"
   },
   "press_pass": {
@@ -2527,6 +2006,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Patricia 'Patti' Fuller"
   },
   "circuit_city_name_tag": {
@@ -2541,6 +2024,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Will Sax"
   },
   "business_card": {
@@ -2555,6 +2042,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Al Kinsey"
   },
   "wrench": {
@@ -2564,11 +2055,17 @@
     "is_distributable_in_containers": true,
     "takeable": true,
     "weight": "default",
-    "type": "evidence",
+    "type": "tool",
+    "subtype": "evidence",
     "is_metallic": true,
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "required_tags": ["industrial_accident", "construction_failure"],
+      "spawn_limit": 1
+    },
     "character_connection": "Susan Fries"
   },
   "construction_pin": {
@@ -2583,6 +2080,11 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "required_tags": ["industrial_accident", "construction_failure"],
+      "spawn_limit": 1
+    },
     "character_connection": "Zack Halloran"
   },
   "demolition_derby_ticket_stub": {
@@ -2597,6 +2099,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Hal Ward"
   },
   "bicycle_brake_handle": {
@@ -2611,6 +2117,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Danny King"
   },
   "hairpin": {
@@ -2625,6 +2135,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Louise King"
   },
   "broken_train_handhold": {
@@ -2639,6 +2153,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "James Barker"
   },
   "turquoise_charm": {
@@ -2653,6 +2171,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Bodil Raden"
   },
   "skeleton_figurine": {
@@ -2667,6 +2189,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Mary-Beth Bradbury"
   },
   "tattered_book": {
@@ -2681,6 +2207,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Peter Hoffman"
   },
   "floral_hair_decoration": {
@@ -2695,6 +2225,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Rinoka Aratsu"
   },
   "used_syringe": {
@@ -2709,6 +2243,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Kate Shelley"
   },
   "patient_wristband": {
@@ -2723,6 +2261,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Andrew Williams"
   },
   "corkscrew": {
@@ -2737,6 +2279,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Jack Cohen"
   },
   "ipod": {
@@ -2751,6 +2297,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Aldis Escobar"
   },
   "female_wedding_band": {
@@ -2765,6 +2315,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Allie Goodwin"
   },
   "male_wedding_band": {
@@ -2779,6 +2333,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Tom"
   },
   "poker_chip": {
@@ -2793,6 +2351,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Arlen Ploog"
   },
   "costume_feather": {
@@ -2807,6 +2369,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Shawna Engels"
   },
   "detective_badge": {
@@ -2821,6 +2387,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Warren Ackerman"
   },
   "detective_notepad": {
@@ -2835,6 +2405,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Detective Isabelle Montoya"
   },
   "sherrys_cellphone": {
@@ -2849,6 +2423,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Stephanie 'Sherry' Pulaski"
   },
   "camera_lens_cap": {
@@ -2863,6 +2441,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Gunter Nonhoff"
   },
   "small_mirror": {
@@ -2877,6 +2459,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "William 'Brut' Simms"
   },
   "compact_mirror": {
@@ -2891,6 +2477,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Rosemarie 'Rose' Dupree"
   },
   "chardonnay_lighter": {
@@ -2906,6 +2496,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Darla 'Chardonnay'",
     "use_on": [
       "gas_leak"
@@ -2926,6 +2520,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Shirelle 'Shiraz' Edelstein"
   },
   "chablis_cat_toy": {
@@ -2940,6 +2538,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Ruby 'Chablis'"
   },
   "small_football_trophy": {
@@ -2954,6 +2556,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Jack Curtis"
   },
   "metal_sculpture_piece": {
@@ -2968,6 +2574,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Officer Amy Tom"
   },
   "earbud": {
@@ -2982,6 +2592,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Joshua Cornell III"
   },
   "small_microphone": {
@@ -2996,6 +2610,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Katie Astin"
   },
   "wine_bottle_stopper": {
@@ -3010,6 +2628,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Dominique Swann"
   },
   "miniature_garbage_truck": {
@@ -3024,6 +2646,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Dawson Donahue"
   },
   "eyedrops": {
@@ -3038,6 +2664,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Chelsea Cox"
   },
   "suicide_note": {
@@ -3052,6 +2682,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "John Doe (Narrator)"
   },
   "picket_fence_splinter": {
@@ -3066,6 +2700,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Unnamed Factory Worker (Fence)"
   },
   "rubber_ducky": {
@@ -3080,6 +2718,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Unnamed Factory Worker (Bathing)"
   },
   "lawnmower_blade_piece": {
@@ -3094,6 +2736,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Unnamed Factory Worker (Lawnmower)"
   },
   "train_ticket": {
@@ -3108,6 +2754,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Unnamed Factory Worker (Train)"
   },
   "carly_hagans_notebook": {
@@ -3122,6 +2772,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Carly Hagan"
   },
   "spanish_phrasebook": {
@@ -3136,6 +2790,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Bryan"
   },
   "sunglasses": {
@@ -3150,6 +2808,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Jake"
   },
   "fireworks_wrapper": {
@@ -3164,6 +2826,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Matt"
   },
   "swimsuit_piece": {
@@ -3178,6 +2844,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Amanda"
   },
   "bridge_piece": {
@@ -3192,6 +2862,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Jeremy"
   },
   "dreenas_necklace": {
@@ -3206,6 +2880,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Dreena"
   },
   "glass_shard": {
@@ -3220,6 +2898,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Gino"
   },
   "display_skeleton_piece": {
@@ -3234,6 +2916,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Katie"
   },
   "propeller_blade": {
@@ -3248,6 +2934,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Kris"
   },
   "surf_wax_black": {
@@ -3262,6 +2952,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Ravyn Blackthorne"
   },
   "seashell_necklace_fragment": {
@@ -3276,6 +2970,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Kim Rachelle"
   },
   "rusty_fishing_hook": {
@@ -3290,6 +2988,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Karl Windsor"
   },
   "tacky_souvenir_tshirt": {
@@ -3304,6 +3006,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Brett O'Connel"
   },
   "ukelele_string": {
@@ -3318,6 +3024,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Drew Perkin"
   },
   "skateboard_wheel": {
@@ -3332,6 +3042,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Bobby Fraider"
   },
   "temporary_tattoo_Sheet": {
@@ -3346,6 +3060,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Mandy Robertson"
   },
   "crushed_beer_can": {
@@ -3360,6 +3078,10 @@
     "is_evidence": true,
     "procedural": true,
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Corey Micheals"
   },
   "corbins_journal": {
@@ -3374,6 +3096,10 @@
     "is_distributable_in_containers": false,
     "is_metallic": false,
     "is_evidence": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_1_survival"],
+      "spawn_limit": 1
+    },
     "character_connection": "Corbin Wainright"
   },
   "newspaper_clipping": {
@@ -3388,12 +3114,16 @@
     "is_time_consuming_examine": true,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "You",
     "special_property": "revelation_trigger"
   },
   "morgue_log_excerpt": {
     "name": "Morgue Log Excerpt",
-    "description": "A torn page from an old morgue log. An entry reads: 'Victim: Howard Campbell, dead of acute facial/cranial trauma. Cause: Bizarre facial decapitation after falling backwards in front of an active lawn mower. Patterns align with J.B.'s theories on pre-emptive design. His insights are... unsettlingly accurate, per usual.'",
+    "description": "A torn page from an old morgue log. An entry reads: 'Victim: Howard Campbell, dead of acute facial/cranial trauma. Cause: Bizarre facial decapitation after falling backwards in front of an active lawn mower. Patterns align with J.B.'s theories on pre-emptive design. His insights are... unsettlingly accurate.'",
     "examine_details": "The morgue log shows clear signs of William Bludworth's involvement in documenting these 'accidents'. The clinical language can't hide the horror of what happened to Howard Campbell. The reference to 'J.B.'s theories' confirms this coroner knew more than he let on.",
     "type": "evidence",
     "takeable": true,
@@ -3403,6 +3133,10 @@
     "is_time_consuming_examine": true,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_1_survival"],
+      "spawn_limit": 1
+    },
     "character_connection": "William Bludworth (referenced)",
     "narrative_flag_on_collect": "found_bludworth_connection_in_hospital",
     "special_property": "bludworth_clue"
@@ -3419,6 +3153,10 @@
     "is_time_consuming_examine": true,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "William Bludworth",
     "narrative_flag_on_collect": "found_bludworth_consult_note",
     "narrative_snippet_on_collect": "The chilling consultation note from this 'JB' confirms your fears: these accidents are anything but accidental.",
@@ -3435,6 +3173,10 @@
     "is_evidence": true,
     "weight": "light",
     "is_metallic": false,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Hospital Administration"
   },
   "bludworths_house_key": {
@@ -3467,769 +3209,110 @@
     "is_time_consuming_examine": true,
     "weight": "light",
     "is_hidden": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "William Bludworth",
     "narrative_flag_on_collect": "found_bludworths_final_research",
     "narrative_snippet_on_collect": "These are Bludworth's last set of notes; they detail how Kimberly Corman is the last person he knew of to have escaped Death's design. Her method of survival was unique (often imitated, but never duplicated), and he believed she was the key to understanding how to disrupt Death's design - but he never got the chance to share his findings with her.",
     "special_property": "final_research"
   },
-  "bottle_of_water": {
-    "name": "bottle of water",
-    "description": "A plastic bottle partially filled with clear water.",
-    "examine_details": "It's a standard plastic water bottle, about half full. The water looks clean enough to drink, or perhaps use for other purposes.",
-    "type": "consumable",
-    "subtype": "liquid",
-    "level": "all",
-    "takeable": true,
-    "weight": "light",
-    "is_metallic": false,
-    "is_liquid": true,
-    "is_spillable": true,
-    "is_conductive": true,
-    "is_distributable_in_containers": true,
-    "consumable_on_use": true,
-    "use_on": [
-      "electrical_fire",
-      "spreading_fire"
-    ],
-    "use_result": {
-      "electrical_fire": "You throw the water on the electrical fire. It sizzles and hisses, but the fire continues to burn!",
-      "spreading_fire": "You douse a small part of the fire with water; it hisses and steams but the main fire rages on."
-    },
-    "hazard_effectiveness": {
-      "electrical_fire_hazard": {
-        "effectiveness_modifier": -0.8,
-        "failure_message": "Throwing water on the electrical fire causes a violent short circuit and a small explosion!",
-        "outcome_state": "explosion",
-        "hp_damage_on_bad_use": 3
-      },
-      "spreading_fire_hazard": {
-        "effectiveness_modifier": 0.1,
-        "success_message": "You douse a small part of the fire with water; it hisses and steams but the main fire rages on."
-      }
-    }
-  },
-  "first_aid_kit": {
-    "name": "first aid kit",
-    "description": "A standard wall-mounted first aid kit. Contains basic medical supplies.",
-    "examine_details": "A wall-mounted first aid kit, filled with some exceptional wound care.",
-    "type": "medical_supply",
-    "subtype": "healing_item",
-    "takeable": true,
-    "level": "all",
-    "weight": "default",
-    "is_metallic": false,
-    "is_distributable_in_containers": true,
-    "consumable_on_use": true,
-    "heal_amount": 25,
-    "use_result": {
-      "general": "You open the first aid kit and take what you need."
-    }
-  },
-  "bandages": {
-    "name": "bandages",
-    "description": "A roll of sterile medical bandages.",
-    "examine_details": "A standard roll of gauze bandages in sterile packaging. The medical-grade material is soft yet durable, perfect for treating minor to moderate wounds.",
-    "type": "medical_supply",
-    "subtype": "healing_item",
-    "takeable": true,
-    "weight": "light",
-    "level": "all",
-    "is_metallic": false,
-    "is_distributable_in_containers": true,
-    "consumable_on_use": true,
-    "heal_amount": 10,
-    "use_result": {
-      "general": "You apply the bandages to your wounds, feeling immediate relief."
-    },
-    "special_properties": [
-      "medical_supply",
-      "sterile"
-    ],
-    "medical_grade": true,
-    "spawn_pool": [
-      {
-        "room": "Patient Room 101",
-        "container": "bedside table",
-        "chance": 0.3
-      },
-      {
-        "room": "Supply Closet",
-        "container": "medical supplies",
-        "chance": 0.4
-      },
-      {
-        "room": "MRI Control Room",
-        "container": "first aid station",
-        "chance": 0.3
-      }
-    ]
-  },
-  "painkillers": {
-    "name": "painkillers",
-    "description": "A small bottle of generic painkillers.",
-    "examine_details": "A plastic bottle of over-the-counter pain-relief pills. The label shows it's ibuprofen, 200mg tablets. Might help take the edge off minor injuries and pain.",
-    "type": "medical_supply",
-    "subtype": "medication",
-    "takeable": true,
-    "level": "all",
-    "weight": "light",
-    "is_metallic": false,
-    "is_distributable_in_containers": true,
-    "consumable_on_use": true,
-    "heal_amount": 5,
-    "use_result": {
-      "general": "You swallow a couple of painkillers. The pain begins to dull slightly."
-    },
-    "special_properties": [
-      "medication",
-      "over_the_counter"
-    ],
-    "dosage": "200mg tablets",
-    "side_effects": "drowsiness, stomach upset",
-    "spawn_pool": [
-      {
-        "room": "Patient Room 101",
-        "container": "bedside table",
-        "chance": 0.3
-      },
-      {
-        "room": "Waiting Room",
-        "container": "magazine table",
-        "chance": 0.2
-      },
-      {
-        "room": "Supply Closet",
-        "container": "medical supplies",
-        "chance": 0.3
-      },
-      {
-        "room": "Coroner's Office",
-        "container": "desk drawer",
-        "chance": 0.2
-      }
-    ]
-  },
-  "sharps_container": {
-    "name": "sharps container",
-    "description": "A red plastic container for disposing of used needles and other medical sharps.",
-    "examine_details": "A biohazard sharps container made of puncture-resistant plastic. It looks quite full and is properly sealed according to medical safety protocols. Definitely don't want to stick your hand in there.",
-    "type": "medical_equipment",
-    "subtype": "disposal_container",
-    "takeable": true,
-    "weight": "medium",
-    "is_metallic": false,
-    "is_distributable_in_containers": false,
-    "is_container": true,
-    "locked": true,
-    "unlocks_with": "medical_waste_key",
-    "initial_items": [
-      "syringe"
-    ],
-    "capacity": 3,
-    "special_properties": [
-      "biohazard",
-      "puncture_resistant"
-    ],
-    "safety_warnings": [
-      "biohazard_contents",
-      "sharp_objects"
-    ],
-    "spawn_pool": [
-      {
-        "room": "MRI Scan Room",
-        "chance": 0.4
-      },
-      {
-        "room": "Patient Room 101",
-        "chance": 0.3
-      },
-      {
-        "room": "Coroner's Office",
-        "chance": 0.3
-      }
-    ]
-  },
-  "oxygen_tank": {
-    "name": "oxygen tank",
-    "description": "A large, heavy oxygen tank used for medical purposes. It has a pressure gauge and a regulator.",
-    "examine_details": "This tank is made of thick steel and has a sturdy handle for carrying. The pressure gauge reads full, and the regulator is set to a low flow rate. Warning labels indicate high pressure contents.",
-    "type": "medical_equipment",
-    "subtype": "life_support",
-    "takeable": true,
-    "level": 1,
-    "weight": "medium",
-    "is_metallic": true,
-    "is_distributable_in_containers": false,
-    "trigger_hazard_on_action": {
-      "action": "use",
-      "hazard_type": "oxygen_tank",
-      "initial_state": "full"
-    },
-    "current_state": "full",
-    "pressure_level": "high",
-    
-    "is_usable": true
-  },
-  "gurney": {
-    "name": "gurney",
-    "description": "A wheeled hospital gurney, stained and battered. It looks like it has seen better days.",
-    "examine_details": "This gurney is made of metal and plastic, with a worn vinyl mattress. It has wheels for easy transport but appears to be stuck in place due to rust and debris.",
-    "type": "medical_equipment",
-    "subtype": "transport_device",
-    "level": 1,
-    "takeable": false,
-    "weight": "very_heavy",
-    "is_metallic": true,
-    "is_distributable_in_containers": false,
-    "is_moveable": true,
-    "current_state": "stuck",
-    "use_on": [
-      "patient_transport",
-      "barricade_material"
-    ],
-    "use_result": {
-      "patient_transport": "The gurney wheels are stuck, making transport difficult.",
-      "barricade_material": "You could use this to block a doorway if you could get it moving."
-    },
-    "special_properties": [
-      "wheeled",
-      "medical_transport",
-      "barricade_potential"
-    ],
-    "condition": "poor",
-    "requires_maintenance": true
-  },
-  "IV_stand": {
-    "name": "IV stand",
-    "description": "A metal IV stand with wheels, used for holding intravenous bags.",
-    "examine_details": "This IV stand is made of lightweight aluminum with adjustable height. The wheels are slightly squeaky but functional. The hook at the top shows wear from hanging IV bags.",
-    "type": "medical_equipment",
-    "subtype": "support_device",
-    "takeable": false,
-    "weight": "medium",
-    "is_metallic": true,
-    "is_distributable_in_containers": false,
-    "is_moveable": true,
-    "use_on": [
-      "iv_bag",
-      "makeshift_weapon"
-    ],
-    "use_result": {
-      "iv_bag": "You hang the IV bag on the stand's hook.",
-      "makeshift_weapon": "The metal stand could serve as an improvised weapon if needed."
-    },
-    "damage_if_weapon": 2,
-    "special_properties": [
-      "wheeled",
-      "medical_support",
-      "improvised_weapon"
-    ],
-    "height_adjustable": true
-  },
-  "wheelchair": {
-    "name": "wheelchair",
-    "description": "A sturdy metal wheelchair, slightly rusted but functional.",
-    "examine_details": "This wheelchair has seen better days. The steel frame is sturdy despite some rust spots, and the wheels are squeaky but still turn. It could be useful for transporting someone injured or as mobile cover.",
-    "type": "medical_equipment",
-    "subtype": "mobility_aid",
-    "takeable": false,
-    "weight": "heavy",
-    "is_metallic": true,
-    "is_distributable_in_containers": false,
-    "is_moveable": true,
-    "use_on": [
-      "patient_transport",
-      "mobile_shield"
-    ],
-    "use_result": {
-      "patient_transport": "The wheelchair provides mobility for injured individuals.",
-      "mobile_shield": "You could use this as mobile cover, though it won't stop much."
-    },
-    "special_properties": [
-      "wheeled",
-      "mobility_aid",
-      "portable_cover"
-    ],
-    "condition": "worn_but_functional",
-    "protection_value": 3
-  },
-  "equipment_cart": {
-    "name": "equipment cart",
-    "description": "A wheeled cart loaded with various medical equipment and supplies.",
-    "examine_details": "This cart holds a variety of medical tools: syringes, bandages, antiseptics, and more. It looks like it was used for emergency care. The top has several organized compartments and drawers.",
-    "type": "medical_equipment",
-    "subtype": "storage_container",
-    "takeable": false,
-    "weight": "very_heavy",
-    "is_metallic": true,
-    "is_container": true,
-    "is_distributable_in_containers": false,
-    "initial_items": [
-      "Scalpel",
-      "Bone Saw",
-      "Bandages",
-      "Painkillers",
-      "Coroner's Office Key"
-    ],
-    "capacity": 8,
-    "search_difficulty": "easy",
-    "use_on": [
-      "medical_emergency",
-      "mobile_workspace"
-    ],
-    "use_result": {
-      "medical_emergency": "The cart provides easy access to medical supplies for emergency care.",
-      "mobile_workspace": "You can wheel the cart to wherever you need the medical supplies."
-    },
-    "special_properties": [
-      "wheeled",
-      "organized_storage",
-      "medical_workspace"
-    ],
-    "organization_level": "professional"
-  },
-  "diplomas": {
-    "name": "diplomas",
-    "description": "Several framed diplomas and commendations.",
-    "examine_details": "Various degrees and commendations for Dr. William Bludworth. They detail a long and... storied career spanning several decades. One diploma seems to be loose in its frame, and there are some unsettling commendations from morgues and coroner offices.",
-    "type": "evidence",
-    "subtype": "document",
-    "takeable": true,
-    "weight": "light",
-    "is_metallic": false,
-    "is_evidence": true,
-    "is_hidden": false,
-    "character_connection": "William Bludworth",
-    "franchise_source": "Final Destination Series",
-    "use_on": [
-      "document_analysis",
-      "character_research"
-    ],
-    "use_result": {
-      "document_analysis": "The diplomas reveal Bludworth's extensive background in forensic pathology.",
-      "character_research": "These documents paint a picture of someone deeply familiar with death."
-    },
-    "special_properties": [
-      "professional_credentials",
-      "character_background"
-    ],
-    "reveals_information": "bludworth_background"
-  },
-  "old_patient_chart": {
-    "name": "Old Patient Chart",
-    "description": "A yellowed medical chart with faded handwriting and coffee stains.",
-    "examine_details": "The chart contains medical information from years past. Some entries mention unusual accident patterns and 'anomalous death circumstances' in the margins. Several names are highlighted, and there are notes about 'intervention attempts' and 'design failures'.",
-    "type": "evidence",
-    "subtype": "medical_record",
-    "takeable": true,
-    "weight": "light",
-    "is_metallic": false,
-    "is_evidence": true,
-    "procedural": true,
-    "is_hidden": true,
-    "is_distributable_in_containers": true,
-    "is_time_consuming_examine": true,
-    "character_connection": "Unknown Patient",
-    "franchise_source": "Final Destination Universe",
-    "use_on": [
-      "medical_analysis",
-      "pattern_recognition"
-    ],
-    "use_result": {
-      "medical_analysis": "The chart reveals disturbing patterns in seemingly random deaths.",
-      "pattern_recognition": "These aren't random accidents - there's a design to these deaths."
-    },
-    "special_properties": [
-      "medical_record",
-      "pattern_evidence"
-    ],
-    "reveals_information": "death_patterns",
-    "spawn_pool": [
-      {
-        "room": "Radiology Records Room",
-        "container": "filing cabinets",
-        "chance": 0.6
-      },
-      {
-        "room": "Coroner's Office",
-        "container": "file cabinet",
-        "chance": 0.4
-      }
-    ]
-  },
-  "toe_tag": {
-    "name": "Toe Tag",
-    "description": "A plastic identification tag used in morgues.",
-    "examine_details": "The tag has a name and date, but the writing is smudged and barely readable. You can make out what appears to be 'Flight 180' and a date from several years ago. The plastic shows signs of being in cold storage.",
-    "type": "evidence",
-    "subtype": "identification",
-    "takeable": true,
-    "weight": "light",
-    "is_metallic": false,
-    "is_evidence": true,
-    "is_hidden": false,
-    "is_distributable_in_containers": false,
-    "character_connection": "Flight 180 Victim",
-    "franchise_source": "Final Destination 1",
-    "use_on": [
-      "victim_identification",
-      "morgue_records"
-    ],
-    "use_result": {
-      "victim_identification": "The tag helps identify a victim from the Flight 180 disaster.",
-      "morgue_records": "You could cross-reference this with morgue records."
-    },
-    "special_properties": [
-      "victim_identification",
-      "cold_storage_item"
-    ],
-    "reveals_information": "flight_180_connection",
-    "spawn_pool": [
-      {
-        "room": "Morgue Autopsy Suite",
-        "container": "body_drawer",
-        "chance": 0.5
-      },
-      {
-        "room": "Coroner's Office",
-        "container": "evidence_box",
-        "chance": 0.3
-      },
-      {
-        "room": "Supply Closet",
-        "container": "morgue_supplies",
-        "chance": 0.2
-      }
-    ]
-  },
-  "crowbar": {
-    "name": "Crowbar",
-    "description": "A sturdy steel crowbar. Good for prying or as a makeshift weapon.",
-    "examine_details": "It's a heavy steel crowbar, about two feet long. One end is flattened and split for prying, the other is pointed. It feels substantial in your hands.",
-    "type": "tool",
-    "subtype": "prying_tool",
-    "takeable": true,
-    "weight": "heavy",
-    "is_metallic": true,
-    "is_hidden": false,
-    "is_distributable_in_containers": true,
-    "damage_if_weapon": 3,
-    "use_on": [
-      "locked door",
-      "stuck drawer",
-      "crate",
-      "boarded window",
-      "reception desk"
-    ],
-    "use_result": {
-      "locked door": "You wedge the crowbar into the door frame and heave. With a splintering crack, it gives way!",
-      "crate": "The crowbar makes short work of the wooden crate, prying the lid open.",
-      "boarded window": "You use the crowbar to wrench the boards off the window frame.",
-      "reception desk": "You manage to pry open a stuck drawer in the reception desk."
-    },
-    "special_properties": [
-      "weapon",
-      "prying_tool"
-    ]
-  },
-  "baseball_bat": {
-    "name": "wooden baseball bat",
-    "description": "A solid wooden baseball bat, well-used but sturdy.",
-    "examine_details": "It's a standard wooden baseball bat, about 32 inches long. The wood is worn smooth from use, and it feels balanced in your hands.",
-    "type": "tool",
-    "subtype": "blunt_weapon",
-    "takeable": true,
-    "weight": "heavy",
-    "is_metallic": false,
-    "is_hidden": false,
-    "is_distributable_in_containers": true,
-    "damage_if_weapon": 4,
-    "use_on": [
-      "patient in bed",
-      "locked door",
-      "crate",
-      "boarded window"
-    ],
-    "use_result": {
-      "patient in bed": "You swing the bat with all your might, connecting with a sickening thud! His suffering is over, and, though your methods leave some tact to be desired, you gain an extra 5 turns for taking his remaining time.",
-      "locked door": "You smash the bat against the door, splintering the wood but not breaking through.",
-      "crate": "The bat makes short work of the wooden crate, splintering it apart.",
-      "boarded window": "You use the bat to smash the boards off the window frame."
-    },
-    "special_properties": [
-      "weapon",
-      "blunt"
-    ]
-  },
-  "duct_tape": {
-    "name": "Duct Tape",
-    "description": "A roll of grey duct tape. The universal tool for temporary, questionable repairs.",
-    "examine_details": "A standard roll of duct tape. Strong, fibrous, and sticky. It feels like it could patch up almost anything, for a little while at least.",
-    "type": "tool",
-    "subtype": "utility",
-    "takeable": true,
-    "weight": "light",
-    "is_metallic": false,
-    "use_on": [
-      "gas_leak"
-    ],
-    "use_result": {
-      "gas_leak": "You hastily wrap the duct tape around the leak, creating a makeshift seal that bulges ominously."
-    }
-  },
-  "loose_brick": {
-    "name": "loose brick",
-    "description": "A brick that feels loose in the fireplace cavity. It's heavy and rough.",
-    "examine_details": "This brick is definitely not set properly. It's covered in soot and bits of old mortar. Something about it seems... significant. There are dark stains that look like they might be more than just soot.",
+
+
+
+
+
+
+
+
+
+
+
+
+  "movie_stub": {
+    "name": "Torn Movie Stub",
     "type": "item",
-    "image": "assets/items/loose_brick.png",
-    "subtype": "improvised_weapon",
-    "takeable": true,
-    "weight": "heavy",
-    "is_metallic": false,
-    "is_hidden": false,
-    "is_distributable_in_containers": false,
-    "is_lid": true,
-    "covers_container": "fireplace_cavity",
-    "parent_container": "fireplace",
-    "revealed_by_action": true,
-    "damage_if_weapon": 2,
-    "use_on": [
-      "boarded window",
-      "crate",
-      "glass_surface"
-    ],
-    "use_result": {
-      "boarded window": "With a grunt, you smash the brick against the boards. They splinter but hold. You might need to hit it again or use something stronger.",
-      "crate": "You bring the brick down hard on the crate. Wood splinters, but the crate remains mostly intact.",
-      "glass_surface": "The brick shatters the glass with a loud crash."
-    },
-    "on_action_effects": {
-      "take": {
-        "conditions": [
-          {
-            "type": "player_in_room",
-            "value": "Living Room"
-          }
-        ],
-        "effects": [
-          {
-            "type": "reveal_hidden_container",
-            "container_name": "fireplace_cavity",
-            "parent_container": "fireplace"
-          },
-          {
-            "type": "set_room_flag",
-            "flag": "loose_brick_taken"
-          },
-          {
-            "type": "set_room_flag",
-            "flag": "fireplace_cavity_revealed"
-          },
-          {
-            "type": "display_message",
-            "message": "As you pull the brick free, you notice a dark cavity behind it..."
-          }
-        ]
-      }
-    },
-    "on_examine_transform": {
-      "target_item_id": "bloody_brick",
-      "message": "As you examine the brick more closely, you notice the dark stains are actually dried blood..."
-    },
-    "special_properties": [
-      "weapon",
-      "tool",
-      "evidence_precursor",
-      "lid_item"
-    ]
-  },
-  "syringe": {
-    "name": "syringe",
-    "description": "A sterile, disposable syringe with a fine needle, still in its packaging.",
-    "examine_details": "The syringe is new and appears to be medical grade. The needle is capped for safety. It could be used to inject something... or someone. The packaging indicates it's a 10ml capacity.",
-    "type": "medical_supply",
-    "subtype": "injection_device",
-    "takeable": true,
-    "weight": "light",
-    "is_metallic": true,
+    "description": "A ticket stub for a midnight showing at the McKineplex. The seat number is smudged with something dark and sticky.",
     "is_distributable_in_containers": true,
-    "damage_if_weapon": 1,
-    "use_on": [
-      "patient_dummy",
-      "poison_vial",
-      "medication_vial",
-      "blood_sample"
-    ],
-    "use_result": {
-      "patient_dummy": "You practice your injection technique on the dummy. It offers no resistance.",
-      "poison_vial": "You carefully draw the contents of the vial into the syringe.",
-      "medication_vial": "You draw the medication into the syringe, preparing it for injection.",
-      "blood_sample": "You draw a small blood sample into the syringe."
-    },
-    "consumable_on_use": false,
-    "special_properties": [
-      "precision_tool",
-      "medical_device"
-    ],
-    "safety_warnings": [
-      "needle_stick_hazard"
-    ],
-    "spawn_pool": [
-      {
-        "room": "MRI Scan Room",
-        "container": "equipment cart",
-        "chance": 0.4
-      },
-      {
-        "room": "Patient Room 101",
-        "container": "bedside table",
-        "chance": 0.3
-      },
-      {
-        "room": "Supply Closet",
-        "container": "medical supplies",
-        "chance": 0.3
-      }
-    ]
+    "tags": ["clue", "narrative", "paper"]
   },
-  "defibrillator_pads": {
-    "name": "defibrillator pads",
-    "description": "A pair of defibrillator pads, still sealed in their sterile packaging. They look like they connect to a larger machine.",
-    "examine_details": "These pads are meant to deliver a powerful electrical shock to restart a heart. They're useless without the main defibrillator unit, but the conductive gel and metal contacts might have other applications.",
-    "type": "medical_equipment",
-    "subtype": "electrical_component",
-    "takeable": true,
-    "weight": "light",
-    "is_metallic": true,
+  "greasy_work_order": {
+    "name": "Greasy Work Order",
+    "type": "item",
+    "description": "A crumpled invoice from Pete's Auto Repair. The mechanic's signature, '{npc_name}', is circled in red ink repeatedly.",
     "is_distributable_in_containers": true,
-    "is_conductive": true,
-    "use_on": [
-      "defibrillator_unit",
-      "faulty_wiring",
-      "electrical_panel"
-    ],
-    "use_result": {
-      "defibrillator_unit": "You connect the pads to the defibrillator unit, preparing it for use.",
-      "faulty_wiring": "You try to use the pads on the faulty wiring. A dangerous idea that yields no positive results, only a shower of sparks!",
-      "electrical_panel": "The conductive pads create a dangerous connection. Sparks fly!"
-    },
-    "hazard_effectiveness": {
-      "electrical_fire_hazard": {
-        "effectiveness_modifier": -0.9,
-        "failure_message": "Using conductive pads on electrical fires causes a massive short circuit!",
-        "hp_damage_on_bad_use": 5
-      }
-    },
-    "special_properties": [
-      "medical_device",
-      "electrical_component"
-    ],
-    "voltage_rating": "High voltage - use with extreme caution"
+    "tags": ["clue", "narrative", "paper"]
   },
-  "bone_saw": {
-    "name": "Bone Saw",
-    "description": "A visceral-looking bone saw, stained with something dark.",
-    "type": "tool",
-    "subtype": "medical_tool",
-    "takeable": true,
-    "weight": "light",
-    "is_metallic": true,
-    "is_hidden": false,
+  "presage_paper_memo": {
+    "name": "Presage Paper Memo",
+    "type": "item",
+    "description": "A corporate memo from Presage Paper regarding 'recent workplace accidents'. The recipient's name has been violently scratched out.",
     "is_distributable_in_containers": true,
-    "damage_if_weapon": 15,
-    "trigger_hazard_on_action": {
-      "action": "take",
-      "hazard_type": "active_bone_saw",
-      "initial_state": "slipping_qte"
-    }
+    "tags": ["clue", "narrative", "paper"]
   },
-  "rubber_gloves": {
-    "name": "rubber gloves",
-    "description": "Thick, insulated rubber gloves. Might offer protection from electricity.",
-    "examine_details": "Heavy-duty rubber gloves rated for electrical work. The faded label claims protection up to 1000 volts, though you're not sure how much you trust that rating. They look reasonably intact with no visible tears.",
-    "type": "protective_gear",
-    "subtype": "electrical_protection",
-    "takeable": true,
-    "weight": "light",
-    "is_metallic": false,
+  "mall_directory_pamphlet": {
+    "name": "Mall Directory",
+    "type": "item",
+    "description": "A glossy map of the McKinley Galleria. A red 'X' has been drawn over the escalator icon in the center atrium.",
     "is_distributable_in_containers": true,
-    "protection_value": 15,
-    "use_on": [
-      "faulty_wiring_interactive",
-      "electrical_panel",
-      "live_wire"
-    ],
-    "use_result": {
-      "faulty_wiring_interactive": "With the rubber gloves on, you feel safer handling the electrical components.",
-      "electrical_panel": "The gloves provide some protection as you work with the electrical panel.",
-      "live_wire": "You carefully handle the live wire, trusting in the rubber insulation."
-    },
-    "hazard_effectiveness": {
-      "electrical_hazard": {
-        "effectiveness_modifier": 0.6,
-        "success_message": "The rubber gloves protect you from the electrical shock!",
-        "protection_hp": 8
-      }
-    },
-    "special_properties": [
-      "electrical_protection",
-      "safety_equipment"
-    ],
-    "voltage_rating": "1000V (claimed)",
-    "condition": "fair",
-    "spawn_pool": [
-      {
-        "room": "Supply Closet",
-        "container": "safety equipment box",
-        "chance": 0.4
-      },
-      {
-        "room": "MRI Control Room",
-        "container": "maintenance kit",
-        "chance": 0.3
-      },
-      {
-        "room": "Storage Room",
-        "container": "electrical supplies",
-        "chance": 0.3
-      }
-    ]
+    "tags": ["clue", "narrative", "paper"]
   },
-  "fire_extinguisher": {
-    "name": "fire extinguisher",
-    "description": "A standard red fire extinguisher. Looks ready for use.",
-    "examine_details": "A red fire extinguisher. Check its pressure and remaining charge. Usually found mounted on a wall or in a utility area.",
-    "type": "safety_equipment",
-    "subtype": "fire_suppression",
-    "level": "all",
-    "takeable": true,
-    "weight": "medium",
-    "is_metallic": true,
-    "is_distributable_in_containers": false,
-    "current_state": "full",
-    "uses_left": 3,
-    "use_on": [
-      "electrical_fire_hazard",
-      "spreading_fire_hazard"
-    ],
-    "use_result": {
-      "electrical_fire_hazard": "You spray the extinguisher at the electrical fire. The chemical foam smothers it, but be careful not to get shocked!",
-      "spreading_fire_hazard": "You aim the extinguisher at the spreading flames. The foam helps, but the fire is still burning."
-    },
-    "hazard_effectiveness": {
-      "electrical_fire_hazard": {
-        "effectiveness_modifier": 0.3,
-        "success_message": "The chemical foam smothers the electrical fire effectively!",
-        "target_state_override": "extinguished"
-      },
-      "spreading_fire_hazard": {
-        "effectiveness_modifier": 0.2,
-        "success_message": "You manage to beat back the spreading flames with the extinguisher!",
-        "target_state_override": "burning_low"
-      }
-    }
+  "monogrammed_bowling_towel": {
+    "name": "Monogrammed Bowling Towel",
+    "type": "item",
+    "description": "A microfiber towel smelling of lane wax. The logo for 'Strike & Spare Lanes' is embroidered on the front, with a name scrawled in sharpie on the tag.",
+    "is_distributable_in_containers": true,
+    "tags": ["clue", "narrative", "fabric"]
   },
+  "bloodstained_punch_card": {
+    "name": "Bloodstained Punch Card",
+    "type": "item",
+    "description": "A 'Daily Grind' loyalty card. Nine out of ten coffees are punched. The last punch looks suspiciously like a drop of dried blood.",
+    "is_distributable_in_containers": true,
+    "tags": ["clue", "narrative", "paper"]
+  },
+  "true_companions_transfer_form": {
+    "name": "True Companions Transfer Form",
+    "type": "item",
+    "description": "A medical transfer sheet from the True Companions adoption center. The receiving veterinarian's signature is scribbled hastily at the bottom, stained with a few drops of dark liquid.",
+    "is_distributable_in_containers": true,
+    "tags": ["clue", "narrative", "paper"]
+  },
+  "laminated_pool_pass": {
+    "name": "Laminated Pool Pass",
+    "type": "item",
+    "description": "A faded membership card for the McKinley Community Center. It smells faintly of chlorine and cheap plastic.",
+    "is_distributable_in_containers": true,
+    "tags": ["clue", "narrative", "plastic"]
+  },
+  "union_id_card": {
+    "name": "Union ID Card",
+    "type": "item",
+    "description": "A plastic identification card for Local 404 Ironworkers. The portrait is smudged with dried cement, but the McKinley Heights project site is clearly stamped on the back.",
+    "is_distributable_in_containers": true,
+    "tags": ["clue", "narrative", "plastic"]
+  },
+  "coastal_survey_clipboard": {
+    "name": "Coastal Survey Clipboard",
+    "type": "item",
+    "description": "A weather-resistant clipboard holding architectural schematics for the Old McKinley Lighthouse. A bright red 'CONDEMNED' stamp is visible on the top page.",
+    "is_distributable_in_containers": true,
+    "tags": ["clue", "narrative", "paper"]
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
   "teenagers_dropped_phone": {
     "name": "Teenager's Dropped Phone",
     "description": "A smartphone with a cracked screen. The lock screen shows a frantic, half-finished text message: 'MOM I SAW IT ALL THE BULLS THE FIRE EVERY'.",
@@ -4251,6 +3334,10 @@
       "teenager's phone",
       "cracked phone"
     ],
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Unknown Teenager",
     "franchise_source": "Terminal",
     "unlocks": [],
@@ -4289,6 +3376,10 @@
       "blurry photo",
       "distorted photo"
     ],
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
     "character_connection": "Unknown Victim",
     "franchise_source": "Terminal",
     "unlocks": [],
@@ -4327,7 +3418,6 @@
       "best in show ribbon",
       "prize ribbon"
     ],
-    "character_connection": "",
     "unlocks": [],
     "use_on": [],
     "use_result": {},
@@ -4343,6 +3433,19 @@
     "tags": [],
     "custom_fields": {}
   },
+
+
+
+
+
+
+
+
+
+
+
+
+
   "Trucker's Logbook": {
     "name": "Trucker's Logbook",
     "type": "evidence",
@@ -5007,7 +4110,168 @@
     "is_evidence": true,
     "weight": "light"
   },
-  "tranquilizer": {
+
+
+
+
+
+
+
+
+
+
+  "bottle_of_water": {
+    "name": "bottle of water",
+    "description": "A plastic bottle partially filled with clear water.",
+    "examine_details": "It's a standard plastic water bottle, about half full. The water looks clean enough to drink, or perhaps use for other purposes.",
+    "type": "consumable",
+    "subtype": "liquid",
+    "level": "all",
+    "takeable": true,
+    "weight": "light",
+    "is_metallic": false,
+    "is_liquid": true,
+    "is_spillable": true,
+    "is_conductive": true,
+    "is_distributable_in_containers": true,
+    "consumable_on_use": true,
+    "use_on": [
+      "electrical_fire",
+      "spreading_fire"
+    ],
+    "use_result": {
+      "electrical_fire": "You throw the water on the electrical fire. It sizzles and hisses, but the fire continues to burn!",
+      "spreading_fire": "You douse a small part of the fire with water; it hisses and steams but the main fire rages on."
+    },
+    "hazard_effectiveness": {
+      "electrical_fire_hazard": {
+        "effectiveness_modifier": -0.8,
+        "failure_message": "Throwing water on the electrical fire causes a violent short circuit and a small explosion!",
+        "outcome_state": "explosion",
+        "hp_damage_on_bad_use": 3
+      },
+      "spreading_fire_hazard": {
+        "effectiveness_modifier": 0.1,
+        "success_message": "You douse a small part of the fire with water; it hisses and steams but the main fire rages on."
+      }
+    }
+  },
+  "first_aid_kit": {
+    "name": "first aid kit",
+    "description": "A standard wall-mounted first aid kit. Contains basic medical supplies.",
+    "examine_details": "A wall-mounted first aid kit, filled with some exceptional wound care.",
+    "type": "medical_supply",
+    "subtype": "healing_item",
+    "takeable": true,
+    "level": "all",
+    "weight": "default",
+    "is_metallic": false,
+    "is_distributable_in_containers": true,
+    "consumable_on_use": true,
+    "heal_amount": 25,
+    "use_result": {
+      "general": "You open the first aid kit and take what you need."
+    }
+  },
+  "bandages": {
+    "name": "bandages",
+    "description": "A roll of sterile medical bandages.",
+    "examine_details": "A standard roll of gauze bandages in sterile packaging. The medical-grade material is soft yet durable, perfect for treating minor to moderate wounds.",
+    "type": "medical_supply",
+    "subtype": "healing_item",
+    "takeable": true,
+    "weight": "light",
+    "level": "all",
+    "is_metallic": false,
+    "is_distributable_in_containers": true,
+    "consumable_on_use": true,
+    "heal_amount": 10,
+    "use_result": {
+      "general": "You apply the bandages to your wounds, feeling immediate relief."
+    },
+    "special_properties": [
+      "medical_supply",
+      "sterile"
+    ],
+    "medical_grade": true,
+    "spawn_pool": [
+      {
+        "room": "Patient Room 101",
+        "container": "bedside table",
+        "chance": 0.3
+      },
+      {
+        "room": "Supply Closet",
+        "container": "medical supplies",
+        "chance": 0.4
+      },
+      {
+        "room": "MRI Control Room",
+        "container": "first aid station",
+        "chance": 0.3
+      }
+    ]
+  },
+  "painkillers": {
+    "name": "painkillers",
+    "description": "A small bottle of generic painkillers.",
+    "examine_details": "A plastic bottle of over-the-counter pain-relief pills. The label shows it's ibuprofen, 200mg tablets. Might help take the edge off minor injuries and pain.",
+    "type": "medical_supply",
+    "subtype": "medication",
+    "takeable": true,
+    "level": "all",
+    "weight": "light",
+    "is_metallic": false,
+    "is_distributable_in_containers": true,
+    "consumable_on_use": true,
+    "heal_amount": 5,
+    "use_result": {
+      "general": "You swallow a couple of painkillers. The pain begins to dull slightly."
+    },
+    "special_properties": [
+      "medication",
+      "over_the_counter"
+    ],
+    "dosage": "200mg tablets",
+    "side_effects": "drowsiness, stomach upset",
+    "spawn_pool": [
+      {
+        "room": "Patient Room 101",
+        "container": "bedside table",
+        "chance": 0.3
+      },
+      {
+        "room": "Waiting Room",
+        "container": "magazine table",
+        "chance": 0.2
+      },
+      {
+        "room": "Supply Closet",
+        "container": "medical supplies",
+        "chance": 0.3
+      },
+      {
+        "room": "Coroner's Office",
+        "container": "desk drawer",
+        "chance": 0.2
+      }
+    ]
+  },
+  "adrenaline": {
+    "name": "Adrenaline",
+    "description": "A pre-loaded epinephrine auto-injector. For cardiac emergency use only. Do not use unless prepared for the consequences.",
+    "type": "medical",
+    "subtype": "chemical",
+    "takeable": true,
+    "is_key_item": true,
+    "is_unique": true,
+    "is_critical": true,
+    "is_evidence": true,
+    "weight": "featherweight",
+    "is_distributable_in_containers": false,
+    "custom_fields": {}
+  },
+    "tranquilizer": {
     "name": "Tranquilizer",
     "description": "A fast-acting sedative. Reduces fear.",
     "type": "medical_supply",
@@ -5016,6 +4280,91 @@
     "is_magnetic": false,
     "takeable": true,
     "consumable_on_use": true
+  },
+
+
+
+
+
+
+
+
+
+
+  "crowbar": {
+    "name": "Crowbar",
+    "description": "A sturdy steel crowbar. Good for prying or as a makeshift weapon.",
+    "examine_details": "It's a heavy steel crowbar, about two feet long. One end is flattened and split for prying, the other is pointed. It feels substantial in your hands.",
+    "type": "tool",
+    "subtype": "prying_tool",
+    "takeable": true,
+    "weight": "heavy",
+    "is_metallic": true,
+    "is_hidden": false,
+    "is_distributable_in_containers": true,
+    "damage_if_weapon": 3,
+    "use_on": [
+      "locked door",
+      "stuck drawer",
+      "crate",
+      "boarded window",
+      "reception desk"
+    ],
+    "use_result": {
+      "locked door": "You wedge the crowbar into the door frame and heave. With a splintering crack, it gives way!",
+      "crate": "The crowbar makes short work of the wooden crate, prying the lid open.",
+      "boarded window": "You use the crowbar to wrench the boards off the window frame.",
+      "reception desk": "You manage to pry open a stuck drawer in the reception desk."
+    },
+    "special_properties": [
+      "weapon",
+      "prying_tool"
+    ]
+  },
+  "baseball_bat": {
+    "name": "wooden baseball bat",
+    "description": "A solid wooden baseball bat, well-used but sturdy.",
+    "examine_details": "It's a standard wooden baseball bat, about 32 inches long. The wood is worn smooth from use, and it feels balanced in your hands.",
+    "type": "tool",
+    "subtype": "blunt_weapon",
+    "takeable": true,
+    "weight": "heavy",
+    "is_metallic": false,
+    "is_hidden": false,
+    "is_distributable_in_containers": true,
+    "damage_if_weapon": 4,
+    "use_on": [
+      "patient in bed",
+      "locked door",
+      "crate",
+      "boarded window"
+    ],
+    "use_result": {
+      "patient in bed": "You swing the bat with all your might, connecting with a sickening thud! His suffering is over, and, though your methods leave some tact to be desired, you gain an extra 5 turns for taking his remaining time.",
+      "locked door": "You smash the bat against the door, splintering the wood but not breaking through.",
+      "crate": "The bat makes short work of the wooden crate, splintering it apart.",
+      "boarded window": "You use the bat to smash the boards off the window frame."
+    },
+    "special_properties": [
+      "weapon",
+      "blunt"
+    ]
+  },
+  "duct_tape": {
+    "name": "Duct Tape",
+    "description": "A roll of grey duct tape. The universal tool for temporary, questionable repairs.",
+    "examine_details": "A standard roll of duct tape. Strong, fibrous, and sticky. It feels like it could patch up almost anything, for a little while at least.",
+    "type": "tool",
+    "subtype": "utility",
+    "takeable": true,
+    "weight": "light",
+    "is_metallic": false,
+    "use_on": [
+      "gas_leak"
+    ],
+    "use_result": {
+      "gas_leak": "You hastily wrap the duct tape around the leak, creating a makeshift seal that bulges ominously."
+    }
   },
   "screwdriver": {
     "name": "Screwdriver",
@@ -5113,6 +4462,56 @@
       "tool_type": "absorbent"
     }
   },
+    "pliers": {
+    "key": "pliers",
+    "name": "Pliers",
+    "aliases": [
+      "tool",
+      "wire cutters"
+    ],
+    "description": "A pair of heavy-duty pliers. The rubber grips are worn, but the steel head is solid.",
+    "type": "tool",
+    "value": 20,
+    "tags": [
+      "tool",
+      "metal",
+      "utility"
+    ],
+    "examine_details": "The serrated jaws look strong enough to cut wire or bend soft metal.",
+    "weight": "default",
+    "is_usable": {
+      "action_name": "Use",
+      "use_on": [
+        "wire",
+        "chain",
+        "fence",
+        "pipe"
+      ],
+      "self_use_message": "You snap the pliers in the air. They make a satisfying *clack*.",
+      "use_on_success_message": "You use the pliers on the {target}."
+    },
+    "takeable": true
+  },
+  "broken_pliers": {
+    "key": "broken_pliers",
+    "name": "Broken Pliers",
+    "aliases": [
+      "broken tool",
+      "scrap metal"
+    ],
+    "description": "A pair of pliers, snapped in half at the joint. Useless now.",
+    "type": "tool",
+    "value": 1,
+    "tags": [
+      "tool",
+      "metal",
+      "scrap",
+      "broken"
+    ],
+    "examine_details": "One handle is missing, and the head is rusted solid. This is just junk.",
+    "weight": "light",
+    "takeable": true
+  },
   "nail_gun": {
     "name": "Nail Gun",
     "description": "A heavy-duty nail gun, capable of driving nails with dangerous force. It can be loaded with a strip of nails and used as a tool or weapon.",
@@ -5205,78 +4604,595 @@
       "tool_type": "cleaning"
     }
   },
-  "elevator": {
-    "name": "elevator",
-    "aliases": [
-      "hospital elevator"
-    ],
-    "takeable": false,
-    "type": "environment",
-    "description": "A stainless steel hospital elevator, used for moving between floors.",
-    "examine_text": "A stainless steel hospital elevator. The panel hums softly.",
-    "weight": "immovable"
-  },
-  "elevator_call_panel": {
-    "name": "elevator call panel",
-    "aliases": [
-      "call panel",
-      "elevator panel"
-    ],
-    "takeable": false,
-    "type": "environment",
-    "description": "A wall-mounted control panel for calling the elevator.",
-    "examine_text": "A wall-mounted control panel with worn buttons.",
-    "weight": "immovable"
-  },
-  "pliers": {
-    "key": "pliers",
-    "name": "Pliers",
-    "aliases": [
-      "tool",
-      "wire cutters"
-    ],
-    "description": "A pair of heavy-duty pliers. The rubber grips are worn, but the steel head is solid.",
+  "bone_saw": {
+    "name": "Bone Saw",
+    "description": "A visceral-looking bone saw, stained with something dark.",
     "type": "tool",
-    "value": 20,
-    "tags": [
-      "tool",
-      "metal",
-      "utility"
-    ],
-    "examine_details": "The serrated jaws look strong enough to cut wire or bend soft metal.",
-    "weight": "default",
-    "is_usable": {
-      "action_name": "Use",
-      "use_on": [
-        "wire",
-        "chain",
-        "fence",
-        "pipe"
-      ],
-      "self_use_message": "You snap the pliers in the air. They make a satisfying *clack*.",
-      "use_on_success_message": "You use the pliers on the {target}."
-    },
-    "takeable": true
-  },
-  "broken_pliers": {
-    "key": "broken_pliers",
-    "name": "Broken Pliers",
-    "aliases": [
-      "broken tool",
-      "scrap metal"
-    ],
-    "description": "A pair of pliers, snapped in half at the joint. Useless now.",
-    "type": "tool",
-    "value": 1,
-    "tags": [
-      "tool",
-      "metal",
-      "scrap",
-      "broken"
-    ],
-    "examine_details": "One handle is missing, and the head is rusted solid. This is just junk.",
+    "subtype": "medical_tool",
+    "takeable": true,
     "weight": "light",
-    "takeable": true
+    "is_metallic": true,
+    "is_hidden": false,
+    "is_distributable_in_containers": true,
+    "damage_if_weapon": 15,
+    "trigger_hazard_on_action": {
+      "action": "take",
+      "hazard_type": "active_bone_saw",
+      "initial_state": "slipping_qte"
+    }
+  },
+  "rubber_gloves": {
+    "name": "rubber gloves",
+    "description": "Thick, insulated rubber gloves. Might offer protection from electricity.",
+    "examine_details": "Heavy-duty rubber gloves rated for electrical work. The faded label claims protection up to 1000 volts, though you're not sure how much you trust that rating. They look reasonably intact with no visible tears.",
+    "type": "protective_gear",
+    "subtype": "electrical_protection",
+    "takeable": true,
+    "weight": "light",
+    "is_metallic": false,
+    "is_distributable_in_containers": true,
+    "protection_value": 15,
+    "use_on": [
+      "faulty_wiring_interactive",
+      "electrical_panel",
+      "live_wire"
+    ],
+    "use_result": {
+      "faulty_wiring_interactive": "With the rubber gloves on, you feel safer handling the electrical components.",
+      "electrical_panel": "The gloves provide some protection as you work with the electrical panel.",
+      "live_wire": "You carefully handle the live wire, trusting in the rubber insulation."
+    },
+    "hazard_effectiveness": {
+      "electrical_hazard": {
+        "effectiveness_modifier": 0.6,
+        "success_message": "The rubber gloves protect you from the electrical shock!",
+        "protection_hp": 8
+      }
+    },
+    "special_properties": [
+      "electrical_protection",
+      "safety_equipment"
+    ],
+    "voltage_rating": "1000V (claimed)",
+    "condition": "fair",
+    "spawn_pool": [
+      {
+        "room": "Supply Closet",
+        "container": "safety equipment box",
+        "chance": 0.4
+      },
+      {
+        "room": "MRI Control Room",
+        "container": "maintenance kit",
+        "chance": 0.3
+      },
+      {
+        "room": "Storage Room",
+        "container": "electrical supplies",
+        "chance": 0.3
+      }
+    ]
+  },
+  "fire_extinguisher": {
+    "name": "fire extinguisher",
+    "description": "A standard red fire extinguisher. Looks ready for use.",
+    "examine_details": "A red fire extinguisher. Check its pressure and remaining charge. Usually found mounted on a wall or in a utility area.",
+    "type": "safety_equipment",
+    "subtype": "fire_suppression",
+    "level": "all",
+    "takeable": true,
+    "weight": "medium",
+    "is_metallic": true,
+    "is_distributable_in_containers": false,
+    "current_state": "full",
+    "uses_left": 3,
+    "use_on": [
+      "electrical_fire_hazard",
+      "spreading_fire_hazard"
+    ],
+    "use_result": {
+      "electrical_fire_hazard": "You spray the extinguisher at the electrical fire. The chemical foam smothers it, but be careful not to get shocked!",
+      "spreading_fire_hazard": "You aim the extinguisher at the spreading flames. The foam helps, but the fire is still burning."
+    },
+    "hazard_effectiveness": {
+      "electrical_fire_hazard": {
+        "effectiveness_modifier": 0.3,
+        "success_message": "The chemical foam smothers the electrical fire effectively!",
+        "target_state_override": "extinguished"
+      },
+      "spreading_fire_hazard": {
+        "effectiveness_modifier": 0.2,
+        "success_message": "You manage to beat back the spreading flames with the extinguisher!",
+        "target_state_override": "burning_low"
+      }
+    }
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  "poster_scrap": {
+    "name": "Poster Scrap",
+    "description": "A torn strip from a movie poster. On the back, someone has written a partial phone number and the words CALL AFTER 9.",
+    "type": "evidence",
+    "subtype": "paper",
+    "takeable": true,
+    "is_key_item": false,
+    "is_evidence": true,
+    "weight": "featherweight",
+    "is_distributable_in_containers": false,
+    "custom_fields": {}
+  },
+  "crumpled_note": {
+    "name": "Crumpled Note",
+    "description": "A note hastily written on theater napkin. It reads: 'He knows. Booth. Do NOT go to the booth. Trust me.'",
+    "type": "evidence",
+    "subtype": "paper",
+    "takeable": true,
+    "is_key_item": false,
+    "is_evidence": true,
+    "weight": "featherweight",
+    "is_distributable_in_containers": false,
+    "custom_fields": {}
+  },
+  "note_from_concessions": {
+    "name": "Note from Concessions",
+    "description": "Scrawled on a receipt: 'Projector overheating AGAIN. Called maintenance. Nobody answered. Going to check it myself.' It is dated today.",
+    "type": "evidence",
+    "subtype": "paper",
+    "takeable": true,
+    "is_key_item": false,
+    "is_evidence": true,
+    "weight": "featherweight",
+    "is_distributable_in_containers": false,
+    "custom_fields": {}
+  },
+  "movie_ticket": {
+    "name": "Movie Ticket",
+    "description": "A ticket stub for Theater 7. Seat J14. Someone left this at the will-call. It is in your name.",
+    "type": "document",
+    "subtype": "ticket",
+    "takeable": true,
+    "is_key_item": false,
+    "is_evidence": true,
+    "weight": "featherweight",
+    "is_distributable_in_containers": false,
+    "custom_fields": {}
+  },
+  "leather_journal": {
+    "name": "Leather Journal",
+    "description": "A weathered leatherbound journal belonging to Corbin Wainright. The pages are filled with observations and theories about the survivors of a beach plane crash in Hawaii.",
+    "examine_details": "The journal details the aftermath of a beachfront plane crash, noting how the survivors began dying in a series of bizarre, seemingly random accidents.\n\nCorbin's entries grow increasingly paranoid, convinced that something is hunting them all. The last page ends abruptly.",
+    "type": "evidence",
+    "subtype": "book",
+    "takeable": true,
+    "is_key_item": true,
+    "is_unique": true,
+    "is_critical": true,
+    "is_evidence": true,
+    "weight": "light",
+    "narrative_flag_on_collect": "found_leather_journal",
+    "is_distributable_in_containers": false,
+    "custom_fields": {}
+  },
+  "gym_membership_card": {
+    "name": "Gym Membership Card",
+    "description": "A Body and Soul Fitness membership card. It belongs to someone whose name is on the list. It was in the locker.",
+    "type": "evidence",
+    "subtype": "card",
+    "takeable": true,
+    "is_evidence": true,
+    "weight": "featherweight",
+    "is_distributable_in_containers": false,
+    "custom_fields": {}
+  },
+  "protein_bar": {
+    "name": "Protein Bar",
+    "description": "A half-eaten protein bar left on a locker bench. Still fresh.",
+    "type": "consumable",
+    "subtype": "food",
+    "takeable": true,
+    "is_distributable_in_containers": true,
+    "weight": "featherweight",
+    "custom_fields": {}
+  },
+  "water_bottle": {
+    "name": "Water Bottle",
+    "description": "A plastic water bottle, still sealed.",
+    "type": "consumable",
+    "subtype": "drink",
+    "takeable": true,
+    "is_distributable_in_containers": true,
+    "weight": "featherweight",
+    "custom_fields": {}
+  },
+  "heavy_dumbbell": {
+    "name": "Heavy Dumbbell",
+    "description": "A 25-pound cast iron dumbbell. Could be used as a weapon. Definitely could be used to break something.",
+    "type": "tool",
+    "subtype": "weight",
+    "takeable": true,
+    "is_distributable_in_containers": false,
+    "weight": "heavy",
+    "custom_fields": {}
+  },
+  "protein_shake": {
+    "name": "Protein Shake",
+    "description": "A sealed shaker cup of protein powder mixed with water. Still cold.",
+    "type": "consumable",
+    "subtype": "drink",
+    "takeable": true,
+    "is_distributable_in_containers": true,
+    "weight": "featherweight",
+    "custom_fields": {}
+  },
+  "sharps_container": {
+    "name": "sharps container",
+    "description": "A red plastic container for disposing of used needles and other medical sharps.",
+    "examine_details": "A biohazard sharps container made of puncture-resistant plastic. It looks quite full and is properly sealed according to medical safety protocols. Definitely don't want to stick your hand in there.",
+    "type": "medical_equipment",
+    "subtype": "disposal_container",
+    "takeable": true,
+    "weight": "medium",
+    "is_metallic": false,
+    "is_distributable_in_containers": false,
+    "is_container": true,
+    "locked": true,
+    "unlocks_with": "medical_waste_key",
+    "initial_items": [
+      "syringe"
+    ],
+    "capacity": 3,
+    "special_properties": [
+      "biohazard",
+      "puncture_resistant"
+    ],
+    "safety_warnings": [
+      "biohazard_contents",
+      "sharp_objects"
+    ],
+    "spawn_pool": [
+      {
+        "room": "MRI Scan Room",
+        "chance": 0.4
+      },
+      {
+        "room": "Patient Room 101",
+        "chance": 0.3
+      },
+      {
+        "room": "Coroner's Office",
+        "chance": 0.3
+      }
+    ]
+  },
+  "gurney": {
+    "name": "gurney",
+    "description": "A wheeled hospital gurney, stained and battered. It looks like it has seen better days.",
+    "examine_details": "This gurney is made of metal and plastic, with a worn vinyl mattress. It has wheels for easy transport but appears to be stuck in place due to rust and debris.",
+    "type": "medical_equipment",
+    "subtype": "transport_device",
+    "level": 1,
+    "takeable": false,
+    "weight": "very_heavy",
+    "is_metallic": true,
+    "is_distributable_in_containers": false,
+    "is_moveable": true,
+    "current_state": "stuck",
+    "use_on": [
+      "patient_transport",
+      "barricade_material"
+    ],
+    "use_result": {
+      "patient_transport": "The gurney wheels are stuck, making transport difficult.",
+      "barricade_material": "You could use this to block a doorway if you could get it moving."
+    },
+    "special_properties": [
+      "wheeled",
+      "medical_transport",
+      "barricade_potential"
+    ],
+    "condition": "poor",
+    "requires_maintenance": true
+  },
+  "IV_stand": {
+    "name": "IV stand",
+    "description": "A metal IV stand with wheels, used for holding intravenous bags.",
+    "examine_details": "This IV stand is made of lightweight aluminum with adjustable height. The wheels are slightly squeaky but functional. The hook at the top shows wear from hanging IV bags.",
+    "type": "medical_equipment",
+    "subtype": "support_device",
+    "takeable": false,
+    "weight": "medium",
+    "is_metallic": true,
+    "is_distributable_in_containers": false,
+    "is_moveable": true,
+    "use_on": [
+      "iv_bag",
+      "makeshift_weapon"
+    ],
+    "use_result": {
+      "iv_bag": "You hang the IV bag on the stand's hook.",
+      "makeshift_weapon": "The metal stand could serve as an improvised weapon if needed."
+    },
+    "damage_if_weapon": 2,
+    "special_properties": [
+      "wheeled",
+      "medical_support",
+      "improvised_weapon"
+    ],
+    "height_adjustable": true
+  },
+  "wheelchair": {
+    "name": "wheelchair",
+    "description": "A sturdy metal wheelchair, slightly rusted but functional.",
+    "examine_details": "This wheelchair has seen better days. The steel frame is sturdy despite some rust spots, and the wheels are squeaky but still turn. It could be useful for transporting someone injured or as mobile cover.",
+    "type": "medical_equipment",
+    "subtype": "mobility_aid",
+    "takeable": false,
+    "weight": "heavy",
+    "is_metallic": true,
+    "is_distributable_in_containers": false,
+    "is_moveable": true,
+    "use_on": [
+      "patient_transport",
+      "mobile_shield"
+    ],
+    "use_result": {
+      "patient_transport": "The wheelchair provides mobility for injured individuals.",
+      "mobile_shield": "You could use this as mobile cover, though it won't stop much."
+    },
+    "special_properties": [
+      "wheeled",
+      "mobility_aid",
+      "portable_cover"
+    ],
+    "condition": "worn_but_functional",
+    "protection_value": 3
+  },
+  "equipment_cart": {
+    "name": "equipment cart",
+    "description": "A wheeled cart loaded with various medical equipment and supplies.",
+    "examine_details": "This cart holds a variety of medical tools: syringes, bandages, antiseptics, and more. It looks like it was used for emergency care. The top has several organized compartments and drawers.",
+    "type": "medical_equipment",
+    "subtype": "storage_container",
+    "takeable": false,
+    "weight": "very_heavy",
+    "is_metallic": true,
+    "is_container": true,
+    "is_distributable_in_containers": false,
+    "initial_items": [
+      "Scalpel",
+      "Bone Saw",
+      "Bandages",
+      "Painkillers",
+      "Coroner's Office Key"
+    ],
+    "capacity": 8,
+    "search_difficulty": "easy",
+    "use_on": [
+      "medical_emergency",
+      "mobile_workspace"
+    ],
+    "use_result": {
+      "medical_emergency": "The cart provides easy access to medical supplies for emergency care.",
+      "mobile_workspace": "You can wheel the cart to wherever you need the medical supplies."
+    },
+    "special_properties": [
+      "wheeled",
+      "organized_storage",
+      "medical_workspace"
+    ],
+    "organization_level": "professional"
+  },
+  "diplomas": {
+    "name": "diplomas",
+    "description": "Several framed diplomas and commendations.",
+    "examine_details": "Various degrees and commendations for Dr. William Bludworth. They detail a long and... storied career spanning several decades. One diploma seems to be loose in its frame, and there are some unsettling commendations from morgues and coroner offices.",
+    "type": "evidence",
+    "subtype": "document",
+    "takeable": true,
+    "weight": "light",
+    "is_metallic": false,
+    "is_evidence": true,
+    "is_hidden": false,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
+    "character_connection": "William Bludworth",
+    "franchise_source": "Final Destination Series",
+    "use_on": [
+      "document_analysis",
+      "character_research"
+    ],
+    "use_result": {
+      "document_analysis": "The diplomas reveal Bludworth's extensive background in forensic pathology.",
+      "character_research": "These documents paint a picture of someone deeply familiar with death."
+    },
+    "special_properties": [
+      "professional_credentials",
+      "character_background"
+    ],
+    "reveals_information": "bludworth_background"
+  },
+  "old_patient_chart": {
+    "name": "Old Patient Chart",
+    "description": "A yellowed medical chart with faded handwriting and coffee stains.",
+    "examine_details": "The chart contains medical information from years past. Some entries mention unusual accident patterns and 'anomalous death circumstances' in the margins. Several names are highlighted, and there are notes about 'intervention attempts' and 'design failures'.",
+    "type": "evidence",
+    "subtype": "medical_record",
+    "takeable": true,
+    "weight": "light",
+    "is_metallic": false,
+    "is_evidence": true,
+    "procedural": true,
+    "is_hidden": true,
+    "is_distributable_in_containers": true,
+    "is_time_consuming_examine": true,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
+    "character_connection": "Unknown Patient",
+    "franchise_source": "Final Destination Universe",
+    "use_on": [
+      "medical_analysis",
+      "pattern_recognition"
+    ],
+    "use_result": {
+      "medical_analysis": "The chart reveals disturbing patterns in seemingly random deaths.",
+      "pattern_recognition": "These aren't random accidents - there's a design to these deaths."
+    },
+    "special_properties": [
+      "medical_record",
+      "pattern_evidence"
+    ],
+    "reveals_information": "death_patterns",
+    "spawn_pool": [
+      {
+        "room": "Radiology Records Room",
+        "container": "filing cabinets",
+        "chance": 0.6
+      },
+      {
+        "room": "Coroner's Office",
+        "container": "file cabinet",
+        "chance": 0.4
+      }
+    ]
+  },
+  "toe_tag": {
+    "name": "Toe Tag",
+    "description": "A plastic identification tag used in morgues.",
+    "examine_details": "The tag has a name and date, but the writing is smudged and barely readable. You can make out what appears to be 'Flight 180' and a date from several years ago. The plastic shows signs of being in cold storage.",
+    "type": "evidence",
+    "subtype": "identification",
+    "takeable": true,
+    "weight": "light",
+    "is_metallic": false,
+    "is_evidence": true,
+    "is_hidden": false,
+    "is_distributable_in_containers": false,
+    "spawn_rules": {
+      "allowed_acts": ["act_2_investigation"],
+      "spawn_limit": 1
+    },
+    "character_connection": "Flight 180 Victim",
+    "franchise_source": "Final Destination 1",
+    "use_on": [
+      "victim_identification",
+      "morgue_records"
+    ],
+    "use_result": {
+      "victim_identification": "The tag helps identify a victim from the Flight 180 disaster.",
+      "morgue_records": "You could cross-reference this with morgue records."
+    },
+    "special_properties": [
+      "victim_identification",
+      "cold_storage_item"
+    ],
+    "reveals_information": "flight_180_connection",
+    "spawn_pool": [
+      {
+        "room": "Morgue Autopsy Suite",
+        "container": "body_drawer",
+        "chance": 0.5
+      },
+      {
+        "room": "Coroner's Office",
+        "container": "evidence_box",
+        "chance": 0.3
+      },
+      {
+        "room": "Supply Closet",
+        "container": "morgue_supplies",
+        "chance": 0.2
+      }
+    ]
+  },
+  "loose_brick": {
+    "name": "loose brick",
+    "description": "A brick that feels loose in the fireplace cavity. It's heavy and rough.",
+    "examine_details": "This brick is definitely not set properly. It's covered in soot and bits of old mortar. Something about it seems... significant. There are dark stains that look like they might be more than just soot.",
+    "type": "item",
+    "image": "assets/items/loose_brick.png",
+    "subtype": "improvised_weapon",
+    "takeable": true,
+    "weight": "heavy",
+    "is_metallic": false,
+    "is_hidden": false,
+    "is_distributable_in_containers": false,
+    "is_lid": true,
+    "covers_container": "fireplace_cavity",
+    "parent_container": "fireplace",
+    "revealed_by_action": true,
+    "damage_if_weapon": 2,
+    "use_on": [
+      "boarded window",
+      "crate",
+      "glass_surface"
+    ],
+    "use_result": {
+      "boarded window": "With a grunt, you smash the brick against the boards. They splinter but hold. You might need to hit it again or use something stronger.",
+      "crate": "You bring the brick down hard on the crate. Wood splinters, but the crate remains mostly intact.",
+      "glass_surface": "The brick shatters the glass with a loud crash."
+    },
+    "on_action_effects": {
+      "take": {
+        "conditions": [
+          {
+            "type": "player_in_room",
+            "value": "Living Room"
+          }
+        ],
+        "effects": [
+          {
+            "type": "reveal_hidden_container",
+            "container_name": "fireplace_cavity",
+            "parent_container": "fireplace"
+          },
+          {
+            "type": "set_room_flag",
+            "flag": "loose_brick_taken"
+          },
+          {
+            "type": "set_room_flag",
+            "flag": "fireplace_cavity_revealed"
+          },
+          {
+            "type": "display_message",
+            "message": "As you pull the brick free, you notice a dark cavity behind it..."
+          }
+        ]
+      }
+    },
+    "on_examine_transform": {
+      "target_item_id": "bloody_brick",
+      "message": "As you examine the brick more closely, you notice the dark stains are actually dried blood..."
+    },
+    "special_properties": [
+      "weapon",
+      "tool",
+      "evidence_precursor",
+      "lid_item"
+    ]
   },
   "revolving door": {
     "name": "revolving door",
@@ -5362,7 +5278,7 @@
     "examine_details": "It's a standard 'Room-Bot' model, but someone has affixed googly eyes to the front. A faint red light pulses from beneath its shell.",
     "weight": "heavy"
   },
-  "vacuum_battery": {
+    "vacuum_battery": {
     "key": "vacuum_battery",
     "name": "Vacuum Battery",
     "aliases": [
@@ -5420,6 +5336,50 @@
     "weight": "medium",
     "takeable": true
   },
+  "oxygen_tank": {
+    "name": "oxygen tank",
+    "description": "A large, heavy oxygen tank used for medical purposes. It has a pressure gauge and a regulator.",
+    "examine_details": "This tank is made of thick steel and has a sturdy handle for carrying. The pressure gauge reads full, and the regulator is set to a low flow rate. Warning labels indicate high pressure contents.",
+    "type": "medical_equipment",
+    "subtype": "life_support",
+    "takeable": true,
+    "level": 1,
+    "weight": "medium",
+    "is_metallic": true,
+    "is_distributable_in_containers": false,
+    "trigger_hazard_on_action": {
+      "action": "use",
+      "hazard_type": "oxygen_tank",
+      "initial_state": "full"
+    },
+    "current_state": "full",
+    "pressure_level": "high",
+    
+    "is_usable": true
+  },
+    "elevator": {
+    "name": "elevator",
+    "aliases": [
+      "hospital elevator"
+    ],
+    "takeable": false,
+    "type": "environment",
+    "description": "A stainless steel hospital elevator, used for moving between floors.",
+    "examine_text": "A stainless steel hospital elevator. The panel hums softly.",
+    "weight": "immovable"
+  },
+  "elevator_call_panel": {
+    "name": "elevator call panel",
+    "aliases": [
+      "call panel",
+      "elevator panel"
+    ],
+    "takeable": false,
+    "type": "environment",
+    "description": "A wall-mounted control panel for calling the elevator.",
+    "examine_text": "A wall-mounted control panel with worn buttons.",
+    "weight": "immovable"
+  },
   "padded_magazine_guards": {
     "name": "Magazine Armor",
     "description": "Thick rolls of fashion magazines taped to your body. +10 HP buffer vs Physical.",
@@ -5449,6 +5409,139 @@
       "message": "You turn the locket over in your hands and find a small clasp. Fidgeting with the locket seems to have cleaned itself slightly in the process."
     },
     "weight": "featherweight"
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    "syringe": {
+    "name": "syringe",
+    "description": "A sterile, disposable syringe with a fine needle, still in its packaging.",
+    "examine_details": "The syringe is new and appears to be medical grade. The needle is capped for safety. It could be used to inject something... or someone. The packaging indicates it's a 10ml capacity.",
+    "type": "medical_supply",
+    "subtype": "injection_device",
+    "takeable": true,
+    "weight": "light",
+    "is_metallic": true,
+    "is_distributable_in_containers": true,
+    "damage_if_weapon": 1,
+    "use_on": [
+      "patient_dummy",
+      "poison_vial",
+      "medication_vial",
+      "blood_sample"
+    ],
+    "use_result": {
+      "patient_dummy": "You practice your injection technique on the dummy. It offers no resistance.",
+      "poison_vial": "You carefully draw the contents of the vial into the syringe.",
+      "medication_vial": "You draw the medication into the syringe, preparing it for injection.",
+      "blood_sample": "You draw a small blood sample into the syringe."
+    },
+    "consumable_on_use": true,
+    "special_properties": [
+      "precision_tool",
+      "medical_device"
+    ],
+    "spawn_rules":{
+      "required_tags":
+      ["veterinary", "hospital", "chemical"],
+      "spawn_limit": 1
+      },
+    "safety_warnings": [
+      "needle_stick_hazard"
+    ],
+    "spawn_pool": [
+      {
+        "room": "MRI Scan Room",
+        "container": "equipment cart",
+        "chance": 0.4
+      },
+      {
+        "room": "Patient Room 101",
+        "container": "bedside table",
+        "chance": 0.3
+      },
+      {
+        "room": "Supply Closet",
+        "container": "medical supplies",
+        "chance": 0.3
+      }
+    ]
+  },
+  "vet_sedatives": {
+    "name": "Vet Sedatives",
+    "description": "A sealed vial of veterinary-grade sedative. Enough to stop a large animal's heart — or a human's. Handle with extreme care.",
+    "type": "medical",
+    "subtype": "chemical",
+    "takeable": true,
+    "is_key_item": true,
+    "is_unique": true,
+    "is_critical": true,
+    "is_evidence": true,
+    "weight": "featherweight",
+    "is_distributable_in_containers": true,
+    "spawn_rules":{
+      "required_tags":
+      ["veterinary", "chemical"],
+      "spawn_limit": 1
+      },
+    "custom_fields": {}
+  },
+  "defibrillator_pads": {
+    "name": "defibrillator pads",
+    "description": "A pair of defibrillator pads, still sealed in their sterile packaging. They look like they connect to a larger machine.",
+    "examine_details": "These pads are meant to deliver a powerful electrical shock to restart a heart. They're useless without the main defibrillator unit, but the conductive gel and metal contacts might have other applications.",
+    "type": "medical_equipment",
+    "subtype": "electrical_component",
+    "takeable": true,
+    "weight": "light",
+    "is_metallic": true,
+    "is_distributable_in_containers": true,
+    "spawn_rules":{
+      "required_tags":[
+        "hospital", "chemical"
+        ],
+      "spawn_limit": 2
+      },
+    "is_conductive": true,
+    "use_on": [
+      "defibrillator_unit",
+      "faulty_wiring",
+      "electrical_panel"
+    ],
+    "use_result": {
+      "defibrillator_unit": "You connect the pads to the defibrillator unit, preparing it for use.",
+      "faulty_wiring": "You try to use the pads on the faulty wiring. A dangerous idea that yields no positive results, only a shower of sparks!",
+      "electrical_panel": "The conductive pads create a dangerous connection. Sparks fly!"
+    },
+    "hazard_effectiveness": {
+      "electrical_fire_hazard": {
+        "effectiveness_modifier": -0.9,
+        "failure_message": "Using conductive pads on electrical fires causes a massive short circuit!",
+        "hp_damage_on_bad_use": 5
+      }
+    },
+    "special_properties": [
+      "medical_device",
+      "electrical_component"
+    ],
+    "voltage_rating": "High voltage - use with extreme caution"
   },
   "bludworths_ledger": {
     "name": "Bludworth's Master Ledger",
@@ -5496,6 +5589,25 @@
     "description": "A heavy, cold, steel-framed revolver.",
     "examine_details": "It feels impossibly heavy in your hand. You pop the cylinder—it is fully loaded. This isn't a tool for self-defense. It's a tool for transferring fate.",
     "takeable": true,
-    "is_evidence": true
+    "is_evidence": true,
+    "is_distributable_in_containers": true,
+    "weight": "heavy",
+    "damage": 10,
+    "special_properties": [
+      "fate_transfer",
+      "high_risk"
+    ],
+    "use_on": [
+      "self",
+      "other_survivor"
+    ],
+    "use_result": {
+      "self": "You pull the trigger, and everything goes black. When you come to, you feel... different. It's as if you've cheated death, but at what cost?",
+      "other_survivor": "You point the revolver at another survivor and pull the trigger. They collapse, seemingly unaffected. But you can feel the weight of their fate shifting onto you."
+    },
+    "spawn_rules": {
+      "required_tags": ["police", "security", "dark_path"],
+      "spawn_limit": 1
+    }
   }
 }

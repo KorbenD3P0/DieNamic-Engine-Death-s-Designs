@@ -1,5 +1,7 @@
 import random
-from fd_terminal.utils import color_text
+from typing import Optional
+from turtle import tracer
+from fd_terminal.utils import color_text, TraceLogger
 
 class MovementMixin:
     def _command_compass(self, target_str: str = None) -> dict:
@@ -740,69 +742,119 @@ class MovementMixin:
                 return self._build_response(message="That way adjusts dynamically and can't be used here.", turn_taken=False)
 
     def _finalize_move(self, current_room_id: str, destination: str) -> dict:
-        """Finalizes the player's movement, updates room states, and triggers room-specific events."""
-        old_room_data = self.get_room_data(current_room_id) or {}
-        new_room_data = self.get_room_data(destination) or {}
+        """
+        Main orchestrator for finalizing player movement.
+        Delegates state cleanup, NPC tracking, and event triggers to helpers.
+        """
+        tracer = TraceLogger("FinalizeMove")
+        tracer.mark("start", current_room=current_room_id, destination=destination)
 
-        visited_rooms = self.player.setdefault('visited_rooms', set())
-        is_first_visit = destination not in visited_rooms
+        try:
+            old_room_data = self.get_room_data(current_room_id) or {}
+            new_room_data = self.get_room_data(destination) or {}
 
-        # 1. Update Core Location
-        self.player['location'] = destination
+            # 1. State Cleanup (Amnesia & UI Buttons)
+            self._cleanup_dialogue_state(tracer)
 
-        # --- THE FIX: Cure Companion Amnesia! ---
+            # 2. Update Core Locations (Player & Active Follower)
+            self._update_player_and_npc_locations(destination, tracer)
+
+            # 3. Check Hub Intercepts & Survivor Group Movement
+            intercept_response = self._handle_post_move_events(current_room_id, destination, old_room_data, new_room_data, tracer)
+            if intercept_response:
+                tracer.mark("move_intercepted_by_event")
+                return intercept_response
+
+            # 4. Room Mechanics (Elevator, Hazards)
+            self._process_elevator_state(current_room_id, destination)
+            self._trigger_room_ambushes(destination)
+            tracer.mark("room_mechanics_processed")
+
+            # 5. Build Final Output
+            return self._build_arrival_response(destination, new_room_data, tracer)
+
+        except Exception as e:
+            self.logger.exception(f"[_finalize_move] Unexpected error during move to {destination}: {e}")
+            tracer.mark("exit_exception", error=str(e))
+            # Attach the trace dump to a fallback error response if desired
+            return self._build_response(
+                message="[color=ff0000]An error occurred while moving. Please try again.[/color]", 
+                turn_taken=False
+            )
+
+    # ==========================================
+    # FINALIZE MOVE HELPERS
+    # ==========================================
+
+    def _cleanup_dialogue_state(self, tracer):
+        """Cures companion amnesia and clears lingering UI dialogue contexts."""
         interacted_npc = self.player.get('current_interacted_npc')
         companions = self.player.get('companions', [])
+        companion = self.player.get('companion_id')
 
         # Only wipe the conversation memory if the NPC is NOT following you
-        if interacted_npc not in companions and interacted_npc != self.player.get('companion_id'):
+        if interacted_npc and interacted_npc not in companions and interacted_npc != companion:
             self.player.pop('current_interacted_npc', None)
             self.player.pop('current_conversation_state', None)
+            tracer.mark("dialogue_state_cleared", cleared_npc=interacted_npc)
 
         # Always kill the UI respond buttons so they don't linger across rooms
         if hasattr(self, 'last_dialogue_context'):
             self.last_dialogue_context = {}
+            tracer.mark("ui_dialogue_buttons_killed")
 
+    def _update_player_and_npc_locations(self, destination: str, tracer):
+        """Updates the player's core location, visited sets, and moves active followers."""
+        self.player['location'] = destination
         self.player.setdefault('visited_rooms', set()).add(destination)
+        tracer.mark("player_location_updated", destination=destination)
 
-        # --- Companions Follow You! ---
+        # Companions Follow You
         companion = self.player.get('companion_id')
         if companion:
             self._move_npc(companion, destination)
+            tracer.mark("companion_moved", companion=companion, destination=destination)
 
-        # 2. Check for Narrative Hub Intercepts (e.g., Police Arrest)
+    def _handle_post_move_events(self, current_room_id: str, destination: str, old_data: dict, new_data: dict, tracer) -> Optional[dict]:
+        """Checks for interrupts like Hub Police, Level Completion, and Group routing."""
+        # Check Narrative Hub Intercepts (e.g., Police Arrest)
         hub_intercept = self._check_hub_intercepts(destination)
         if hub_intercept:
+            tracer.mark("hub_intercept_triggered")
             return hub_intercept
 
-        # 3. Move Survivor Group & Dynamic Recruitment
+        # Move Survivor Group & Dynamic Recruitment
         companions = self.player.get('companions', [])
-        self._move_survivor_group(companions, old_room_data, new_room_data)
+        self._move_survivor_group(companions, old_data, new_data)
 
         if not companions:
-            self._intercept_next_target(new_room_data)
-            companions = self.player.get('companions', [])  # Refresh list if someone was recruited
+            self._intercept_next_target(new_data)
+            new_companions = self.player.get('companions', [])
+            if new_companions:
+                tracer.mark("dynamic_recruitment_triggered", new_companions=new_companions)
 
-        # 4. Check Level/Premonition Completion
+        # Check Level/Premonition Completion
         premonition_result = self._check_premonition_complete()
         if premonition_result:
+            tracer.mark("premonition_completed")
             return premonition_result
 
-        # 5. Handle Specific Room Mechanics (Elevator, Hazards)
-        self._process_elevator_state(current_room_id, destination)
-        self._trigger_room_ambushes(destination)
+        return None
 
-        # 6. Build Output (Description & UI Events)
+    def _build_arrival_response(self, destination: str, new_room_data: dict, tracer) -> dict:
+        """Generates the arrival narrative and handles self-healing JSON entry popups."""
+        companions = self.player.get('companions', [])
         message = self._generate_arrival_narrative(destination, companions)
         ui_events = []
         
-        # --- THE FIX: JSON-Safe Deduplication & Self-Healing ---
-        # 1. Grab the tracker. If it's a corrupted string or missing, force it to be a clean list.
+        # --- JSON-Safe Deduplication & Self-Healing ---
+        # Grab the tracker. If it's a corrupted string or missing, force it to be a clean list.
         popups = self.player.get('shown_entry_popups', [])
         if not isinstance(popups, list):
             # Self-heal from sets or corrupted JSON strings
             popups = list(popups) if isinstance(popups, set) else []
             self.player['shown_entry_popups'] = popups
+            tracer.mark("healed_popup_tracker", restored_type="list")
 
         first_text = new_room_data.get('first_entry_text')
         already_shown = destination in popups
@@ -810,28 +862,24 @@ class MovementMixin:
         if first_text and not already_shown:
             # Lock it immediately using .append() instead of .add()
             self.player['shown_entry_popups'].append(destination)
-            
-            ui_events.append(
-                self._make_first_entry_popup_event(destination, first_text)
-            )
+            ui_events.append(self._make_first_entry_popup_event(destination, first_text))
+            tracer.mark("first_entry_popup_queued", destination=destination)
 
+        tracer.mark("exit_success", events_queued=len(ui_events))
         return self._build_response(message=message, turn_taken=True, success=True, ui_events=ui_events)
-
     # -------------------------------------------------------------------------
     # --- Movement Finalization Helpers ---
     # -------------------------------------------------------------------------
 
     def _trigger_dynamic_transition(self, next_level_id: str, start_room: str = None) -> dict:
-        """
-        Safely packages player stats and forces a dynamic level transition
-        without relying on static level_requirements.json paths.
-        """
         self.logger.info(f"Dynamically transitioning to level: {next_level_id} (room: {start_room})")
-        
-        # Prevent the engine from auto-firing duplicate completion events
         self.player['level_complete_flag'] = False
         
-        # Build the payload for the InterLevelScreen
+        # Resolve start room from level_requirements if not explicitly provided
+        if not start_room:
+            level_reqs = self.resource_manager.get_data('level_requirements', {})
+            start_room = level_reqs.get(next_level_id, {}).get('entry_room')
+        
         completion_event = {
             "event_type": "level_complete",
             "level_name": self.player.get('location', 'Unknown Area'),
@@ -846,10 +894,7 @@ class MovementMixin:
         if start_room:
             completion_event["next_start_room"] = start_room
             
-        # Fire the event directly into the UI queue
         self.add_ui_event(completion_event)
-        
-        # Return a standard movement response to satisfy the _command_move pipeline
         return self._build_response(message="Leaving the area...")
 
     def _check_hub_intercepts(self, destination: str):

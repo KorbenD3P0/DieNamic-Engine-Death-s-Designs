@@ -262,19 +262,44 @@ class QTE_Engine(Widget):
         return None
 
     def _evt_rhythm_tap(self, payload):
+        import math
+        
         q = self.active_qte
         rs = q.get('runtime_state', {})
         rs.setdefault('tap_results', [])
+        
         on_time = payload.get('on_time', payload.get('predicted_success', False))
         rs['tap_results'].append(on_time)
+        
         target = int(q.get('target_beats', q.get('target_beats_default', 5)))
         required_accuracy = float(q.get('required_accuracy', q.get('required_accuracy_default', 0.7)))
         
+        # --- THE FIX: Calculate Mathematical Thresholds ---
+        required_hits = math.ceil(target * required_accuracy)
+        max_allowed_misses = target - required_hits
+        
+        current_hits = sum(1 for t in rs['tap_results'] if t)
+        current_misses = len(rs['tap_results']) - current_hits
+        
+        # Progressive Health Penalty
+        # If you want them to take a small bite of damage per miss without instantly failing:
+        if not on_time and hasattr(self, 'game_logic'):
+            self.game_logic.player['hp'] = max(0, self.game_logic.player.get('hp', 50) - 5)
+            self.logger.info("Player took 5 progressive damage from a rhythm miss.")
+        
+        # 1. Fail Early (The Mercy Kill)
+        # If it is mathematically impossible to achieve the required accuracy, end the QTE instantly.
+        if current_misses > max_allowed_misses:
+            self.logger.info(f"Rhythm failed early: {current_misses} misses exceeds max allowed ({max_allowed_misses}).")
+            return self.resolve_qte(success=False, reason="too_many_misses")
+            
+        # 2. Standard Completion
         if len(rs['tap_results']) >= target:
-            hits = sum(1 for t in rs['tap_results'] if t)
-            accuracy = hits / float(target)
-            self.logger.info(f"Rhythm complete: {hits}/{target} ({accuracy:.2f}) — need {required_accuracy:.2f}")
-            return self.resolve_qte(success=(accuracy >= required_accuracy))
+            self.logger.info(f"Rhythm complete: {current_hits}/{target} hits.")
+            # If they reached the end without triggering the fail early block, they won!
+            return self.resolve_qte(success=True)
+            
+        # Still waiting on more taps
         return None
 
     def _evt_choice_selected(self, payload):
@@ -471,21 +496,28 @@ class QTE_Engine(Widget):
         rs.setdefault('input_sequence', [])
         idx = payload.get('index')
         rs['input_sequence'].append(idx)
-        
-        pattern = payload.get('pattern') or q.get('pattern', q.get('required_pattern', []))
 
-        # Check input so far
+        # Use the pattern the widget actually displayed (guaranteed ints).
+        # Do NOT fall back to q['required_pattern'] — that may be string labels
+        # from a different representation (e.g. ['RIGHT','UP','DOWN','RIGHT']).
+        pattern = payload.get('pattern')
+        if not pattern:
+            # Last-resort fallback: try runtime_state, then active_qte fields
+            pattern = rs.get('display_pattern') or q.get('pattern') or []
+
         pos = len(rs['input_sequence']) - 1
         if pos < len(pattern):
             if rs['input_sequence'][pos] != pattern[pos]:
-                self.logger.info(f"Memory QTE: Wrong input at position {pos}. Expected {pattern[pos]}, got {idx}")
+                self.logger.info(
+                    f"Memory QTE: Wrong input at pos {pos}. "
+                    f"Expected {pattern[pos]!r}, got {idx!r}"
+                )
                 return self.resolve_qte(success=False)
-        
-        # Check if complete
+
         if len(rs['input_sequence']) >= len(pattern):
             self.logger.info(f"Memory QTE: Pattern complete! {rs['input_sequence']}")
             return self.resolve_qte(success=True)
-        
+
         return None
 
     def _evt_trace_move(self, payload):
@@ -937,74 +969,36 @@ class QTE_Engine(Widget):
                 qte_source_hazard_id=qte_source_hazard_id
             )
 
-            self.active_qte = None
-            self.is_dismissed = True
-            _mark("state_cleared", active_qte_is_none=self.active_qte is None, is_dismissed=self.is_dismissed)
+            # 1. State Cleanup
+            self._cleanup_qte_state(_mark)
 
-            if self.timeout_event:
-                self.timeout_event.cancel()
-                self.timeout_event = None
-                _mark("timeout_event_canceled")
-            else:
-                _mark("timeout_event_absent")
-
-            # Build message via the dedicated builder (no side effects)
+            # 2. Build Message
             msg = self._build_resolution_message(qte_data, success, reason)
             _mark("message_built", message=msg)
 
-            # Determine next state
-            if success:
-                next_state = qte_data.get('on_success', {}).get('target_state') or qte_data.get('next_state_after_qte_success')
-            else:
-                next_state = qte_data.get('on_failure', {}).get('target_state') or qte_data.get('next_state_after_qte_failure')
-            _mark("next_state_resolved", success=success, next_state=next_state)
+            # 3. Determine Next State (Includes Claude's Alias Fix)
+            active_next_state, ns_success, ns_failure = self._resolve_next_states(qte_data, success)
+            _mark("next_state_resolved", success=success, next_state=active_next_state)
 
-            # Calculate damage/fatality — returned for GameLogic to apply, NOT applied here
-            hp_damage = 0
-            is_fatal = False
+            # 4. Calculate Damage & Fatality
+            hp_damage, is_fatal = self._calculate_damage_and_fatality(qte_data, success, _mark)
 
-            if not success:
-                qte_type = qte_data.get('qte_type', 'input')
-                base_def = getattr(self, 'qte_definitions', {}).get(qte_type, {})
-                _mark("failure_branch_loaded_base_def", qte_type=qte_type, has_base_def=bool(base_def))
-
-                hp_damage = qte_data.get('hp_damage_on_failure')
-                if hp_damage is None:
-                    hp_damage = base_def.get('hp_damage_on_failure_default', 0)
-                    _mark("hp_damage_from_default", hp_damage=hp_damage)
-                else:
-                    _mark("hp_damage_from_qte_data", hp_damage=hp_damage)
-
-                is_fatal = qte_data.get('is_fatal_on_failure')
-                if is_fatal is None:
-                    is_fatal = base_def.get('is_fatal_on_failure_default', False)
-                    _mark("fatality_from_default", is_fatal=is_fatal)
-                else:
-                    _mark("fatality_from_qte_data", is_fatal=is_fatal)
-            else:
-                hp_damage = qte_data.get('on_success_apply_damage', 0)
-                _mark("success_branch_damage", hp_damage=hp_damage)
-
-            # Determine movement
-            move_to = None
-            if success:
-                move_to = (
-                    qte_data.get('on_success', {}).get('move_player_to') or
-                    qte_data.get('on_state_entry_move_player_to') or
-                    qte_data.get('move_player_to')
-                )
+            # 5. Determine Movement
+            move_to = self._determine_movement(qte_data, success)
             _mark("movement_resolved", move_player_to=move_to)
 
+            # 6. Determine Death Reason
             death_reason = self._get_hazard_death_message(qte_data) if (is_fatal or (hp_damage > 0 and not success)) else None
             _mark("death_reason_resolved", death_reason=death_reason)
 
+            # 7. Package Result
             result = {
                 "success": success,
                 "reason": reason,
                 "message": msg,
                 "qte_source_hazard_id": qte_source_hazard_id,
-                "next_state_success": next_state if success else qte_data.get('next_state_after_qte_success'),
-                "next_state_failure": next_state if not success else qte_data.get('next_state_after_qte_failure'),
+                "next_state_success": ns_success,
+                "next_state_failure": ns_failure,
                 "hp_damage": hp_damage,
                 "is_fatal": is_fatal,
                 "move_player_to": move_to,
@@ -1047,8 +1041,86 @@ class QTE_Engine(Widget):
                 "effects_on_success": [],
                 "debug_trace": trace,
                 "npc_fatal_on_failure": False,
-                "pending_move": None,   
+                "pending_move": None,
             }
+
+    # ==========================================
+    # QTE RESOLUTION HELPERS
+    # ==========================================
+
+    def _cleanup_qte_state(self, mark_func):
+        """Clears the engine's active QTE memory and timers."""
+        self.active_qte = None
+        self.is_dismissed = True
+        mark_func("state_cleared", active_qte_is_none=True, is_dismissed=True)
+
+        if self.timeout_event:
+            self.timeout_event.cancel()
+            self.timeout_event = None
+            mark_func("timeout_event_canceled")
+        else:
+            mark_func("timeout_event_absent")
+
+    def _resolve_next_states(self, qte_data: dict, success: bool) -> tuple[str, str, str]:
+        """
+        Resolves the routing states, honoring 'on_qte' aliases.
+        Returns: (active_next_state, next_state_success, next_state_failure)
+        """
+        ns_success = (
+            qte_data.get('on_success', {}).get('target_state')
+            or qte_data.get('next_state_after_qte_success')
+            or qte_data.get('next_state_on_qte_success')  # Claude's alias fix
+        )
+        ns_failure = (
+            qte_data.get('on_failure', {}).get('target_state')
+            or qte_data.get('next_state_after_qte_failure')
+            or qte_data.get('next_state_on_qte_failure')  # Claude's alias fix
+        )
+        
+        active_next_state = ns_success if success else ns_failure
+        return active_next_state, ns_success, ns_failure
+
+    def _calculate_damage_and_fatality(self, qte_data: dict, success: bool, mark_func) -> tuple[int, bool]:
+        """
+        Calculates consequences based on success/failure and defaults.
+        Returns: (hp_damage, is_fatal)
+        """
+        if success:
+            hp_damage = qte_data.get('on_success_apply_damage', 0)
+            mark_func("success_branch_damage", hp_damage=hp_damage)
+            return hp_damage, False
+
+        qte_type = qte_data.get('qte_type', 'input')
+        base_def = getattr(self, 'qte_definitions', {}).get(qte_type, {})
+        mark_func("failure_branch_loaded_base_def", qte_type=qte_type, has_base_def=bool(base_def))
+
+        # Check for explicit overrides, fallback to defaults
+        hp_damage = qte_data.get('hp_damage_on_failure')
+        if hp_damage is None:
+            hp_damage = base_def.get('hp_damage_on_failure_default', 0)
+            mark_func("hp_damage_from_default", hp_damage=hp_damage)
+        else:
+            mark_func("hp_damage_from_qte_data", hp_damage=hp_damage)
+
+        is_fatal = qte_data.get('is_fatal_on_failure')
+        if is_fatal is None:
+            is_fatal = base_def.get('is_fatal_on_failure_default', False)
+            mark_func("fatality_from_default", is_fatal=is_fatal)
+        else:
+            mark_func("fatality_from_qte_data", is_fatal=is_fatal)
+
+        return hp_damage, is_fatal
+
+    def _determine_movement(self, qte_data: dict, success: bool):
+        """Finds if the QTE forcibly moves the player to a new room."""
+        if not success:
+            return None
+            
+        return (
+            qte_data.get('on_success', {}).get('move_player_to') or
+            qte_data.get('on_state_entry_move_player_to') or
+            qte_data.get('move_player_to')
+        )
         
     def _apply_qte_resolution(self, result):
         """Helper method to push QTE results to GameLogic and update the UI."""

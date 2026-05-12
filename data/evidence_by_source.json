@@ -208,17 +208,16 @@
       "Skateboard Wheel",
       "Temporary Tattoo Sheet",
       "Crushed Beer Can",
-      "Military Dog Tag"
+      "Leather Journal"
     ]
   },
   "William Bludworth Archives": {
-    "backstory": "William Bludworth, the enigmatic coroner who appears throughout the franchise, has documented decades of supernatural deaths. His personal archives contain evidence from numerous incidents where Death's design was interrupted or altered. Bludworth's research reveals that he is more than just an observer - he's spent his entire life on a list of his own.\n\nHis notes reveal patterns and connections between disasters spanning generations, indicating that Death's design is far more complex and long-term than anybody previously understood. These archives represent the accumulated wisdom of someone who has witnessed Death's work firsthand and lived to tell about it.",
+    "backstory": "William Bludworth, the enigmatic coroner who appears throughout the franchise, has documented decades of supernatural deaths. His personal archives contain evidence from numerous incidents where Death's design was interrupted or altered. Bludworth's research reveals that he was more than just an observer - he spent his entire life on a list of his own. Through the desperation of the people that came to him, theories were tested over the years; whether participants interpreted the advice correctly or were able to go to the lengths needed, like taking a life, was up to each individual.\n\nHis notes reveal patterns and connections between disasters spanning generations, indicating that Death's design is far more complex and long-term than anybody previously understood. These archives represent the accumulated wisdom of someone who has witnessed Death's work firsthand and lived long enough to comprehend it.",
     "evidence_list": [
       "Newspaper Clipping",
       "Morgue Log Excerpt",
       "Bludworth's Note",
-      "Bludworth's Final Notes",
-      "hospital_directory_pamphlet"
+      "Bludworth's Final Notes"
     ]
   }
 }

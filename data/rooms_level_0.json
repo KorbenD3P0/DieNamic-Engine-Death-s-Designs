@@ -32,6 +32,12 @@
       "level_id": "level_mall"
     },
     {
+      "job_title": "Auto Mechanic",
+      "workplace_name": "Pete's Auto Repair",
+      "level_id": "level_auto_shop",
+      "investigation_clue_item": "greasy_work_order"
+    },
+    {
       "job_title": "Lifeguard",
       "workplace_name": "Community Pool",
       "level_id": "level_community"
@@ -71,16 +77,6 @@
       "job_title": "Restaurant Host",
       "workplace_name": "Luigi's Italian Bistro",
       "level_id": "level_restaurant"
-    },
-    {
-      "job_title": "Social Worker",
-      "workplace_name": "The Hospital",
-      "level_id": "level_1"
-    },
-    {
-      "job_title": "Hospital Nurse",
-      "workplace_name": "The Hospital",
-      "level_id": "level_1"
     }
   ],
   "npc_archetypes_premonition": {
@@ -117,24 +113,24 @@
       "dialogue_by_shell": {
         "_default": {
           "warning": {
-            "text": "'I'm sorry for freaking out but something terrible is about to happen. I SAW it.\nPlease, you have to help me warn the others — nobody will listen to me.'",
+            "text": "'I'm sorry for freaking out but something terrible is about to happen. I SAW it.\nPlease, [color=#b266ff]you have to help me warn the others[/color] — nobody will listen to me.'",
             "options": [
               {
-                "text": "Look, I believe you, but you need to calm tf down. I'll help warn people.",
+                "text": "[color=#00ff00]Look, I believe you, but you need to calm tf down. I'll help warn people.[/color]",
                 "target_state": "grateful"
               },
               {
-                "text": "You need to calm down. What exactly did you see?",
+                "text": "[color=ffff00]You need to calm down. What exactly did you see?[/color]",
                 "target_state": "explaining"
               },
               {
-                "text": "[color=00FF00][Walk away][/color]",
+                "text": "[color=ff4444][Walk away][/color]",
                 "target_state": "abandoned"
               }
             ]
           },
           "grateful": {
-            "text": "'Thank you. THANK YOU.\nMaybe I'm wrong, but the others should be warned. People in charge are saying I need to vacate.\nI'll meet you outside.'",
+            "text": "'Thank you. THANK YOU.\nMaybe I'm wrong, but [color=#3399ff]the others should be warned[/color]. People in charge are saying I need to vacate.\n[color=#cc9900]I'll meet you outside.[/color]'",
             "on_talk_action": {
               "persuasion_result": "convinced",
               "special_effect": "despawn_npc",
@@ -145,35 +141,35 @@
             "text": "'I saw us all die, the whole thing play out like I was right there in the moment. [color=FF3131]{visionary_explains}[/color]\n\nI know how it sounds. But we have to go. NOW.'",
             "options": [
               {
-                "text": "Okay. Let's get people out of here.",
+                "text": "[color=#3399ff]Okay. Let's get people out of here.[/color]",
                 "target_state": "grateful"
               },
               {
-                "text": "I think you're having a panic attack. Just breathe.",
+                "text": "[color=#ffff00]I think you're having a panic attack. Just breathe.[/color]",
                 "target_state": "frustrated"
               },
               {
-                "text": "It's just a panic attack. Sit down. I'll get you some water. We aren't going anywhere.",
+                "text": "[color=#ff4444]It's just a panic attack. Sit down. I'll get you some water. We aren't going anywhere.[/color]",
                 "target_state": "convinced_to_stay"
               }
             ]
           },
           "convinced_to_stay": {
-            "text": "They look at you, trembling, but slowly sit back down. 'You... you really think it was just my imagination?'",
+            "text": "They look at you, trembling, but slowly sit back down. '[color=#ff99cc]You... you really think it was just my imagination?[/color]\n\nMaybe you're right. Maybe I'm just overreacting. I'm sorry for causing a scene.'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "set_player_flag": "visionary_distrusted"
             }
           },
           "frustrated": {
-            "text": "'I'm NOT panicking! I'm trying to SAVE — fine. Fine. Go.\nBut when it happens, remember I tried.'",
+            "text": "'[color=#ffa500]I'm NOT panicking! I'm trying to SAVE — fine. Fine. Go.[/color]\n[color=#ff00ff]But when it happens, remember I tried.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
             }
           },
           "abandoned": {
-            "text": "'Wait — where are you going? Please! PLEASE!'",
+            "text": "'[color=#ff4444]Wait — where are you going? Please! PLEASE![/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
@@ -201,23 +197,23 @@
       "dialogue_by_shell": {
         "_default": {
           "dismissive": {
-            "text": "'Oh great, another one. Let me guess — the sky is falling? Get bent. I've got things to do.'",
+            "text": "'[color=#ff0000]Oh great, another one. Let me guess — the sky is falling?[/color] Get bent. I've got things to do.'",
             "options": [
               {
-                "text": "I think we should listen to them. They seem really scared, and if they're right..",
+                "text": "[color=#00ff00]I think we should listen to them. They seem really scared, and if they're right..[/color]",
                 "target_state": "considering",
                 "requires_flag": "visionary_allied"
               },
               {
-                "text": "Other people are already leaving. You should too.",
+                "text": "[color=#ff00ff]Other people are already leaving. You should too.[/color]",
                 "target_state": "peer_pressure"
               },
               {
-                "text": "Fine, stay. It's your funeral.",
+                "text": "[color=#ffa500]Fine, stay. It's your funeral.[/color]",
                 "target_state": "hostile"
               },
               {
-                "text": "[color=00FF00][Walk away][/color]",
+                "text": "[color=#ff0000][Walk away][/color]",
                 "target_state": "annoyed"
               }
             ]
@@ -226,11 +222,11 @@
             "text": "'...their commitment to the bit is giving, but there's probably an explanation. There's ALWAYS an explanation for shit like this.'",
             "options": [
               {
-                "text": "What if this time there isn't? What do you lose by leaving?",
+                "text": "[color=#00ff00]What if this time there isn't? What do you lose by leaving?[/color]",
                 "target_state": "persuasion_check_logical"
               },
               {
-                "text": "I can't force you. But I'm leaving, and I hope you do too.",
+                "text": "[color=#ff00ff]I can't force you. But I'm leaving, and I hope you do too.[/color]",
                 "target_state": "uncertain"
               }
             ]
@@ -242,8 +238,8 @@
                 "base_difficulty": 0.7,
                 "success_state": "grudging",
                 "failure_state": "hostile",
-                "success_message": "'Other people are leaving? ...how many?'\n\nYou gesture to the panicked crowd.\n\n'...Fine. FINE. But if this is nothing, you owe me a drink.'",
-                "failure_message": "'Other people are leaving? ...how many?'\n\nYou point to the crowd, but they aren't having it.\n\n'Nice try. I'm not a sheep.\nGo follow your paranoid friend or whoever that is.'"
+                "success_message": "'[color=#3399ff]Other people are leaving? ...how many?[/color]'\n\nYou gesture to the panicked crowd.\n\n'[color=#00ff00]...Fine. FINE. But if this is nothing, you owe me a drink.[/color]'",
+                "failure_message": "'[color=#3399ff]Other people are leaving? ...how many?[/color]'\n\nYou point to the crowd, but they aren't having it.\n\n'[color=#ff0000]Nice try. I'm not a sheep.[/color]\n[color=#ff0000]Go follow your paranoid friend or whoever that is.[/color]'"
               }
             }
           },
@@ -258,38 +254,38 @@
                 },
                 "success_state": "grudging",
                 "failure_state": "stubborn",
-                "success_message": "'...Shit. Okay. Okay, let's go.\nBut I'm coming back for my stuff later.'",
-                "failure_message": "'You almost had me. ALMOST.\nBut no. I'm staying right here.'"
+                "success_message": "'[color=#00ff00]...Shit. Okay. Okay, let's go.[/color]\n[color=#00ff00]But I'm coming back for my stuff later.[/color]'",
+                "failure_message": "'[color=#ff0000]You almost had me. ALMOST.[/color]\n[color=#ff0000]But no. I'm staying right here.[/color]'"
               }
             }
           },
           "grudging": {
-            "text": "'Gross. I can't believe I'm doing this. Lead the way, I guess.'",
+            "text": "'[color=#ff00ff]Gross. I can't believe I'm doing this. Lead the way, I guess.[/color]'",
             "on_talk_action": {
               "persuasion_result": "convinced",
               "special_effect": "despawn_npc"
             }
           },
           "stubborn": {
-            "text": "'I appreciate the concern, really. But I'm not going anywhere.'",
+            "text": "'[color=#ffa500]I appreciate the concern, really. But I'm not going anywhere.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure"
             }
           },
           "hostile": {
-            "text": "'Get the fuck away from me. You and that lunatic are causing a scene.'",
+            "text": "'[color=#ff0000]Get the fuck away from me. You and that lunatic are causing a scene.[/color]'",
             "on_talk_action": {
               "persuasion_result": "hostile"
             }
           },
           "annoyed": {
-            "text": "'Whatever.'",
+            "text": "'[color=#ff0000]Whatever.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure"
             }
           },
           "uncertain": {
-            "text": "'...Maybe I'll think about it.'",
+            "text": "'[color=#ffff00]...Maybe I'll think about it.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
@@ -320,14 +316,14 @@
       "dialogue_by_shell": {
         "_default": {
           "uncertain": {
-            "text": "'Look, I don't know what's going on, but[color=#BC13FE] {visionary} [/color]has never acted like this before. Maybe we should just... step away for a bit? Just to be safe?'",
+            "text": "'[color=#ffff00]Look, I don't know what's going on, but[color=#BC13FE] {visionary} [/color]has never acted like this before. Maybe we should just... step away for a bit? Just to be safe?[/color]'",
             "next_state": "convinced",
             "on_talk_action": {
               "persuasion_result": "convinced"
             }
           },
           "convinced": {
-            "text": "'I'm staying with [color=#BC13FE]{visionary}[/color]. Whatever happens, I can't just let them leave alone.\n\nIf they say we should go, I'm going. You do what you want.'",
+            "text": "'[color=#00ff00]I'm staying with [color=#BC13FE]{visionary}[/color]. Whatever happens, I can't just let them leave alone.\n\nIf they say we should go, I'm going. You do what you want.[/color]'",
             "on_talk_action": {
               "special_effect": "despawn_npc"
             }
@@ -442,14 +438,14 @@
       "dialogue_by_shell": {
         "_default": {
           "resigned": {
-            "text": "'Oh come ON, are you kidding me? Even if it IS true, if it's our time, it's our time. You gonna listen to that fuckin psycho?'",
+            "text": "'[color=#ffa500]Oh come ON, are you kidding me? Even if it IS true, if it's our time, it's our time. You gonna listen to that fuckin psycho?[/color]'",
             "options": [
               {
-                "text": "It's not our time. We have a warning. We can do something about it.",
+                "text": "[color=00ff00]It's not our time. We have a warning. We can do something about it.[/color]",
                 "target_state": "persuasion_check_fatalist"
               },
               {
-                "text": "Whatever. Sit here and die if you want.",
+                "text": "[color=ff0000]Whatever. Sit here and die if you want.[/color]",
                 "target_state": "given_up"
               }
             ]
@@ -465,20 +461,20 @@
                 },
                 "success_state": "spark_of_hope",
                 "failure_state": "given_up",
-                "success_message": "Jesus, I was just kidding but you're really serious, aren't you?'",
-                "failure_message": "They are clearly over it. 'OH MY GOD BORINNNG.\nGo on without me, champ, save yourself, huh?'\nNow they're openly mocking you.\n 'Oh no, now I'm gonna die, wah wah. Fucking idiot.'"
+                "success_message": "'[color=#00ff00]Jesus, I was just kidding but you're really serious, aren't you?[/color]'",
+                "failure_message": "'They are clearly over it. [color=#ff0000]OH MY GOD BORINNNG.\nGo on without me, champ, save yourself, huh?\n[/color]Now they're openly mocking you.\n[color=#ff0000]Oh no, now I'm gonna die, wah wah. Fucking idiot.[/color]'"
               }
             }
           },
           "spark_of_hope": {
-            "text": "'If you really think something is going on... I'll follow you. For now.'",
+            "text": "'[color=#00ff00]If you really think something is going on... I'll follow you. For now.[/color]'",
             "on_talk_action": {
               "persuasion_result": "convinced",
               "special_effect": "despawn_npc"
             }
           },
           "given_up": {
-            "text": "They close their eyes and lean their head back. They don't respond anymore.",
+            "text": "'[color=#ff0000]They close their eyes and lean their head back. They don't respond anymore.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
@@ -515,14 +511,14 @@
       "dialogue_by_shell": {
         "_default": {
           "oblivious": {
-            "text": "'...Hold on, let me finish this level. What did you say? Evacuate?'",
+            "text": "'[color=#ffa500]...Hold on, let me finish this level. What did you say? Evacuate?[/color]'",
             "options": [
               {
                 "text": "[color=00ff00]*Yank the headphones off*[/color] THERE IS NO TIME. RUN!",
                 "target_state": "persuasion_check_distracted"
               },
               {
-                "text": "Hey, please, it's really dangerous here. You need to leave.",
+                "text": "[color=d3d3d3]Hey, please, it's really dangerous here. You need to leave.[/color]",
                 "target_state": "persuasion_check_ignored"
               }
             ]
@@ -538,8 +534,8 @@
                 },
                 "success_state": "snapped_to_reality",
                 "failure_state": "ignored",
-                "success_message": "They drop their phone in shock. 'Whoa, okay, geez! I'm moving!'",
-                "failure_message": "They snatch their headphones back. 'Don't touch my stuff, weirdo!'"
+                "success_message": "'[color=#00ff00]They drop their phone in shock. 'Whoa, okay, geez! I'm moving!'[/color]'",
+                "failure_message": "'[color=#ff0000]They snatch their headphones back. 'Don't touch my stuff, weirdo!'[/color]'"
               }
             }
           },
@@ -554,20 +550,20 @@
                 },
                 "success_state": "snapped_to_reality",
                 "failure_state": "ignored",
-                "success_message": "For some reason, they actually listen to you.",
-                "failure_message": "They snatch their headphones back. 'Don't touch my stuff, weirdo!'"
+                "success_message": "'[color=#ffff00]For some reason, they actually listen to you.[/color]'",
+                "failure_message": "'[color=#ff0000]They snatch their headphones back. 'Don't touch my stuff, weirdo!'[/color]'"
               }
             }
           },
           "snapped_to_reality": {
-            "text": "'Okay, okay, I'm right behind you! Just go!'",
+            "text": "'[color=#00ff00]Okay, okay, I'm right behind you! Just go![/color]'",
             "on_talk_action": {
               "persuasion_result": "convinced",
               "special_effect": "despawn_npc"
             }
           },
           "ignored": {
-            "text": "They put their headphones back on and turn their back to you, swiping on their screen.",
+            "text": "'[color=#ff0000]They put their headphones back on and turn their back to you, swiping on their screen.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
@@ -605,7 +601,7 @@
       "dialogue_by_shell": {
         "_default": {
           "hostile": {
-            "text": "'Back off! I'm not waiting around for whatever disaster they're blabbering about. I'm looking out for number one!'",
+            "text": "'[color=#ff0000]Back off! I'm not waiting around for whatever disaster they're blabbering about. I'm looking out for number one![/color]'",
             "options": [
               {
                 "text": "Fine, go alone!",
@@ -628,20 +624,20 @@
                 },
                 "success_state": "using_you",
                 "failure_state": "scoffed",
-                "success_message": "They narrow their eyes. 'Fine, I'll come with.\nBut if you're wrong, you and I are gonna talk.'",
-                "failure_message": "They shove past you. 'I don't need your help, loser!'"
+                "success_message": "'[color=#00ff00]They narrow their eyes. 'Fine, I'll come with.\nBut if you're wrong, you and I are gonna talk.'[/color]'",
+                "failure_message": "'[color=#ff0000]They shove past you. 'I don't need your help, loser!'[/color]'"
               }
             }
           },
           "using_you": {
-            "text": "'Move it! And stay out of my way!'",
+            "text": "'[color=#00ff00]Move it! And stay out of my way![/color]'",
             "on_talk_action": {
               "persuasion_result": "convinced",
               "special_effect": "despawn_npc"
             }
           },
           "scoffed": {
-            "text": "They ignore you completely, shoving their way through the crowd in the wrong direction.",
+            "text": "'[color=#ff0000]They ignore you completely, shoving their way through the crowd in the wrong direction.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
@@ -677,24 +673,24 @@
       "dialogue_by_shell": {
         "_default": {
           "professional": {
-            "text": "'Whoa there. Are you with the person causing a disturbance?\nIs there a problem here? I just received a few complaints.'",
+            "text": "'[color=#3399ff]Whoa there. Are you with the person causing a disturbance?\nIs there a problem here? I just received a few complaints.[/color]'",
             "options": [
               {
-                "text": "There's a serious safety concern. People need to evacuate.",
+                "text": "'[color=#ffff00]There's a serious safety concern. People need to evacuate.[/color]'",
                 "target_state": "skeptical_authority"
               },
               {
-                "text": "I think something bad is about to happen. I know that sounds crazy.\n",
+                "text": "'[color=#ffa500]I think something bad is about to happen. I know that sounds crazy.[/color]'",
                 "target_state": "skeptical_authority"
               },
               {
-                "text": "No problem, officer. Just a misunderstanding.",
+                "text": "'[color=#00ffff]No problem, officer. Just a misunderstanding.[/color]'",
                 "target_state": "dismissed"
               }
             ]
           },
           "skeptical_authority": {
-            "text": "'A safety concern?\n*Their hand instinctively goes to their radio.*\nWhat kind of concern? I need specifics.'",
+            "text": "'[color=#ffff00]A safety concern?\n*Their hand instinctively goes to their radio.*\nWhat kind of concern? I need specifics.[/color]'",
             "options": [
               {
                 "text": "[color=0000ff]*Tell the truth*[/color] —\n[color=#BC13FE]{visionary}[/color] started panicking out of nowhere that something bad is going to happen, but you don't have concrete evidence.\nIt's a long shot, but maybe they'll take it seriously.\n",
@@ -702,7 +698,7 @@
                 "requires_flag": "visionary_allied"
               },
               {
-                "text": "[color=ffff00]*Bend the truth a bit*[/color] —\n'Oh yeah? Well \n-you should know multiple people have also reported feeling unsafe. To me for some reason. And now I'm telling you because it's your duty to take it seriously.'\n",
+                "text": "'[color=#ffff00]*Bend the truth a bit*[/color] —\n'Oh yeah? Well \n-you should know multiple people have also reported feeling unsafe. To me for some reason. And now I'm telling you because it's your duty to take it seriously.'\n",
                 "target_state": "persuasion_check_authority"
               },
               {
@@ -710,7 +706,7 @@
                 "target_state": "fatal_distraction"
               },
               {
-                "text": "Never mind. Forget I said anything.",
+                "text": "'[color=#00ffff]Never mind. Forget I said anything.[/color]'",
                 "target_state": "dismissed"
               }
             ]
@@ -726,8 +722,8 @@
                 },
                 "success_state": "evacuating",
                 "failure_state": "refused",
-                "success_message": "'...Alright. I'm calling it in.\nEveryone needs to move to the exits calmly.'",
-                "failure_message": "'I can't evacuate based on a hunch. I need concrete evidence of danger.'"
+                "success_message": "'[color=#00ff00]...Alright. I'm calling it in.\nEveryone needs to move to the exits calmly.[/color]'",
+                "failure_message": "'[color=#ff00ff]I can't evacuate based on a hunch. I need concrete evidence of danger.[/color]'"
               }
             }
           },
@@ -745,12 +741,12 @@
                   "Mechanic": -0.2
                 },
                 "success_state": "evacuating",
-                "success_message": "You throw your arms up, scream at the top of your lungs, and violently shove {authority_figure}. 'WE'RE ALL GOING TO DIE! RUN!'\n\nPanic is a virus, and you just released it. Someone shrieks, and suddenly the crowd shatters into absolute chaos, stampeding for the exits! It's a total mess, but they are leaving!",
+                "success_message": "'[color=#00ff00]You throw your arms up, scream at the top of your lungs, and violently shove {authority_figure}. 'WE'RE ALL GOING TO DIE! RUN!'\n\nPanic is a virus, and you just released it. Someone shrieks, and suddenly the crowd shatters into absolute chaos, stampeding for the exits! It's a total mess, but they are leaving![/color]'",
                 "success_action": {
                   "type": "trigger_mass_evacuation"
                 },
                 "failure_state": "dead_end",
-                "failure_message": "You throw your arms up, scream at the top of your lungs, and violently shove {authority_figure}. 'WE'RE ALL GOING TO DIE! RUN!'\n\nInstead of stampeding for the exits... everyone stops. They stare at you in stunned silence. {authority_figure} freezes, reaching for their cuffs, completely distracted. The silence stretches on for a second too long.\n\n...and just like that, you've doomed everyone.",
+                "failure_message": "'[color=#ff00ff]You throw your arms up, scream at the top of your lungs, and violently shove {authority_figure}. 'WE'RE ALL GOING TO DIE! RUN!'[/color]\n\nInstead of stampeding for the exits... [color=#3399ff]everyone stops. They stare at you in stunned silence. {authority_figure} freezes, reaching for their cuffs, completely distracted.[/color] The silence stretches on for a second too long.\n\n...and just like that, [color=#ff0000]you've doomed everyone.[/color]'",
                 "failure_action": {
                   "type": "trigger_commotion_death"
                 }
@@ -758,27 +754,27 @@
             }
           },
           "commotion_death_triggered": {
-            "text": "The silence stretches on for a second too long... You've doomed everyone.",
+            "text": "The silence stretches on for a second too long... [color=#ff0000]You've doomed everyone.[/color]",
             "on_talk_action": {
               "type": "trigger_commotion_death"
             }
           },
           "evacuating": {
-            "text": "'...Alright. I'm calling it in.\nATTENTION EVERYONE. We're conducting a precautionary evacuation. Please move to the nearest exit in an orderly fashion.'",
+            "text": "'...Alright. I'm calling it in.\n[color=#ff00ff]ATTENTION EVERYONE. We're conducting a precautionary evacuation. Please move to the nearest exit in an orderly fashion.[/color]'",
             "on_talk_action": {
               "persuasion_result": "convinced",
               "special_effect": ["despawn_npc", "upgrade_unsure_to_convinced"]
             }
           },
           "refused": {
-            "text": "'I understand your concern, but I can't act without evidence.\nIf you see something specific, come find me.'",
+            "text": "'[color=#ff00ff]I understand your concern, but I can't act without evidence.\nIf you see something specific, come find me.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
             }
           },
           "dismissed": {
-            "text": "'Alright. You've had your fun.\nKeep it down, please.'",
+            "text": "'[color=#ffa500]Alright. You've had your fun.\nKeep it down, please.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
@@ -820,7 +816,7 @@
       "dialogue_by_shell": {
         "_default": {
           "oblivious": {
-            "text": "'Hmm?\n\nSorry, I wasn't paying attention. What's going on?'",
+            "text": "'[color=#ff00ff]Hmm?\n\nSorry, I wasn't paying attention. What's going on?[/color]'",
             "options": [
               {
                 "text": "You need to leave this area. It's not safe.",
@@ -839,27 +835,27 @@
                 "base_difficulty": 0.75,
                 "success_state": "leaving",
                 "failure_state": "skeptical_bystander",
-                "success_message": "'Oh — okay? If you say so. I was about to leave anyway.'",
-                "failure_message": "'Uh... I think I'm fine? Thanks though.'"
+                "success_message": "'[color=#00ff00]Oh — okay? If you say so. I was about to leave anyway.[/color]'",
+                "failure_message": "'[color=#ff0000]Uh... I think I'm fine? Thanks though.[/color]'"
               }
             }
           },
           "leaving": {
-            "text": "'Yeah, you know what, I'm gonna head out. Something does feel off.'",
+            "text": "'[color=#00ff00]Yeah, you know what, I'm gonna head out. Something does feel off.[/color]'",
             "on_talk_action": {
               "persuasion_result": "convinced",
               "special_effect": "despawn_npc"
             }
           },
           "skeptical_bystander": {
-            "text": "'I appreciate the concern, but I'm good.'",
+            "text": "'[color=#ff0000]I appreciate the concern, but I'm good.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
             }
           },
           "shrugging": {
-            "text": "'...Okay then.'",
+            "text": "'[color=#ffa500]...Okay then.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
@@ -900,14 +896,14 @@
       "dialogue_by_shell": {
         "_default": {
           "curious": {
-            "text": "'What's all the commotion? That person looks really freaked out.'",
+            "text": "'[color=#ff00ff]What's all the commotion? That person looks really freaked out.[/color]  \n\n[color=#00ffff]Do you know what's going on?[/color]'",
             "options": [
               {
-                "text": "They have good reason to be. You should leave while you can.",
+                "text": "[color=#00ff00]They have good reason to be. You should leave while you can.[/color]",
                 "target_state": "persuasion_check_bystander2"
               },
               {
-                "text": "I'm not sure. Just stay alert.",
+                "text": "[color=#ffa500]I'm not sure. Just stay alert.[/color]",
                 "target_state": "alert"
               }
             ]
@@ -919,27 +915,27 @@
                 "base_difficulty": 0.45,
                 "success_state": "convinced_b2",
                 "failure_state": "hesitant",
-                "success_message": "'You seem serious. Alright, I'm not sticking around to find out.'",
-                "failure_message": "'Ehhh... I'll keep an eye out but I'm not leaving yet.'"
+                "success_message": "'[color=#00ff00]You seem serious. Alright, I'm not sticking around to find out.[/color]'",
+                "failure_message": "'[color=#ffa500]Ehhh... I'll keep an eye out but I'm not leaving yet.[/color]'"
               }
             }
-          },
-          "convinced_b2": {
-            "text": "'Good looking out. I'm getting out of here.'",
+            },
+            "convinced_b2": {
+            "text": "'[color=#00ff00]Good looking out. I'm getting out of here.[/color]'",
             "on_talk_action": {
               "persuasion_result": "convinced",
               "special_effect": "despawn_npc"
             }
           },
           "hesitant": {
-            "text": "'I'll stay near the exit, how about that?'",
+            "text": "'[color=#ffa500]I'll stay near the exit, how about that?[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
             }
           },
           "alert": {
-            "text": "'Okay... I guess I'll pay more attention.'",
+            "text": "'[color=#ff00ff]Okay... I guess I'll pay more attention.[/color]'",
             "on_talk_action": {
               "persuasion_result": "unsure",
               "special_effect": "despawn_npc"
@@ -1257,7 +1253,7 @@
                 "overhead_monitor"
               ],
               "examine_details": {
-                "gate_window": "Through the glass, Flight 180 sits on the tarmac. The ground crew finishes loading luggage. Nothing looks wrong. You're not sure why you expected it to.",
+                "gate_window": "Through the glass, Flight 801 sits on the tarmac. The ground crew finishes loading luggage. Nothing looks wrong. You're not sure why you expected it to.",
                 "boarding_pass_scanner": "The gate agent's scanner. A small screen reads BOARDING SOON.",
                 "overhead_monitor": "FL-180 — BOARDING IN 10 MINUTES. The words blink green."
               }
@@ -1400,7 +1396,7 @@
                 "plane_door"
               ],
               "examine_details": {
-                "jet_bridge_window": "Through the scratched plexiglass, you can see the wing of Flight 180. The rivets along the leading edge catch the light. One of them — is that loose? No. You're imagining things. ...Aren't you?",
+                "jet_bridge_window": "Through the scratched plexiglass, you can see the wing of Flight 801. The rivets along the leading edge catch the light. One of them — is that loose? No. You're imagining things. ...Aren't you?",
                 "plane_door": "The open door of the aircraft. A flight attendant smiles mechanically from inside."
               }
             },
@@ -1459,8 +1455,8 @@
           "overrides": {
             "transportation_air+mechanical_failure": {
               "name": "Terminal Window — Runway View",
-              "description": "The massive terminal window frames the runway. Flight 180 taxis toward the threshold. The engines spool up.",
-              "first_entry_text": "You're watching through the glass. Flight 180 is taking off without you because you got caught in the commotion[color=#BC13FE] {visionary} [/color]caused.\n\nIt lifts—gear retracting—and then the left wing flexes wrong. A seam opens along the leading edge like a wound unzipping itself.\n\nThe wing shears off. Not slowly. Not dramatically. Just — gone.\n\nThe aircraft rolls, carves a burning arc into the tarmac, and the sound hits the glass a half-second later. A single, absolute BOOM.\n\n{reaction} Just like[color=#BC13FE] {visionary} [/color]said would happen.\nYou were supposed to be on that plane.",
+              "description": "The massive terminal window frames the runway. Flight 801 taxis toward the threshold. The engines spool up.",
+              "first_entry_text": "You're watching through the terminal glass, heart hammering. Flight 801 is accelerating down the strip without you, all because you got swept up in the frantic screaming[color=#BC13FE] {visionary} [/color]started at the gate.\n\nThe nose lifts, engines roar, gear begins to retract —and then you see it. The left wing begins flexing, [color=cc9900]wobbling up and down at an impossible angles.[/color] The seam connecting the wing slowly unzips from the back like a [color=ff4444]jagged wound[/color], and the outer wing-tip simply snaps away.\n\n[color=ffff00]But it doesn't end there.[/color] The sudden imbalance forces the engine to scream —the wing slamming up and down due to the force of the engine turbines— [color=b266ff]before it shears off[/color most of [color=b266ff]its pylons and is sucked upward[/color]. The front seam of the wing is secured a little too well, and the wing arcs [color=b266ff]back into the plane's cabin ceiling, engine-first[/color], punching through the roof like a massive, spinning projectile. \n\nThe fuselage erupts in a spray of [ffff00]insulation[/color], [color=ff4444]blood[/color] and [color=ffb366]fire[/color]. The aircraft rolls, [color=ffb366]carving a burning arc into the tarmac[/color], and the sound hits the glass a half-second later.\nA single, absolute [color=ff4444]BOOM[/color].\n\n[color=00ccff]{reaction}[/color] Just like[color=#BC13FE] {visionary} [/color]said.\nYou were supposed to be in one of those seats.",              
               "objects": [
                 "runway_view",
                 "terminal_glass"
@@ -1473,7 +1469,7 @@
             "transportation_rail+impact_blunt": {
               "name": "Platform End — Track View",
               "description": "The far end of the platform. You shouldn't be here. Staff only. From here, you can see the tracks curving away under the river bridge.",
-              "first_entry_text": "You didn't board.[color=#BC13FE] {visionary} [/color]grabbed you, screaming, and pulled you back from the yellow line. You walked to the end of the platform instead, just trying to process what happened.\n\nThe train pulls away. Picks up speed. The signal light turns green — but it shouldn't. The connecting path's light was already green. ..but wouldn't that let another train.. oh God.\n\nThe freight train comes around the curve at full speed.\n\nThe collision isn't loud. It's LOW — a sound you feel in your chest before you hear it. The carriages accordion into each other. The platform shakes hard enough to knock you into the wall.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was telling the truth.",
+              "first_entry_text": "You didn't board. [color=#BC13FE]{visionary}[/color] grabbed your jacket with a white-knuckled grip, screaming about [color=#FF3131]'the sound of grinding teeth'[/color] as they pulled you back from the yellow line. You retreated to the far end of the platform, leaning against the cold tile to catch your breath.\n\nThe commuter train pulls away, humming as it picks up speed into the tunnel. You notice the signal light flicker and turn [color=#00ff00]green[/color]—but the switch hasn't fully seated. You see the track geometry ahead, a jagged, [color=#FF3131]wrong-angled silhouette[/color] in the dim tunnel lights. \n\nThen comes the [color=#aaaaaa]shriek of tortured iron[/color]. \n\nA freight train, massive and unrelenting, rounds the curve at full speed. It doesn't just hit the passenger cars; it [color=#FF3131]erases[/color] them. The collision is a [color=#FF3131]bass-heavy thud[/color] that you feel in your marrow before the sound even reaches your ears. The carriages [color=#aaaaaa]accordion[/color] into one another, steel beams folding like wet cardboard as the kinetic energy is hammered through every seat and passenger.\n\nThe platform shakes with the force of a localized earthquake, slamming you hard against the wall. Dust and [color=#FF3131]hot copper smells[/color] billow out of the tunnel mouth in a dry, choking cloud.\n\n[color=#FF3131]{reaction}[/color] You're shaking. [color=#BC13FE]{visionary}[/color] wasn't crazy. They saw the exact moment the steel would fail. You were supposed to be [color=#FF3131]compacted[/color] in that lead car.",
               "objects": [
                 "track_view",
                 "emergency_phone"
@@ -1486,7 +1482,7 @@
             "transportation_water+drowning_water": {
               "name": "Harbour Wall — East Berth",
               "description": "The upper section of the harbour wall. You came up here for the view. From here, you can see the full breadth of the channel.",
-              "first_entry_text": "[color=#BC13FE]{visionary}[/color] wouldn't let you board. They caused such a scene the dockmaster threatened to call the police. You backed away to the harbour wall to watch the ship leave without you.\n\nThe cruise ship is lit up like a small city. Music carries across the water.\n\nThe speedboat is running dark. Moving too fast. Wrong angle.\n\nIt hits the hull below the waterline. The sound is a CRACK, not an explosion — like a tree snapping, but the size of a building.\n\nThen the fire. The fuel from the speedboat ignites against the hull plating. The ship lists. Slowly at first. Then all at once.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] is a fucking witch or something. You were supposed to be on that ship.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] wouldn't let you board. They clawed at your arm, screaming about [color=#FF3131]'the metal screaming under the water'[/color] until the dockmaster finally physically shoved you both back. You’re standing on the harbor wall, heart pounding, watching the ship pull away into the dark.\n\nThe cruise liner is a floating jewel box, lit up like a small city. You can hear the distant, tinny thump of a bassline and the faint sound of people laughing on the lido deck.\n\nThen you see it. A speedboat, running completely dark, carving a [color=#FF3131]white-knuckle wake[/color] through the black water. It’s moving too fast. It isn't turning.\n\nIt slams into the hull [color=#FF3131]low and deep[/color]. The sound isn't an explosion—it’s the sound of a [color=#aaaaaa]thousand rusted bones snapping at once[/color]. A sickening, structural groan that vibrates through the harbor wall and into your teeth.\n\nThe speedboat’s fuel tank ruptures, painting the side of the liner in [color=#FF3131]clinging, liquid fire[/color]. Through the portholes, you see figures pressed against the glass as the ocean begins to [color=#55aaff]gulp[/color] into the breach. The massive ship groans, tilting with a slow, ponderous inevitability before the stabilizers give way with a [color=#FF3131]thunderous crack[/color].\n\n[color=#FF3131]{reaction}[/color] God... [color=#BC13FE]{visionary}[/color] knew. They knew the exact sound the hull would make when it unzipped. You were supposed to be [color=#FF3131]shredded[/color] in that cabin.",
               "objects": [
                 "harbour_panorama",
                 "dock_railing"
@@ -1536,10 +1532,10 @@
             "npc_slots": 1
           },
           "overrides": {
-            "carnival": {
-              "name": "Fairgrounds Entrance",
-              "description": "A wrought-iron archway reads McKINLEY COUNTY FAIR in bulb letters, half of them burned out. The smell of funnel cake and livestock hits you immediately. Families stream through turnstiles.",
-              "first_entry_text": "You were literally about to start the ride when[color=#BC13FE] {visionary} [/color]started freaking the fuck out, screaming about everybody dying on and around the ride.\n\nSecurity rushed over, several people asked to be let off, but the disruption stopped the attendant and all of your cars got the boot. You see some of the ejected passengers already getting back in line, looking understandably upset at [color=#BC13FE]{visionary}[/color].\n\nDo you back them up or try to convince others to leave the area?",
+            "carnival+mechanical_failure": {
+              "name": "Coaster Queue — Exit Gate",
+              "description": "The exit gate at the side of the Demon's Peak queue. You're standing outside the barriers. You can see the full track layout from here.",
+              "first_entry_text": "Y'all were literally about to start the ride when[color=#BC13FE] {visionary} [/color]started freaking the fuck out, screaming about everybody [color=#ff0000]dying[/color] on and around the coaster.\n\nSecurity rushed over,[color=#ffff00] several people asked to be let off[/color], but the disruption stopped the attendant and half of your cars got the boot. You see some of the ejected passengers already [color=#cc9900]getting back in line[/color], looking understandably upset at [color=#BC13FE]{visionary}[/color].\n\nDo you back them up or try to convince others to leave the area?",
               "furniture": [
                 "ticket_booth",
                 "turnstile"
@@ -1553,6 +1549,25 @@
                 "fair_archway": "McKINLEY COUNTY FAIR — 47th ANNUAL. Half the bulbs are dead. The ones that work flicker.",
                 "park_map_board": "A faded map under scratched plexiglass. The Midway, the Animal Barns, the Food Court, and the Main Stage are marked. Someone stuck a sticker on the Ferris Wheel that reads 'DEATH TRAP.'",
                 "lost_and_found_box": "A cardboard box labeled LOST & FOUND. It contains a single child's shoe and a half-eaten corn dog."
+              }
+            },
+            "carnival+heights": {
+              "name": "Ferris Wheel Entrance",
+              "description": "The entrance to the Ferris wheel is marked by a flashing sign. The ride's metal structure looms overhead. A line of people waits to board.",
+              "first_entry_text": "You were waiting in line when[color=#BC13FE] {visionary} [/color]started screaming about the ride breaking and everyone falling to their deaths.\n\nThe attendant is trying to calm them down, but the line is getting restless. Some people are trying to get on the ride, but the attendant won't let them.\n\nDo you side with {visionary} or try to keep everyone calm?",
+              "furniture": [
+                "boarding_line",
+                "ride_operator_kiosk"
+              ],
+              "objects": [
+                "ferris_wheel_structure",
+                "safety_sign",
+                "ride_control_panel"
+              ],
+              "examine_details": {
+                "ferris_wheel_structure": "The towering metal structure of the Ferris wheel. It creaks occasionally in the breeze.",
+                "safety_sign": "'FOR YOUR SAFETY, REMAIN SEATED AT ALL TIMES.' The sign is faded and has a dent in it.",
+                "ride_control_panel": "A small control panel with buttons and levers. The operator keeps glancing at it nervously."
               }
             },
             "entertainment_venue": {
@@ -1578,6 +1593,25 @@
               "name": "Downtown Plaza — South Entrance",
               "description": "A bustling open-air plaza surrounded by high-rises. Office workers eat lunch on benches. A street musician plays saxophone. Forty stories above, a window-washing platform crawls along the glass face of the Meridian Tower.",
               "first_entry_text": "You were walking into the plaza for lunch when[color=#BC13FE] {visionary} [/color]grabbed your shoulders, eyes wild, telling you to run.\n\nThey pushed you back toward the street just as a street performer stopped playing. They're looking up. Way up.",
+              "furniture": [
+                "park_bench",
+                "fountain"
+              ],
+              "objects": [
+                "meridian_tower",
+                "platform_overhead",
+                "street_musician"
+              ],
+              "examine_details": {
+                "meridian_tower": "A gleaming glass skyscraper. Forty stories of corporate ambition. A window-washing platform hangs from cables near the 35th floor.",
+                "platform_overhead": "A metal platform suspended by two cables, slowly traversing the building face. Two workers in harnesses stand on it. One of the cables looks... taut. More than the other.",
+                "street_musician": "A saxophonist playing something melancholy. His case is open. A few bills and a lot of coins."
+              }
+            },
+            "public_venue_accident+mechanical_failure": {
+              "name": "Downtown Plaza — South Entrance",
+              "description": "A bustling open-air plaza surrounded by high-rises. Office workers eat lunch on benches. A street musician plays saxophone. Forty stories above, a window-washing platform crawls along the glass face of the Meridian Tower.",
+              "first_entry_text": "You were walking into the plaza for lunch when[color=#BC13FE] {visionary} [/color]grabbed your shoulders, eyes wild, telling you to run.\n\nThey pushed you back toward the street just as a street performer stopped playing. They're looking over at the escalators with a concerned look.",
               "furniture": [
                 "park_bench",
                 "fountain"
@@ -1659,6 +1693,25 @@
               }
             },
             "public_venue_accident": {
+              "name": "{city_name} Plaza — Center",
+              "description": "The heart of the plaza. A large fountain sprays water into the air. Office workers sit on the fountain's edge eating sandwiches. The shadow of the Meridian Tower falls across the western half.",
+              "first_entry_text": "You find a spot near the fountain. The sun is warm. Normal. A completely normal lunch.\n\nA street performer nearby suddenly stops playing. They're looking up. Way up.\n\n'Something's wrong with that platform,' they say to nobody in particular.",
+              "furniture": [
+                "central_fountain",
+                "food_cart"
+              ],
+              "objects": [
+                "tower_shadow",
+                "platform_cables",
+                "lunch_crowd"
+              ],
+              "examine_details": {
+                "platform_cables": "From here you can see both cables. The left one is vibrating. The platform is tilting — barely, maybe two degrees. The workers on it haven't noticed yet.",
+                "tower_shadow": "The shadow of the Meridian Tower cuts across the plaza like a sundial. You're sitting right in its path.",
+                "lunch_crowd": "Dozens of people eating, talking, scrolling their phones. None of them are looking up."
+              }
+            },
+            "public_venue_accident+mechanical_failure": {
               "name": "{city_name} Plaza — Center",
               "description": "The heart of the plaza. A large fountain sprays water into the air. Office workers sit on the fountain's edge eating sandwiches. The shadow of the Meridian Tower falls across the western half.",
               "first_entry_text": "You find a spot near the fountain. The sun is warm. Normal. A completely normal lunch.\n\nA street performer nearby suddenly stops playing. They're looking up. Way up.\n\n'Something's wrong with that platform,' they say to nobody in particular.",
@@ -1865,10 +1918,23 @@
                 "operator_booth": "The operator is gone. The emergency stop button has been mashed flat. It didn't work."
               }
             },
+            "carnival+mechanical_failure": {
+              "name": "Fairgrounds Entrance",
+              "description": "A wrought-iron archway reads McKINLEY COUNTY FAIR in bulb letters, half of them burned out. The smell of funnel cake and livestock hits you immediately. Families stream through turnstiles.",
+              "first_entry_text": "[color=00ff00]You were strapped into the front car.[/color] The lap bar was locked. Then[color=#BC13FE] {visionary} [/color]started thrashing and screaming that the ride was going to crash. The operators had to unlock the whole train to get them out. You followed them to the exit, mostly out of secondhand embarrassment.\n\nBy the time you were walking away, the first car crests the lift hill. The chain disengages. The car descends, rockets upwards into its first big turn, and.. \n\n[color=ffff00]..something has broken the front car's wheels free[/color], causing sparks to shower the passengers, while [color=ffb366]all of their safety harnesses are disengaged[/color] from hydraulic failure. The coaster hits the sharp curve at fifty miles per hour, and [color=ff4444]the first section of cars leaves the tracks.[/color]\n\nThe steel frame of the row of seats snags the steel frame of the coaster itself just beyond the track, and the section is violently swung down into the frame of the coaster, [color=ff4444]breaking more track free ahead of the incoming cars[/color].\n\nYou watch in horror as the last connections between them break apart - right before each one hits the newly created gap in the tracks. One by one, they are launched into the nearby [color=00ccff]house of mirrors[/color], [color=ffff00]the ferris wheel looming above[/color], and [color=b266ff]the row of food carts[/color] standing in front of them.\n\nWatching the carnage unfold, you can't help but think to yourself: [color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "objects": [
+                "coaster_wreckage_view",
+                "track_gap"
+              ],
+              "examine_details": {
+                "coaster_wreckage_view": "One car is embedded in the support structure. A second car has derailed further up and soared into the house of mirrors, another two landing nearby in other attractions (like the ferris wheel). The ride is still moving — the chain hasn't stopped.",
+                "track_gap": "You can see the gap from here. Two bolts. That's all. Two bolts and this doesn't happen."
+              }
+            },
             "entertainment_venue+fire_related": {
               "name": "Crimson Lounge — Upper Balcony",
               "description": "A narrow balcony overlooking the main floor. You came up for air. The music is thinner up here and the crowd looks different from above — too dense, too many bodies near the wrong walls.",
-              "first_entry_text": "[color=#BC13FE]{visionary}[/color] wouldn't stop screaming about a fire, dragging you up to the balcony away from the dance floor. People were laughing at them.\n\nBelow you, someone lights a cocktail. It's supposed to be a Lit Fuse. The bartender's done it a hundred times.\n\nNot this time.\n\nThe flame catches the paper cocktail napkin. The napkin touches the decorative foam padding behind the bar. In three seconds it's on the ceiling. In eight seconds the whole back wall is gone.\n\nThe crowd surges for the exits. The main exit is blocked — a stack of speaker equipment that's been there all night. You can see it clearly from up here.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] wasn't kidding.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] wouldn't stop screaming about [color=#FF3131]'the smell of burning hair'[/color] even though the air was thick with perfume and expensive gin. They dragged you up to the balcony, away from the pulsing heat of the dance floor, while the crowd below mocked them with drunken laughter.\n\nDirectly beneath you, a bartender slides a cocktail across the polished wood. It’s a [color=#FF3131]'Lit Fuse'[/color]—a signature move they've performed a thousand times without incident. \n\nNot this time. \n\nThe high-proof spill ignites a paper napkin, which licks against the [color=#aaaaaa]decorative foam padding[/color] behind the bar. It doesn't just burn; the chemicals in the foam [color=#FF3131]detonate into a liquid fire[/color]. In three seconds, the ceiling is a [color=#FF3131]roaring lake of orange heat[/color]. In eight seconds, the entire back wall has vanished behind a [color=#aaaaaa]choking, black curtain of toxic plastic smoke[/color].\n\nThe bass-heavy music is cut short by a collective, [color=#FF3131]animal shriek[/color] as the crowd surges for the front doors. From the balcony, you have a bird's-eye view of the [color=#aaaaaa]Design[/color]: the main exit is completely choked by a massive stack of fallen speaker equipment.\nYou safely exit and watch from ground level through busted, barred windows as the bodies begin to [color=#FF3131]pile up against the dead weight of the amps[/color], the exit becoming a [color=#aaaaaa]sealed furnace[/color].\n\n[color=#FF3131]{reaction}[/color] God... [color=#BC13FE]{visionary}[/color] saw the sparks before the match was even struck. You were supposed to be [color=#FF3131]trampled and charred[/color] in that crush.",
               "objects": [
                 "balcony_railing",
                 "floor_view",
@@ -1891,19 +1957,6 @@
               "examine_details": {
                 "impact_zone_view": "Where the food trucks were, there is now a compressed mass of steel and aluminum. One of the workers was still on the platform. The other got clear.",
                 "scattered_debris": "A hard hat. A squeegee with the handle snapped. A full cup of coffee, still upright on the sidewalk, completely untouched."
-              }
-            },
-            "carnival+mechanical_failure": {
-              "name": "Coaster Queue — Exit Gate",
-              "description": "The exit gate at the side of the Demon's Peak queue. You're standing outside the barriers. You can see the full track layout from here.",
-              "first_entry_text": "[color=00ff00]You were strapped into the front car.[/color] The lap bar was locked. Then[color=#BC13FE] {visionary} [/color]started thrashing and screaming that the ride was going to crash. The operators had to unlock the whole train to get them out. You followed them to the exit, mostly out of secondhand embarrassment.\n\nBy the time you were walking away, the first car crests the lift hill. The chain disengages. The car descends, rockets upwards into its first big turn, and.. \n\n[color=ffff00]..something has broken the front car's wheels free[/color], causing sparks to shower the passengers, while [color=ffb366]all of their safety harnesses are disengaged[/color] from hydraulic failure. The coaster hits the sharp curve at fifty miles per hour, and [color=ff4444]the first section of cars leaves the tracks.[/color]\n\nThe steel frame of the row of seats snags the steel frame of the coaster itself just beyond the track, and the section is violently swung down into the frame of the coaster, [color=ff4444]breaking more track free ahead of the incoming cars[/color].\n\nYou watch in horror as the last connections between them break apart - right before each one hits the newly created gap in the tracks. One by one, they are launched into the nearby [color=00ccff]house of mirrors[/color], [color=ffff00]the ferris wheel looming above[/color], and [color=b266ff]the row of food carts[/color] standing in front of them.\n\nWatching the carnage unfold, you can't help but think to yourself: [color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
-              "objects": [
-                "coaster_wreckage_view",
-                "track_gap"
-              ],
-              "examine_details": {
-                "coaster_wreckage_view": "The car is embedded in the support structure. A second car has derailed further up and is hanging from the track by one wheel. The ride is still moving — the chain hasn't stopped.",
-                "track_gap": "You can see the gap from here. Two bolts. That's all. Two bolts and this doesn't happen."
               }
             },
             "public_venue_accident+structural_collapse": {
@@ -2009,6 +2062,21 @@
                 "warning_signs": "DANGER — AUTHORIZED PERSONNEL ONLY. COMBUSTIBLE MATERIALS. NO SMOKING WITHIN 500 FT.",
                 "plant_skyline": "A maze of pipes, valves, and storage tanks. Steam rises from a cooling tower. Everything looks operational. Everything looks fine.",
                 "open_gate": "The gate is wide open. The chain and padlock lie on the ground, cut clean through."
+              }
+            },
+            "industrial_accident+geological_event": {
+              "name": "Access Road — Shoulder",
+              "description": "The gravel shoulder of a desolate industrial access road. Your car is parked haphazardly half-off the asphalt. The air is thick with the suffocating smell of sulphur.",
+              "first_entry_text": "You were making good time down the access road when [color=#BC13FE]{visionary}[/color] woke up screaming, lunging across the console to grab the steering wheel. The tires locked up, spraying gravel as you skidded to a violent halt.\n\nNow they are hyperventilating, staring terrified out the windshield at the empty stretch of road ahead.\n\n[color=#FF3131]\"We have to get out! NOW!\"[/color] they scream, practically tearing at their seatbelt.\n\nThe only sound outside is the wind through the dry grass. But as you crack your window, a smell creeps into the cabin. Something like rotten eggs and raw, churned earth.",
+              "objects": [
+                "idling car",
+                "drainage culvert",
+                "approaching truck"
+              ],
+              "examine_details": {
+                "idling car": "Your car sits at a crooked angle in the dirt. The engine is still running, pulling the noxious outside air straight into the AC vents.",
+                "drainage culvert": "A large concrete pipe running under the road just ahead of you. The air above the grate is physically rippling, like a thick heat haze. The smell of gas here is so strong it is making your eyes water.",
+                "approaching truck": "In the rearview mirror, a heavy utility truck is barreling down the road toward your position. You can faintly see the driver resting his arm casually out the open window."
               }
             }
           }
@@ -2210,7 +2278,7 @@
             "transportation_road+cargo_spill": {
               "name": "Route 42 — Overpass",
               "description": "You climbed the embankment to the overpass. From here, you can see the entire stretch of Route 42. A flatbed semi loaded with massive timber logs is cresting the hill.",
-              "first_entry_text": "You hauled[color=#BC13FE] {visionary} [/color]up the embankment to get them away from the traffic, assuming they were having a panic attack.\n\nBelow you, a logging truck's securing chains snap with a sound like a gunshot.\n\nThe massive timber logs spill across three lanes of traffic at sixty miles per hour. They don't just block the road—they roll over the hoods of cars, crushing the cabins flat.\n\nA chain reaction of collisions piles up behind the initial spill. Fuel tanks rupture. Sparks from grinding metal ignite the wreckage.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "first_entry_text": "You hauled [color=#BC13FE]{visionary}[/color] up the steep embankment, your boots sliding in the loose gravel as you tried to move them away from the roar of the morning commute. You assumed it was a panic attack—until the [color=#aaaaaa]high-tension steel chains[/color] on a passing logging truck snapped with a [color=#FF3131]bone-deep crack[/color] like a gunshot.\n\nTime dilates as the [color=#aaaaaa]massive timber logs[/color] spill across three lanes at sixty miles per hour. They aren't just obstacles; they are [color=#FF3131]two-ton projectiles[/color]. You watch from above as they skip off the asphalt and [color=#FF3131]obliterate[/color] the cabins of the cars below, peeling back the roofs like [color=#aaaaaa]shredded tin foil[/color].\n\nA chain reaction of [color=#aaaaaa]tortured metal and shrieking tires[/color] piles up behind the spill. Fuel tanks rupture, spraying gasoline into an air thick with [color=#aaaaaa]pulverized glass[/color]. A single spark from the grinding wreckage transforms the highway into a [color=#FF3131]roaring canyon of fire[/color].\n\n[color=#FF3131]{reaction}[/color] God... [color=#BC13FE]{visionary}[/color] felt the metal fatigue before the first link gave way. You were supposed to be [color=#FF3131]liquidized[/color] in that initial crush.",
               "objects": [
                 "highway_panorama",
                 "crushed_vehicles"
@@ -2223,7 +2291,7 @@
             "transportation_road+weather_event": {
               "name": "Route 42 — Overpass",
               "description": "You climbed the embankment to the overpass. From here, you can usually see the entire stretch of Route 42. But today, a thick, unnatural bank of fog is rolling across the valley.",
-              "first_entry_text": "You hauled[color=#BC13FE] {visionary} [/color]up the embankment to get them away from the traffic, assuming they were having a panic attack.\n\nBelow you, the fog bank swallows the highway. Visibility drops to zero in seconds.\n\nYou don't see the first crash, you just hear it—a sickening crunch of metal on metal. Then another. Then three at once.\n\nCars plowing into an invisible wall of wreckage at full highway speeds. The pileup grows exponentially. Then, a spark finds a ruptured fuel tank, and the fog glows a hellish, burning orange.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "first_entry_text": "You hauled [color=#BC13FE]{visionary}[/color] up the steep embankment to get them away from the traffic, assuming they were just having a violent panic attack.\n\nBelow you, a [color=#A9A9A9]dense, unnatural fog bank[/color] violently swallows the highway. Visibility drops to absolute zero in a matter of seconds.\n\nYou don't see the first crash; you just hear it—a [color=#FF3131]sickening, high-velocity crunch[/color] of tearing metal and shattering glass. Then another. Then three at once, echoing blindly through the mist.\n\nDozens of cars are plowing into an invisible wall of twisted steel at full highway speed. The pileup grows exponentially, a horrifying chorus of blaring horns and screaming tires. Then, a single spark finds a ruptured fuel tank, and the gray fog instantly erupts into a [color=#FF4500]hellish, roaring fireball of burning orange[/color].\n\n[color=#FF3131]{reaction}[/color] [color=#BC13FE]{visionary}[/color] was actually right.",
               "objects": [
                 "glowing_fog",
                 "highway_sounds"
@@ -2535,16 +2603,6 @@
             "exit_room": true
           },
           "overrides": {
-            "urban_disaster+flood_related": {
-              "name": "4th Street — High Curb",
-              "description": "You stepped up onto the highest curb you could find. The sky is black. The rain is falling so hard it hurts.",
-              "first_entry_text": "You followed[color=#BC13FE] {visionary} [/color]up onto the high curb when they started screaming about water.\n\nThe storm drains didn't just back up — they exploded. The water pressure blew the manhole covers thirty feet into the air.\n\nWithin three minutes, the street is a river. Cars are floating. Someone tries to wade across and is swept under a submerged bus.\n\nThe water hits a blown transformer box on the corner. The blue flash arcs across the surface of the water, electrocuting everyone still trying to swim.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
-              "objects": ["flooded_street", "arcing_transformer"],
-              "examine_details": {
-                "flooded_street": "The water is moving incredibly fast, carrying dumpsters and newspaper stands like toys.",
-                "arcing_transformer": "Sparks shower down from the blown box, dancing across the rising water."
-              }
-            },
             "urban_disaster+geological_event": {
               "name": "Business District — Alleyway",
               "description": "You ducked into an alleyway between two high-rises. The asphalt beneath your feet feels soft. Unanchored.",
@@ -2568,10 +2626,10 @@
                 "river_debris": "Vehicles are visible just below the surface. One pair of taillights is still on, blinking red in the murk. Emergency sirens layer over each other from both banks."
               }
             },
-            "urban_disaster": {
+            "urban_disaster+flood_related": {
               "name": "Parking Structure — Level Three",
               "description": "The open third level of the parking structure. You came up here to get away from the street. The rain hit like a wall five minutes ago and hasn't stopped.",
-              "first_entry_text": "The storm drain on the corner of 4th and Main backed up first. You watched it from the street — the water coming up instead of going down.\n\nYou climbed the parking structure stairs following [color=#BC13FE]{visionary}[/color]. You're not sure why. The car was on level one.\n\nIn six minutes, the street below is a river. Real current — fast enough to move parked cars. A truck floats past the entrance ramp. A person is on top of it, holding on.\n\nThe traffic signals are still cycling. Green. Yellow. Red. For no one.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] called it. They really knew.",
+              "first_entry_text": "The storm drain on the corner of 4th and Main failed with a [color=#aaaaaa]sickening, subterranean vomit[/color]. You watched from the sidewalk as the street inverted—the water erupting [color=#55aaff]upward[/color] in a geyser of silt and sewage instead of draining away.\n\nYou scrambled up the concrete stairs of the parking structure, following the [color=#BC13FE]{visionary}[/color] as they clawed their way toward the upper decks. You felt like a fool—your car was parked on level one—but the [color=#BC13FE]{visionary}[/color] wouldn't stop screaming about [color=#FF3131]a flash flood that was coming.[/color]\n\nIn minutes, the downtown corridor is transformed into a [color=#55aaff]roaring, debris-choked canyon[/color]. It isn't just a flood; it’s a high-velocity river with a [color=#FF3131]killing current[/color] fast enough to tumble parked SUVs like [color=#aaaaaa]scrap metal[/color]. The water hits a blown transformer box on the corner. The blue flash arcs across the surface of the water, [color=#3399ff]electrocuting[/color] everyone still trying to swim.\n\nThe traffic signals are still cycling with [color=#aaaaaa]blind, robotic indifference[/color]. Green. Yellow. Red. Reflecting off a surface that is now [color=#FF3131]thick with gasoline and wreckage[/color].\n\n[color=#FF3131]{reaction}[/color] God... [color=#BC13FE]{visionary}[/color] felt the pressure in the pipes before the first manhole cover blew. You were supposed to be [color=#FF3131]drowned and crushed[/color] in that lower deck.",
               "objects": [
                 "flood_street_view",
                 "drainage_failure"
@@ -2584,7 +2642,7 @@
             "construction_failure": {
               "name": "Opposite Pavement — Doorway",
               "description": "The doorway of the corner shop across the street. You ducked in here. The building opposite — your building — has been making a sound for the last thirty seconds.",
-              "first_entry_text": "The sound was subterranean. A groaning from somewhere in the foundation, transmitted up through the pavement and into your feet.\n\n[color=#BC13FE]{visionary}[/color] dragged you across the street. You stood in a doorway.\n\nThe building doesn't collapse dramatically. It collapses practically — floors pancaking in sequence, each one adding its weight to the next, the whole structure compressing downward in a slow, deliberate way that takes about four seconds and produces a dust cloud the size of a city block.\n\nThe windows blow outward on the ground floor from the air pressure. Glass crosses the street. One piece hits the door frame six inches from your head.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "first_entry_text": "The sound was [color=#aaaaaa]subterranean[/color]. A deep, rhythmic groaning from the foundation was transmitted through the pavement and into the marrow of your bones. [color=#BC13FE]{visionary}[/color] didn't just warn you; they [color=#FF3131]seized you by the throat[/color] and dragged you across the asphalt, shoving you into a brick doorway just as the air began to [color=#aaaaaa]vibrate[/color].\n\nThe building doesn't collapse dramatically; it collapses [color=#aaaaaa]practically[/color]. You watch with a hollow chest as the floors [color=#FF3131]pancake in sequence[/color], a mechanical heartbeat of stone-on-stone. Each level adds its mass to the next, the whole structure [color=#FF3131]compressing downward[/color] with a slow, deliberate gravity that [color=#aaaaaa]unzips the support columns[/color] like dry brittle.\n\nThe air trapped inside the lobby has nowhere to go. As the weight descends, the ground floor windows [color=#FF3131]detonate outward[/color] from the sheer atmospheric pressure. A [color=#aaaaaa]hurricane of jagged glass[/color] shrieks across the street, moving with the velocity of shrapnel. One jagged shard—eight inches of razor-sharp plate—slams into the door frame [color=#FF3131]inches from your temple[/color], vibrating with a high, singing note.\n\nA [color=#aaaaaa]silt-heavy dust cloud[/color] the size of a city block exhales from the ruins, smelling of [color=#aaaaaa]pulverized concrete and old insulation[/color].\n\n[color=#FF3131]{reaction}[/color] [color=#BC13FE]{visionary}[/color] felt the concrete fatigue before the first rebar snapped. You were supposed to be [color=#FF3131]compacted[/color] between those floors.",
               "objects": [
                 "rubble_mound",
                 "glass_scatter"
@@ -2594,10 +2652,23 @@
                 "glass_scatter": "Glass covers the entire pavement on both sides of the street. Some pieces are still falling from the floors that haven't fully settled."
               }
             },
-            "drowning_water": {
+            "natural_disaster+structural_collapse": {
+              "name": "Rooftop Terrace — Overlook",
+              "description": "The rooftop terrace of your highrise building. From up here, you have a terrifying, unobstructed view of the ruined city grid below.",
+              "first_entry_text": "You chased [color=#BC13FE]{visionary}[/color] up the emergency stairwell to the roof, screaming for them to make sense, as they burst through the terrace doors rasping about [color=#FF3131]'concrete rolling like waves'[/color]\n\nCar alarms triggered all at once—a frantic, [color=#aaaaaa]unison of terror[/color] echoing off the downtown highrises. Then came the P-wave. It was a rolling, almost [color=#55aaff]nauseating sensation[/color], the entire skyscraper swaying under your feet like a slow boat in deep swells. You looked down; the coffee in your hand was rippling in perfect, [color=#aaaaaa]concentric circles[/color] of doom.\n\nThe S-wave hit four seconds later, and the metro grid became a [color=#FF3131]meat-grinder[/color].\n\nThe historic masonry building across the avenue—six floors of heavy brick and mortar—didn't just crumble. In the distance, the suspension bridge violently whipped like a jump rope as the city's foundation [color=#aaaaaa]liquefied[/color]. The brick building tilted sideways with the slow, ponderous grace of a dying giant. You watched from above as the structural seams [color=#FF3131]erupted in a spray of red dust[/color] before the entire mass slammed into the asphalt, the impact [color=#FF3131]shattering[/color] the windows of every car on the block.\n\nThe highrise is still groaning. The earth has been moving for thirty seconds, a [color=#aaaaaa]low, rhythmic growl[/color] that sounds like the planet's own teeth grinding together. It doesn't stop. It just [color=#FF3131]keeps moving[/color].\n\n[color=#FF3131]{reaction}[/color] God... [color=#BC13FE]{visionary}[/color] felt the fault line snap before the first foundation shifted. You were supposed to be [color=#FF3131]pulverized[/color] down there under those floors of brick.",
+              "objects": [
+                "ruined_avenue",
+                "fractured_parapet"
+              ],
+              "examine_details": {
+                "ruined_avenue": "Half the buildings below are severely damaged, their facades sheared off to reveal the ruined apartments inside. Gas is burning somewhere two streets over. You can hear the fire roaring above the distant sirens.",
+                "fractured_parapet": "The concrete safety wall at the edge of the roof has cracked straight through. The fissure is four inches wide, a terrifying reminder of the sheer stress this skyscraper just endured."
+              }
+            },
+            "drowning_water+transportation_water": {
               "name": "Lakeshore Promenade — North Pier",
               "description": "The north pier of the promenade. You watched the Queen Isabella pull away from here. You almost didn't get off in time.",
-              "first_entry_text": "You were the last one down the gangway, shoved forward by a panicked [color=#BC13FE]{visionary}[/color]. The crew member was already unhooking it when you stepped off.\n\nYou stood on the pier and watched the Queen Isabella make her turn into the lake. The lights were on all five decks. Music carried across the water.\n\nThe list started gently. Almost imperceptible. A degree. Two.\n\nBy five degrees, the plates were sliding off tables in the dining room. You could see them, tiny glints of light tumbling through the portholes.\n\nBy fifteen degrees, the screaming reached the shore.\n\nThe Queen Isabella rolled past the point of recovery and kept going. The funnel hit the water first. Then the hull came over on top of everything.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "first_entry_text": "You were the last one down the gangway, shoved into the air by a panicked, [color=#BC13FE]{visionary}[/color] whose hands were [color=#FF3131]trembling with a violent, animal heat[/color]. The deckhand was already unhooking the chains when your boots hit the pier.\n\nYou stood on the concrete and watched the [color=#aaaaaa]Queen Isabella[/color] groan as she made her turn into the black water. The lights were a [color=#FF3131]blinding, festive gold[/color] across all five decks, casting long, shimmering needles onto the lake.\n\nThe list started with a [color=#aaaaaa]low, structural moan[/color]—a degree, then two. It looked almost graceful, until the [color=#aaaaaa]rattle of sliding furniture[/color] began to echo across the water. Through the portholes, you see tiny glints of silver and porcelain [color=#FF3131]tumbling into the abyss[/color] as the dining room floors become walls.\n\nBy fifteen degrees, the [color=#FF3131]screaming[/color] reached the shore—a thin, collective wail that was abruptly drowned out by the [color=#aaaaaa]shriek of unzipping rivets[/color]. \n\nThe [color=#aaaaaa]Queen Isabella[/color] rolled past the point of recovery and simply [color=#FF3131]surrendered[/color]. The massive funnel hit the water first with a [color=#FF3131]hiss of escaping steam and boiling blood[/color], before the entire hull came over on top of the lifeboats, [color=#FF3131]snuffing out the lights[/color] and the voices in one final, [color=#aaaaaa]heavy gulp[/color].\n\n[color=#FF3131]{reaction}[/color] God... [color=#BC13FE]{visionary}[/color] felt the center of gravity shift before the first rope was even loosed. You were supposed to be [color=#FF3131]sealed in that steel tomb[/color].",
               "objects": [
                 "capsized_hull",
                 "flotation_debris"
@@ -2890,26 +2961,14 @@
             "natural_disaster+geological_event": {
               "name": "Hilltop Park — Open Ground",
               "description": "You sprinted to the center of the park, away from the trees, away from the power lines.",
-              "first_entry_text": "[color=#BC13FE]{visionary}[/color] made you sprint to the center of the park.\n\nThe P-wave hit first — a sudden, violent jolt that knocked you to your knees.\n\nThen the S-wave arrived. The ground rolled like the surface of the ocean. You watched the brick facade of the library across the street peel away and crush the cars parked below it. The sound is deafening — a deep, planetary grinding mixed with shattering glass and screaming.\n\nThe earth rips open along the park path, a jagged fissure expanding rapidly towards you.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] seized you by the collar and made you sprint toward the center of the park, screaming about [color=#FF3131]'the bones of the city snapping.'[/color] You reached the grass just as the air seemed to [color=#aaaaaa]curdle[/color] with a low-frequency hum.\n\nThe P-wave hit first—a sudden, [color=#FF3131]violent jolt[/color] that traveled up through your marrow and knocked you to your knees. Then, the S-wave arrived, and the world became [color=#55aaff]liquid[/color]. The solid earth began to roll in nauseating, five-foot swells like the surface of a [color=#55aaff]storm-tossed ocean[/color].\n\nYou watched as the brick facade of the library across the street began to [color=#aaaaaa]peel away[/color] from its steel skeleton. It didn't just fall; the masonry [color=#FF3131]disintegrated[/color] into a spray of red dust before the weight of the roof hammered the cars below into [color=#aaaaaa]scrap metal[/color]. The sound is a [color=#FF3131]deafening, planetary grinding[/color] mixed with the [color=#aaaaaa]shriek of unzipping rebar[/color] and the distance-muffled screams of the trapped.\n\nThe earth [color=#FF3131]rips open[/color] along the park path—a jagged, [color=#aaaaaa]hungry fissure[/color] that unzips the soil with a sound like a thousand dry branches breaking at once. It expands rapidly toward your feet, the abyss showing only [color=#55aaff]churning mud and broken pipes[/color], before it finally halts.\n\n[color=#FF3131]{reaction}[/color] You stand in the silence of the settling dust, looking at the [color=#FF3131]pulverized horizon[/color]. [color=#BC13FE]{visionary}[/color] felt the planet's teeth shift before the first stone moved. You were supposed to be [color=#FF3131]swallowed[/color] by that street.",
               "objects": ["fissure", "collapsing_library"],
               "examine_details": {
                 "fissure": "A jagged crack in the earth, easily three feet wide and growing.",
                 "collapsing_library": "A cloud of brick dust obscures the street. The aftershocks are already starting."
               }
             },  
-            "natural_disaster+structural_collapse": {
-              "name": "Hilltop Park — Open Ground",
-              "description": "The small hilltop park at the edge of the neighbourhood. You came up here. Your feet carried you here before your head understood why.",
-              "first_entry_text": "You chased[color=#BC13FE] {visionary} [/color]up the hill, demanding to know what they were talking about.\n\nThe dogs started barking at once. All of them.\n\nThen the P-wave — a rolling sensation, almost pleasant, like being on a slow boat. You looked at your hands. Your coffee was rippling.\n\nThe S-wave hit four seconds later.\n\nThe brick building on the corner of Elm and 3rd — four floors, 1962 construction — lifted slightly off its foundation and fell sideways. Not crumbling. Tilting, like a person losing their balance, and then falling.\n\nThe ground is still moving. It's been moving for thirty seconds. It keeps moving.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
-              "objects": [
-                "neighbourhood_ruins",
-                "cracked_ground"
-              ],
-              "examine_details": {
-                "neighbourhood_ruins": "Half the buildings below are still standing. Half aren't. Gas is burning somewhere two streets over. You can hear the fire before you see it.",
-                "cracked_ground": "The park path has cracked along an underlying fault line. The crack is four inches wide at its widest. It runs the full length of the park and keeps going under the fence."
-              }
-            },
+
             "winter_sports+mechanical_failure": {
               "name": "{city_name} Peak — Treeline Clearing",
               "description": "A clearing in the trees above the mid-station. You hiked up instead of taking the lift. You're not sure why you believed them.",
@@ -2926,7 +2985,7 @@
             "natural_disaster+coastal_disaster": {
               "name": "Coastal Bluff — Storm Shelter Ruins",
               "description": "The concrete shelter at the top of the coastal bluff. Its roof is gone — took by a previous storm years ago. The walls are still standing.",
-              "first_entry_text": "The forecast said Category 2. It made landfall as a 4.\n\nYou were on the boardwalk when the first band hit. The wind was already wrong — not gusting, sustained, a constant pressure that leaned against you.\n\n[color=#BC13FE]{visionary}[/color] dragged you up the bluff path to the old shelter.\n\nFrom up here you can see the full sweep of the coastline. The storm surge is coming in now — not waves, a wall. A continuous elevation of the sea level, advancing. The boardwalk disappears under it in thirty seconds. The parking lot in two minutes.\n\nThe buildings that aren't anchored to their foundations begin to move.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "first_entry_text": "The forecast predicted a Category 2. It slammed into the coast as a [color=#FF3131]screaming Category 4[/color].\n\nYou were on the boardwalk when the first band hit, and the air turned into a [color=#aaaaaa]shrieking, solid weight[/color]. The wind was already wrong—not gusting, but a sustained, [color=#FF3131]predatory pressure[/color] that leaned against your ribs until you couldn't breathe. \n\n[color=#BC13FE]{visionary}[/color] seized you, their fingers bruising your arm, and dragged you up the bluff path toward the old shelter, screaming about the [color=#aaaaaa]'wall of water headed for us.'[/color]\n\nFrom the ridge, you see the full, [color=#FF3131]apocalyptic sweep[/color] of the coastline. The storm surge is coming in now—it isn't waves; it’s a [color=#55aaff]dark, silt-choked wall of the abyss[/color]. It is a continuous, rising elevation of the sea level, advancing with a [color=#aaaaaa]low, rhythmic thunder[/color]. The boardwalk doesn't just flood; it is [color=#FF3131]pulverized and swallowed[/color] in thirty seconds. The parking lot vanishes in two minutes.\n\nThen, the sound of [color=#aaaaaa]shearing bolts[/color]. The buildings that aren't anchored to the bedrock begin to drift, rotating like toy boats before the currents [color=#FF3131]hammer them into toothpicks[/color] against the bluff.\n\n[color=#FF3131]{reaction}[/color] [color=#BC13FE]{visionary}[/color] felt the barometric pressure drop in their marrow. You were supposed to be [color=#FF3131]drowned and shredded[/color] in that surf.",
               "objects": [
                 "surge_panorama",
                 "shelter_wall"
@@ -2939,7 +2998,7 @@
             "geological_event+urban_disaster": {
               "name": "{city_name} Business District — Parking Structure Roof",
               "description": "The open roof of the parking structure adjacent to the business district. You came up here on your lunch break. You weren't hungry.",
-              "first_entry_text": "[color=#BC13FE]{visionary}[/color] made you run to the roof of the parking structure. They wouldn't let you stay on the street.\n\nThe street you were standing on thirty seconds ago is no longer there.\n\nIt didn't crack. It didn't settle. It inverted — the centre dropped and the edges curled down after it, like a tarpaulin with a weight placed in the middle.\n\nThe sinkhole is still growing. You can see it from up here — a circular depression that's expanding at its perimeter, the soil undermined by the collapsed water main that no one fixed for three years.\n\nA food cart. Two parked cars. A bus stop shelter. A person.\n\nGone.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] seized you by the collar, their breath smelling of [color=#FF3131]adrenaline and iron[/color], and dragged you up the concrete stairs of the parking structure. They wouldn't let you stay on the street—they kept screaming about [color=#aaaaaa]'the ground turning into a mouth.'[/color]\n\nThe section of pavement you were standing on thirty seconds ago [color=#FF3131]no longer exists[/color].\n\nIt didn't crack or settle with a warning. It [color=#aaaaaa]inverted[/color]—the center simply vanished into a black void, and the asphalt edges curled downward like [color=#FF3131]melting wax[/color]. There was no explosion, only the [color=#aaaaaa]sickening, wet slurp[/color] of a thousand tons of earth being swallowed at once.\n\nThe sinkhole is a [color=#FF3131]growing, hungry circle[/color]. From this height, you can see the cause: a massive, [color=#55aaff]corroded water main[/color] that has been scouring the soil into a slurry for years. The road is a hollow shell, and the weight of the world is finally breaking it. \n\nA food cart. Two parked cars. A bus stop shelter. [color=#FF3131]A person reaching for a door handle[/color]. \n\nThey don't fall; they are [color=#FF3131]erased[/color]. Plunged into a subterranean grave of [color=#55aaff]churning mud and broken concrete[/color].\n\n[color=#FF3131]{reaction}[/color] [color=#BC13FE]{visionary}[/color] felt the vibration in the soles of their feet before the first pebble dropped. You were supposed to be [color=#FF3131]suffocated[/color] in that dark.",
               "objects": [
                 "sinkhole_panorama",
                 "subsidence_crack"
@@ -2952,7 +3011,7 @@
             "natural_disaster+fire_related": {
               "name": "{city_name} National Forest — Fire Road Crest",
               "description": "The crest of the fire road, above the smoke line. You can breathe up here. Barely.",
-              "first_entry_text": "The smoke came down the hill like fog. Fast. Rolling.\n\nYou'd been hiking the loop trail when[color=#BC13FE] {visionary} [/color]came at you out of the trees — not running, sprinting, eyes streaming from smoke. They grabbed your pack and hauled you up the slope to the fire road instead of back toward the car park.\n\nThe crown fire crested the ridge two minutes later. A wall of flame sixty feet tall moving at twenty miles an hour through the canopy. The sound is not what you expected — not crackling. A roar. Deep and constant, like standing next to a jet engine.\n\nThe car park is in that direction. Your car is in that direction.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right, the fucking witch.",
+              "first_entry_text": "[color=#aaaaaa]The smoke descended the ridge like a heavy, suffocating fog.[/color] It wasn't drifting; it was rolling in [color=#FF3131]thick, oily waves[/color] that tasted of [color=#FF3131]charred pine and panic[/color].\n\nYou’d been hiking the loop trail when [color=#BC13FE]{visionary}[/color] erupted from the undergrowth—not running, but [color=#FF3131]sprinting[/color] with a frantic, animal energy, their eyes streaming and [color=#FF3131]bloodshot from the heat[/color]. They seized your pack and [color=#FF3131]hauled you up the vertical slope[/color] toward the fire road, screaming that the car park was already a [color=#FF3131]chimney[/color].\n\nThe crown fire crested the ridge two minutes later. It was a [color=#FF3131]sixty-foot wall of incandescent fury[/color] leaping through the canopy at twenty miles an hour. The sound was a [color=#aaaaaa]physical blow[/color]—not the crackle of a campfire, but a [color=#FF3131]deafening, low-frequency roar[/color] like a jet engine anchored to the earth, [color=#aaaaaa]shredding the oxygen[/color] out of the air.\n\nYou watch as the heat front arrives before the flames, the trees in the valley below [color=#FF3131]spontaneously combusting[/color] in a flash of blinding light. Your car—your only way out—is down there, melting into a [color=#aaaaaa]puddle of alloy and glass[/color].\n\n[color=#FF3131]{reaction}[/color] [color=#BC13FE]{visionary}[/color] knew the wind was a lie. They heard the fire [color=#aaaaaa]breathing[/color] before the first spark jumped the line. You were supposed to be [color=#FF3131]incinerated[/color] in that basin.",
               "objects": [
                 "fire_front_view",
                 "smoke_column"
@@ -2965,7 +3024,7 @@
             "man_made_disaster+flood_related": {
               "name": "{city_name} Valley — Ridge Above the River",
               "description": "The ridge trail above the river bend. You ran here. Your lungs are burning. You can see the full valley floor from this elevation.",
-              "first_entry_text": "You were at the picnic site when the siren went off.\n\nNot an alarm — an air horn, from somewhere far upstream. One sustained note. Then silence. Then[color=#BC13FE] {visionary} [/color]screaming at you to run uphill, not toward the road, UPHILL, now, NOW.\n\nYou ran.\n\nThe wave arrived at the river bend before you reached the ridge. A wall of brown water fifteen feet high, carrying full-grown trees like chopsticks. It moved faster than anything that size should move.\n\nThe picnic site is gone. The campground is gone. The road is gone. The valley floor is gone — it's all river now, edge to edge.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "first_entry_text": "You were at the picnic site, the air still and heavy, when the siren shrieked from somewhere far upstream. Not an alarm—a [color=#aaaaaa]sustained, mechanical scream[/color] of a horn. Then silence. Then [color=#BC13FE]{visionary}[/color] was on top of you, their fingers digging into your shoulders as they hollered to run uphill—not toward the road, [color=#FF3131]UPHILL, now, NOW[/color].\n\nYou ran until your lungs tasted like [color=#FF3131]old iron and panic[/color].\n\nThe wave rounded the river bend before you even reached the ridge. It wasn't just water; it was a fifteen-foot [color=#aaaaaa]wall of liquid concrete[/color], moving at highway speed and carrying full-grown trees like [color=#FF3131]splintered chopsticks[/color]. You watch, paralyzed, as a massive oak is hammered through the side of a stationary RV like a [color=#FF3131]harpoon[/color].\n\nThe picnic site. The campground. The road. They don't just flood; they [color=#FF3131]disintegrate[/color]. In ninety seconds, the valley floor is erased, replaced by a [color=#55aaff]roaring, silt-choked torrent[/color] that grinds boulders together with a sound like [color=#aaaaaa]shattering bone[/color].\n\nThe valley floor is a river now, edge to edge—a graveyard of [color=#FF3131]swirling wreckage[/color] and uprooted lives.\n\n[color=#FF3131]{reaction}[/color] God... [color=#BC13FE]{visionary}[/color] saw the watermark before the dam even cracked. You were supposed to be [color=#FF3131]pulverized[/color] in that current.",
               "objects": [
                 "valley_flood",
                 "debris_wave"
@@ -2978,7 +3037,7 @@
             "infrastructure_failure+flood_related": {
               "name": "{city_name} Valley — Ridge Above the River",
               "description": "The ridge trail above the river bend. The valley below looks wrong from here. The river is moving wrong.",
-              "first_entry_text": "You were at the picnic site when the siren went off upstream.\n\nOne sustained note. Then silence. Then[color=#BC13FE] {visionary} [/color]already running, already past you, already pointing uphill.\n\nYou ran.\n\nThe flood wave came around the river bend while you were still climbing. Fifteen feet of water moving at highway speed, carrying things that had no business moving that fast.\n\nThe picnic site. The campground. The road. The car park. All gone in the first ninety seconds.\n\nThe valley floor is a river now, edge to edge, all the way to the hills.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was actually right.",
+              "first_entry_text": "You were at the picnic site, the air still and heavy, when the siren shrieked from upstream. One sustained, [color=#aaaaaa]mechanical scream[/color]. Then silence. Then [color=#BC13FE]{visionary}[/color] was already running—already past you—their hands clawing at the air as they pointed toward the high ridges.\n\nYou ran until your lungs burned with the [color=#FF3131]scent of wet earth and old iron[/color].\n\nThe flood wave rounded the river bend while you were still scrambling up the shale. It wasn't just water; it was a fifteen-foot [color=#aaaaaa]wall of liquid concrete[/color] moving at highway speed, churning with the [color=#FF3131]mangled remains[/color] of everything it had already swallowed. You watch as a massive oak tree is snapped like a toothpick and [color=#FF3131]hammered[/color] through the side of a stationary RV.\n\nThe picnic site. The campground. The road. The car park. They don't just flood; they [color=#FF3131]disintegrate[/color]. In ninety seconds, the valley floor is erased, replaced by a [color=#55aaff]roaring, silt-choked torrent[/color] that grinds boulders together with a sound like [color=#aaaaaa]shattering bone[/color].\n\nThe valley is a river now, edge to edge, a graveyard of [color=#FF3131]swirling wreckage[/color] and uprooted lives.\n\n[color=#FF3131]{reaction}[/color] [color=#BC13FE]{visionary}[/color] saw the watermark before the dam even cracked. You were supposed to be [color=#FF3131]pulverized[/color] in that current.",
               "objects": [
                 "valley_flood",
                 "debris_wave"

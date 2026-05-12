@@ -1,5 +1,5 @@
 {
-  "a plane's wing broke off mid-takeoff": {
+  "a plane's wing breaking off off mid-takeoff": {
     "description": "You were seconds from boarding the flight when {visionary}, their face slick with sweat, seized your arm, their grip like a vice, and rasped, \n'{warning}'\n\n You listen, for some reason, and later watch the plane's wing detach during takeoff, shearing the plane's back half in two. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
     "killed_count": {
       "min": 50,
@@ -167,9 +167,7 @@
     ],
     "tags": [
       "transportation_road",
-      "impact_blunt",
-      "weather_event",
-      "fire_related"
+      "impact_blunt"
     ],
     "visionary_category": [
       "transport_staff", 
@@ -799,8 +797,8 @@
       "GET OUT OF THERE! You're standing on your own grave!"
     ],
     "tags": [
-      "natural_disaster",
-      "seismic_activity"
+      "urban_disaster",
+      "geological_event"
     ],
     "visionary_explains": [
       "The asphalt bowed inward and then just vanished. A whole city block dropped into a black abyss, taking the buses with it!",

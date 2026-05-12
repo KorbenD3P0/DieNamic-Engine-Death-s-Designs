@@ -19,7 +19,7 @@ import string
 import json
 import textwrap
 from .resource_manager import ResourceManager
-from .utils import get_related_items
+from .utils import TraceLogger, get_related_items
 from .hazard_engine import HazardEngine
 from .achievements import AchievementsSystem
 from .death_ai import DeathAI
@@ -548,34 +548,19 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         """Dynamically constructs Level 0 rooms based on the active disaster template."""
         templates = self.resource_manager.get_data('rooms_level_0', {})
         if not templates:
-            # Fallback just in case you haven't renamed it yet
             templates = self.resource_manager.get_data('rooms', {}).get('0', {})
 
         tags = disaster_data.get('tags', []) or []
         
-        # --- THE FIX: Read the routing map dynamically from the JSON! ---
+        # --- Shell Routing ---
         shell_map = templates.get('shell_selection', {})
-        
         shell_key = 'venue'  # absolute fallback
         for tag in tags:
             if tag in shell_map:
                 shell_key = shell_map[tag]
                 self.logger.info(f"_build_premonition_rooms: Tag '{tag}' routed to shell '{shell_key}'")
                 break
-        # ----------------------------------------------------------------
 
-        if shell_key not in templates.get('shells', {}):
-            self.logger.warning(f"_build_premonition_rooms: Shell '{shell_key}' not found, falling back to 'venue'")
-            shell_key = 'venue'
-
-        shell = templates['shells'][shell_key]
-        
-        shell_key = 'venue'  # default
-        for tag in tags:
-            if tag in shell_map:
-                shell_key = shell_map[tag]
-                break
-        
         if shell_key not in templates.get('shells', {}):
             self.logger.warning(f"_build_premonition_rooms: Shell '{shell_key}' not found, falling back to 'venue'")
             shell_key = 'venue'
@@ -588,7 +573,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         for room_key, room_template in shell['rooms'].items():
             room = copy.deepcopy(room_template['base'])
 
-            # --- THE FIX: Compound Tag Scoring ---
+            # --- Compound Tag Scoring ---
             overrides = room_template.get('overrides', {})
             best_tag = None
             best_score = 0
@@ -597,17 +582,13 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             for override_key in overrides.keys():
                 if '+' in override_key:
                     required_tags = [t.strip() for t in override_key.split('+')]
-                    
-                    # If the disaster possesses EVERY tag required by this compound key...
                     if all(req_tag in tags for req_tag in required_tags):
-                        score = len(required_tags) # 2 tags = Score of 2, 3 tags = Score of 3
-                        
-                        # Highest score wins!
+                        score = len(required_tags)
                         if score > best_score:
                             best_score = score
                             best_tag = override_key
 
-            # 2. Fallback: If no compound keys matched, check single tags normally (Left-to-Right)
+            # 2. Fallback: Check single tags
             if not best_tag:
                 for tag in tags:
                     if tag in overrides:
@@ -615,17 +596,15 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                         break
 
             if best_tag:
-                self.logger.info(f"Applying override '{best_tag}' for room '{room['name']}'")
+                self.logger.info(f"Applying override '{best_tag}' for room '{room.get('name', room_key)}'")
                 for ok, ov in overrides[best_tag].items():
                     room[ok] = copy.deepcopy(ov)
 
-            # --- THE FIX: Dynamically inject the Visionary's traits! ---
-            # Grab the visionary's name, and generate flavor traits if missing
+            # --- Dynamically inject the Visionary's traits ---
             visionary_name = disaster_data.get('visionary', 'someone')
             v_age = disaster_data.get('age', random.choice(['young', 'middle-aged', 'older', 'panicked']))
             v_app = disaster_data.get('appearance', random.choice(['guy', 'woman', 'teenager', 'person']))
 
-            # Safely replace the tags in the room's narrative text
             for text_key in ['first_entry_text', 'description']:
                 if text_key in room and isinstance(room[text_key], str):
                     narrative = room[text_key]
@@ -637,36 +616,39 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             base_name = room_template['base'].get('name', room_key)
             final_name = room.get('name', base_name)
             
-            # --- FIX 2: Format dynamic text for ALL narrative fields ---
+            # --- Format dynamic text ---
             final_name = self._format_dynamic_text(final_name)
             room['name'] = final_name
             
             if 'description' in room:
                 room['description'] = self._format_dynamic_text(room['description'])
             else:
-                # Absolute fallback so you NEVER see 'featureless void' again
                 room['description'] = "The destruction here is absolute. Smoke and dust choke the air."
                 
             if 'first_entry_text' in room:
                 room['first_entry_text'] = self._format_dynamic_text(room['first_entry_text'])
 
-            # --- FIX 3: Map BOTH the base name AND the raw JSON room_key ---
-            # This guarantees that whether your JSON exit says "north": "midway" OR "north": "Midway (Center)", 
-            # the engine will successfully translate it to the final formatted name.
+            # Map BOTH the base name AND the raw JSON room_key
             name_map[base_name] = final_name
             name_map[room_key] = final_name
-            
             built_rooms[room_key] = room
 
-        # --- Second pass: resolve exit references ---
+        # --- THE FIX: Second pass exit routing (Handles Dicts!) ---
         for room_key, room in built_rooms.items():
             exits = room.get('exits', {})
             resolved_exits = {}
-            for direction, target_name in exits.items():
-                if isinstance(target_name, str) and target_name in name_map:
-                    resolved_exits[direction] = name_map[target_name]
+            for direction, exit_data in exits.items():
+                if isinstance(exit_data, str):
+                    # Handle raw strings
+                    resolved_exits[direction] = name_map.get(exit_data, exit_data)
+                elif isinstance(exit_data, dict):
+                    # Handle dictionaries containing "target"
+                    target_room = exit_data.get('target')
+                    if target_room and target_room in name_map:
+                        exit_data['target'] = name_map[target_room]
+                    resolved_exits[direction] = exit_data
                 else:
-                    resolved_exits[direction] = target_name
+                    resolved_exits[direction] = exit_data
             room['exits'] = resolved_exits
 
         # --- Build final dict keyed by room name ---
@@ -1360,7 +1342,6 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         if not self.current_level_rooms_world_state:
             self.logger.error(f"Cannot place NPCs: World state for {level_id} is empty!")
             return
-        # -----------------------
 
         roster = self.player.get('npc_status', {})
         persistent_roles = self.player.get('npc_roles', {})
@@ -1379,24 +1360,20 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
     
         entry_room, available_rooms = self._get_room_slots(level_id)
         
-        # --- THE FIX: Bulletproof Fallbacks ---
-        # If the level JSON forgot to tag an "entry_room: true", force it to the player's location
         if not entry_room or entry_room not in self.current_level_rooms_world_state:
             entry_room = self.player.get('location')
             if not entry_room or entry_room not in self.current_level_rooms_world_state:
                 entry_room = list(self.current_level_rooms_world_state.keys())[0]
 
-        # If the level JSON forgot to add "npc_slots", just use all rooms!
         if not available_rooms:
             available_rooms = list(self.current_level_rooms_world_state.keys()) * 3
             import random
             random.shuffle(available_rooms)
-        # --------------------------------------
 
         level_dialogues = self._get_persistent_npc_dialogue(level_id)
         placed_names = set()
 
-        # --- NEW: COMPANION JEOPARDY CHECK ---
+        # --- COMPANION JEOPARDY CHECK ---
         deaths_list = self.player.get('deaths_list', [])
         deaths_list_index = self.player.get('deaths_list_index', 0)
         next_target = deaths_list[deaths_list_index].lower() if deaths_list_index < len(deaths_list) else None
@@ -1415,17 +1392,22 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                             "message": "\n[color=ff4444]Something feels wrong. The air changes. You look over at your companions.[/color]\n"
                         })
                         break
-        # -------------------------------------
     
         # 1. Place Companions in Entry Room
         for comp_name in companions:
             npc_dict = self._build_npc_entity(comp_name, persistent_roles, roster, level_dialogues, is_companion=True)
+            
+            # THE FIX: Hydrate immediately!
+            npc_dict = self._hydrate_spawned_npc(npc_dict, entry_room)
+            
             existing = [n.get('name', n) if isinstance(n, dict) else n for n in self.current_level_rooms_world_state[entry_room].get('npcs', [])]
             if comp_name not in existing:
                 self.current_level_rooms_world_state[entry_room].setdefault('npcs', []).append(npc_dict)
             placed_names.add(comp_name.lower())
-            # --- ADD THIS LOG LINE ---
-            self.logger.info(f"  Placed Companion {comp_name} → '{entry_room}'")
+            
+            state = npc_dict.get('initial_state', 'unknown')
+            states_count = len(npc_dict.get('dialogue_states', {}))
+            self.logger.info(f"  Placed Companion {comp_name} → '{entry_room}' [State: {state}, States Loaded: {states_count}]")
             
         # 2. INJECT THE HUNT TARGET (Workplace Check)
         hunt_target = self._get_workplace_target_for_level(level_id)
@@ -1443,11 +1425,17 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 custom_fallback=custom_fallback, is_hunt_target=True
             )
             
+            # THE FIX: Hydrate immediately!
+            target_dict = self._hydrate_spawned_npc(target_dict, entry_room)
+            
             existing = [n.get('name', n) if isinstance(n, dict) else n for n in self.current_level_rooms_world_state[entry_room].get('npcs', [])]
             if hunt_target not in existing:
                 self.current_level_rooms_world_state[entry_room].setdefault('npcs', []).append(target_dict)
             placed_names.add(hunt_target.lower())
-            self.logger.info(f"  Hunt Target {hunt_target} ({target_dict['role']}) → '{entry_room}'")
+            
+            state = target_dict.get('initial_state', 'unknown')
+            states_count = len(target_dict.get('dialogue_states', {}))
+            self.logger.info(f"  Hunt Target {hunt_target} ({target_dict['role']}) → '{entry_room}' [State: {state}, States Loaded: {states_count}]")
 
         # 3. Scatter Remaining NPCs
         for npc_name in to_place:
@@ -1456,10 +1444,16 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
     
             target_room = available_rooms.pop()
             npc_dict = self._build_npc_entity(npc_name, persistent_roles, roster, level_dialogues, is_companion=False)
+            
+            # THE FIX: Hydrate immediately!
+            npc_dict = self._hydrate_spawned_npc(npc_dict, target_room)
+            
             self.current_level_rooms_world_state[target_room].setdefault('npcs', []).append(npc_dict)
             placed_names.add(npc_name.lower())
-            # --- ADD THIS LOG LINE ---
-            self.logger.info(f"  Scattered NPC {npc_name} ({npc_dict.get('role', 'unknown')}) → '{target_room}'")
+            
+            state = npc_dict.get('initial_state', 'unknown')
+            states_count = len(npc_dict.get('dialogue_states', {}))
+            self.logger.info(f"  Scattered NPC {npc_name} ({npc_dict.get('role', 'unknown')}) → '{target_room}' [State: {state}, States Loaded: {states_count}]")
             
         self.logger.info(f"Total NPCs placed in {level_id}: {len(placed_names)}")
 
@@ -1546,9 +1540,8 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
         # --- 2. HYDRATION LOOPS ---
         npcs_master = self.resource_manager.get_data('npcs', {})
-        master_items = self.resource_manager.get_data('items', {})
         
-        # Helper to recursively search npcs.json for the target string
+        # --- ADD THIS HELPER HERE ---
         def _find_npc_definition(target_id, data_block):
             if isinstance(data_block, dict):
                 if target_id in data_block:
@@ -1563,21 +1556,46 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                     res = _find_npc_definition(target_id, item)
                     if res: return res
             return None
+        # ----------------------------
 
-        import copy
+        persistent_roles = self.player.get('npc_roles', {})
+        
+        # We need these to reconstruct the persistent roles (Visionary, Skeptic, etc)
+        persistent_roles = self.player.get('npc_roles', {})
+        roster = self.player.get('npc_status', {})
+        level_dialogues = self._get_persistent_npc_dialogue(level_id)
+
         for r_id, r_data in self.current_level_rooms_world_state.items():
             hydrated_npcs = []
             for npc_ref in r_data.get('npcs', []):
+                npc_name_key = npc_ref.lower() if isinstance(npc_ref, str) else npc_ref.get('name', '').lower()
+                
                 if isinstance(npc_ref, str):
                     npc_data = _find_npc_definition(npc_ref, npcs_master)
                     if npc_data:
                         hydrated_npc = copy.deepcopy(npc_data)
                         hydrated_npc['id'] = npc_ref
+                        
+                        # --- THE FIX: Archetype Reconstruction ---
+                        # If this NPC is a member of the survivor cast, force their role back on
+                        if npc_name_key in persistent_roles:
+                            role = persistent_roles[npc_name_key]
+                            # Re-run build_npc_entity logic to get the correct role-based dialogue states
+                            # This ensures Drew gets his 'visionary' dialogue instead of bystander fallback
+                            rebuilt_npc = self._build_npc_entity(
+                                npc_name=npc_ref,
+                                persistent_roles=persistent_roles,
+                                roster=roster,
+                                level_dialogues=level_dialogues,
+                                is_companion=(npc_ref in self.player.get('companions', [])),
+                                # Ensure Visionaries or active hunt targets get their specific dialogue
+                                is_hunt_target=(npc_name_key == self.player.get('current_hunt_target', '').lower() or role == 'visionary')
+                            )
+                            hydrated_npc.update(rebuilt_npc)
+                        # -----------------------------------------
+                        
                         hydrated_npcs.append(hydrated_npc)
-                        self.logger.debug(f"_init_static_level: Hydrated NPC '{npc_ref}' in '{r_id}'")
                     else:
-                        # Fallback: Just keep them as a string so they don't disappear
-                        self.logger.warning(f"_init_static_level: Could not find NPC '{npc_ref}' in npcs.json! Keeping as string.")
                         hydrated_npcs.append(npc_ref)
                 else:
                     hydrated_npcs.append(npc_ref)
@@ -1731,21 +1749,19 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         return None
     
     def _get_persistent_npc_dialogue(self, level_id: int) -> dict:
-        """Load role-keyed dialogue from npcs.json for the given level."""
+        """Load role-keyed dialogue from npcs.json for the current act."""
         npcs_data = self.resource_manager.get_data('npcs', {})
-        all_dialogue = npcs_data.get('persistent_cast_dialogue', {})
-        level_dialogue = all_dialogue.get(str(level_id))
+        # Key is 'archetype_dialogue', not 'persistent_cast_dialogue'
+        all_dialogue = npcs_data.get('archetype_dialogue', {})
+        current_act = self.player.get('current_act', 'act_1_survival')
+        level_dialogue = all_dialogue.get(current_act)
         if not level_dialogue:
             level_dialogue = all_dialogue.get('_default', {})
         return {k: v for k, v in level_dialogue.items() if not k.startswith('_')}
 
-    def _build_npc_entity(self, npc_name: str, persistent_roles: dict, roster: dict, level_dialogues: dict, is_companion: bool, custom_desc: str = None, custom_fallback: str = None, is_hunt_target: bool = False) -> dict:
-        """Constructs the JSON entity dictionary for the NPC."""
-        import copy
-        import random
-
+    def _build_npc_entity(self, npc_name, persistent_roles, roster, level_dialogues, 
+                      is_companion, custom_desc=None, custom_fallback=None, is_hunt_target=False):
         role = persistent_roles.get(npc_name.lower(), 'friend' if is_companion else 'bystander_1')
-        
         # --- THE FIX: Differentiate Workplace vs Public Encounters! ---
         current_level = str(self.player.get('current_level', '1'))
         workplace_id = str(self.player.get('npc_workplaces', {}).get(npc_name.lower(), {}).get('level_id', 'none'))
@@ -1756,18 +1772,25 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         else:
             dialogue_role_key = role
         # --------------------------------------------------------------
-        
+            
         raw_dialogue = level_dialogues.get(dialogue_role_key)
         
-        # Old 'hunt_target' fallback just in case the JSON isn't updated yet
         if not raw_dialogue and is_hunt_target:
             raw_dialogue = level_dialogues.get('hunt_target')
-            
+        
         if not raw_dialogue:
+            # Fallback: try to pull directly from archetype_dialogue for this role
+            npcs_data = self.resource_manager.get_data('npcs', {})
+            arch_dialogue = npcs_data.get('archetype_dialogue', {})
+            current_act = self.player.get('current_act', 'act_1_survival')
+            raw_dialogue = arch_dialogue.get(current_act, {}).get(role)
+        
+        if not raw_dialogue:
+            # Final fallback only if archetype_dialogue has nothing
             if custom_fallback:
                 default_txt = custom_fallback
             else:
-                default_txt = "'I'm right here with you. Whatever happens.'" if is_companion else "'...I'm just glad to be alive.'"
+                default_txt = "'I'm right here with you.'" if is_companion else "'...I'm just glad to be alive.'"
             raw_dialogue = {'greeting': {'text': default_txt}}
     
         visionary_name = self.player.get('premonition_visionary', 'them')
@@ -2147,70 +2170,101 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 self.player['current_act'] = 'act_4_the_plan'
                 self.logger.info("NARRATIVE SHIFT: Entering Act 4 (The Funnel).")
 
-    def _setup_hub_exits(self, destination: str):
-        p = self.player
-        npc_workplaces  = p.get('npc_workplaces', {})
-        npc_status      = p.get('npc_status', {})
-        visited_levels  = p.get('visited_levels', set())
-        inventory       = {normalize_text(i) for i in p.get('inventory', [])}
-        flags           = p.get('flags', set())
+        # ACT 4 -> FINALE PATH LOCKS
+        if current_act == 'act_4_the_plan':
+            inv = [normalize_text(i) for i in self.player.get('inventory', [])]
+            flags = self.player.get('flags', {})
 
-        dynamic_exits = {}
+            # ── 1. The Clinical Path (Vet/Clinic) ──
+            if 'defibrillator_pads' in inv and 'medical_manual' in inv:
+                self.player['flags']['path_clinical_ready'] = True
 
-        # ── 1. Bludworth ────────────────────────────────────────────────────────
-        has_key = normalize_text('bludworths_house_key') in inventory
-        if has_key and not p.get('visited_bludworth'):
-            # THE FIX: Ensure dynamic exit keys are perfectly lowercased!
-            dynamic_exits["drive to bludworth's"] = {
-                "target": "LEVEL_TRANSITION_BLUDWORTH"
+            # ── 2. The Dark Path (The Weapon) ──
+            if 'loaded_revolver' in inv or 'hunting_rifle' in inv:
+                self.player['flags']['path_dark_ready'] = True
+
+            # ── 3. The Resurrection Path (New Life) ──
+            if flags.get('knows_resurrection') and 'photo_of_kimberly_corman' in inv:
+                self.player['flags']['path_resurrection_ready'] = True
+                
+            # ── 4. The Elemental Path (Drowning/Suffocation) ──
+            # Needs specific items like "heavy_chains" and "oxygen_tank"
+            if 'heavy_chains' in inv and 'diving_weight' in inv:
+                 self.player['flags']['path_elemental_ready'] = True
+
+    def _setup_hub_exits(self, destination: str = "Your Car"):
+        """
+        Dynamically injects hub exits based on progression.
+        Accepts the target destination room to inject into (defaults to 'Your Car').
+        """
+        hub_room = self.current_level_rooms_world_state.get(destination)
+        if not hub_room:
+            self.logger.warning(f"_setup_hub_exits: '{destination}' room not found in world state.")
+            return
+
+        # Start fresh — preserve the two static exits (surrender/fight police)
+        static_exits = {
+            k: v for k, v in hub_room.get("exits", {}).items()
+            if k in ("surrender to police", "fight through police")
+        }
+        new_exits = dict(static_exits)
+
+        npc_workplaces = self.player.get("npc_workplaces", {})
+        npc_status     = self.player.get("npc_status", {})
+        visited_levels = self.player.get("visited_levels", set())
+        inventory_keys = {i.lower() for i in self.player.get("inventory", [])}
+        known_deaths   = self.player.get("deaths_list", [])
+
+        # 1. NPC workplace exits — show for every NPC who is alive and has a workplace loaded
+        for npc_name, wp_data in npc_workplaces.items():
+            level_id    = wp_data.get("level_id")
+            workplace   = wp_data.get("workplace_name", npc_name.title())
+            npc_alive   = npc_status.get(npc_name.lower(), "alive") == "alive"
+
+            if not level_id or not npc_alive:
+                continue
+
+            # Confirm the level's rooms are actually registered
+            level_loaded = bool(self.resource_manager.get_data(level_id))
+            if not level_loaded:
+                continue
+
+            exit_label = f"drive to {workplace}"
+            new_exits[exit_label] = {"target": f"LEVEL_TRANSITION_{level_id.upper()}"}
+
+        # 2. Bludworth's House — unlocked by finding the house key or the deaths_list
+        has_bludworth_key = "bludworths_house_key" in inventory_keys
+        has_deaths_list   = bool(self.player.get("deaths_list"))
+        if has_bludworth_key or has_deaths_list:
+            new_exits["drive to Bludworth's House"] = {
+                "target": "LEVEL_TRANSITION_BLUDWORTHS_HOUSE"
             }
 
-        # ── 2. NPC Workplace exits ───────────────────────────────────────────────
-        # One exit per alive NPC whose level hasn't been completed yet
-        seen_levels = set()  # deduplicate if multiple NPCs share a level
-        if 'learned_deaths_list' in flags:
-            for npc_key, wp in npc_workplaces.items():
-                level_id = wp.get('level_id')
-                if not level_id or level_id in seen_levels:
-                    continue
-                if npc_status.get(npc_key, 'alive') not in ('alive', 'injured'):
-                    continue
-                if level_id in visited_levels:
-                    continue
-                seen_levels.add(level_id)
-                wp_name = wp.get('workplace_name', npc_key.title())
-                # Use a human-readable direction label
-                exit_label = f"drive to {wp_name}".lower()
-                dynamic_exits[exit_label] = {
-                    "target": level_id,          # direct level ID — handled by _route_level_transition
-                    "npc_target": npc_key,
+        # 3. Finale — unlocked when player has all required finale items
+        finale_items = {"defibrillator_pads", "vet_sedatives", "loaded_revolver"}
+        has_any_finale_item = bool(finale_items & inventory_keys)
+        if has_any_finale_item:
+            new_exits["drive to the warehouse"] = {
+                "target": "LEVEL_TRANSITION_FINALE"
+            }
+
+        # 4. Gamble visit — always available: lets player try any level out of order
+        # Build a sub-menu of ALL known workplaces as gamble options via a special target key
+        gamble_destinations = {}
+        for npc_name, wp_data in npc_workplaces.items():
+            level_id  = wp_data.get("level_id")
+            workplace = wp_data.get("workplace_name", npc_name.title())
+            if level_id and npc_status.get(npc_name.lower(), "alive") == "alive":
+                gamble_destinations[f"gamble: {workplace}"] = {
+                    "target": f"LEVEL_TRANSITION_{level_id.upper()}",
+                    "gamble": True,
+                    "locked_message": None
                 }
+        if gamble_destinations:
+            new_exits.update(gamble_destinations)
 
-        # ── 3. Police ────────────────────────────────────────────────────────────
-        dynamic_exits["surrender to police"] = {"target": "LEVEL_TRANSITION_POLICE"}
-        dynamic_exits["fight through police"] = {"target": "LEVEL_TRANSITION_POLICE_FOUGHT"}
-
-        # ── 4. Finale / Funnel check ─────────────────────────────────────────────
-        deaths_list = p.get('deaths_list', [])
-        alive_npcs  = [n for n in deaths_list
-                    if str(n).lower() != 'player'
-                    and npc_status.get(str(n).lower(), 'alive') in ('alive', 'injured')]
-        all_workplaces_visited = all(
-            npc_workplaces.get(str(n).lower(), {}).get('level_id') in visited_levels
-            for n in alive_npcs
-        )
-
-        player_is_last = len(alive_npcs) == 0
-        if player_is_last or all_workplaces_visited:
-            dynamic_exits["confront death"] = {"target": "LEVEL_TRANSITION_FINALE"}
-
-        # ── 5. Write exits into room ─────────────────────────────────────────────
-        room_data = self.current_level_rooms_world_state.get(destination)
-        if not room_data:
-            room_data = {}
-            self.current_level_rooms_world_state[destination] = room_data
-        room_data['exits'] = dynamic_exits
-        self.logger.info(f"_setup_hub_exits: Injected {len(dynamic_exits)} exits into '{destination}'")
+        hub_room["exits"] = new_exits
+        self.logger.info(f"_setup_hub_exits: Injected {len(new_exits)} exits into hub.")
 
     def _evaluate_dynamic_transition(self, current_level_id: str) -> tuple:
         """
@@ -2238,6 +2292,13 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             if pending_transition in ('LEVEL_TRANSITION_DYNAMIC_HUNT', 'DYNAMIC_HUNT_EVAL'):
                 return self._resolve_dynamic_hunt_level(), None
             
+            if pending_transition == 'LEVEL_TRANSITION_FINALE':
+                # The EMT/Vet Path
+                if self.player.get('hp') > 10:
+                    return "level_epilogue_revive", None # Successful "New Life"
+                else:
+                    return "level_epilogue_flatline_failure", None # The equipment fails at the last second
+
             # Transition Map Lookup
             transition_map = {
                 'LEVEL_TRANSITION_POLICE':        ('level_police_station', None),
@@ -2423,7 +2484,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
         if knows_list and alive_targets:
             next_name = alive_targets[0].title()
-            dynamic_exits["demand to leave — lives are at stake"] = {
+            dynamic_exits[f"demand to leave — {next_name} could be in danger"] = {
                 "target": "LEVEL_TRANSITION_DYNAMIC_HUNT",
                 "description": f"{next_name} is going to die if you stay here."
             }
@@ -2572,132 +2633,140 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                         self.logger.info(f"Failsafe: Spawned 'visionary_notes' in {spawn_room} because {visionary_name} is dead.")
 
     # --- NEW: Item Placement Logic ---
-    def _populate_level_with_items(self, level_id: int):
+    def _populate_level_with_items(self, level_id: str):
         """
-        Places items. Respects 'Canon' (items defined in rooms/furniture) 
-        and fills gaps with 'Random' loot.
+        Places items. Respects 'Canon' placements, forces critical keys, 
+        injects contextual disaster evidence, and fills gaps with random loot.
         """
         try:
             self.logger.debug(f"_populate_level_with_items: Populating items for level {level_id}")
             self.current_level_items_world_state = {}
+            
+            # --- 1. The Grand Merge: Combine Items and Evidence ---
             items_master = self.resource_manager.get_data('items', {})
+            evidence_master = self.resource_manager.get_data('evidence_by_source', {})
+            
+            # Create a unified dictionary to pull from
+            unified_loot_master = {**items_master, **evidence_master}
 
-            # --- 1. Census: Find everything explicitly placed by the Architect (JSON) ---
+            # Get active disaster context for filtering
+            active_disaster = self.player.get('active_disaster_node', {})
+            disaster_tags = active_disaster.get('tags', [])
+
+            # --- 2. Census: Find explicitly placed Canon items ---
             pre_placed_item_keys = set()
             all_containers = []
 
             for room_id, room_data in self.current_level_rooms_world_state.items():
-                
-                # A. Catalog Loose Items (Canon)
-                # Check both 'items' and 'items_present' keys
                 loose_items = room_data.get('items', []) + room_data.get('items_present', [])
-                # Filter: skip inline dict items (e.g. loose_brick defined as a full object
-                # in rooms JSON). These carry all their own properties and can't be used as
-                # dict keys. The room data already holds them; no world-state entry needed.
                 loose_items = [i for i in loose_items if not isinstance(i, dict)]
+                
                 for item_key in loose_items:
                     self.current_level_items_world_state[item_key] = {"location": room_id}
                     pre_placed_item_keys.add(item_key)
-                    self.logger.debug(f"Canon item identified: '{item_key}' loose in '{room_id}'")
 
-                # B. Catalog Container Items (Canon)
                 for furniture in room_data.get('furniture', []):
                     if isinstance(furniture, dict) and furniture.get('is_container'):
-                        # Ensure 'items' list exists
                         furniture.setdefault('items', [])
-                        
-                        # Register items already inside as pre-placed
                         for inside_item in furniture['items']:
                             pre_placed_item_keys.add(inside_item)
-                            self.logger.debug(f"Canon item identified: '{inside_item}' inside '{furniture.get('name')}'")
-                        
-                        # Track container for random filling later
                         all_containers.append({'room': room_id, 'furniture_data': furniture})
 
-            # --- 2. Build the Random Loot Pool ---
-            # Rules: 
-            #   1. Must have "is_distributable_in_containers": True
-            #   2. Must NOT be in pre_placed_item_keys (Unique items shouldn't spawn twice)
-            loot_pool = []
+            # --- 3. Build the Context-Aware Loot Pool ---
+            critical_keys = []
+            contextual_evidence = []
+            filler_loot = []
             
-            for item_key, item_data in items_master.items():
-                # Check distributable flag
-                if not item_data.get('is_distributable_in_containers'):
-                    continue
-                
-                # Check if it's already existing (Story items shouldn't dup)
+            # Check level requirements to see what keys MUST spawn
+            level_reqs = self.resource_manager.get_data('level_requirements', {}).get(level_id, {})
+            required_level_items = level_reqs.get('required_items', [])
+
+            for item_key, item_data in unified_loot_master.items():
+                # Skip if already in the world
                 if item_key in pre_placed_item_keys:
-                    self.logger.debug(f"Skipping random spawn for '{item_key}': Already placed in world.")
                     continue
 
-                # Check Level restrictions (Optional: if item has specific level tag)
-                item_level = item_data.get('level')
-                if item_level and isinstance(item_level, int) and item_level != level_id:
+                # A. Route Critical Keys
+                if item_key in required_level_items:
+                    critical_keys.append(item_key)
                     continue
-                
-                # Add to pool
-                loot_pool.append(item_key)
 
-            self.logger.info(f"Loot Pool Built. Candidates: {len(loot_pool)}. Containers to fill: {len(all_containers)}")
+                # B. Route Contextual Evidence & Apply Spawn Rules
+                spawn_rules = item_data.get('spawn_rules', {})
+                if spawn_rules:
+                    req_tags = spawn_rules.get('required_tags', [])
+                    forb_tags = spawn_rules.get('forbidden_tags', [])
+                    
+                    # If it requires a tag the current disaster doesn't have, skip it
+                    if req_tags and not any(t in disaster_tags for t in req_tags):
+                        continue
+                    # If it forbids a tag the current disaster DOES have, skip it
+                    if forb_tags and any(t in disaster_tags for t in forb_tags):
+                        continue
+                        
+                    contextual_evidence.append(item_key)
+                    continue
 
-            # --- 3. The Scattering (Distribution) ---
-            if not loot_pool:
-                self.logger.warning("Random loot pool is empty! Check 'items.json' for 'is_distributable_in_containers' flags.")
+                # C. Route General Filler (if distributable)
+                if item_data.get('is_distributable_in_containers'):
+                    filler_loot.append(item_key)
+
+            # Shuffle the pools so it's different every run
+            random.shuffle(contextual_evidence)
+            random.shuffle(filler_loot)
+            
+            # Combine them into a prioritized stack: Keys first, then Evidence, then Filler
+            master_loot_stack = critical_keys + contextual_evidence[:3] + filler_loot 
+            
+            self.logger.info(f"Loot Stack Built. Keys: {len(critical_keys)} | Evidence: {len(contextual_evidence[:3])} | Filler: {len(filler_loot)}")
+
+            # --- 4. The Scattering (Distribution) ---
+            if not master_loot_stack:
+                self.logger.warning("Master loot stack is empty!")
                 return
 
-            random.shuffle(loot_pool)
-            
-            # Iterate containers and fill
+            random.shuffle(all_containers) # Shuffle containers so loot isn't always in the first room
+
             for container_ref in all_containers:
                 room_id = container_ref['room']
                 container = container_ref['furniture_data']
                 capacity = container.get('capacity', 1)
                 current_load = len(container.get('items', []))
-                
-                # Calculate space
                 space_available = capacity - current_load
                 
                 if space_available <= 0:
                     continue
 
-                # Filter the remaining loot pool for this specific container.
                 allowed_tags = container.get('allowed_item_tags', [])
-                if allowed_tags:
-                    valid_pool = []
-                    for item_id in loot_pool:
-                        item_data = items_master.get(item_id, {})
-                        item_tags = item_data.get('tags', [])
-                        if any(tag in allowed_tags for tag in item_tags):
-                            valid_pool.append(item_id)
-                else:
-                    valid_pool = list(loot_pool)
-
-                if not valid_pool:
-                    continue
-
-                # Fill 'er up
+                
                 added_count = 0
-                while space_available > 0 and valid_pool:
-                    # Determine drop chance (don't always fill to 100% capacity to keep it varied)
-                    # 50% chance to stop adding to this container, unless it's the huge test container
-                    if capacity < 50 and random.random() > 0.7:
+                # We iterate backwards so we can safely remove items from the stack as we place them
+                for i in range(len(master_loot_stack) - 1, -1, -1):
+                    if space_available <= 0:
+                        break
+                        
+                    item_id = master_loot_stack[i]
+                    item_data = unified_loot_master.get(item_id, {})
+                    item_tags = item_data.get('tags', [])
+                    
+                    # Skip if the container has strict rules and the item doesn't match
+                    if allowed_tags and not any(tag in allowed_tags for tag in item_tags):
+                        continue
+
+                    # 50% chance to stop adding filler to this container (Keeps it realistic)
+                    # BUT we bypass this check if the item is a critical key!
+                    if capacity < 50 and random.random() > 0.7 and item_id not in critical_keys:
                         break
 
-                    item_to_place = random.choice(valid_pool)
-                    container.setdefault('items', [])
-                    container['items'].append(item_to_place)
-                    valid_pool.remove(item_to_place)
-                    if item_to_place in loot_pool:
-                        loot_pool.remove(item_to_place)
+                    # Place the item!
+                    container.setdefault('items', []).append(item_id)
+                    master_loot_stack.pop(i) # Remove it from the stack so it doesn't spawn twice
                     
                     space_available -= 1
                     added_count += 1
-                    
-                    # If we run out of unique items, maybe re-add to pool? 
-                    # For now, let's keep them unique per run.
                 
                 if added_count > 0:
-                    self.logger.info(f"Added {added_count} random items to '{container.get('name')}' in '{room_id}'")
+                    self.logger.info(f"Added {added_count} items to '{container.get('name')}' in '{room_id}'")
 
         except Exception as e:
             self.logger.error(f"_populate_level_with_items: Error: {e}", exc_info=True)
@@ -2988,14 +3057,19 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 self.player[key] = value
 
     def _place_entities_in_start_room(self, level_id: str, requested_start: str):
-        # Determine Room
-        entry_room = requested_start or self.resource_manager.get_data('level_requirements', {}).get(level_id, {}).get('entry_room')
-        if not entry_room: entry_room = self.player.get('location')
-        if not entry_room and self.current_level_rooms_world_state:
-            entry_room = list(self.current_level_rooms_world_state.keys())[0]
-
-        # Place Player
-        self.player['location'] = entry_room
+        # If an explicit room was requested, use it. Otherwise trust what
+        # _initialize_level_data already set via _resolve_entry_room_and_map.
+        if requested_start and requested_start in self.current_level_rooms_world_state:
+            self.player['location'] = requested_start
+        
+        entry_room = self.player.get('location')
+        
+        # Final safety net
+        if not entry_room or entry_room not in self.current_level_rooms_world_state:
+            if self.current_level_rooms_world_state:
+                entry_room = list(self.current_level_rooms_world_state.keys())[0]
+                self.player['location'] = entry_room
+        
         self.player['visited_rooms'] = {entry_room}
 
         # Place Companion
@@ -3046,6 +3120,9 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
     def _handle_qte_resolution(self, qte_result: dict) -> dict:
         """Handle QTE completion natively with proper consequence processing"""
+        tracer = TraceLogger("QTEResolution")
+        tracer.mark("start", success=qte_result.get('success'), hazard_id=qte_result.get('qte_source_hazard_id'))
+
         self.player['qte_active'] = False
         
         self.add_ui_event({"event_type": "destroy_qte_popup", "priority": 1000})
@@ -3065,22 +3142,26 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             if getattr(self, 'death_ai', None): 
                 self.logger.info("QTE Success - Increasing Entropy.")
                 self.death_ai.increase_entropy(2.0)
+                tracer.mark("entropy_increased")
 
         # --- THE FIX: Halt all other processing if a Finale Chain is active! ---
         if self._qte_resolve_finale(qte_result):
+            tracer.mark("resolved_via_finale_chain")
             return self._build_response(messages=result_messages)
 
         # 3. Player Damage & Sacrifice
         self._qte_resolve_player_damage(qte_result, result_messages)
         if getattr(self, 'is_game_over', False):
+            tracer.mark("game_over_triggered_by_damage")
             return self._build_response(messages=result_messages)
 
-        # 4. NPC Fate
-        self._qte_resolve_npc_fate(qte_result, result_messages)
+        # 4. NPC Fate (This is where the fix lives!)
+        self._qte_resolve_npc_fate(qte_result, result_messages, tracer)
 
         # 5. Hazard State Transitions & Chains
         self._qte_resolve_hazard_state(qte_result)
         if getattr(self, 'is_game_over', False):
+            tracer.mark("game_over_triggered_by_hazard_state")
             return self._build_response(messages=result_messages)
 
         # 6. Elevator Auto-Resume
@@ -3088,6 +3169,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
         # 7. Resolve Pending Movement
         self.add_ui_event({"event_type": "_drain_qte_queue", "priority": -1})
+        tracer.mark("exit_success")
         return self._qte_resolve_movement(qte_result, result_messages)
 
     # -------------------------------------------------------------------------
@@ -3175,65 +3257,109 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             self.player.setdefault('status_effects', {})['bleeding'] = 10
             self.logger.info("Player gained 'bleeding' status (10 turns)")
 
-    def _qte_resolve_npc_fate(self, qte_result: dict, result_messages: list):
-        """Delegates all NPC deaths, saves, and splash damage to the Dispatcher."""
-        target_npc = qte_result.get('target_npc')
-        skipped = self.player.setdefault('death_design_skipped', [])
+    def _kill_npc(self, npc_name: str, reason: str = "Killed.", silent: bool = False):
+        """
+        Directly mutates the game state to kill an NPC.
+        If silent=True, no UI events or logs are generated.
+        """
+        npc_lower = npc_name.lower()
+        
+        # 1. Update Roster Status
+        self.player.setdefault('npc_status', {})[npc_lower] = 'dead'
+        
+        # 2. Remove from Companions if they were recruited
+        companions = [c.lower() for c in self.player.get('companions', [])]
+        if npc_lower in companions:
+            self.player['companions'] = [c for c in self.player['companions'] if c.lower() != npc_lower]
+            
+        if self.player.get('companion_id', '').lower() == npc_lower:
+            self.player['companion_id'] = None
 
-        if not target_npc:
-            return
-
-        if qte_result.get("success"):
-            if target_npc not in skipped:
-                skipped.append(target_npc)
-
-            if qte_result.get("npc_sacrifice_mode"):
-                result_messages.append(f"\n\n[color=00ff00]{target_npc} pushed you clear! They're hurt but alive.[/color]")
-                self.player.setdefault("npc_status", {})[target_npc.lower()] = "injured"
-            else:
-                result_messages.append(f"\n\n[color=00ff00]You pulled {target_npc} out of harm's way! Death will have to look elsewhere.[/color]")
-
-            if getattr(self, 'death_ai', None):
-                self.death_ai.increase_entropy(3.0)
-
-        elif not qte_result.get("success"):
-            if qte_result.get("npc_fatal_on_failure"):
-                custom_failure_msg = qte_result.get("failure_message", "You failed to save them.")
-                self.handle_hazard_consequence({
-                    "type": "npc_killed_by_hazard",
-                    "hazard_id": qte_result.get("qte_source_hazard_id"),
-                    "npc_name": target_npc,
-                    "popup_text": f"{custom_failure_msg}\n\n{target_npc} is gone."
-                })
+        # 3. Advance Death's List
+        deaths_list = self.player.get('deaths_list', [])
+        for i, char in enumerate(deaths_list):
+            if char.lower() == npc_lower:
+                deaths_list.pop(i)
+                break
                 
-            elif qte_result.get("npc_sacrifice_mode"):
-                splash = int(qte_result.get("player_splash_damage", 10))
-                if splash > 0:
-                    self.apply_damage(splash, source="hazard splash (sacrifice)")
+        if not silent:
+            self.logger.info(f"NPC '{npc_name}' killed. Reason: {reason}")
+
+    def _qte_resolve_npc_fate(self, qte_result: dict, result_messages: list, tracer: TraceLogger):
+        """
+        Handles NPC interventions. Safely advances the deaths_list on success,
+        or triggers a fatal event for the NPC on failure.
+        """
+        target_npc = qte_result.get('target_npc')
+        success = qte_result.get('success', False)
+
+        # --- PATH A: Successful Intervention (Player saved someone, or someone saved the player) ---
+        if success:
+            # If target_npc is present, the player saved them. 
+            # If not, the player saved themselves.
+            saved_entity = target_npc if target_npc else 'player'
+            
+            deaths_list = self.player.get('deaths_list', [])
+            if not deaths_list:
+                tracer.mark("death_list_empty_on_save")
+                return
+
+            saved_lower = saved_entity.lower()
+            
+            # Scenario 1: The entity was next in line
+            if deaths_list[0].lower() == saved_lower:
+                skipped = deaths_list.pop(0)
+                self.player.setdefault('death_design_skipped', []).append(skipped)
+                
+                new_target = deaths_list[0] if deaths_list else "None"
+                self.logger.info(f"[Death's Design] '{skipped}' was saved! Death moves on to: {new_target}")
+                tracer.mark("death_list_advanced", saved=skipped, new_target=new_target)
+                return
+
+            # Scenario 2: The entity was saved out of order
+            for i, char in enumerate(deaths_list):
+                if char.lower() == saved_lower:
+                    skipped = deaths_list.pop(i)
+                    self.player.setdefault('death_design_skipped', []).append(skipped)
                     
-                self.handle_hazard_consequence({
-                    "type": "npc_killed_by_hazard",
-                    "hazard_id": qte_result.get("qte_source_hazard_id"),
-                    "npc_name": target_npc,
-                    "popup_text": f"{target_npc} gave their life for you — and it still wasn't enough."
-                })
+                    self.logger.info(f"[Death's Design] '{skipped}' was saved out of order. Removed from list.")
+                    tracer.mark("death_list_advanced_out_of_order", saved=skipped)
+                    return
+                    
+        # --- PATH B: Failed Intervention (NPC dies) ---
+        elif target_npc and qte_result.get('npc_fatal_on_failure'):
+            tracer.mark("npc_fatal_failure", target_npc=target_npc)
+            
+            if hasattr(self, '_kill_npc'):
+                self._kill_npc(
+                    target_npc, 
+                    qte_result.get('death_reason') or f"The hazard violently crushed {target_npc}."
+                )
 
     def register_intervention(self, saved_npc: str):
         """Shifts Death's Design to the next target and handles narrative consequences."""
         self.logger.info(f"INTERVENTION: Player saved {saved_npc} from Death's Design!")
         
-        # 1. Update the Death List (The Endless Loop)
+        # 1. Update the Death List (The Endless Loop) - FIXED FOR CASE SENSITIVITY
         death_list = self.player.get('deaths_list', [])
-        if saved_npc in death_list:
-            # Remove them from their current spot in the firing squad...
-            death_list.remove(saved_npc)
-            # ...and put them at the absolute back of the line!
-            death_list.append(saved_npc)
-            self.player['deaths_list'] = death_list
-            
-        # Track the save for End-Game scoring
-        self.player.setdefault('death_design_skipped', []).append(saved_npc)
+        saved_lower = saved_npc.lower()
+        skipped = None
         
+        for i, char in enumerate(death_list):
+            if char.lower() == saved_lower:
+                skipped = death_list.pop(i)
+                break
+                
+        if skipped:
+            # Put them at the absolute back of the line!
+            death_list.append(skipped)
+            self.player['deaths_list'] = death_list
+            # Track the save for End-Game scoring
+            self.player.setdefault('death_design_skipped', []).append(skipped)
+        else:
+            self.logger.warning(f"register_intervention: {saved_npc} not found in death_list!")
+            skipped = saved_npc # Fallback for narrative
+            
         # 2. Heal Visionary Distrust
         flags = self.player.setdefault('flags', {})
         if flags.get('visionary_distrusted'):
@@ -3247,16 +3373,47 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             })
             
         # 3. Tell the AI Director to immediately acquire the new target
+        new_target = "None"
         if hasattr(self, 'hazard_engine'):
             new_target, _ = self.hazard_engine.get_next_npc_target()
             self.player['current_hunt_target'] = new_target
             self.logger.info(f"Death's Design updated. New target is: {new_target}")
+        else:
+            new_target = death_list[0] if death_list else "None"
             
-        # 4. Narrative UI Feedback
-        self.add_ui_event({
-            "event_type": "show_message",
-            "message": f"\n[color=00ffff]You broke the chain! By saving {saved_npc}, Death has been forced to skip them... for now. The design immediately moves to the next survivor.[/color]\n"
-        })
+        # 4. Narrative UI Feedback (The Lore Mechanic)
+        inventory_ids = [item.get('id', item) if isinstance(item, dict) else item for item in self.player.get('inventory', [])]
+        interaction_flags = getattr(self, 'interaction_flags', set())
+        
+        knows_cycle = (
+            'bludworths_final_notes' in inventory_ids or 
+            'knows_death_cycle' in interaction_flags or 
+            flags.get('knows_death_cycle')
+        )
+
+        if knows_cycle:
+            # The Horrifying Reveal
+            formatted_list = " -> ".join([f"[color=#FF3131]{name}[/color]" for name in death_list])
+            message = (
+                f"\nYou saved {skipped}... but the words from Bludworth's notes burn in your mind.\n\n"
+                f"[color=#aaaaaa][i]\"Death has a design. You skip someone, it just moves to the next... and eventually, it circles back.\"[/i][/color]\n\n"
+                f"{skipped} isn't safe. They were just moved to the back of the line. "
+                f"And now, Death is coming for the next in sequence:\n\n"
+                f"[b]The Design:[/b] {formatted_list}\n"
+            )
+            
+            self.add_ui_event({
+                "event_type": "show_popup",
+                "title": "A Horrifying Realization",
+                "message": message,
+                "priority": 900
+            })
+        else:
+            # Ignorant Bliss
+            self.add_ui_event({
+                "event_type": "show_message",
+                "message": f"\n[color=00ffff]You broke the chain! By saving {skipped}, Death has been forced to skip them. The design immediately moves to the next survivor.[/color]\n"
+            })
 
     def _check_police_softlock(self):
         """If player arrived at the police station without learning the deaths list,
@@ -4521,16 +4678,21 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
     def _handle_conseq_start_qte(self, consequence: dict, depth: int):
         if not self.qte_engine:
             return
-        # If a QTE is already running, or there are unread popups in the queue, enqueue
-        if self.player.get('qte_active') or self._has_pending_popup_in_queue():
+        # Only enqueue if a QTE is ACTUALLY running (engine confirms it), not just the player flag
+        # player['qte_active'] can get stuck True if a previous QTE was dismissed without resolution
+        engine_has_active = bool(self.qte_engine.active_qte)
+        if engine_has_active or self._has_pending_popup_in_queue():
             self._enqueue_qte(consequence)
             return
+        # Also clear stale qte_active flag so we don't block ourselves
+        if self.player.get('qte_active') and not engine_has_active:
+            self.logger.warning("_handle_conseq_start_qte: clearing stale qte_active flag")
+            self.player['qte_active'] = False
         try:
             qte_ctx = consequence.get("qte_context", {})
             hid = consequence.get("hazard_id")
             if hid and "qte_source_hazard_id" not in qte_ctx:
                 qte_ctx["qte_source_hazard_id"] = hid
-                
             self.qte_engine.start_qte(consequence.get("qte_type"), qte_ctx)
         except Exception as e:
             self.logger.error(f"Failed to start QTE: {e}", exc_info=True)
@@ -5340,163 +5502,234 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
     def _get_visible_furniture_in_room(self, room_data: dict) -> list:
         """
-        Collects furniture from the room, resolving descriptions from:
-        1. Instance data
-        2. Room's examine_details map (Canonical)
-        3. Master furniture.json
-        Filters out hidden containers that haven't been revealed yet.
+        Orchestrator to collect furniture from the room.
+        Filters hidden containers and resolves descriptions.
         """
+        tracer = TraceLogger("GetFurniture")
+        tracer.mark("start", room_name=room_data.get('name'))
+        
         furniture = []
-        # Load master data for fallbacks
-        furn_master = self.resource_manager.get_data('furniture', {})
-        # Load room-specific context descriptions
-        room_examine_map = room_data.get('examine_details', {})
+        furn_master = getattr(self, 'resource_manager', None).get_data('furniture', {}) if hasattr(self, 'resource_manager') else {}
         
-        # --- FIX: Grab the new state_examine_details map ---
-        state_examine_map = room_data.get('state_examine_details', {}) 
+        raw_furniture_list = room_data.get('furniture', [])
         
-        def _try_get_desc(key):
-            if not key: return None
-            
-            # --- 1. Check active state overrides FIRST ---
-            for flag in getattr(self, 'interaction_flags', set()):
-                if flag in state_examine_map:
-                    active_state_map = state_examine_map[flag]
-                    if key in active_state_map: return active_state_map[key]
-                    if key.replace('_', ' ') in active_state_map: return active_state_map[key.replace('_', ' ')]
-                    if key.lower() in active_state_map: return active_state_map[key.lower()]
-            # ---------------------------------------------
-            
-            # 2. Try exact base examine details
-            if key in room_examine_map: return room_examine_map[key]
-            # 3. Try spaces
-            if key.replace('_', ' ') in room_examine_map: return room_examine_map[key.replace('_', ' ')]
-            # 4. Try lower
-            if key.lower() in room_examine_map: return room_examine_map[key.lower()]
-            return None
-
-        for f_data in room_data.get('furniture', []):
-            # Handle case where furniture might be just a string ID
-            if isinstance(f_data, str):
-                f_data = {"name": f_data}
+        for f_data in raw_furniture_list:
+            processed_f_data = self._process_single_furniture(f_data, room_data, furn_master, tracer)
+            if processed_f_data:
+                furniture.append(processed_f_data)
                 
-            if isinstance(f_data, dict) and 'name' in f_data:
-                # --- FIX: Skip hidden containers that haven't been revealed ---
-                if f_data.get('is_hidden_container', False):
-                    reveal_flag = f_data.get('revealed_by_flag')
-                    if reveal_flag and reveal_flag not in getattr(self, 'interaction_flags', {}):
-                        continue  # Not yet revealed, skip entirely
-                    # If no reveal_flag specified, also skip (it's hidden by default)
-                    if not reveal_flag:
-                        continue
-                # ---------------------------------------------------------------
-
-                name = f_data['name']
-                
-                # 1. Start with description in the instance itself
-                desc = f_data.get('description') or f_data.get('examine_details')
-                
-                # 2. Look in Room's examine_details (High Priority for environmental storytelling)
-                if not desc:
-                    desc = _try_get_desc(name)
-
-                # 3. Look in Master Data (furniture.json)
-                master_entry = furn_master.get(name) or furn_master.get(name.replace(' ', '_'))
-                if not desc and master_entry:
-                    desc = master_entry.get('description') or master_entry.get('examine_details')
-
-                # 4. Fallback
-                if not desc:
-                    desc = "It's a piece of furniture."
-
-                # Augment the live f_data dict IN-PLACE with any master keys it lacks.
-                # CRITICAL: Do NOT copy f_data here. We must return the original live dict
-                # reference so that mutations (e.g. unlock, break) made via _find_entity_in_room
-                # propagate back to current_level_rooms_world_state. A copy would silently
-                # discard those writes, causing bugs like unlock succeeding but search still
-                # seeing the container as locked.
-                if master_entry:
-                    for k, v in master_entry.items():
-                        if k not in f_data:
-                            f_data[k] = v
-
-                f_data['description'] = desc
-                furniture.append(f_data)
+        tracer.mark("exit_success", count=len(furniture))
         return furniture
 
-    def _get_visible_objects_in_room(self, room_data: dict, hazard_entity_names: set) -> list:
-        objects = []
-        
-        # --- 1. Dynamically Inject State-Added Objects ---
-        base_objects = list(room_data.get('objects', []))
-        
-        state_added = room_data.get('state_added_objects', {})
-        for flag in getattr(self, 'interaction_flags', set()):
-            if flag in state_added:
-                base_objects.extend(state_added[flag])
+    # ==========================================
+    # GET FURNITURE HELPERS
+    # ==========================================
 
-        # --- 2. Setup Description Lookup ---
-        room_examine_map = room_data.get('examine_details', {})
-        state_examine_map = room_data.get('state_examine_details', {})
+    def _process_single_furniture(self, f_data, room_data: dict, furn_master: dict, tracer) -> Optional[dict]:
+        """
+        Filters hidden items, resolves the correct description, and merges master data IN-PLACE.
+        """
+        # Handle case where furniture might be just a string ID
+        if isinstance(f_data, str):
+            f_data = {"name": f_data}
 
-        def _try_get_desc(key):
-            if not key: return None
-            
-            # Check active state overrides FIRST
-            for flag in getattr(self, 'interaction_flags', set()):
-                if flag in state_examine_map:
-                    active_state_map = state_examine_map[flag]
-                    if key in active_state_map: return active_state_map[key]
-                    if key.replace('_', ' ') in active_state_map: return active_state_map[key.replace('_', ' ')]
-                    if key.lower() in active_state_map: return active_state_map[key.lower()]
-            
-            # Fallback to base examine details
-            if key in room_examine_map: return room_examine_map[key]
-            if key.replace('_', ' ') in room_examine_map: return room_examine_map[key.replace('_', ' ')]
-            if key.lower() in room_examine_map: return room_examine_map[key.lower()]
+        if not isinstance(f_data, dict) or 'name' not in f_data:
             return None
 
-        # --- 3. Process the Unified Objects List ---
-        for obj in base_objects:
-            
-            # Handle if the object is just a string (e.g., "X-ray films")
-            if isinstance(obj, str):
-                norm_name = normalize_text(obj)
-                if norm_name in hazard_entity_names:
-                    continue  # Skip static object if hazard entity overrides it
-                    
-                desc = _try_get_desc(obj)
-                objects.append({"name": obj, "description": desc or f"You see a {obj}."})
-                
-            # Handle if the object is a dictionary (e.g., the wall-mounted TV)
-            elif isinstance(obj, dict) and 'name' in obj:
-                norm_name = normalize_text(obj['name'])
-                if norm_name in hazard_entity_names:
-                    continue  # Skip static object if hazard entity overrides it
-                
-                name = obj['name']
-                
-                # Try getting description directly from the object dict
-                desc = obj.get('description') or obj.get('examine_details')
-                
-                # Fallback to room's examine details or state overrides
-                if not desc:
-                    desc = _try_get_desc(name)
-                    # Also check aliases if the base name fails
-                    if not desc and 'aliases' in obj:
-                        for alias in obj['aliases']:
-                            desc = _try_get_desc(alias)
-                            if desc: break
+        # 1. Filter out hidden containers that haven't been revealed
+        if f_data.get('is_hidden_container', False):
+            reveal_flag = f_data.get('revealed_by_flag')
+            active_flags = getattr(self, 'interaction_flags', set())
+            if not reveal_flag or reveal_flag not in active_flags:
+                tracer.mark("skipped_hidden_container", name=f_data['name'])
+                return None
 
-                # Final fallback
-                if not desc:
-                    desc = "It's an object."
+        name = f_data['name']
+        
+        # 2. Resolve Description
+        desc = self._resolve_furniture_description(f_data, name, room_data, furn_master, tracer)
 
-                entity = obj.copy()
-                entity['description'] = desc
-                objects.append(entity)
+        # 3. Merge Master Data IN-PLACE
+        # CRITICAL: Do NOT copy f_data here. We must return the original live dict
+        # reference so that mutations (e.g. unlock, break) propagate back to 
+        # current_level_rooms_world_state.
+        master_entry = furn_master.get(name) or furn_master.get(name.replace(' ', '_'))
+        if master_entry:
+            for k, v in master_entry.items():
+                if k not in f_data:
+                    f_data[k] = v
 
+        f_data['description'] = desc
+        return f_data
+
+    def _resolve_furniture_description(self, f_data: dict, name: str, room_data: dict, furn_master: dict, tracer) -> str:
+        """Looks up the description through the hierarchy: Instance -> State/Room -> Master -> Fallback."""
+        # 1. Instance Data
+        desc = f_data.get('description') or f_data.get('examine_details')
+        if desc:
+            tracer.mark("desc_from_instance", name=name)
+            return desc
+
+        # 2. State / Room Override (Calls our new shared helper!)
+        desc = self._resolve_state_examine_desc(name, room_data)
+        if desc:
+            tracer.mark("desc_from_room_state", name=name)
+            return desc
+
+        # 3. Master Data
+        master_entry = furn_master.get(name) or furn_master.get(name.replace(' ', '_'))
+        if master_entry:
+            desc = master_entry.get('description') or master_entry.get('examine_details')
+            if desc:
+                tracer.mark("desc_from_master", name=name)
+                return desc
+                
+        # 4. Fallback
+        tracer.mark("desc_from_fallback", name=name)
+        return "It's a piece of furniture."
+
+    def _resolve_state_examine_desc(self, key: str, room_data: dict) -> Optional[str]:
+        """
+        Claude Fix: Checks BOTH interaction_flags (memory) and player['flags'] (disk) 
+        to see if a dynamic state description exists for the given object key.
+        """
+        if not key: return None
+
+        state_examine_map = room_data.get('state_examine_details', {}) 
+        room_examine_map = room_data.get('examine_details', {})
+
+        # Collect all active flags from BOTH sources
+        active_flags = set(getattr(self, 'interaction_flags', set()))
+        player_flags = self.player.get('flags', {})
+        
+        if isinstance(player_flags, dict):
+            active_flags.update(k for k, v in player_flags.items() if v)
+        elif isinstance(player_flags, set):
+            active_flags.update(player_flags)
+
+        # 1. Check dynamic state overrides (e.g., "post_mri")
+        for flag in active_flags:
+            if flag in state_examine_map:
+                active_state_map = state_examine_map[flag]
+                if key in active_state_map: return active_state_map[key]
+                if key.replace('_', ' ') in active_state_map: return active_state_map[key.replace('_', ' ')]
+                if key.lower() in active_state_map: return active_state_map[key.lower()]
+
+        # 2. Check standard room overrides
+        if key in room_examine_map: return room_examine_map[key]
+        if key.replace('_', ' ') in room_examine_map: return room_examine_map[key.replace('_', ' ')]
+        if key.lower() in room_examine_map: return room_examine_map[key.lower()]
+        
+        return None
+
+    def _get_visible_objects_in_room(self, room_data: dict, hazard_entity_names: set) -> list:
+        """
+        Orchestrator to collect objects from the room.
+        Merges state-added objects, filters hazard overrides, and resolves descriptions.
+        """
+        tracer = TraceLogger("GetObjects")
+        tracer.mark("start", room_name=room_data.get('name'))
+
+        objects = []
+        
+        # 1. Get the unified list of objects (Base + Dynamic State-Added)
+        unified_objects = self._get_unified_room_objects(room_data, tracer)
+
+        # 2. Process each object
+        for obj in unified_objects:
+            processed_obj = self._process_single_object(obj, room_data, hazard_entity_names, tracer)
+            if processed_obj:
+                objects.append(processed_obj)
+
+        tracer.mark("exit_success", count=len(objects))
         return objects
+
+    # ==========================================
+    # GET OBJECTS HELPERS
+    # ==========================================
+
+    def _get_unified_room_objects(self, room_data: dict, tracer) -> list:
+        """
+        Combines base room objects with dynamically injected state-added objects.
+        Checks both memory (interaction_flags) and disk (player['flags']).
+        """
+        base_objects = list(room_data.get('objects', []))
+        state_added = room_data.get('state_added_objects', {})
+
+        if not state_added:
+            return base_objects
+
+        # Collect active flags from BOTH sources
+        active_flags = set(getattr(self, 'interaction_flags', set()))
+        player_flags = self.player.get('flags', {})
+        
+        if isinstance(player_flags, dict):
+            active_flags.update(k for k, v in player_flags.items() if v)
+        elif isinstance(player_flags, set):
+            active_flags.update(player_flags)
+
+        for flag in active_flags:
+            if flag in state_added:
+                added_objs = state_added[flag]
+                base_objects.extend(added_objs)
+                tracer.mark("state_objects_added", flag=flag, count=len(added_objs))
+
+        return base_objects
+
+    def _process_single_object(self, obj, room_data: dict, hazard_entity_names: set, tracer) -> Optional[dict]:
+        """
+        Normalizes the object, checks for hazard overrides, and resolves its description 
+        using the shared state resolution helper.
+        """
+        # ---------------------------------------------
+        # 1. Handle String Object (e.g., "X-ray films")
+        # ---------------------------------------------
+        if isinstance(obj, str):
+            norm_name = normalize_text(obj)
+            if norm_name in hazard_entity_names:
+                tracer.mark("skipped_hazard_override", name=obj)
+                return None  # Skip static object if hazard entity overrides it
+            
+            # Resolve via the shared helper
+            desc = self._resolve_state_examine_desc(obj, room_data)
+            return {"name": obj, "description": desc or f"You see a {obj}."}
+
+        # ---------------------------------------------
+        # 2. Handle Dictionary Object (e.g., wall-mounted TV)
+        # ---------------------------------------------
+        if isinstance(obj, dict) and 'name' in obj:
+            name = obj['name']
+            norm_name = normalize_text(name)
+            
+            if norm_name in hazard_entity_names:
+                tracer.mark("skipped_hazard_override", name=name)
+                return None
+
+            # A. Instance Data
+            desc = obj.get('description') or obj.get('examine_details')
+
+            # B. State/Room Override (Base Name)
+            if not desc:
+                desc = self._resolve_state_examine_desc(name, room_data)
+
+            # C. State/Room Override (Aliases)
+            if not desc and 'aliases' in obj:
+                for alias in obj['aliases']:
+                    desc = self._resolve_state_examine_desc(alias, room_data)
+                    if desc:
+                        tracer.mark("desc_resolved_via_alias", alias=alias)
+                        break
+
+            # D. Fallback
+            if not desc:
+                desc = "It's an object."
+
+            entity = obj.copy()
+            entity['description'] = desc
+            return entity
+
+        # Invalid object format
+        return None
 
     def _get_hazard_entities_in_room(self, room_name: str) -> tuple[list, set]:
         hazard_entity_names = set()
@@ -6566,122 +6799,29 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             return None
 
     def check_game_state_transitions(self) -> bool:
-        if getattr(self, 'is_game_over', False):
-            return
         """Checks for overarching game state changes like death, victory, or level completion."""
+        if getattr(self, 'is_game_over', False):
+            return False
+            
         try:
             self.logger.debug("check_game_state_transitions: Checking game state transitions.")
 
-
-
-            # --- Terminal game states ---
+            # 1. Check Terminal States (Win / Game Over)
             if self.is_game_over:
-                # Victory branch
-                if self.game_won:
-                    has_win_event = any(
-                        e.get('event_type') == 'game_won'
-                        for e in getattr(self, 'ui_events', [])
-                    )
-                    if not has_win_event:
-                        self.add_ui_event({
-                            "event_type": "game_won",
-                            "final_score": self.player.get('score', 0),
-                            "final_narrative": self.generate_narrative_epilogue()
-                        })
-                    return True
+                return self._process_terminal_states()
 
-                # Death branch
-                reason = self.player.get('death_reason', 'Death caught up with you.')
-                self.logger.info(f"check_game_state_transitions: Game over. Death reason: {reason}")
-
-                # Prevent duplicate game_over events
-                has_go_event = any(
-                    e.get('event_type') == 'game_over'
-                    for e in getattr(self, 'ui_events', [])
-                )
-
-                if not has_go_event:
-                    self.add_ui_event({
-                        "event_type": "game_over",
-                        "death_reason": reason,
-                        "final_narrative": self.player.get('final_narrative') or self.get_death_narrative(),
-                        "flavor_text": self.player.get('flavor_text'),
-                        "hide_stats": self.player.get('hide_stats', False),
-                        "player_state": self.player.copy(),
-                    })
-                return True
-
-            # Notify once when exit requirements are met
+            # 2. Check Level Exit Notifications
             if self.check_level_exit_available():
-                level_requirements = self.resource_manager.get_data('level_requirements', {})
-                current_level = self.player.get('current_level', 1)
-                current_level_req = level_requirements.get(str(current_level), {})
-                exit_room = current_level_req.get('exit_room', 'UNKNOWN')
-
-                if not self.player.get('notified_requirements_met'):
-                    self.add_ui_event({
-                        "event_type": "show_popup",
-                        "title": "Level Exit Available",
-                        "message": (
-                            "You have collected all required items! You may now exit the level via the "
-                            f"{exit_room.replace('_', ' ').title()}."
-                        )
-                    })
-                    self.player['notified_requirements_met'] = True
+                self._notify_level_exit_available()
                 return True
 
-            # Level completion gate
+            # 3. Check Level Completion
             if self.check_level_completion():
-                try:
-                    met, _missing = self._requirements_met_for_level_exit()
-                except Exception as e:
-                    self.logger.error(
-                        f"check_game_state_transitions: Error checking requirements for level exit: {e}",
-                        exc_info=True
-                    )
-                    met = False
-
-                if not met and not self.player.get('override_requirements', False):
-                    self.logger.warning(
-                        "check_game_state_transitions: Level completion requested but requirements are not met; blocking transition."
-                    )
-                    return False
-
-                try:
-                    level_data = self.get_level_completion_data()
-                except Exception as e:
-                    self.logger.error(
-                        f"check_game_state_transitions: Error getting level completion data: {e}",
-                        exc_info=True
-                    )
-                    level_data = {}
-
-                if not isinstance(level_data, dict):
-                    level_data = {}
-
-                # Prevent duplicate level_complete events
-                has_level_event = any(
-                    e.get('event_type') == 'level_complete'
-                    for e in getattr(self, 'ui_events', [])
-                )
-
-                if not has_level_event:
-                    self.add_ui_event({
-                        "event_type": "level_complete",
-                        "level_name": level_data.get('level_name', 'Unknown Area'),
-                        "narrative": level_data.get('narrative', 'You survived this area.'),
-                        "score": self.player.get('score', 0),
-                        "turns_taken": self.player.get('actions_taken', 0),
-                        "evidence_count": len(self.player.get('inventory', [])),
-                        "evaded_hazards": self.player.get('evaded_hazards', []),
-                        "omens_witnessed": self.player.get('omens_witnessed', 0),
-                        "qte_successes": self.player.get('qte_successes', 0),
-                        "qte_attempts": self.player.get('qte_attempts', 0),
-                        "player_state": self.player.copy(),
-                        "next_level_id": level_data.get('next_level_id'),
-                        "next_start_room": level_data.get('next_start_room'),
-                    })
-                return True
+                # --- NEW: Offscreen Death Check ---
+                self._check_for_abandoned_targets()
+                
+                # Process the level transition
+                return self._process_level_completion()
 
             return False
 
@@ -6874,6 +7014,137 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             self.logger.error(f"get_level_completion_data: Error: {e}", exc_info=True)
             return {}
 
+    def _process_terminal_states(self) -> bool:
+        """Handles routing to the Victory or Game Over screens."""
+        # Victory branch
+        if self.game_won:
+            has_win_event = any(e.get('event_type') == 'game_won' for e in getattr(self, 'ui_events', []))
+            if not has_win_event:
+                self.add_ui_event({
+                    "event_type": "game_won",
+                    "final_score": self.player.get('score', 0),
+                    "final_narrative": self.generate_narrative_epilogue()
+                })
+            return True
+
+        # Death branch
+        reason = self.player.get('death_reason', 'Death caught up with you.')
+        self.logger.info(f"check_game_state_transitions: Game over. Death reason: {reason}")
+
+        has_go_event = any(e.get('event_type') == 'game_over' for e in getattr(self, 'ui_events', []))
+        if not has_go_event:
+            self.add_ui_event({
+                "event_type": "game_over",
+                "death_reason": reason,
+                "final_narrative": self.player.get('final_narrative') or self.get_death_narrative(),
+                "flavor_text": self.player.get('flavor_text'),
+                "hide_stats": self.player.get('hide_stats', False),
+                "player_state": self.player.copy(),
+            })
+        return True
+
+    def _notify_level_exit_available(self):
+        """Displays a one-time popup when exit requirements are met."""
+        level_requirements = self.resource_manager.get_data('level_requirements', {})
+        current_level = self.player.get('current_level', 1)
+        current_level_req = level_requirements.get(str(current_level), {})
+        exit_room = current_level_req.get('exit_room', 'UNKNOWN')
+
+        if not self.player.get('notified_requirements_met'):
+            self.add_ui_event({
+                "event_type": "show_popup",
+                "title": "Level Exit Available",
+                "message": (
+                    "You have collected all required items! You may now exit the level via the "
+                    f"{exit_room.replace('_', ' ').title()}."
+                )
+            })
+            self.player['notified_requirements_met'] = True
+
+    def _process_level_completion(self) -> bool:
+        """Validates requirements and triggers the level_complete UI event."""
+        try:
+            met, _missing = self._requirements_met_for_level_exit()
+        except Exception as e:
+            self.logger.error(f"Error checking requirements for level exit: {e}", exc_info=True)
+            met = False
+
+        if not met and not self.player.get('override_requirements', False):
+            self.logger.warning("Level completion requested but requirements are not met; blocking transition.")
+            return False
+
+        try:
+            level_data = self.get_level_completion_data()
+        except Exception as e:
+            self.logger.error(f"Error getting level completion data: {e}", exc_info=True)
+            level_data = {}
+
+        if not isinstance(level_data, dict):
+            level_data = {}
+
+        has_level_event = any(e.get('event_type') == 'level_complete' for e in getattr(self, 'ui_events', []))
+
+        if not has_level_event:
+            self.add_ui_event({
+                "event_type": "level_complete",
+                "level_name": level_data.get('level_name', 'Unknown Area'),
+                "narrative": level_data.get('narrative', 'You survived this area.'),
+                "score": self.player.get('score', 0),
+                "turns_taken": self.player.get('actions_taken', 0),
+                "evidence_count": len(self.player.get('inventory', [])),
+                "evaded_hazards": self.player.get('evaded_hazards', []),
+                "omens_witnessed": self.player.get('omens_witnessed', 0),
+                "qte_successes": self.player.get('qte_successes', 0),
+                "qte_attempts": self.player.get('qte_attempts', 0),
+                "player_state": self.player.copy(),
+                "next_level_id": level_data.get('next_level_id'),
+                "next_start_room": level_data.get('next_start_room'),
+            })
+        return True
+
+    def _check_for_abandoned_targets(self):
+        """
+        Checks if the primary target of Death's Design was left behind in the level.
+        If so, they suffer a grisly offscreen death.
+        """
+        deaths_list = self.player.get('deaths_list', [])
+        roster = self.player.get('npc_status', {})
+        
+        # Determine who the active target is (ignoring the player)
+        active_target = None
+        for name in deaths_list:
+            if name.lower() != 'player' and roster.get(name.lower(), 'alive') in ['alive', 'injured']:
+                active_target = name
+                break
+                
+        if not active_target:
+            return
+
+        # Check if the target was recruited
+        companions = [c.lower() for c in self.player.get('companions', [])]
+        if active_target.lower() in companions or active_target.lower() == self.player.get('companion_id', '').lower():
+            return # They are safe with the player
+            
+        # Target was left behind! Generate an offscreen death.
+        offscreen_deaths = [
+            f"tripping and impaling themselves on an exposed piece of rebar while trying to escape",
+            f"being crushed beneath a collapsing ventilation shaft",
+            f"slipping on a puddle of chemicals and fatally fracturing their skull",
+            f"being electrocuted by a severed, dangling power line",
+            f"suffocating after a heavy bookshelf pinned them to the floor"
+        ]
+        import random
+        death_method = random.choice(offscreen_deaths)
+        
+        # Kill the NPC
+        self._kill_npc(active_target, reason="Offscreen Death", silent=True)
+        
+        # Append to the offscreen casualties list so it can be shown in the InterLevelScreen narrative
+        casualty_msg = f"[color=#FF3131]{active_target}[/color] was left behind and died by {death_method}."
+        self.player.setdefault('offscreen_casualties', []).append(casualty_msg)
+        
+        self.logger.info(f"Offscreen Death: {active_target} abandoned and killed by {death_method}.")
+
     # --- NEW: Command Helpers ---
     def _parse_command(self, raw_input: str) -> Tuple[str, str]:
         """Parses raw string input into a verb and a target (case-insensitive). Injected with robust debugging logic."""
@@ -6905,12 +7176,22 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             return {"item_name": "", "target_name": None}
 
     #--- Room Interactable Triggers ---
-    def _try_trigger_room_interactable_use(self, target_name: str) -> bool:
+    def _try_trigger_room_interactable_use(self, interactable_id, room_id):
         """
         Handles room-level interactable triggers for the 'use' verb.
-        Canonical logic mirrors _try_trigger_room_interactable_examine.
-        Returns True if a trigger was processed (even if requirements not met).
         """
+        # 1. Get the list of all hazards in the room
+        room_hazards = self.hazard_engine.get_hazards_in_location(room_id)
+
+        # 2. Find the one that matches the interactable (e.g., 'hospital_exit')
+        # We check if the interactable_id matches the hazard's canonical key
+        hazard = next((h for h in room_hazards if h.get("hazard_key") == interactable_id), None)
+        
+        # Guard: If the hazard is already in a QTE state, don't re-trigger it!
+        if hazard and hazard.get('state') == 'door_force_qte':
+            self.logger.warning(f"Interactable {interactable_id} is already active. Ignoring 'use'.")
+            return True # Return True because we handled the input, we just ignored the action      
+
         try:
             room_id = self.player.get('location')
             if not room_id:
@@ -6924,7 +7205,8 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             if not triggers:
                 return False
 
-            tnorm = normalize_text(target_name)
+            # --- THE FIX: Use interactable_id instead of target_name ---
+            tnorm = normalize_text(interactable_id)
             aliases = {"revolving door", "the revolving door", "door", "exit", "revolving-door"}
 
             def _match():
@@ -7453,129 +7735,217 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
     #--- NPC Dialogue Condition Helpers
     def _resolve_npc_dialogue_entry_state(self, npc: dict, room_id: str, is_first_meeting: bool = False) -> str:
-        """
-        The Master State Funnel for dynamic dialogue.
-        Prioritizes immediate survival, active conversations, and then global Act structure.
-        """
         npc_id = npc.get('id', npc.get('name', '')).lower()
-        archetype = npc.get('archetype', 'bystander')
-        dialogue_states = npc.get('dialogue_states', {})
+        archetype = npc.get('archetype') or npc.get('role', 'bystander')
+
         
+        # --- THE FIX 2: Ensure the dictionary is bound to the NPC ---
+        if 'dialogue_states' not in npc:
+            npc['dialogue_states'] = {}
+        dialogue_states = npc['dialogue_states']
         current_act = self.player.get('current_act', 'act_1_survival')
-        room_data = getattr(self, 'get_room_data', lambda x: {})(room_id) or {}
+        
+        saved_state = self._get_npc_saved_state(npc)
 
-        # --- GET THE ACTUAL SAVED STATE ---
-        # Fetch the state from global memory 
-        saved_state = None
-        if hasattr(self, '_get_npc_state'):
-            saved_state = self._get_npc_state(npc)
-        if not saved_state:
-            saved_state = npc.get('current_state') or npc.get('initial_state', 'greeting')
-        # -------------------------------------------
-
-        # ---------------------------------------------------------
-        # PRIORITY 1: IMMEDIATE DANGER
-        # ---------------------------------------------------------
-        if room_data.get('hazards_present') and 'panic_state' in dialogue_states:
+        # 1. Immediate Danger
+        if self._check_immediate_danger(room_id, dialogue_states):
             return 'panic_state'
 
-        # ---------------------------------------------------------
-        # PRIORITY 2: ACTIVE CONVERSATION 
-        # ---------------------------------------------------------
+        # 2. Active Conversation Lock
+        if self._is_locked_in_conversation(saved_state):
+            return saved_state
+
+        # 3. Companion Override
+        if self._is_companion_override(npc_id, dialogue_states):
+            return 'companion_state'
+
+        # 4. Workplace Target Override
+        workplace_state = self._get_workplace_target_state(npc_id, room_id, dialogue_states)
+        if workplace_state:
+            return workplace_state
+
+        # 5. THE FIX: Specific NPC Act Dialogue (JIT Loaded)
+        specific_act_state = self._get_specific_npc_act_state(npc_id, current_act, dialogue_states, is_first_meeting)
+        if specific_act_state:
+            return specific_act_state
+
+        # 6. Archetype Fallback (JIT Loaded)
+        archetype_state = self._get_archetype_act_state(archetype, current_act, dialogue_states, is_first_meeting)
+        if archetype_state:
+            return archetype_state
+        
+
+        # 7. Conditional JSON Overrides
+        cond_state = self._check_conditional_overrides(npc, room_id)
+        if cond_state:
+            return cond_state
+
+        return saved_state
+
+
+    # ==========================================
+    # DIALOGUE FUNNEL HELPERS
+    # ==========================================
+
+    def _hydrate_spawned_npc(self, npc_dict: dict, room_id: str) -> dict:
+        """
+        Forces the Master State Funnel to execute the moment an NPC is spawned.
+        Guarantees the NPC's rich dialogue states are loaded into memory 
+        BEFORE the UI tries to render them.
+        """
+        # Determine if this is their first time speaking in this Act
+        met_npcs = self.player.get('met_npcs', [])
+        is_first = not met_npcs or npc_dict.get('name') not in met_npcs
+        
+        # Run the orchestrator we just built!
+        correct_state = self._resolve_npc_dialogue_entry_state(npc_dict, room_id, is_first_meeting=is_first)
+        
+        # Lock in the resolved state so the UI and logger see it instantly
+        npc_dict['initial_state'] = correct_state
+        npc_dict['current_state'] = correct_state
+        
+        return npc_dict
+
+    def _get_npc_saved_state(self, npc: dict) -> str:
+        """Fetches the state from global memory or defaults to greeting."""
+        if hasattr(self, '_get_npc_state'):
+            saved = self._get_npc_state(npc)
+            if saved: return saved
+        return npc.get('current_state') or npc.get('initial_state', 'greeting')
+
+    def _check_immediate_danger(self, room_id: str, dialogue_states: dict) -> bool:
+        """Checks if the room has hazards and the NPC has a panic state available."""
+        room_data = getattr(self, 'get_room_data', lambda x: {})(room_id) or {}
+        return bool(room_data.get('hazards_present') and 'panic_state' in dialogue_states)
+
+    def _is_locked_in_conversation(self, saved_state: str) -> bool:
+        """Honors deep conversation nodes (e.g., 'persuasion_check_fatalist') over base triggers."""
         base_entry_states = [
             'greeting', 'initial_state', 
             'act_1_survival', 'act_2_investigation', 'act_3_hunted', 'act_4_the_plan',
             'companion_state', 'workplace_target_state', 'dynamic_funnel_state',
-            'greeting_oblivious', 'greeting_uneasy', 'greeting_terrified'
+            'greeting_oblivious', 'greeting_uneasy', 'greeting_terrified',
+            'first_meeting', 'standard_loop'
         ]
+        return saved_state and saved_state not in base_entry_states
+
+    def _is_companion_override(self, npc_id: str, dialogue_states: dict) -> bool:
+        """Forces the companion state if the NPC is actively traveling with the player."""
+        return npc_id == self.player.get('current_companion', '').lower() and 'companion_state' in dialogue_states
+
+    def _get_workplace_target_state(self, npc_id: str, room_id: str, dialogue_states: dict) -> Optional[str]:
+        """Calculates Act 3 dynamic target responses based on current location and death count."""
+        if npc_id != self.player.get('active_death_target', '').lower():
+            return None
+
+        workplace_data = self.player.get('npc_workplaces', {}).get(npc_id, {})
+        workplace_level_id = workplace_data.get('level_id', '')
+        is_at_work = bool(workplace_level_id and workplace_level_id in room_id.lower())
         
-        # If the saved state is a deep node (like 'persuasion_check_fatalist'), honor it!
-        if saved_state and saved_state not in base_entry_states:
-            return saved_state
-
-        # ---------------------------------------------------------
-        # PRIORITY 3: COMPANION OVERRIDE
-        # ---------------------------------------------------------
-        if npc_id == self.player.get('current_companion', '').lower():
-            if 'companion_state' in dialogue_states:
-                return 'companion_state'
-
-        # ---------------------------------------------------------
-        # PRIORITY 4: WORKPLACE / TARGET SPECIFIC (ACT 3)
-        # ---------------------------------------------------------
-        if npc_id == self.player.get('active_death_target', '').lower():
-            workplace_data = self.player.get('npc_workplaces', {}).get(npc_id, {})
-            workplace_level_id = workplace_data.get('level_id', '')
-            is_at_work = bool(workplace_level_id and workplace_level_id in room_id.lower())
+        archetype_data = getattr(self, 'resource_manager', None)
+        if not archetype_data:
+            return None
             
-            archetype_data = getattr(self, 'resource_manager', None)
-            if archetype_data:
-                arch_dict = archetype_data.get_data('npcs', {}).get('archetype_dialogue', {})
-                
-                # Fetch the Act 3 block, then grab the 'generic_target' dictionary inside it
-                act_3_block = arch_dict.get('act_3_hunted_workplace', {}) if is_at_work else arch_dict.get('act_3_hunted_public', {})
-                target_dialogue_pool = act_3_block.get('generic_target', {})
-                
-                if target_dialogue_pool:
-                    dialogue_states.update(target_dialogue_pool)
-                    
-                    # Determine greeting based on deaths
-                    deaths_list = self.player.get('deaths_list', [])
-                    roster = self.player.get('npc_status', {})
-                    dead_count = sum(1 for n in deaths_list if n.lower() != 'player' and roster.get(n.lower()) == 'dead')
-                    
-                    if dead_count == 0: return 'greeting_oblivious'
-                    elif dead_count == 1: return 'greeting_uneasy'
-                    else: return 'greeting_terrified'
+        arch_dict = archetype_data.get_data('npcs', {}).get('archetype_dialogue', {})
+        act_3_block = arch_dict.get('act_3_hunted_workplace', {}) if is_at_work else arch_dict.get('act_3_hunted_public', {})
+        target_dialogue_pool = act_3_block.get('generic_target', {})
+        
+        if target_dialogue_pool:
+            dialogue_states.update(target_dialogue_pool)
+            deaths_list = self.player.get('deaths_list', [])
+            roster = self.player.get('npc_status', {})
+            dead_count = sum(1 for n in deaths_list if n.lower() != 'player' and roster.get(n.lower()) == 'dead')
+            
+            if dead_count == 0: return 'greeting_oblivious'
+            elif dead_count == 1: return 'greeting_uneasy'
+            else: return 'greeting_terrified'
+            
+        return None
 
-        # ---------------------------------------------------------
-        # PRIORITY 5: SPECIFIC NPC ACT DIALOGUE
-        # ---------------------------------------------------------
+    def _get_specific_npc_act_state(self, npc_id: str, current_act: str, dialogue_states: dict, is_first_meeting: bool) -> Optional[str]:
+        """
+        JIT-loads rich dialogue states directly from npcs.json for specific characters.
+        PATCHED: Case-insensitive dictionary lookup.
+        """
         if current_act in dialogue_states:
             return current_act
 
-        # ---------------------------------------------------------
-        # PRIORITY 6: DYNAMIC ARCHETYPE FALLBACK
-        # ---------------------------------------------------------
-        archetype_data = getattr(self, 'resource_manager', None)
-        if archetype_data:
-            arch_dict = archetype_data.get_data('npcs', {}).get('archetype_dialogue', {})
-            act_pool = arch_dict.get(current_act, {})
-            
-            if archetype in act_pool:
-                archetype_act_nodes = act_pool[archetype]
-                
-                # THE FIX: Intercept First Meetings!
-                # If they haven't met the player, and this Act has a 'first_meeting' node written for it, use it!
-                if is_first_meeting and 'first_meeting' in archetype_act_nodes:
-                    dialogue_states['first_meeting'] = archetype_act_nodes['first_meeting']
-                    
-                    # ALSO load the standard_loop in case the first_meeting transitions directly into it
-                    if 'standard_loop' in archetype_act_nodes:
-                        dialogue_states['standard_loop'] = archetype_act_nodes['standard_loop']
-                        
-                    return 'first_meeting'
+        rm = getattr(self, 'resource_manager', None)
+        if not rm: return None
 
-                # Otherwise, just pull the standard loop (or the root text if no loops are defined)
+        master_npcs = rm.get_data('npcs', {})
+        
+        # --- THE FIX 1: Case-Insensitive Lookup ---
+        npc_master = master_npcs.get(npc_id) or master_npcs.get('npcs', {}).get(npc_id)
+        if not npc_master:
+            # Fallback to scanning the keys in case of capitalization mismatch
+            for key, data in master_npcs.get('npcs', {}).items():
+                if key.lower() == npc_id.lower():
+                    npc_master = data
+                    break
+                    
+        if not npc_master:
+            return None
+        # -------------------------------------------
+
+        master_states = npc_master.get('dialogue_states', {})
+
+        if current_act in master_states:
+            act_data = master_states[current_act]
+            
+            # If the Act contains sub-states (like 'first_meeting' and 'standard_loop')
+            if isinstance(act_data, dict) and ('first_meeting' in act_data or 'standard_loop' in act_data):
+                if is_first_meeting and 'first_meeting' in act_data:
+                    dialogue_states['first_meeting'] = act_data['first_meeting']
+                    if 'standard_loop' in act_data:
+                        dialogue_states['standard_loop'] = act_data['standard_loop']
+                    return 'first_meeting'
+                    
+                if 'standard_loop' in act_data:
+                    dialogue_states['standard_loop'] = act_data['standard_loop']
+                    return 'standard_loop'
+                    
+            # If it's just a flat state dict
+            dialogue_states[current_act] = act_data
+            return current_act
+
+        return None
+
+    def _get_archetype_act_state(self, archetype: str, current_act: str, dialogue_states: dict, is_first_meeting: bool) -> Optional[str]:
+        """JIT-loads generic archetype dialogues."""
+        archetype_data = getattr(self, 'resource_manager', None)
+        if not archetype_data: return None
+        
+        arch_dict = archetype_data.get_data('npcs', {}).get('archetype_dialogue', {})
+        act_pool = arch_dict.get(current_act, {})
+        
+        if archetype in act_pool:
+            archetype_act_nodes = act_pool[archetype]
+            
+            if is_first_meeting and 'first_meeting' in archetype_act_nodes:
+                dialogue_states['first_meeting'] = archetype_act_nodes['first_meeting']
                 if 'standard_loop' in archetype_act_nodes:
                     dialogue_states['standard_loop'] = archetype_act_nodes['standard_loop']
-                    return 'standard_loop'
-                else:
-                    # Fallback for simple structures that just put text directly in the Act
-                    dialogue_states[current_act] = archetype_act_nodes
-                    return current_act
+                return 'first_meeting'
+
+            if 'standard_loop' in archetype_act_nodes:
+                dialogue_states['standard_loop'] = archetype_act_nodes['standard_loop']
+                return 'standard_loop'
                 
-        # ---------------------------------------------------------
-        # PRIORITY 7: JSON FALLBACK & CONDITIONAL OVERRIDES
-        # ---------------------------------------------------------
-        conds = npc.get('conditional_entry_state', [])
-        for cond in conds:
+            for state_key, state_data in archetype_act_nodes.items():
+                dialogue_states[state_key] = state_data
+            first_key = next(iter(archetype_act_nodes))
+            return first_key
+                        
+        return None
+
+    def _check_conditional_overrides(self, npc: dict, room_id: str) -> Optional[str]:
+        """Evaluates arbitrary boolean conditions from the JSON definition."""
+        for cond in npc.get('conditional_entry_state', []):
             condition = cond.get('condition', {})
             if hasattr(self, '_npc_condition_met') and self._npc_condition_met(condition, room_id=room_id):
                 return cond['state']
-                
-        # Return the actual saved state instead of hardcoded 'greeting'
-        return saved_state
+        return None
 
     def _move_companion_to_next_room(self, destination):
         """
@@ -8395,6 +8765,57 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         items_in_room = [item for item in self.items_master_list if item['id'] in item_keys_in_room]
         return items_in_room
 
+    def _maybe_intercept_mri_key_take(self, item_key: str) -> Optional[dict]:
+        """
+        Intercepts the first attempt to take the Coroner's Office Key in the MRI room
+        so the player must try twice before the QTE chain begins.
+        Returns a response dict if interception handled the action; otherwise None.
+        """
+        try:
+            if item_key not in ("coroners_office_key", "coroner_office_key", "coroner_key"):
+                return None
+
+            # BUG FIX 1: player location is stored under 'location', not 'current_room'
+            current_room = self.player.get('location')
+
+            # BUG FIX 2: actual room key is "MRI Scan Room", not "mri_scan_room"
+            if current_room != "MRI Scan Room":
+                return None
+
+            # Find active MRI hazard
+            mri_hazards = [
+                (h_id, h) for h_id, h in self.hazard_engine.active_hazards.items()
+                if h.get('master_data', {}).get('id') == 'mri'
+            ]
+            if not mri_hazards:
+                return None
+
+            mri_id, mri = mri_hazards[0]
+            state = mri.get('state')
+
+            # Only intercept while in pre-QTE magnetic lock state
+            if state not in ("powered_down", "field_active_doors_locked"):
+                return None
+
+            attempts = self.player.setdefault('_mri_key_attempts', 0)
+
+            if attempts == 0:
+                self.player['_mri_key_attempts'] = 1
+                if state == "powered_down":
+                    self.hazard_engine.set_hazard_state(mri_id, "field_active_doors_locked")
+                msg = ("You grasp the cold key, but a humming magnetic field locks it in place. "
+                    "It trembles—as if the field is destabilizing. Try again.")
+                return self._build_response(message=msg, turn_taken=True)
+            else:
+                # Second attempt: allow take and kick off projectile sequence
+                self.player['_mri_key_attempts'] = attempts + 1
+                self.hazard_engine.set_hazard_state(mri_id, "projectile_stage_1_cart")
+                return None  # Fall through to normal take
+
+        except Exception as e:
+            self.logger.error(f"_maybe_intercept_mri_key_take error: {e}", exc_info=True)
+            return None
+
     def _maybe_emit_requirements_met_event(self):
         """If exit requirements are now met, queue a one-time notification popup."""
         try:
@@ -8726,7 +9147,8 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
         # 1) Room interactables FIRST
         try:
-            if self._try_trigger_room_interactable_use(target_str):
+            current_room = self.player.get('location')
+            if self._try_trigger_room_interactable_use(target_str, current_room):
                 self.logger.info("_use_main: Room interactable triggered successfully.")
                 return {
                     "messages": [],
@@ -8958,14 +9380,73 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                                 return self._build_response(message=message, turn_taken=True)
 
                     # Priority 1.5: Check if the TARGET is an object and has use_item_interaction rules
-                    if target_entity['type'] == 'object':
+                    if target_entity['type'] == 'object' or target_entity['type'] == 'hazard_entity':
+                        
+                        # Support checking both the object's direct interactions and its hazard state interactions
                         interaction_rules = target_entity['data'].get('use_item_interaction', [])
+                        
+                        # If it's a hazard, we also need to pull the specific rules for the hazard's current state
+                        if 'player_interaction' in target_entity['data']:
+                            interaction_rules.extend(target_entity['data']['player_interaction'].get('use', []))
+
+                        valid_rule = None
+                        
                         for rule in interaction_rules:
-                            if item_key in rule.get('item_names_required', []):
-                                action_effect = rule.get('action_effect')
-                                message = rule.get('message_success', f"You use the {item_entity['name']} on the {target_entity['name']}.").format(item_name=item_entity['name'])
-                                self.logger.info(f"_use_inventory_item: Used '{item_key}' on object '{target_entity['name']}'.")
+                            # 1. Name Check (Exact Match)
+                            req_names = rule.get('item_names_required', [])
+                            if isinstance(req_names, str): req_names = [req_names]
+                            if 'required_item_name' in rule: req_names.append(rule['required_item_name'])
+                            
+                            name_match = False
+                            if not req_names or item_key in req_names or item_name.lower() in [i.lower() for i in req_names]:
+                                name_match = True
+
+                            # 2. Type Check (e.g., "tool")
+                            req_type = rule.get('required_item_type')
+                            type_match = False
+                            if not req_type or item_data.get('type', '').lower() == req_type.lower() or (req_type == 'tool' and item_data.get('is_tool')):
+                                type_match = True
+
+                            # 3. Subtype Check (e.g., "ignition_source")
+                            req_subtype = rule.get('required_item_subtype')
+                            subtype_match = False
+                            if not req_subtype or item_data.get('subtype', '').lower() == req_subtype.lower():
+                                subtype_match = True
+
+                            # ONLY if it matches the specific requirements dictated by the JSON do we accept it
+                            if name_match and type_match and subtype_match:
+                                # We only proceed if AT LEAST ONE requirement was actually defined and met, 
+                                # otherwise a completely empty rule block would match anything!
+                                if req_names or req_type or req_subtype:
+                                    valid_rule = rule
+                                    break
+
+                        if valid_rule:
+                            action_effect = valid_rule.get('action_effect')
+                            message = valid_rule.get('message_success', valid_rule.get('message', f"You use the {item_entity['name']} on the {target_entity['name']}.")).format(object_name=target_entity['name'], item_name=item_entity['name'])
+                            
+                            # Execute RNG for success/failure if defined in the rule
+                            success_chance = valid_rule.get('success_chance', 1.0)
+                            if random.random() > success_chance:
+                                # They failed the check!
+                                message = valid_rule.get('message_failure', f"You fumble with the {item_entity['name']}.")
+                                self.logger.info(f"_use_inventory_item: Player FAILED use check for '{item_key}' on '{target_entity['name']}'.")
+                                
+                                # Process escalation if failure triggers it
+                                escalation = valid_rule.get('failure_escalation')
+                                if escalation and hasattr(self, 'hazard_engine'):
+                                    self.hazard_engine.change_hazard_state(target_entity['data'].get('hazard_key', ''), escalation, current_room_id)
+                                
                                 return self._build_response(message=message, turn_taken=True)
+                            
+                            # If successful, process target state changes!
+                            target_state = valid_rule.get('target_state')
+                            if target_state and hasattr(self, 'hazard_engine'):
+                                hazard_key = target_entity['data'].get('hazard_key') or target_entity['data'].get('type')
+                                self.hazard_engine.change_hazard_state(hazard_key, target_state, current_room_id)
+                            
+                            self.logger.info(f"_use_inventory_item: Used '{item_key}' on object '{target_entity['name']}'.")
+                            return self._build_response(message=message, turn_taken=True)
 
                     # Priority 2: Check if the ITEM has a rule for this TARGET.
                     if target_entity['name'].lower() in [t.lower() for t in item_data.get('use_on', [])]:
@@ -9360,120 +9841,176 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             return None
 
     def _examine_entity(self, target: str, room_id: str) -> dict:
+        """
+        Main orchestrator for examining an entity. 
+        Delegates transformations, description resolution, and side-effects.
+        """
+        tracer = TraceLogger("ExamineEntity")
+        tracer.mark("start", target=target, room_id=room_id)
+
         try:
+            # 1. Target Validation
             entity = self._find_entity_in_room(target, room_id)
             if not entity:
+                tracer.mark("entity_not_found")
                 self.logger.info(f"_examine_entity: '{target}' not found in room '{room_id}'")
                 return self._build_response(message=f"You see nothing special about '{target}'.", turn_taken=False)
 
             entity_data = entity.get('data') or entity
-            
-            # --- NEW: Check for Transformation ---
-            transform_data = entity_data.get('on_examine_transform')
-            if transform_data:
-                # Execute the swap
-                events = self._perform_item_transformation(entity, transform_data)
-                
-                # We return the transformation message instead of the standard description
-                # because the object has fundamentally changed.
-                return self._build_response(
-                    message=transform_data.get('message'), 
-                    turn_taken=True, 
-                    success=True, 
-                    ui_events=events
-                )
-            # -------------------------------------
+            tracer.mark("entity_found", name=entity.get('name'))
 
-            # --- THE FINAL FIX: Trigger Read Actions! ---
-            read_action = entity_data.get('on_read_action')
-            if read_action:
-                flag_to_set = read_action.get('set_player_flag')
-                if flag_to_set:
-                    self.set_player_flag(flag_to_set, True)
-                    self.logger.info(f"Player read lore item. Set flag: {flag_to_set}")
-            # --------------------------------------------
+            # 2. Early Exit: Transformations
+            transform_response = self._handle_examine_transform(entity, entity_data, tracer)
+            if transform_response:
+                return transform_response
 
-            description = ""
-            is_hazard = (entity_data.get('type') == 'hazard_entity')
-            
-            # Track if the description came from a dynamic hazard state
-            is_dynamic_hazard_text = False
+            # 3. Read Actions (Lore Flags)
+            self._process_read_actions(entity_data, tracer)
 
-            # 1. Get Description
-            if is_hazard:
-                # Try to get state-specific text
-                hazard_text = self._hazard_examine_text(
-                    entity_data.get('hazard_key'),
-                    entity_data.get('name') or entity['name'],
-                    room_id
-                )
-                if hazard_text:
-                    description = hazard_text
-                    is_dynamic_hazard_text = True
+            # 4. Resolve the Description Text
+            description, is_dynamic_hazard = self._resolve_examine_description(entity, entity_data, room_id, tracer)
 
-            if not description:
-                # 1. Try the hydrated data from the room first
-                description = entity_data.get('examine_details')
-                
-                # 2. If missing, look up directly in the master items (Last line of defense)
-                if not description:
-                    master_items = self.resource_manager.get_data('items', {})
-                    item_id = entity_data.get('id') or entity.get('name')
-                    master_entry = master_items.get(item_id, {})
-                    description = master_entry.get('examine_details')
+            # 5. Build UI Events & Logging Strings
+            ui_events, log_message = self._build_examine_ui_and_log(
+                entity, entity_data, description, is_dynamic_hazard, tracer
+            )
 
-                # 3. Fallback to basic description or generic name
-                if not description:
-                    description = (
-                        entity_data.get('description') or 
-                        f"You see {entity.get('name', 'something')}. Nothing special stands out."
-                    )
+            # 6. Trigger Side-Effects (Omens, Hazard Responses)
+            self._trigger_examine_side_effects(entity_data, room_id, ui_events, tracer)
 
-            # Check if the item/entity has an associated image in master data
-            item_image = entity_data.get('image', '') 
-            force_popup = entity_data.get('force_popup', False)
-            
-            # --- FIX START: Smarter Popup Logic ---
-            ui_events = []
-            is_generic_fail = "product of the hazard" in description
-            
-            # Check if this description was a special 'examine' message from hazards.json
-            is_special_hazard_msg = False
-            if is_hazard:
-                # We know it's a special message if the hazard logic blocked 
-                # the normal examine success or set a specific flag
-                is_special_hazard_msg = entity_data.get('blocks_action_success') or \
-                                        entity_data.get('sets_interaction_flag')
-
-            # NEW CONDITION: Include special hazard messages in the popup logic
-            should_popup = (item_image or force_popup or entity_data.get('is_evidence', False)) or \
-                           (is_hazard and (is_dynamic_hazard_text or is_special_hazard_msg))
-            
-            if should_popup and not is_generic_fail:
-                # POPUP for the ventilator, patient, and other narrative hazard points
-                ui_events.append({
-                    "event_type": "show_popup",
-                    "title": entity.get('name', 'Examine').replace('_', ' ').title(),
-                    "message": description,
-                    "image": item_image
-                })
-                # Log it too for history
-                log_message = f"[b]Examine {entity['name']}:[/b]\n{description}"
-            else:
-                # LOG ONLY for basic stuff (Power Strips, Tables, Chairs)
-                log_message = f"[b]{entity['name'].title()}:[/b] {description}"
-            # --- FIX END ---
-
-            self._examine_first_popup(entity_data, room_id, ui_events)
-            self._examine_hazard_trigger(entity_data, room_id, ui_events)
-            self._examine_omen(entity_data, ui_events)
-
+            tracer.mark("exit_success", events_queued=len(ui_events))
             return self._build_response(message=log_message, turn_taken=True, success=True, ui_events=ui_events)
-            
+
         except Exception as e:
-            self.logger.error(f"_examine_entity: Error: {e}", exc_info=True)
+            self.logger.exception(f"[_examine_entity] Error examining '{target}': {e}")
+            tracer.mark("exit_exception", error=str(e))
             return self._build_response(message="You see nothing special.", turn_taken=True, success=False)
 
+
+    # ==========================================
+    # EXAMINE ENTITY HELPERS
+    # ==========================================
+
+    def _handle_examine_transform(self, entity: dict, entity_data: dict, tracer) -> Optional[dict]:
+        """Executes an item swap if examining the object causes it to fundamentally change."""
+        transform_data = entity_data.get('on_examine_transform')
+        if transform_data:
+            tracer.mark("executing_transformation", transform_id=transform_data.get('id', 'unknown'))
+            events = self._perform_item_transformation(entity, transform_data)
+            
+            return self._build_response(
+                message=transform_data.get('message', "The object changes before your eyes."), 
+                turn_taken=True, 
+                success=True, 
+                ui_events=events
+            )
+        return None
+
+    def _process_read_actions(self, entity_data: dict, tracer):
+        """Sets internal lore flags if the player examines a readable document."""
+        read_action = entity_data.get('on_read_action')
+        if read_action:
+            flag_to_set = read_action.get('set_player_flag')
+            if flag_to_set:
+                self.set_player_flag(flag_to_set, True)
+                tracer.mark("read_action_flag_set", flag=flag_to_set)
+                self.logger.info(f"Player read lore item. Set flag: {flag_to_set}")
+
+    def _resolve_examine_description(self, entity: dict, entity_data: dict, room_id: str, tracer) -> tuple[str, bool]:
+        """
+        Calculates the correct description text by checking dynamic hazard states, 
+        room-level overrides, and master item fallbacks. Unpacks dictionaries if found.
+        """
+        description = ""
+        is_hazard = (entity_data.get('type') == 'hazard_entity')
+        is_dynamic_hazard_text = False
+
+        # A. Hazard Dynamic Text Lookups
+        if is_hazard:
+            hazard_text = self._hazard_examine_text(
+                entity_data.get('hazard_key'),
+                entity_data.get('name') or entity.get('name', ''),
+                room_id
+            )
+            if hazard_text:
+                description = hazard_text
+                is_dynamic_hazard_text = True
+                tracer.mark("resolved_from_hazard_state", is_dynamic=True)
+
+        # B. Fallback Hierarchy (Room Data -> Master Items -> Generic)
+        if not description:
+            description = entity_data.get('examine_details')
+            
+            if not description:
+                master_items = getattr(self, 'resource_manager', None).get_data('items', {}) if hasattr(self, 'resource_manager') else {}
+                item_id = entity_data.get('id') or entity.get('name')
+                master_entry = master_items.get(item_id, {})
+                description = master_entry.get('examine_details')
+                if description:
+                    tracer.mark("resolved_from_master_items", item_id=item_id)
+
+            if not description:
+                description = entity_data.get('description') or f"You see {entity.get('name', 'something')}. Nothing special stands out."
+                tracer.mark("resolved_fallback_description")
+
+        # C. The Dict Unpacker (Crucial for Omens!)
+        if isinstance(description, dict):
+            # Merge its data into entity_data so the engine knows it's an omen provider
+            entity_data.update(description)
+            description = description.get('description', "Nothing special stands out.")
+            tracer.mark("unpacked_dict_description")
+
+        return description, is_dynamic_hazard_text
+
+    def _build_examine_ui_and_log(self, entity: dict, entity_data: dict, description: str, is_dynamic_hazard_text: bool, tracer) -> tuple[list, str]:
+        """Evaluates whether to render a UI popup or just log text to the terminal."""
+        ui_events = []
+        is_generic_fail = "product of the hazard" in description
+        is_hazard = (entity_data.get('type') == 'hazard_entity')
+        
+        # Check if this description was a special 'examine' message from hazards.json
+        is_special_hazard_msg = False
+        if is_hazard:
+            is_special_hazard_msg = bool(entity_data.get('blocks_action_success') or entity_data.get('sets_interaction_flag'))
+
+        # Triggers for Popups
+        is_omen = bool(entity_data.get('is_omen_provider'))
+        item_image = entity_data.get('image', '') 
+        force_popup = entity_data.get('force_popup', False)
+
+        should_popup = (
+            item_image or force_popup or entity_data.get('is_evidence', False) or is_omen
+        ) or (is_hazard and (is_dynamic_hazard_text or is_special_hazard_msg))
+
+        tracer.mark("ui_evaluation", should_popup=should_popup, is_omen=is_omen, is_hazard=is_hazard)
+
+        obj_name = entity_data.get('name', entity.get('name', 'Object')).replace('_', ' ').title()
+
+        if should_popup and not is_generic_fail:
+            # Generate the Popup
+            ui_events.append({
+                "event_type": "show_popup",
+                "title": obj_name,
+                "message": description,
+                "image": item_image
+            })
+            log_message = f"[b]Examine {obj_name}:[/b]\n{description}"
+        else:
+            # Terminal Text Only
+            log_message = f"[b]{obj_name}:[/b] {description}"
+
+        return ui_events, log_message
+
+    def _trigger_examine_side_effects(self, entity_data: dict, room_id: str, ui_events: list, tracer):
+        """Dispatches subsequent triggers like omen rendering or secondary popups."""
+        self._examine_first_popup(entity_data, room_id, ui_events)
+        self._examine_hazard_trigger(entity_data, room_id, ui_events)
+        
+        # Because we merged the dict in the resolver, this will now successfully trigger omen checks!
+        self._examine_omen(entity_data, ui_events)
+        
+        tracer.mark("side_effects_triggered")
+        
     def _examine_first_popup(self, entity_data: dict, room_id: str, ui_events: list):
         try:
             hazard_key = entity_data.get('hazard_key')
@@ -9701,115 +10238,162 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         
     def _force_try_exit(self, target_name: str, tool_key, bonus, room, exits) -> Optional[dict]:
         """
-        Handles 'force' on an exit/door, using hazard player_interaction QTE if present.
-        PATCHED: Robust fuzzy matching for MRI door targets.
+        Main orchestrator for 'force' on an exit/door.
+        """
+        match = self._resolve_force_target(target_name, exits)
+        if not match:
+            return None
+            
+        if not match['is_forceable']:
+            return self._build_response(message=match['error_msg'], turn_taken=False)
+
+        matched_dir = match['dir']
+        matched_dest = match['dest']
+
+        # 1. Check JSON Hazard Rules FIRST
+        hazard_qte_response = self._check_hazard_specific_force(matched_dir, matched_dest)
+        if hazard_qte_response:
+            return hazard_qte_response
+
+        # 2. Check for MRI Fatal Lock
+        fatal_mri_response = self._check_mri_fatal_force(matched_dest)
+        if fatal_mri_response:
+            return fatal_mri_response
+
+        # --- THE FIX: Terrify Bystander NPCs ---
+        flee_message = self._scare_room_npcs(self.player.get('location'))
+
+        # 3. Fallback: Standard Force QTE
+        standard_response = self._execute_standard_force_qte(matched_dir, matched_dest, tool_key, bonus, room)
+        
+        # Inject the fleeing narrative into the standard response if anyone ran away
+        if flee_message and standard_response:
+            standard_response['message'] += flee_message
+            
+        return standard_response
+    # ==========================================
+    # FORCE EXIT HELPERS
+    # ==========================================
+
+    def _resolve_force_target(self, target_name: str, exits: dict) -> Optional[dict]:
+        """
+        Uses robust fuzzy matching to identify the direction and destination
+        the player is trying to force open.
         """
         tnorm = normalize_text(target_name)
-        
-        # 1. Identify which exit is being targeted
-        matched_dir = None
-        matched_dest = None
-        
+        self._dict_exit_ref = None  # Reset state
+
         for direction, dest in exits.items():
-            # Handle dict exits (lock info on the exit itself)
+            d_norm = normalize_text(direction)
+            
+            # Handle dictionary exits (doors with lock states)
             if isinstance(dest, dict):
                 dest_target = dest.get('target', '')
-                d_norm = normalize_text(direction)
                 dest_norm = normalize_text(dest_target)
-                if (tnorm == d_norm or tnorm == f"{d_norm} door" or
+                
+                if (tnorm == d_norm or tnorm == f"{d_norm} door" or 
                     tnorm == dest_norm or tnorm == "door" or tnorm == "back door"):
+                    
                     if not dest.get('forceable', False):
-                        return self._build_response(
-                            message=f"The way {direction} can't be forced open.",
-                            turn_taken=False
-                        )
-                    matched_dir = direction
-                    matched_dest = dest_target
-                    # If it's locked, forcing it should unlock it
-                    self._dict_exit_ref = dest  # Store reference for unlock on success
-                    break
-                continue
+                        return {
+                            "is_forceable": False, 
+                            "error_msg": f"The way {direction} can't be forced open."
+                        }
+                    
+                    self._dict_exit_ref = dest  # Store reference for unlocking on success
+                    return {"is_forceable": True, "dir": direction, "dest": dest_target}
             
-            # Standard string exits
-            d_norm = normalize_text(direction)
-            dest_norm = normalize_text(dest)
-            
-            if (tnorm == d_norm or 
-                tnorm == f"{d_norm} door" or 
-                tnorm == dest_norm or 
-                tnorm == "door"):
-                matched_dir = direction
-                matched_dest = dest
-                break
+            # Handle standard string exits
+            else:
+                dest_norm = normalize_text(dest)
+                if (tnorm == d_norm or tnorm == f"{d_norm} door" or 
+                    tnorm == dest_norm or tnorm == "door"):
+                    
+                    return {"is_forceable": True, "dir": direction, "dest": dest}
+                    
+        return None
 
-        if not matched_dir:
+    def _check_mri_fatal_force(self, target_room: str) -> Optional[dict]:
+        """
+        Fallback Guard: If the door is locked by the MRI but the hazard's JSON 
+        didn't intercept the action, prevent standard strength forcing.
+        """
+        dest_data = self.current_level_rooms_world_state.get(target_room, {})
+        
+        if dest_data.get('locked_by_mri'):
+            return self._build_response(
+                message="[color=ff0000]The magnetic field holds the door completely sealed. You can't budge it right now.[/color]",
+                turn_taken=False
+            )
+            
+        return None
+
+    def _check_hazard_specific_force(self, matched_dir: str, matched_dest: str) -> Optional[dict]:
+        """
+        Scans active hazards in the room to see if they intercept the force action
+        with custom QTE rules (like a jammed revolving door or a magnetic seal).
+        """
+        if not self.hazard_engine:
             return None
 
-        # 2. Check for Active MRI Hazard in current room
-        mri_hazard_id = None
-        mri_hazard = None
-        if self.hazard_engine:
-            mri_hazard_id = self.hazard_engine.get_hazard_instance_id_by_type(self.player.get('location'), "mri")
-            if mri_hazard_id:
-                mri_hazard = self.hazard_engine.active_hazards.get(mri_hazard_id)
-
-        qte_ctx = None
-        
-        # 3. Check Hazard-Specific Force Rules
-        if mri_hazard:
-            mri_state = mri_hazard.get('state')
-            h_master = mri_hazard.get('master_data', {})
-            force_rules = (h_master.get('player_interaction', {}).get('force', []) if h_master else [])
+        for hid, hazard in self.hazard_engine.active_hazards.items():
+            if hazard.get('location') != self.player.get('location'):
+                continue
+                
+            h_master = hazard.get('master_data', {})
+            force_rules = h_master.get('player_interaction', {}).get('force', [])
             
             for rule in force_rules:
-                # State check
+                # 1. State check
                 required_states = rule.get('requires_hazard_state')
-                if required_states and mri_state not in required_states:
+                if required_states and hazard.get('state') not in required_states:
                     continue
                 
-                # Target Name Check (The Critical Fix)
+                # 2. Target Name Check
                 valid_targets = rule.get('on_target_name', [])
                 if isinstance(valid_targets, str): valid_targets = [valid_targets]
                 
-                # We check if the rule targets this specific direction or destination
                 is_match = False
                 for t in valid_targets:
                     t_norm = normalize_text(t)
-                    # Does rule target "west", "west door", "control room door"?
                     if (t_norm == normalize_text(matched_dir) or 
                         t_norm == f"{normalize_text(matched_dir)} door" or
                         t_norm == normalize_text(matched_dest) or
-                        (t_norm == "door" and matched_dir)): # 'door' matches any exit if generic
+                        (t_norm == "door" and matched_dir)):
                         is_match = True
                         break
                 
+                # 3. Apply the Hazard-Specific QTE
                 if is_match:
                     qte_ctx = rule.get('qte_context', {}).copy()
-                    qte_ctx['qte_source_hazard_id'] = mri_hazard_id
-                    break
+                    qte_ctx['qte_source_hazard_id'] = hid
+                    
+                    effects_on_success = [{"type": "unlock_room", "room_id": matched_dest}]
+                    if hasattr(self, '_dict_exit_ref') and self._dict_exit_ref:
+                        effects_on_success.append({"type": "unlock_dict_exit", "exit_ref": id(self._dict_exit_ref)})
+                        
+                    qte_ctx.setdefault('effects_on_success', effects_on_success)
+                    qte_ctx.setdefault('pending_move', matched_dir)
+                    
+                    self.player['qte_active'] = True
+                    self.qte_engine.start_qte("button_mash", qte_ctx)
+                    self.logger.info(f"_check_hazard_specific_force: Custom QTE started for forcing door to '{matched_dest}'")
+                    
+                    return self._build_response(message="You brace yourself against the sealed door...", turn_taken=True)
+                    
+        return None
 
-        # 4. Execute Force Action
-        if qte_ctx:
-            # MRI Case: Hazard-defined QTE
-            effects_on_success = [{"type": "unlock_room", "room_id": matched_dest}]
-            # Also unlock the dict exit reference if this was a dict exit
-            if hasattr(self, '_dict_exit_ref') and self._dict_exit_ref:
-                effects_on_success.append({"type": "unlock_dict_exit", "exit_ref": id(self._dict_exit_ref)})
-            qte_ctx.setdefault('effects_on_success', effects_on_success)
-            qte_ctx.setdefault('pending_move', matched_dir)
-            
-            self.player['qte_active'] = True
-            self.qte_engine.start_qte("button_mash", qte_ctx)
-            self.logger.info(f"_force_try_exit: MRI QTE started for forcing door to '{matched_dest}'")
-            return self._build_response(message="You brace yourself against the magnetically sealed door...", turn_taken=True)
-
-        # 5. Fallback: Standard Force QTE
+    def _execute_standard_force_qte(self, matched_dir: str, matched_dest: str, tool_key: str, bonus: int, room: dict) -> dict:
+        """
+        Executes the default, strength-based door forcing QTE.
+        """
         dest_data = self.get_room_data(matched_dest) or {}
         strength = self._get_stat('strength', 1)
+        
         # Use dest_data force_threshold if available, else room default
         target_obj = dest_data if dest_data.get('forceable') else room
-        
         tgt_mash = self._compute_force_difficulty(target_obj, base=16, strength=strength, tool_bonus=bonus)
+        
         effects_on_success = [{"type": "unlock_room", "room_id": matched_dest}]
         
         ctx = {
@@ -9826,9 +10410,52 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         
         self.player['qte_active'] = True
         self.qte_engine.start_qte("button_mash", ctx)
-        self.logger.info(f"_force_try_exit: QTE started for forcing door to '{matched_dest}'")
+        self.logger.info(f"_execute_standard_force_qte: Default QTE started for door to '{matched_dest}'")
+        
         return self._build_response(message="You brace yourself and shove.", turn_taken=True)
     
+    def _scare_room_npcs(self, room_id: str) -> str:
+        """
+        Scans the current room for bystander NPCs. If any are present, the violent 
+        action of forcing a door terrifies them, causing them to despawn/flee.
+        Active companions are exempt.
+        """
+        # Note: Adjust 'npc_locations' to match your engine's exact NPC tracking dictionary
+        npc_locations = self.player.get('npc_locations', {}) 
+        companions = self.player.get('companions', [])
+        companion_id = self.player.get('companion_id')
+        
+        fleeing_npcs = []
+
+        for npc_id, loc in list(npc_locations.items()):
+            if loc == room_id:
+                # Do not scare away active party members
+                if npc_id in companions or npc_id == companion_id:
+                    continue
+                
+                # Despawn the NPC (Move them to a null state or a "fled" room)
+                npc_locations[npc_id] = "fled_in_terror" 
+                fleeing_npcs.append(npc_id.title())
+
+        if not fleeing_npcs:
+            return ""
+
+        # Wipe dialogue memory if the player was just talking to one of them
+        interacted = self.player.get('current_interacted_npc')
+        if interacted and interacted.title() in fleeing_npcs:
+            self.player.pop('current_interacted_npc', None)
+            self.player.pop('current_conversation_state', None)
+            if hasattr(self, 'last_dialogue_context'):
+                self.last_dialogue_context = {}
+
+        # Format the dynamic narrative
+        names = ", ".join(fleeing_npcs)
+        if len(fleeing_npcs) > 1:
+            # Replace the last comma with "and" for proper grammar
+            names = " and ".join(names.rsplit(", ", 1))
+            
+        return f"\n\n[color=aaaaaa]The violent, aggressive sounds of you trying to break the door open terrifies {names}! They back away slowly, then turn and flee into the shadows...[/color]"
+
     # --- ELEVATOR HELPERS ---
     def _is_elevator_room(self, room_id: str) -> bool:
         """Check if current room acts as an elevator car."""

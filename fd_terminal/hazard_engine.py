@@ -1001,8 +1001,8 @@ class HazardEngine:
 
     def set_hazard_state(self, hazard_id: str, new_state: str, suppress_entry_effects: bool = False, messages=None) -> dict:
         """
-        Transition a hazard to a new state and return the resulting consequences.
-        Orchestrates validation, state updates, entry actions, and consequence chaining.
+        Main orchestrator to transition a hazard to a new state and return consequences.
+        Delegates validation, flag setting, and consequence splitting to helpers.
         """
         try:
             # 1. Validate Hazard Existence
@@ -1015,30 +1015,9 @@ class HazardEngine:
             if self._should_defer_state_change(hazard, new_state, suppress_entry_effects):
                 return {"consequences": []}
 
-            # 3. Update Internal State
-            current_state = hazard.get('state')
-            if current_state == new_state:
+            # 3. Update Internal State & Terminal Guards
+            if not self._validate_and_update_hazard_state(hazard, hazard_id, new_state):
                 return {"consequences": []}
-
-            # Block transitions OUT of terminal states
-            h_master = hazard.get('master_data', {})
-            current_sdef = (h_master.get('states', {}) or {}).get(current_state, {})
-            if current_sdef.get('is_terminal_state', False):
-                self.logger.info(f"[set_hazard_state] Blocked: '{hazard_id}' is in terminal state '{current_state}'. Cannot transition to '{new_state}'.")
-                return {"consequences": []}
-
-            prev_state = current_state
-            hazard['state'] = new_state
-            # 3b. Terminal State Guard — do not transition OUT of terminal states
-            sdef_current = self._resolve_state_def_raw(hazard, current_state)
-            if sdef_current and sdef_current.get('is_terminal_state', False):
-                self.logger.info(f"[set_hazard_state] Blocked transition '{hazard_id}': '{current_state}' is a terminal state.")
-                hazard['state'] = current_state  # Revert
-                return {"consequences": []}
-            hazard['time_in_state'] = 0.0    # Real-time seconds counter — reset
-            hazard['turns_in_state'] = 0     # Turn counter — reset
-            
-            self.logger.info(f"[set_hazard_state] Hazard '{hazard_id}' transitioned: '{prev_state}' -> '{new_state}'")
 
             if suppress_entry_effects:
                 return {"consequences": []}
@@ -1046,22 +1025,13 @@ class HazardEngine:
             # 4. Resolve State Definition
             sdef = self._resolve_state_def(hazard, new_state)
 
-            # 5. Execute Immediate Entry Actions
-            # triggered_consequences now contains the "Time Steal" message
-            triggered_consequences = self._handle_state_entry_logic(hazard_id, sdef)
+            # 5. THE FIX: Apply JSON 'set_flag' directives
+            self._apply_state_entry_flags(sdef, new_state)
 
-            # Filter: Separate "Immediate" events (SFX/Move) from "Deferred" messages (Time Steal)
-            immediate_cons = []
-            deferred_reward_cons = []
-            
-            for cons in triggered_consequences:
-                if cons.get('type') == 'show_message':
-                    deferred_reward_cons.append(cons)
-                else:
-                    immediate_cons.append(cons)
+            # 6. Execute Immediate Entry Actions & Split Consequences
+            immediate_cons, deferred_reward_cons = self._process_state_entry_logic(hazard_id, sdef)
 
-            # 6. Build User-Facing Consequences
-            # Pass deferred_reward_cons to the chain builder
+            # 7. Build User-Facing Consequences
             chain_consequences = self._build_consequences_chain(
                 hazard_id, sdef, hazard.get('master_data', {}), deferred_reward_cons
             )
@@ -1071,6 +1041,75 @@ class HazardEngine:
         except Exception as e:
             self.logger.error(f"[set_hazard_state] Critical failure for '{hazard_id}': {e}", exc_info=True)
             return {"consequences": []}
+
+    # ==========================================
+    # SET HAZARD STATE HELPERS
+    # ==========================================
+
+    def _validate_and_update_hazard_state(self, hazard: dict, hazard_id: str, new_state: str) -> bool:
+        """
+        Validates if the hazard can transition out of its current state.
+        Blocks terminal state exits and resets turn counters upon successful transition.
+        """
+        current_state = hazard.get('state')
+        if current_state == new_state:
+            return False
+
+        # Terminal State Guard — do not transition OUT of terminal states
+        h_master = hazard.get('master_data', {})
+        current_sdef = (h_master.get('states', {}) or {}).get(current_state, {})
+        
+        # Fallback to resolver if direct dict lookup fails
+        if not current_sdef:
+             current_sdef = self._resolve_state_def_raw(hazard, current_state) or {}
+
+        if current_sdef.get('is_terminal_state', False):
+            self.logger.info(f"[set_hazard_state] Blocked: '{hazard_id}' is in terminal state '{current_state}'. Cannot transition to '{new_state}'.")
+            return False
+
+        # Apply state change
+        prev_state = current_state
+        hazard['state'] = new_state
+        hazard['time_in_state'] = 0.0    # Real-time seconds counter — reset
+        hazard['turns_in_state'] = 0     # Turn counter — reset
+        
+        self.logger.info(f"[set_hazard_state] Hazard '{hazard_id}' transitioned: '{prev_state}' -> '{new_state}'")
+        return True
+
+    def _apply_state_entry_flags(self, sdef: dict, state_key: str):
+        """
+        Claude Fix: Reads the 'set_flag' key from the hazard state JSON 
+        and permanently applies it to the player's interaction flags.
+        """
+        state_flag = sdef.get('set_flag')
+        if state_flag and self.game_logic:
+            if not hasattr(self.game_logic, 'interaction_flags'):
+                self.game_logic.interaction_flags = set()
+            
+            # Add to runtime flags for rapid lookup
+            self.game_logic.interaction_flags.add(state_flag)
+            # Persist to player dict for save/load state
+            self.game_logic.set_player_flag(state_flag, True)  
+            
+            self.logger.info(f"[set_hazard_state] Set flag '{state_flag}' from state '{state_key}'")
+
+    def _process_state_entry_logic(self, hazard_id: str, sdef: dict) -> tuple[list, list]:
+        """
+        Executes entry logic (rewards, actions) and splits the results into 
+        immediate events (SFX, movement) and deferred narrative events (Time Steal UI).
+        """
+        triggered_consequences = self._handle_state_entry_logic(hazard_id, sdef)
+
+        immediate_cons = []
+        deferred_reward_cons = []
+        
+        for cons in triggered_consequences:
+            if cons.get('type') == 'show_message':
+                deferred_reward_cons.append(cons)
+            else:
+                immediate_cons.append(cons)
+                
+        return immediate_cons, deferred_reward_cons
 
     # --- Helper: Ambush Logic ---
     def _should_defer_state_change(self, hazard: dict, new_state: str, suppress_entry_effects: bool) -> bool:
@@ -1142,88 +1181,81 @@ class HazardEngine:
 
     # --- Helper: Consequence Chain Builder ---
     def _build_consequences_chain(self, hazard_id: str, sdef: dict, master: dict, extra_deferred_cons: list = None) -> list:
-        """
-        Constructs the sequence of UI events:
-        1. Log Message (Description)
-        2. Setup Popup (Context) OR Native QTE Popup
-        3. Death/NPC Death Popup
-        """
         consequences = []
-        
-        # 1. Extract Metadata
         popup_msg, popup_title, qte_entry, pause, next_st = self._extract_entry_metadata(sdef)
 
-        # 2. Log Message (Persist to history)
         if popup_msg:
-            consequences.append({
-                "type": "log_message",
-                "message": popup_msg
-            })
+            consequences.append({"type": "log_message", "message": popup_msg})
 
-        # 3. Build Primary Consequence
-        primary_popup_consequence = None
-        
         if qte_entry:
-            # --- THE FIX: We MUST generate a trigger_qte event if a QTE is defined! ---
-            # Do NOT wrap this in a standard text popup unless you explicitly want to.
-            # We bypass _build_popup_consequence and emit the native QTE structure.
-            qte_type = qte_entry.get('qte_type', 'button_mash')
-            qte_duration = qte_entry.get('duration', 5.0)
-            qte_context = qte_entry.get('qte_context', {}).copy()
-            
-            qte_context['qte_source_hazard_id'] = hazard_id
-            if next_st:
-                qte_context['next_state_on_qte_success'] = next_st
-                qte_context['next_state_after_qte_success'] = next_st
-            if 'next_state_on_qte_failure' not in qte_context:
-                fail_state = sdef.get('next_state_on_qte_failure')
-                if fail_state:
-                    qte_context['next_state_on_qte_failure'] = fail_state
-                    qte_context['next_state_after_qte_failure'] = fail_state
-                    
-            consequences.append({
+            raw_context = qte_entry.get('qte_context', {})
+            qte_type_key = qte_entry.get('qte_type', 'button_mash')
+
+            qte_def = {}
+            if self.game_logic and getattr(self.game_logic, 'resource_manager', None):
+                qte_def = self.game_logic.resource_manager.get_data('qte_definitions', {}).get(qte_type_key, {})
+
+            # FIX: Prefer next_state from raw_context over the sdef-level next_st,
+            # because states like dynamic_projectile_incoming carry their chain target
+            # inside qte_context, not in a top-level 'next_state' key.
+            # next_st (from sdef.get('next_state')) is None for these states.
+            success_state = (
+                raw_context.get('next_state_after_qte_success')
+                or raw_context.get('next_state_on_qte_success')
+                or next_st
+            )
+            failure_state = (
+                raw_context.get('next_state_after_qte_failure')
+                or raw_context.get('next_state_on_qte_failure')
+            )
+
+            qte_payload = {
                 "type": "trigger_qte",
-                "qte_type": qte_type,
-                "duration": qte_duration,
-                "qte_context": qte_context
+                "qte_type": qte_type_key,
+                "input_type": qte_def.get('input_type', 'word'),
+                "duration": qte_entry.get('duration', qte_def.get('default_duration', 5.0)),
+                "qte_context": {
+                    "ui_type":                    qte_def.get('ui_type', 'text_input'),
+                    "ui_prompt_message":          raw_context.get('ui_prompt_message', 'MASH!'),
+                    "target_mash_count":          raw_context.get('target_mash_count', 15),
+                    "success_message":            raw_context.get('success_message'),
+                    "failure_message":            raw_context.get('failure_message_wrong_input') or raw_context.get('failure_message'),
+                    "next_state_after_qte_success": success_state,   # FIX: uses raw_context value, not None
+                    "next_state_after_qte_failure": failure_state,
+                    "qte_source_hazard_id":       hazard_id
+                }
+            }
+
+            # Merge remaining raw_context fields that aren't already set
+            for k, v in raw_context.items():
+                if k not in qte_payload["qte_context"]:
+                    qte_payload["qte_context"][k] = v
+
+            consequences.append({
+                "type": "show_popup",
+                "title": popup_title or "DANGER!",
+                "message": popup_msg,
+                "on_close_emit_ui_events": [qte_payload]
             })
-            
-            # If there's ALSO a narrative message, emit it as a loose popup so it 
-            # shows up right before the QTE fires.
-            if popup_msg:
-                consequences.append({
-                    "type": "show_popup",
-                    "title": popup_title or "Danger!",
-                    "message": popup_msg
-                })
-                
-        elif popup_msg:
-            # Just a narrative popup
-            primary_popup_consequence = self._build_popup_consequence(hazard_id, sdef.get('__state_name__'), popup_title, popup_msg, None, pause, next_st)
-        
-        # 4. Attach Death / NPC Death Logic (The "Punchline")
-        self._attach_death_logic(primary_popup_consequence, consequences, hazard_id, sdef, sdef.get('__state_name__'), extra_deferred_cons)
+            return consequences
 
-        # 5. Finalize Chain and Auto-Advance
-        
-        # --- THE FIX: Kivy Popup Stack Bypass ---
-        # When multiple popups fire rapidly (like the Agility Dodge + Doors Sealed),
-        # Kivy's 'on_dismiss' callbacks get overwritten and dropped. 
-        # We must strip the unreliable UI callback and convert it into a guaranteed backend consequence.
-        if primary_popup_consequence and "on_close_set_hazard_state" in primary_popup_consequence:
-            guaranteed_target = primary_popup_consequence["on_close_set_hazard_state"].get("target_state")
-            if guaranteed_target:
-                consequences.append(self._build_auto_advance_consequence(hazard_id, guaranteed_target))
-            del primary_popup_consequence["on_close_set_hazard_state"]
-        # ----------------------------------------
+        if popup_msg:
+            primary = self._build_popup_consequence(hazard_id, sdef.get('__state_name__'), popup_title, popup_msg, None, pause, next_st)
+            if next_st and not pause:
+                consequences.append(self._build_auto_advance_consequence(hazard_id, next_st))
+            consequences.append(primary)
 
-        if primary_popup_consequence:
-            consequences.append(primary_popup_consequence)
+        return consequences
+
+        # 4. Fallback for non-QTE narrative popups
+        if popup_msg:
+            primary = self._build_popup_consequence(hazard_id, sdef.get('__state_name__'), popup_title, popup_msg, None, pause, next_st)
             
-        # If we have a next state, but NO qte_entry, and NO popup to bind the callback to, 
-        # we MUST force the auto-advance immediately.
-        if next_st and not qte_entry and not primary_popup_consequence:
-            consequences.append(self._build_auto_advance_consequence(hazard_id, next_st))
+            # If this state leads to an auto-transition, ensure it's guaranteed
+            if next_st and not pause:
+                 consequences.append(self._build_auto_advance_consequence(hazard_id, next_st))
+            
+            consequences.append(primary)
 
         return consequences
 
@@ -1563,48 +1595,33 @@ class HazardEngine:
             self.logger.error("[_action_mri_lock_doors] game_logic not set")
             return
         
-        # Get doors to lock from state definition
         doors_to_lock = state_info.get("doors_to_lock", [
-            {"room": "MRI Scan Room", "exit": "west", "target": "MRI Control Room"},
-            {"room": "MRI Scan Room", "exit": "south", "target": "Stairwell"}
+            {"room": "MRI Scan Room", "exit": "west",  "target": "MRI Control Room"},
+            {"room": "MRI Scan Room", "exit": "east",  "target": "Upper Floor Stairwell Access"},
         ])
         
         locked_count = 0
         for lock_rule in doors_to_lock:
-            room_name = lock_rule.get("room")
             target_room = lock_rule.get("target")
-            
-            # --- THE FIX: Try exact match, then try slugified match ---
             target_data = self.game_logic.current_level_rooms_world_state.get(target_room)
-            
             if not target_data:
-                # Try lowercasing and replacing spaces with underscores
-                slug_target = target_room.lower().replace(" ", "_")
-                target_data = self.game_logic.current_level_rooms_world_state.get(slug_target)
-            
+                slug = target_room.lower().replace(" ", "_")
+                target_data = self.game_logic.current_level_rooms_world_state.get(slug)
             if not target_data:
-                self.logger.warning(f"[_action_mri_lock_doors] Room '{target_room}' NOT FOUND in world state.")
+                self.logger.warning(f"[_action_mri_lock_doors] Room '{target_room}' NOT FOUND")
                 continue
             
-            # Store original lock state before modifying
             if "locked_by_mri" not in target_data:
                 target_data["original_locked_state"] = target_data.get("locked", False)
             
-            # Lock the room
-            target_data["locked"] = True
+            target_data["locked"]            = True
             target_data["magnetically_sealed"] = True
-            target_data["locked_by_mri"] = True
+            target_data["locked_by_mri"]    = True
             locked_count += 1
-            
-            self.logger.info(f"[_action_mri_lock_doors] Locked '{target_room}' (from '{room_name}')")
+            self.logger.info(f"[_action_mri_lock_doors] Locked '{target_room}'")
         
-        if locked_count > 0:
-            consequences.append({
-                "type": "show_popup",
-                "title": "Doors Sealed!",
-                "message": f"As your fingers touch the key, the door you entered through closes with a deafening [color=FFFF00]SLAM![/color]\n\nThe vibration knocks a clipboard in the control room from its hook; it falls onto the workstation, the metal clip sliding across the console's keyboard, and...\n\n[color=ff0000]*BEEP!*[/color]\n\n...shit.",
-                "output_panel": True
-            })
+        # REMOVED: The duplicate "Doors Sealed!" popup — it's handled by ui_popup_event in the state def.
+        self.logger.info(f"[_action_mri_lock_doors] Locked {locked_count} rooms.")
 
     def _action_mri_unlock_doors(self, hazard_id: str, state_info: dict, consequences: list):
         """Unlocks doors that were locked by the MRI hazard."""

@@ -40,6 +40,7 @@
             }
         ],
         "npc_slots": 1,
+        "npcs_present": ["Detective Ween"],
         "objects": [
             {
                 "name": "Fluorescent Lights",

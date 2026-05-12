@@ -734,7 +734,7 @@
       "trays of instruments": "Scalpels, saws, and other tools of the trade, meticulously arranged."
     },
     "exits": {
-      "east": "Hospital Morgue Hallway",
+      "west": "Hospital Morgue Hallway",
       "south": "Coroner's Office"
     },
     "floor": -1,

@@ -317,8 +317,8 @@ def get_related_items(hazard_key: str) -> list[str]:
     mapping = {
         'deaths_breath': ['candle', 'flashlight', 'lighter', 'matches', 'thermometer', 'camera'],
         'robo_vacuum': ['vacuum_battery', 'screwdriver', 'kicking_boots', 'robot_vacuum_item', 'broken_vacuum_parts'],
-        'mri': ['metal_object', 'key_card', 'stretcher', 'extinguisher'],
-        'hospital_exit': ['bludworths_house_key', 'crowbar', 'exit_sign'],
+        'mri': ['scalpel', 'radiology_key_card', 'oxygen_tank', 'gurney', 'wheelchair'],
+        'hospital_exit': ['bludworths_house_key', 'revolving_door', 'crowbar', 'exit_sign'],
         'gas_leak': ['lighter', 'matches', 'wrench', 'valve_wheel', 'mask'],
         'oxygen_tank': ['wrench', 'mask', 'tubing'],
         'electrified_fence': ['insulating_tape', 'rubber_gloves', 'wire_cutters'],
@@ -342,3 +342,19 @@ def get_related_items(hazard_key: str) -> list[str]:
         'food_stall_structure': ['support_beam'],
     }
     return mapping.get(hazard_key, [])
+
+class TraceLogger:
+    def __init__(self, logger_name="Trace"):
+        self.trace = []
+        import logging
+        self.logger = logging.getLogger(logger_name)
+
+    def mark(self, step: str, **data):
+        """Records a timestamped snapshot of variables for debugging."""
+        entry = {"step": step, **data}
+        self.trace.append(entry)
+        self.logger.debug(f"[{step}] | {data}")
+        
+    def dump(self):
+        """Returns the full trace array for the crash log."""
+        return self.trace

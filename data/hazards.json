@@ -460,6 +460,21 @@
       }
     ],
     "player_interaction": {
+      "wait": [
+        {
+          "on_target_name": ["room", "around"],
+          "requires_hazard_state": [
+            "projectile_stage_1_damaged",
+            "qte_pause_1",
+            "projectile_stage_2_damaged",
+            "final_barrage_wheelchair_damaged",
+            "critically_injured"
+          ],
+          "target_state": "mri_wave_evaluator",
+          "message": "You try to catch your breath, but the machine is still roaring. It's not done with you yet!",
+          "blocks_action_success": true
+        }
+      ],
       "force": [
         {
           "on_target_name": [
@@ -491,16 +506,25 @@
           }
         }
       ],
-      "take": [
-        {
-          "on_target_name": "coroners_office_key",
-          "requires_hazard_state": [
-            "field_active_doors_locked"
-          ],
-          "target_state": "mri_wave_evaluator",
-          "pause_for_player_acknowledgement": true,
-          "description": "You cautiously approach the roaring machine to retrieve the key. The magnetic field intensifies, and you hear the screech of metal as loose objects begin to vibrate violently!",
-          "blocks_action_success": true
+      "take": [{
+        "on_target_name": "coroners_office_key",
+        "requires_hazard_state": [
+          "field_active_doors_locked",
+          "dynamic_projectile_incoming",
+          "projectile_stage_1_cart",
+          "projectile_stage_1_damaged",
+          "qte_pause_1",
+          "projectile_stage_2_window",
+          "projectile_stage_2_damaged",
+          "final_barrage_wheelchair",
+          "final_barrage_wheelchair_damaged",
+          "final_barrage_gurney",
+          "critically_injured"
+        ],
+        "target_state": "mri_wave_evaluator",
+        "pause_for_player_acknowledgement": true,
+        "message": "You cautiously reach for the key again. The magnetic field violently surges in response, ripping more loose objects from the adjacent room!",
+        "blocks_action_success": true
         }
       ]
     },
@@ -509,11 +533,12 @@
         "description": "The {object_name} is silent and dark. It seems inactive for now."
       },
       "field_active_doors_locked": {
+        "on_state_entry_special_action": "mri_lock_doors_and_initiate_qtes",
         "description":  "As your fingers touch the key, the door you entered through closes with a deafening [color=FFFF00]SLAM![/color]\n\nThe vibration knocks a clipboard in the control room from its hook; it falls onto the workstation, the metal clip sliding across the console's keyboard, and...\n\n[color=ff0000]*BEEP!*[/color]\n\n...shit.",
         "ui_popup_event": {
           "type": "show_popup",
           "title": "Doors Sealed!",
-          "message": "As your fingers touch the key, the door you entered through closes with a deafening [color=FFFF00]SLAM![/color]\n\nThe vibration knocks a clipboard in the control room from its hook; it falls onto the workstation, the metal clip sliding across the console's keyboard, and...\n\n[color=ff0000]*BEEP!*[/color]\n\n...shit.",
+          "message": "As your fingers touch the key, the door you entered through closes with a deafening [color=FFFF00]SLAM![/color]\n\nThe vibration knocks a clipboard in the control room from its hook; it falls onto the workstation, the metal clip sliding across the console's keyboard, and...\n\n[color=ff0000]*BEEP!*[/color]\n\n...shit.\n\n\nThe key is pulled from your grasp and clatters against the MRI's casing as its lights flicker to life with an ominous hum.\n[color=ff0000]Then you hear something slam into the Control Room door from the other side while the employee stairwell exit's metal door seals firmly in place.[/color] The exits are now sealed shut by the magnetic force!\n\nYou approach the machine; attempt to[color=ff0000] 'take'[/color] the key again, or try to[color=00ff00] 'force'[/color] a door open!",
           "output_panel": true
         }
       },
@@ -1245,13 +1270,14 @@
         "description": "The revolving door appears to be functioning normally."
       },
       "door_jammed_trapped": {
-        "description": "You push your way into the revolving door.\n\nIt rotates once, then with a gut-wrenching SCREECH of tortured metal, it jams solid, trapping you inside!",
+        "description": "The door jams solid!",
         "pause_for_player_acknowledgement": true,
         "next_state": "door_force_qte"
       },
       "door_force_qte": {
-        "description": "You are trapped inside the jammed revolving door! The glass panel ahead is thick and the frame is unyielding, but you hear a grinding noise as the panels behind you try to continue forward.\nYou have to force your way out!",
-        "triggers_qte_on_entry": {
+          "popup_title": "Trapped!",
+          "popup_message": "The glass is unyielding. You have to force your way out!",
+          "triggers_qte_on_entry": {
           "qte_type": "button_mash",
           "duration": 5.0,
           "qte_context": {
