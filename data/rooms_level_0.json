@@ -32,12 +32,6 @@
       "level_id": "level_mall"
     },
     {
-      "job_title": "Auto Mechanic",
-      "workplace_name": "Pete's Auto Repair",
-      "level_id": "level_auto_shop",
-      "investigation_clue_item": "greasy_work_order"
-    },
-    {
       "job_title": "Lifeguard",
       "workplace_name": "Community Pool",
       "level_id": "level_community"
@@ -77,6 +71,16 @@
       "job_title": "Restaurant Host",
       "workplace_name": "Luigi's Italian Bistro",
       "level_id": "level_restaurant"
+    },
+    {
+      "job_title": "Social Worker",
+      "workplace_name": "The Hospital",
+      "level_id": "level_1"
+    },
+    {
+      "job_title": "Hospital Nurse",
+      "workplace_name": "The Hospital",
+      "level_id": "level_1"
     }
   ],
   "npc_archetypes_premonition": {
@@ -2652,19 +2656,6 @@
                 "glass_scatter": "Glass covers the entire pavement on both sides of the street. Some pieces are still falling from the floors that haven't fully settled."
               }
             },
-            "natural_disaster+structural_collapse": {
-              "name": "Rooftop Terrace — Overlook",
-              "description": "The rooftop terrace of your highrise building. From up here, you have a terrifying, unobstructed view of the ruined city grid below.",
-              "first_entry_text": "You chased [color=#BC13FE]{visionary}[/color] up the emergency stairwell to the roof, screaming for them to make sense, as they burst through the terrace doors rasping about [color=#FF3131]'concrete rolling like waves'[/color]\n\nCar alarms triggered all at once—a frantic, [color=#aaaaaa]unison of terror[/color] echoing off the downtown highrises. Then came the P-wave. It was a rolling, almost [color=#55aaff]nauseating sensation[/color], the entire skyscraper swaying under your feet like a slow boat in deep swells. You looked down; the coffee in your hand was rippling in perfect, [color=#aaaaaa]concentric circles[/color] of doom.\n\nThe S-wave hit four seconds later, and the metro grid became a [color=#FF3131]meat-grinder[/color].\n\nThe historic masonry building across the avenue—six floors of heavy brick and mortar—didn't just crumble. In the distance, the suspension bridge violently whipped like a jump rope as the city's foundation [color=#aaaaaa]liquefied[/color]. The brick building tilted sideways with the slow, ponderous grace of a dying giant. You watched from above as the structural seams [color=#FF3131]erupted in a spray of red dust[/color] before the entire mass slammed into the asphalt, the impact [color=#FF3131]shattering[/color] the windows of every car on the block.\n\nThe highrise is still groaning. The earth has been moving for thirty seconds, a [color=#aaaaaa]low, rhythmic growl[/color] that sounds like the planet's own teeth grinding together. It doesn't stop. It just [color=#FF3131]keeps moving[/color].\n\n[color=#FF3131]{reaction}[/color] God... [color=#BC13FE]{visionary}[/color] felt the fault line snap before the first foundation shifted. You were supposed to be [color=#FF3131]pulverized[/color] down there under those floors of brick.",
-              "objects": [
-                "ruined_avenue",
-                "fractured_parapet"
-              ],
-              "examine_details": {
-                "ruined_avenue": "Half the buildings below are severely damaged, their facades sheared off to reveal the ruined apartments inside. Gas is burning somewhere two streets over. You can hear the fire roaring above the distant sirens.",
-                "fractured_parapet": "The concrete safety wall at the edge of the roof has cracked straight through. The fissure is four inches wide, a terrifying reminder of the sheer stress this skyscraper just endured."
-              }
-            },
             "drowning_water+transportation_water": {
               "name": "Lakeshore Promenade — North Pier",
               "description": "The north pier of the promenade. You watched the Queen Isabella pull away from here. You almost didn't get off in time.",
@@ -2985,7 +2976,7 @@
             "natural_disaster+coastal_disaster": {
               "name": "Coastal Bluff — Storm Shelter Ruins",
               "description": "The concrete shelter at the top of the coastal bluff. Its roof is gone — took by a previous storm years ago. The walls are still standing.",
-              "first_entry_text": "The forecast predicted a Category 2. It slammed into the coast as a [color=#FF3131]screaming Category 4[/color].\n\nYou were on the boardwalk when the first band hit, and the air turned into a [color=#aaaaaa]shrieking, solid weight[/color]. The wind was already wrong—not gusting, but a sustained, [color=#FF3131]predatory pressure[/color] that leaned against your ribs until you couldn't breathe. \n\n[color=#BC13FE]{visionary}[/color] seized you, their fingers bruising your arm, and dragged you up the bluff path toward the old shelter, screaming about the [color=#aaaaaa]'wall of water headed for us.'[/color]\n\nFrom the ridge, you see the full, [color=#FF3131]apocalyptic sweep[/color] of the coastline. The storm surge is coming in now—it isn't waves; it’s a [color=#55aaff]dark, silt-choked wall of the abyss[/color]. It is a continuous, rising elevation of the sea level, advancing with a [color=#aaaaaa]low, rhythmic thunder[/color]. The boardwalk doesn't just flood; it is [color=#FF3131]pulverized and swallowed[/color] in thirty seconds. The parking lot vanishes in two minutes.\n\nThen, the sound of [color=#aaaaaa]shearing bolts[/color]. The buildings that aren't anchored to the bedrock begin to drift, rotating like toy boats before the currents [color=#FF3131]hammer them into toothpicks[/color] against the bluff.\n\n[color=#FF3131]{reaction}[/color] [color=#BC13FE]{visionary}[/color] felt the barometric pressure drop in their marrow. You were supposed to be [color=#FF3131]drowned and shredded[/color] in that surf.",
+              "first_entry_text": "The forecast predicted a Category 2. It slammed into the coast as a [color=#FF3131]screaming Category 4[/color].\n\nYou were on the boardwalk when the first band hit, and the air turned into a [color=#aaaaaa]shrieking, solid weight[/color]. The wind was already wrong—not gusting, but a sustained, [color=#FF3131]predatory pressure[/color] that leaned against your ribs until you couldn't breathe. \n\n[color=#BC13FE]{visionary}[/color] seized you, their fingers bruising your arm, and dragged you up the bluff path toward the old shelter, screaming about the [color=#aaaaaa]'ocean coming to reclaim its floor.'[/color]\n\nFrom the ridge, you see the full, [color=#FF3131]apocalyptic sweep[/color] of the coastline. The storm surge is coming in now—it isn't waves; it’s a [color=#55aaff]dark, silt-choked wall of the abyss[/color]. It is a continuous, rising elevation of the sea level, advancing with a [color=#aaaaaa]low, rhythmic thunder[/color]. The boardwalk doesn't just flood; it is [color=#FF3131]pulverized and swallowed[/color] in thirty seconds. The parking lot vanishes in two minutes.\n\nThen, the sound of [color=#aaaaaa]shearing bolts[/color]. The buildings that aren't anchored to the bedrock begin to drift, rotating like toy boats before the currents [color=#FF3131]hammer them into toothpicks[/color] against the bluff.\n\n[color=#FF3131]{reaction}[/color] [color=#BC13FE]{visionary}[/color] felt the barometric pressure drop in their marrow. You were supposed to be [color=#FF3131]drowned and shredded[/color] in that surf.",
               "objects": [
                 "surge_panorama",
                 "shelter_wall"

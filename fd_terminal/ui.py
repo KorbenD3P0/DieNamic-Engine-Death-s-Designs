@@ -1178,13 +1178,13 @@ class TutorialScreen(BaseScreen):
             (
                 'WTF Is This?',
                 (
-                    f"{color_text('DieNamic Engine: Death\'s Design', 'npc', rm)} is a dynamic, text-based survival horror engine.\n"
-                    f"You cheated Death once. {color_text('It doesn\'t plan to let you do it again.', 'warning', rm)}\n\n"
-                    "Every run begins with a procedurally generated disaster. The setting, the visionary, the victims, and the horrific ways people die all shift to ensure [color=FF3131]no two runs are exactly the same.[/color]\n\n"
-                    "Based on who you [color=BC13FE]*have time*[/color] to save, who you [color=BC13FE] *choose* [/color] to leave behind, and [color=BC13FE]if you even make it out of the disaster alive[/color], a unique[color=FF3131] \"Death's Design\" [/color]is forged. "
-                    f"You must navigate a persistent city hub, track down surviving NPCs at their procedural workplaces{color_text(' in the correct order', 'warning', rm)}, and try to break the chain before Death catches up to you all.\n\n"
-                    f"Will you risk your life intervening to save the others, {color_text('or use them as meat shields to save yourself?', 'special', rm)}"
-                ),
+                    color_text("DieNamic Engine: Death's Design", "npc", rm) + " is a dynamic, text-based survival horror engine.\n"
+                    "You cheated Death once. " + color_text("It doesn't plan to let you do it again.", "warning", rm) + "\n\n"
+                    "Every run begins with a procedurally generated disaster. The setting, the visionary, the victims, and the horrific ways people die all shift to ensure " + color_text("no two runs are exactly the same.", "warning", rm) + "\n\n"
+                    "Based on who you " + color_text("*have time*", "npc", rm) + " to save, who you " + color_text(" *choose* ", "npc", rm) + " to leave behind, and " + color_text("if you even make it out of the disaster alive", "npc", rm) + ", a unique " + color_text('''"Death's Design"''', "warning", rm) + " is forged. "
+                    "You must navigate a persistent city hub, track down surviving NPCs at their procedural workplaces" + color_text(" in the correct order", "warning", rm) + ", and try to break the chain before Death catches up to you all.\n\n"
+                    "Will you risk your life intervening to save the others, " + color_text("or use them as meat shields to save yourself?", "special", rm)
+                )
             ),
             (
                 "The Stats You Can't Ignore",
@@ -1204,30 +1204,30 @@ class TutorialScreen(BaseScreen):
             (
                 'Omens, Evidence, & The Journal',
                 (
-                    f"Death always leaves a breadcrumb trail. {color_text('Past victims left things behind—photographs, coroner reports, and mementos ', 'special', rm)}"
-                    f"{color_text('spanning the films, novels, and comics.', 'special', rm)} Collect them to unlock backstories in your Journal, and collect every character in a set to unlock the full story!\n\n"
-                    f"{color_text('Examining your environment can make you aware of what\'s coming.', 'npc', rm)} A nearby radio, an ominous reflection, static on a television... "
-                    f"{omens_warning}\n\n"
-                    f"Investigate each level as thoroughly {color_text('(or not)', 'npc', rm)} as you want, keep the visionary alive {color_text('(if they aren\'t already dead)', 'npc', rm)} and find evidence or items to help ultimately cheat Death.\n"
-                    f"Saving and later locating the visionary will unlock the order of Death's List, {color_text('giving you the vital clues needed to correctly choose your next destination from the Hub', 'npc', rm)}."
-                ),
+                    "Death always leaves a breadcrumb trail. " + color_text("Past victims left things behind—photographs, coroner reports, and mementos ", "special", rm) +
+                    color_text("spanning the films, novels, and comics.", "special", rm) + " Collect them to unlock backstories in your Journal, and collect every character in a set to unlock the full story!\n\n" +
+                    color_text("Examining your environment can make you aware of what's coming.", "npc", rm) + " A nearby radio, an ominous reflection, static on a television... " +
+                    omens_warning + "\n\n" +
+                    "Investigate each level as thoroughly " + color_text("(or not)", "npc", rm) + " as you want, keep the visionary alive " + color_text("(if they aren't already dead)", "npc", rm) + " and find evidence or items to help ultimately cheat Death.\n" +
+                    "Saving and later locating the visionary will unlock the order of Death's List, " + color_text("giving you the vital clues needed to correctly choose your next destination from the Hub", "npc", rm) + "."
+                )
             ),
             (
                 'The Gameplay Loop',
                 (
-                    f"1. {color_text('Explore', 'npc', rm)} dynamic environments using 'Move' + directions.\n"
-                    f"2. {color_text('Examining the world will help AND hinder you.', 'npc', rm)} Search containers for hidden items, keys, and lore, but watch your fear level.\n"
-                    f"3. {color_text('Watch your step.', 'npc', rm)} The environment is actively trying to kill you. That MRI machine or faulty wiring isn't just set dressing — [color=FF3131]everything is a trap waiting to be sprung.[/color]\n"
-                    f"4. {color_text('Survive the QTEs.', 'npc', rm)} When a hazard triggers, rely on your reflexes and wits to type, mash, match the pattern, draw the shape and make quick decisions. [color=FF3131]..that could have even worse consequences[/color].\n"
-                    f"5. {color_text('Death knows the order even if you don\'t','npc',rm)}: if your companion is next on [color=FF3131]Death's List[/color], hazards will target them instead. {color_text('Find the visionary to learn the order and intervene before you\'re out of NPCs, otherwise you won\'t have anybody to resucitate you in the finale!', 'npc', rm)}\n"
-                    f"6. Navigate the Hub. After surviving a location, you'll retreat to your car and the engine will calculate locations you've unlocked based on who and what you've found. {color_text('Choose your next destination carefully', 'npc', rm)}; the next target is [color=FF3131]ALWAYS[/color] in danger, and can die offscreen if you don't save them in time!\n\n"
+                    "1. " + color_text("Explore", "npc", rm) + " dynamic environments using 'Move' + directions.\n" +
+                    "2. " + color_text("Examining the world will help AND hinder you.", "npc", rm) + " Search containers for hidden items, keys, and lore, but watch your fear level.\n" +
+                    "3. " + color_text("Watch your step.", "npc", rm) + " The environment is actively trying to kill you. That MRI machine or faulty wiring isn't just set dressing — " + color_text("everything is a trap waiting to be sprung.", "warning", rm) + "\n" +
+                    "4. " + color_text("Survive the QTEs.", "npc", rm) + " When a hazard triggers, rely on your reflexes and wits to type, mash, match the pattern, draw the shape and make quick decisions. " + color_text("..that could have even worse consequences", "warning", rm) + "\n" +
+                    "5. " + color_text("Death knows the order even if you don't", "npc", rm) + ": if your companion is next on " + color_text("Death's List", "warning", rm) + ", hazards will target them instead. " + color_text("Find the visionary to learn the order and intervene before you're out of NPCs, otherwise you won't have anybody to resucitate you in the finale!", "npc", rm) + "\n" +
+                    "6. Navigate the Hub. After surviving a location, you'll retreat to your car and the engine will calculate locations you've unlocked based on who and what you've found. " + color_text("Choose your next destination carefully", "npc", rm) + "; the next target is " + color_text("ALWAYS", "warning", rm) + " in danger, and can die offscreen if you don't save them in time!\n\n"
                 ),
             ),
             (
                 'From the Development Team (all one of me, haha)',
                 (
-                    f"{color_text('If you are reading this, you are a tester. Thank you for braving the engine! Please report any ideas or bugs (and the situation that caused them) to DieNamicEngine@gmail.com.', 'success', rm)}\n"
-                    f"{color_text('I hope you enjoy it, and I hope it captures the true, terrifying spirit of the franchise.', 'warning', rm)} {color_text('Good luck.', 'success', rm)}\n"
+                    color_text("If you are reading this, you are a tester. Thank you for braving the engine! Please report any ideas or bugs (and the situation that caused them) to DieNamicEngine@gmail.com.", "success", rm) + "\n" +
+                    color_text("I hope you enjoy it, and I hope it captures the true, terrifying spirit of the franchise.", "warning", rm) + " " + color_text("Good luck.", "success", rm) + "\n"
                 ),
             ),
         ]
@@ -2550,6 +2550,7 @@ class AchievementsScreen(BaseScreen):
         if self.achievements_system:
             # load_achievements() returns a dict {id: {name, unlocked, ...}}
             raw = self.achievements_system.load_achievements()
+            
             if isinstance(raw, dict):
                 sorted_achievements = sorted(
                     raw.values(),
@@ -2562,6 +2563,21 @@ class AchievementsScreen(BaseScreen):
                 )
             else:
                 sorted_achievements = []
+                
+            # --- FIX 1: THE EMPTY STATE FALLBACK ---
+            if not sorted_achievements:
+                empty_label = Label(
+                    text="No achievements unlocked or discovered yet.",
+                    font_name=DEFAULT_FONT_REGULAR_NAME,
+                    size_hint_y=None,
+                    height=dp(50),
+                    halign='center',
+                    valign='middle',
+                    color=(0.5, 0.5, 0.5, 1) # Greyed out text
+                )
+                self.grid_layout.add_widget(empty_label)
+                return
+            # ---------------------------------------
             
             for ach_data in sorted_achievements:
                 is_unlocked = ach_data.get('unlocked', False)
@@ -2578,19 +2594,26 @@ class AchievementsScreen(BaseScreen):
                     font_name=DEFAULT_FONT_REGULAR_NAME, 
                     markup=True, 
                     size_hint_y=None, 
-                    height=dp(70),
+                    # Removed hardcoded height!
                     halign='left', 
                     valign='top', 
-                    padding=(dp(5), dp(5))
+                    padding=(dp(10), dp(10))
                 )
                 
-                # Bind text_size to width for wrapping
-                ach_label.bind(width=lambda instance, value: setattr(instance, 'text_size', (value - dp(10), None)))
+                # --- FIX 2: KIVY'S MAGIC WORD-WRAP FORMULA ---
+                # 1. Bind the text_size width to the label's width so the text wraps properly
+                ach_label.bind(width=lambda instance, value: setattr(instance, 'text_size', (value, None)))
+                # 2. Bind the label's actual height to the rendered texture height so it expands dynamically!
+                ach_label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
+                # ---------------------------------------------
+                
                 self.grid_layout.add_widget(ach_label)
         else:
             self.grid_layout.add_widget(Label(
                 text="Achievements system not available.", 
-                font_name=DEFAULT_FONT_REGULAR_NAME
+                font_name=DEFAULT_FONT_REGULAR_NAME,
+                size_hint_y=None,
+                height=dp(50)
             ))
 
 class SettingsScreen(BaseScreen):
@@ -3386,14 +3409,14 @@ class InterLevelScreen(BaseScreen):
         # --- BRANCH 1: THE SOLE SURVIVOR (False Security) ---
         if not survivors:
             intro = (
-                f"It's been about a week since {color_text(disaster_name, 'special', rm)} killed {color_text(killed_count, 'warning', rm)}. "
-                f"The news called it a freak tragedy. Not wrong. You called it a miracle that you walked away with just a minor concussion.\n\n"
-                f"You are still a little weirded out about {color_text(visionary_name, 'special', rm)} and their crashing out right before everyone died, but that problem died with them so you try not to think about it too much. "
-                f"{color_text('You\'re alive and well!', 'success', rm)} Life is finally starting to feel normal again. You just got that promotion at work, you finally met a quality guy.. {color_text('Dying didn\'t really fit into your 5-year plan, you know?', 'furniture', rm)}\n\nYou've just arrived at {color_text(hospital, 'location', rm)} "
-                f"for a routine follow-up scan in the {color_text('Radiology department', 'special', rm)}, just to be safe, and then you can go home.\n\n"
-                f"Whatever you escaped from in {color_text(city, 'location', rm)}... {color_text('You\'re glad it\'s in the past!', 'success', rm)}\n\n"
-                f"Commands: type {color_text('help', 'special', rm)} to see everything you can do.\n"
-                f"Find keys, examine clues, and {color_text('have an awesome life!', 'warning', rm)}\n\n"
+                "It's been about a week since " + color_text(disaster_name, 'special', rm) + " killed " + color_text(killed_count, 'warning', rm) + ". "
+                "The news called it a freak tragedy. Not wrong. You called it a miracle that you walked away with just a minor concussion.\n\n"
+                "You are still a little weirded out about " + color_text(visionary_name, 'special', rm) + " and their crashing out right before everyone died, but that problem died with them so you try not to think about it too much. " +
+                color_text("You're alive and well!", 'success', rm) + " Life is finally starting to feel normal again. You just got that promotion at work, you finally met a quality guy.. " + color_text("Dying didn't really fit into your 5-year plan, you know?", 'furniture', rm) + "\n\nYou've just arrived at " + color_text(hospital, 'location', rm) + " "
+                "for a routine follow-up scan in the " + color_text("Radiology department", 'special', rm) + ", just to be safe, and then you can go home.\n\n"
+                "Whatever you escaped from in " + color_text(city, 'location', rm) + "... " + color_text("You're glad it's in the past!", 'success', rm) + "\n\n"
+                "Commands: type " + color_text("help", 'special', rm) + " to see everything you can do.\n"
+                "Find keys, examine clues, and " + color_text("have an awesome life!", 'warning', rm) + "\n\n"
             )
             return intro
 
@@ -3447,18 +3470,18 @@ class InterLevelScreen(BaseScreen):
             if len(offscreen_casualties) == 1:
                 c = offscreen_casualties[0]
                 post_deaths = (
-                    f"But since the disaster, {color_text('things have gotten worse.', 'warning', rm)} "
-                    f"{color_text(c['name'], 'npc', rm)} died yesterday after {color_text(c['fate'], 'warning', rm)}. "
-                    f"The police called it a freak accident. You're not so sure."
+                    "But since the disaster, " + color_text("things have gotten worse.", "warning", rm) + " " +
+                    color_text(c['name'], "npc", rm) + " died yesterday after " + color_text(c['fate'], "warning", rm) + ". "
+                    "The police called it a freak accident. You're not so sure."
                 )
             else:
                 c1 = offscreen_casualties[0]
                 c2 = offscreen_casualties[1]
                 post_deaths = (
-                    f"But since the disaster, {color_text('things have gotten worse.', 'warning', rm)} "
-                    f"{color_text(c1['name'], 'npc', rm)} died yesterday after {color_text(c1['fate'], 'warning', rm)}. "
-                    f"Then, just hours ago, you got a call from {color_text(visionary_name, 'npc', rm)} about how {color_text(c2['name'], 'npc', rm)} died after {color_text(c2['fate'], 'warning', rm)}. "
-                    f"The police are calling them freak accidents. {color_text('At this point you\'re not so sure.', 'warning', rm)}"
+                    "But since the disaster, " + color_text("things have gotten worse.", "warning", rm) + " " +
+                    color_text(c1['name'], "npc", rm) + " died yesterday after " + color_text(c1['fate'], "warning", rm) + ". "
+                    "Then, just hours ago, you got a call from " + color_text(visionary_name, "npc", rm) + " about how " + color_text(c2['name'], "npc", rm) + " died after " + color_text(c2['fate'], "warning", rm) + ". "
+                    "The police are calling them freak accidents. " + color_text("At this point you're not so sure.", "warning", rm)
                 )
         else:
             if len(survivors) == 0:
@@ -3468,35 +3491,27 @@ class InterLevelScreen(BaseScreen):
                 )
             elif len(survivors) == 1:
                 post_deaths = (
-                    f"{color_text(survivors[0], 'npc', rm)}, the only person who survived with you, is still breathing. "
-                    f"But you can't shake the feeling that {color_text('something bad is going to happen.', 'warning', rm)}"
+                    color_text(survivors[0], "npc", rm) + ", the only person who survived with you, is still breathing. "
+                    "But you can't shake the feeling that " + color_text("something bad is going to happen.", "warning", rm)
                 )
             else:
                 post_deaths = (
-                   f"{color_text('Everyone who survived with you', 'npc', rm)} is still breathing."
-                    f"But you can't shake the feeling that {color_text('something bad is going to happen.', 'warning', rm)}"
+                   color_text("Everyone who survived with you", "npc", rm) + " is still breathing. "
+                   "But you can't shake the feeling that " + color_text("something bad is going to happen.", "warning", rm)
                 )
-        
+
         intro = (
-            f"It's been three days since "
-            f"{color_text(disaster_name, 'special', rm)} "
-            f"in {color_text(city, 'location', rm)}.\n\n"
-            f"{color_text(str(killed_count), 'warning', rm)} "
-            f"people didn't make it.\n\n"
-            f"{survivor_text}\n\n"
-            f"The news calls it a tragedy. {color_text('An act of God.', 'npc', rm)} "
-            f"But you were there. You know "
-            f"{color_text(visionary_name, 'npc', rm)} saw it coming. ..and you don't really know how to reconcile that with everything you believe in.\n\n"
-            f"{post_deaths}\n\n"
-            f"You came to "
-            f"{color_text(hospital, 'location', rm)} for some routine scans after a possible concussion at the disaster site. "
-            f"The weird thing is you feel like it's where you need to be, "
-            f"but {color_text('you can\'t say if that\'s good or bad', 'location', rm)}.\n\n"
-            f"The {color_text(char_class, 'special', rm)} in you is saying you're running "
-            f"out of time to figure out which it is.\n\n"
-            f"Until you figure that out, however, make your way to {color_text('Radiology', 'special', rm)} "
-            f"for those scans in the MRI suite. \n"
-            f"{color_text('You just be careful, now.', 'warning', rm)}"
+            "It's been three days since " + color_text(disaster_name, "special", rm) + " in " + color_text(city, "location", rm) + ".\n\n" +
+            color_text(str(killed_count), "warning", rm) + " people didn't make it.\n\n" +
+            survivor_text + "\n\n" +
+            "The news calls it a tragedy. " + color_text("An act of God.", "npc", rm) + " "
+            "But you were there. You know " + color_text(visionary_name, "npc", rm) + " saw it coming. ..and you don't really know how to reconcile that with everything you believe in.\n\n" +
+            post_deaths + "\n\n" +
+            "You came to " + color_text(hospital, "location", rm) + " for some routine scans after a possible concussion at the disaster site. "
+            "The weird thing is you feel like it's where you need to be, but " + color_text("you can't say if that's good or bad", "location", rm) + ".\n\n" +
+            "The " + color_text(char_class, "special", rm) + " in you is saying you're running out of time to figure out which it is.\n\n" +
+            "Until you figure that out, however, make your way to " + color_text("Radiology", "special", rm) + " for those scans in the MRI suite. \n" +
+            color_text("You just be careful, now.", "warning", rm)
         )
         return intro
 
