@@ -1,6 +1,5 @@
 import random
 from typing import Optional
-from turtle import tracer
 from fd_terminal.utils import color_text, TraceLogger
 
 class MovementMixin:
@@ -250,7 +249,10 @@ class MovementMixin:
 
         if req_flag:
             # Check both the dedicated flags set AND top-level boolean triggers
-            flags = self.player.get('flags', set())
+            flags = self.player.get('flags', {})
+            if not isinstance(flags, dict):
+                flags = {}
+                self.player['flags'] = flags
             if req_flag not in flags and not self.player.get(req_flag):
                 msg = exit_target.get('locked_message', "You can't go that way yet.")
                 self.add_ui_event({"event_type": "show_popup", "title": "Locked", "message": msg})
@@ -673,7 +675,10 @@ class MovementMixin:
 
         # --- THE FIX: Dynamically inject the exits into the room! ---
         inventory = {str(i).lower() for i in self.player.get('inventory', [])}
-        flags = self.player.get('flags', set())
+        flags = self.player.get('flags', {})
+        if not isinstance(flags, dict):
+            flags = {}
+            self.player['flags'] = flags
 
         # 1. Properly target the player dictionary for the deaths list flag (Your fix)
         knows_list = 'learned_deaths_list' in flags or bool(self.player.get('learned_deaths_list'))

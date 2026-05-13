@@ -396,33 +396,33 @@
         "text": "'Thank God you're okay. I've been going crazy in here. The doctors keep asking what happened...'",
         "options": [
           { "text": "Something is wrong. People are dying.", 
+            "requires_flag": "deaths_have_started", 
             "on_talk_action": {
               "special_effect": ["recruit_companion", "despawn_npc"]
             },
           "target_state": "about_deaths" }
         ]
-      },
-      "skeptic": {
-        "first_meeting": {
-          "text": "'Oh. It's you. The one who caused that scene right before everything went to hell. ...I guess I should thank you.'",
-          "on_talk_action": {
-            "special_effect": ["recruit_companion", "despawn_npc"]
-          },
-          "next_state": "standard_loop"
-        },
-        "standard_loop": {
-          "text": "'How sweet. I still think there's a rational explanation for all of this.'",
-          "options": [
-            { "text": "It's not over. More people are going to die.", 
-              "on_talk_action": {
-                "special_effect": ["recruit_companion", "despawn_npc"]
-              },
-              "target_state": "denial" }
-          ]
-        }
       }
     },
-
+    "skeptic": {
+      "first_meeting": {
+        "text": "'Oh. It's you. The one who caused that scene right before everything went to hell. ...I guess I should thank you.'",
+        "on_talk_action": {
+          "special_effect": ["recruit_companion", "despawn_npc"]
+        },
+        "next_state": "standard_loop"
+      },
+      "standard_loop": {
+        "text": "'How sweet. I still think there's a rational explanation for all of this.'",
+        "options": [
+          { "text": "It's not over. More people are going to die.", 
+            "on_talk_action": {
+              "special_effect": ["recruit_companion", "despawn_npc"]
+            },
+            "target_state": "denial" }
+        ]
+      }
+    },
     "authority_figure": {
       "conditional_entry_state": [
         { "condition": {"police_status": "fought"}, "state": "greeting_fought" },

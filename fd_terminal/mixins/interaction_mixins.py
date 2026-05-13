@@ -1,14 +1,99 @@
+from typing import Optional
+
 from fd_terminal.utils import color_text, normalize_text
 
 
 class InteractionMixin:
         # --- NPC commands ---
 
-    def _command_talk(self, target_name_str: str) -> dict:
+    def _resolve_talk_target(self, target_name_str: str, room_id: str) -> Optional[dict]:
+        """Finds the NPC in the room or falls back to scraping master data."""
+        npc = self._find_npc_in_room(target_name_str, room_id)
+        
+        # Omni-Lookup & String Resolver
+        if not npc or isinstance(npc, str):
+            npcs_master = self.resource_manager.get_data('npcs', {})
+            search_key = npc if isinstance(npc, str) else target_name_str
+            master_data = npcs_master.get(search_key) or npcs_master.get('npcs', {}).get(search_key, {})
+            if master_data:
+                return master_data
+                
+        return npc if isinstance(npc, dict) else None
 
-        """
-        Talk to an NPC: logs the conversation to the output panel AND shows a popup.
-        """
+    def _get_companion_fallback_node(self, npc: dict, room_id: str) -> dict:
+        """Generates dynamic ambient barks for companions if no explicit dialogue exists."""
+        room_data = self.get_room_data(room_id) or {}
+        room_tags = room_data.get('tags', [])
+        
+        ambient_barks = npc.get('ambient_barks', {})
+        chosen_bark = "I'm right behind you. Lead the way." # Default
+        
+        import random
+        for tag in room_tags:
+            if tag in ambient_barks and ambient_barks[tag]:
+                chosen_bark = random.choice(ambient_barks[tag])
+                break # Stop at the first matching tag
+                
+        return {
+            "text": f"They glance around. {chosen_bark}",
+            "options": []
+        }
+
+    def _filter_dialogue_options(self, raw_options: list) -> list:
+        """Filters options based on items, logic conditions, and system flags."""
+        valid_options = []
+        
+        # 1. Get raw flag data
+        raw_flags = self.player.get('flags', {})
+        if not isinstance(raw_flags, dict):
+            raw_flags = {}
+            self.player['flags'] = raw_flags
+        interaction_flags = getattr(self, 'interaction_flags', set())
+        inventory = self.player.get('inventory', [])
+        
+        # 2. Inventory helper
+        def player_has(item_id):
+            if isinstance(inventory, dict):
+                return item_id in inventory
+            for i in inventory:
+                if isinstance(i, str) and i == item_id: return True
+                if isinstance(i, dict) and i.get('id') == item_id: return True
+            return False
+
+        for opt in raw_options:
+            # Item requirements
+            if 'requires_no_item' in opt and player_has(opt['requires_no_item']): continue
+            if 'requires_item' in opt and not player_has(opt['requires_item']): continue
+            if 'requires_items' in opt:
+                reqs = opt['requires_items'] if isinstance(opt['requires_items'], list) else [opt['requires_items']]
+                if not all(player_has(r) for r in reqs): continue
+                    
+            # --- THE BULLETPROOF FLAG CHECK ---
+            req_flag = opt.get('requires_flag')
+            if req_flag:
+                # Check the temporary interaction set
+                has_temp_flag = req_flag in interaction_flags
+                
+                # Check the persistent flags (handles both dict and set types)
+                has_perm_flag = False
+                if isinstance(raw_flags, dict):
+                    has_perm_flag = bool(raw_flags.get(req_flag))
+                elif isinstance(raw_flags, (set, list)):
+                    has_perm_flag = req_flag in raw_flags
+                
+                if not has_temp_flag and not has_perm_flag:
+                    continue 
+            # ----------------------------------
+                    
+            if 'condition' in opt and not self._npc_condition_met(opt['condition']):
+                continue
+                
+            valid_options.append(opt)
+            
+        return valid_options
+
+    def _command_talk(self, target_name_str: str) -> dict:
+        """Main interaction pipeline: resolves NPC, generates outputs, and pushes UI events."""
         try:
             target_name_str = (target_name_str or "").strip()
             if not target_name_str:
@@ -16,125 +101,57 @@ class InteractionMixin:
 
             room_id = self.player.get('location')
 
-            # 1. Find them in the room
-            npc = self._find_npc_in_room(target_name_str, room_id)
-
-            # --- THE FIX: Omni-Lookup & String Resolver ---
-            # If the engine only found a string ID (because it was in npcs_present)
-            # OR if it missed it entirely, scrape the master NPC data.
-            if not npc or isinstance(npc, str):
-                npcs_master = self.resource_manager.get_data('npcs', {})
-                search_key = npc if isinstance(npc, str) else target_name_str
-
-                # Omni-Lookup: check root, then nested 'npcs' block
-                master_data = npcs_master.get(search_key) or npcs_master.get('npcs', {}).get(search_key, {})
-                if master_data:
-                    npc = master_data
-
-            if not npc or isinstance(npc, str):
+            # 1. Resolve Target
+            npc = self._resolve_talk_target(target_name_str, room_id)
+            if not npc:
                 return self._build_response(message=f"You don't see {target_name_str} here.", turn_taken=False)
 
-            # --- THE FIX: Record that you met them! ---
-            npc_name = npc.get('name', target_name_str).title()
-            if npc_name not in self.player.setdefault('met_npcs', []):
-                self.player['met_npcs'].append(npc_name)
-            # ------------------------------------------
+            # 2. Record Meeting
             npc_name = npc.get('name', target_name_str).title()
             met_npcs = self.player.setdefault('met_npcs', [])
-            is_first_meeting = npc_name not in met_npcs      # ← compute BEFORE appending
+            is_first_meeting = npc_name not in met_npcs
             if is_first_meeting:
                 met_npcs.append(npc_name)
 
-            # Pass is_first_meeting into the resolver
+            # 3. Resolve Dialogue State
             current_state = self._resolve_npc_dialogue_entry_state(npc, room_id, is_first_meeting=is_first_meeting)
-            # 2. Resolve State
             dialogue_states = npc.get('dialogue_states') or {}
             node = dialogue_states.get(current_state)
 
-            # --- THE FIX: Engine-level Companion Fallback with Tags ---
+            # 4. Companion Fallback
             is_companion = npc.get('name', '').lower() == self.player.get('current_companion', '').lower()
-
             if not node and is_companion:
-                # 1. Get room tags
-                room_data = self.get_room_data(room_id) or {}
-                room_tags = room_data.get('tags', [])
-                
-                # 2. Check if NPC has thematic barks for these tags
-                ambient_barks = npc.get('ambient_barks', {})
-                chosen_bark = "I'm right behind you. Lead the way." # Default
-                
-                for tag in room_tags:
-                    if tag in ambient_barks and ambient_barks[tag]:
-                        import random
-                        chosen_bark = random.choice(ambient_barks[tag])
-                        break # Stop at the first matching tag we find
-                
-                # 3. Dynamically generate the fallback node
-                node = {
-                    "text": f"They glance around. {chosen_bark}",
-                    "options": []
-                }
+                node = self._get_companion_fallback_node(npc, room_id)
 
-            # 3. Apply Side Effects
+            if not node:
+                 return self._build_response(message=f"{npc_name} has nothing to say right now.", turn_taken=True)
+
+            # 5. Process Pre-Talk Actions (Side Effects)
             ui_events = []
             if 'on_talk_action' in node:
                 try:
                     self._process_on_talk_action(npc, node, ui_events)
                     self._apply_on_talk_action(node['on_talk_action'])
                 except StopIteration:
-                    return self._build_response(message=f"You talk to {npc.get('name')}.", turn_taken=True, ui_events=ui_events)
+                    return self._build_response(message=f"You talk to {npc_name}.", turn_taken=True, ui_events=ui_events)
 
-            # 4. Handle State Transition
+            # 6. Push Narrative Logic Forward
             next_state = node.get('next_state')
             if next_state:
                 self._set_npc_state(npc, next_state)
 
-            # 5. Option Filtering
-            raw_options = node.get('options', [])
-            valid_options = []
-
-            # Inventory helper
-            inventory = self.player.get('inventory', [])
-            def player_has(item_id):
-                if isinstance(inventory, dict):
-                    return item_id in inventory
-                for i in inventory:
-                    if isinstance(i, str) and i == item_id:
-                        return True
-                    if isinstance(i, dict) and i.get('id') == item_id:
-                        return True
-                return False
-
-            for opt in raw_options:
-                if 'requires_no_item' in opt and player_has(opt['requires_no_item']):
-                    continue
-                if 'requires_item' in opt and not player_has(opt['requires_item']):
-                    continue
-                if 'requires_items' in opt:
-                    reqs = opt['requires_items'] if isinstance(opt['requires_items'], list) else [opt['requires_items']]
-                    if not all(player_has(r) for r in reqs):
-                        continue
-                if 'requires_flag' in opt and opt['requires_flag'] not in self.interaction_flags:
-                    continue
-                if 'condition' in opt and not self._npc_condition_met(opt['condition']):
-                    continue
-                valid_options.append(opt)
-
-            # 6. Build Outputs
+            # 7. Build Filtered Output Options
+            valid_options = self._filter_dialogue_options(node.get('options', []))
+            
+            # 8. Render Outputs
             text = node.get('text')
-
-            # --- PATCH: Silent Node Support ---
             if not text:
                 self.logger.info(f"_command_talk: Silent node '{current_state}' triggered. Skipping popup.")
-                return self._build_response(
-                    turn_taken=True,
-                    ui_events=ui_events
-                )
+                return self._build_response(turn_taken=True, ui_events=ui_events)
 
-            # --- FIX: Format the base text from the node ---
             text = self._format_dynamic_text(text)
-
-            # Dynamic text replacement
+            
+            # Dynamic text replacements
             if "$ticket_check_result$" in text:
                 has_ticket = "movie_ticket" in self.player.get('inventory', [])
                 text = text.replace(
@@ -142,28 +159,25 @@ class InteractionMixin:
                     "Ah, here you go.\n*You show Ron your ticket*" if has_ticket else "Uh, I think I lost it."
                 )
 
-            # Construct Options Text
             options_text = ""
             if valid_options:
                 options_text = "\n\n[color=00ff00]Responses:[/color]"
                 for i, opt in enumerate(valid_options):
                     formatted_opt_text = self._format_dynamic_text(opt.get('text', ''))
-                    opt['text'] = formatted_opt_text
+                    opt['text'] = formatted_opt_text  # Save formatted text back for context handling
                     options_text += f"\n{i+1}. {formatted_opt_text}"
 
-            # Save context
+            # Save Context for Option Selection later
             self.last_dialogue_context = {
-                "npc_name": npc.get('name'),
+                "npc_name": npc_name,
                 "options": valid_options
             }
 
-            # Queue "Destroy Old Popup" event
             ui_events.append({"event_type": "destroy_info_popup"})
-
-            # Build New Popup
+            
             popup_event = {
                 "event_type": "show_popup",
-                "title": npc.get('name', 'NPC'),
+                "title": npc_name,
                 "message": text + options_text
             }
 
@@ -174,8 +188,7 @@ class InteractionMixin:
 
             ui_events.append(popup_event)
 
-            # Log to history
-            npc_display = color_text(npc.get('name', 'NPC'), 'npc', self.resource_manager)
+            npc_display = color_text(npc_name, 'npc', self.resource_manager)
             log_message = f"\n{npc_display}: \"{text}\""
 
             return self._build_response(
@@ -187,7 +200,7 @@ class InteractionMixin:
         except Exception as e:
             self.logger.error(f"_command_talk: Unexpected error: {e}", exc_info=True)
             return self._build_response(message="Something went wrong during the conversation.", turn_taken=True)
-
+        
     def _command_respond(self, option_str: str) -> dict:
         """
         Choose a dialogue option. Logs the player's choice text, then triggers the NPC's reply.

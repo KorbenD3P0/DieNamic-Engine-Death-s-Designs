@@ -18,7 +18,15 @@ def setup_initial_logging():
     # On Android, also log to a file
     if platform == "android":
         try:
-            handlers.append(logging.FileHandler("/sdcard/fdt_log.txt"))
+            from jnius import autoclass
+            PythonActivity = autoclass('org.kivy.android.PythonActivity')
+            activity = PythonActivity.mActivity
+            if activity:
+                ext_dir = activity.getExternalFilesDir(None)
+                if ext_dir:
+                    safe_log_dir = str(ext_dir.getAbsolutePath())
+                    os.makedirs(safe_log_dir, exist_ok=True)
+                    handlers.append(logging.FileHandler(os.path.join(safe_log_dir, "fdt_boot_log.txt")))
         except Exception as e:
             print(f"Could not create file handler for logging: {e}")
 
@@ -61,11 +69,10 @@ def main():
         
     except ImportError as e:
         logging.critical(f"FATAL LAUNCH ERROR: Could not import the application. Check that 'fd_terminal' is a valid package.", exc_info=True)
-        # In a real application, you might show a GUI error here.
-        input(f"Fatal Error: {e}\nPress Enter to exit.")
+        sys.exit(1)
     except Exception as e:
         logging.critical(f"An unexpected fatal error occurred during launch.", exc_info=True)
-        input(f"An unexpected fatal error occurred: {e}\nPress Enter to exit.")
+        sys.exit(1)
 
 # This is the command to start everything when you run this file.
 if __name__ == "__main__":

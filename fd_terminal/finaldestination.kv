@@ -33,17 +33,19 @@
 <TerminalButton@Button>:
     background_normal: ''
     background_down: ''
-    background_color: (0, 0, 0, 0)  # Transparent background
-    color: term_fg                  # Green text (0.1, 0.8, 0.1, 1)
+    background_color: (0, 0, 0, 0)
+    color: term_fg
     font_name: font_bold
-    font_size: dp(14)
 
-    # Text Wrapping Logic
+    # 1. Use scalable pixels (sp) tied to your Settings slider
+    # This prevents the font from getting massive on tall buttons!
+    font_size: sp(15) * app.text_scale
+
+    # 2. The Wrap Fix: Change self.height to 'None'.
+    # This lets Kivy calculate the exact height of the text block no matter how many lines there are.
+    text_size: self.width - dp(12), None
     halign: 'center'
     valign: 'middle'
-    text_size: self.width - dp(8), self.height
-    shorten: True
-    shorten_from: 'right'
 
     canvas.before:
         # The Border
@@ -113,17 +115,31 @@
             size: self.size
 
 <MenuButton@TerminalButton>:
-    font_size: dp(18)
+    # Make the font slightly larger for main menus
+    font_size: sp(17) * app.text_scale
+
     size_hint_y: None
-    height: dp(55)
+
+    # 3. The Magic Container Stretch!
+    # This tells the button: "Be at least 55dp tall. But if the text inside you (texture_size)
+    # gets taller than that, expand automatically to fit it plus 20dp of padding!"
+    height: max(dp(55), self.texture_size[1] + dp(20))
 
 <HeaderLabel@Label>:
+    # 1. Your original styling AND CRITICAL SIZING
     font_name: app.thematic_font_name
-    font_size: dp(24)
     color: term_accent
-    size_hint_y: None
-    height: dp(40)
     markup: True
+    size_hint_y: None    # <--- Stops it from eating the screen!
+    height: dp(45)       # <--- Locks the container height
+
+    # 2. The Dynamic Boundary Fix
+    text_size: self.width - dp(20), self.height
+    halign: 'center'
+    valign: 'middle'
+    font_size: self.height * 0.6  # Scales font to exactly 60% of the 45dp container
+    shorten: True
+    shorten_from: 'right'
 
 # --- WIDGET DEFINITIONS ---
 

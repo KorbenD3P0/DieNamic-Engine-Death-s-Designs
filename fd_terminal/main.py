@@ -332,29 +332,32 @@ class FinalDestinationApp(App):
             from kivy.utils import platform
 
             if platform == 'android':
-                # PRIMARY: App's own external files dir (no permissions needed, survives app updates)
-                # Accessible at: Android/data/org.your.package/files/logs/
-                # Can be pulled via: adb shell run-as org.your.package cat files/logs/session_*.txt
+                # PRIMARY: App's own internal files dir
                 from android.storage import app_storage_path  # type: ignore
                 base_dir = os.path.join(app_storage_path(), 'logs')
                 
-                # SECONDARY: Try public Documents folder for easy file-manager access
-                # Requires MANAGE_EXTERNAL_STORAGE on API 30+
+                # SECONDARY: The permission-free Android external data directory
                 self._android_public_log_dir = None
                 try:
-                    from android.storage import primary_external_storage_path  # type: ignore
-                    from kivy.utils import platform
-                    public_dir = os.path.join(primary_external_storage_path(), 'Documents', 'FDTerminal_Logs')
-                    os.makedirs(public_dir, exist_ok=True)
+                    ext_base = "/storage/emulated/0/Android/data/org.dienamicengine.dep_fdt/files"
+                    public_dir = os.path.join(ext_base, "FDTerminal_Logs")
+                    
+                    # THE FIX: Use mkdir instead of makedirs. 
+                    # Android already created the 'files' folder for us. This skips the root permission check!
+                    if not os.path.exists(public_dir):
+                        os.mkdir(public_dir) 
+                        
                     self._android_public_log_dir = public_dir
-                except Exception:
-                    pass  # Permission denied or unavailable — skip public copy
+                except Exception as e:
+                    print(f"Failed to create external log directory: {e}")
             else:
                 # Desktop: project_root/logs/
                 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
                 base_dir = os.path.join(project_root, "logs")
 
-            os.makedirs(base_dir, exist_ok=True)
+            # It's safe to use makedirs here because this is the internal, unprotected app storage
+            if not os.path.exists(base_dir):
+                os.makedirs(base_dir, exist_ok=True)
 
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             session_log_file = os.path.join(base_dir, f"session_{timestamp}.txt")
@@ -365,23 +368,30 @@ class FinalDestinationApp(App):
             session_handler.setFormatter(formatter)
             consolidated_handler = logging.FileHandler(consolidated_log_file, mode='a', encoding='utf-8')
             consolidated_handler.setFormatter(formatter)
+            
+            # --- THE ADB FIX: Put the console stream back! ---
+            import sys
+            stream_handler = logging.StreamHandler(sys.stdout)
+            stream_handler.setFormatter(formatter)
 
             root_logger = logging.getLogger()
-            root_logger.handlers.clear()
+            root_logger.handlers.clear() 
+            
+            root_logger.addHandler(stream_handler) # <-- ADB Logcat restored!
             root_logger.addHandler(session_handler)
             root_logger.addHandler(consolidated_handler)
             root_logger.setLevel(logging.INFO)
             
-            # Android: Also write to public Documents if available
+            # Android: Also write to the accessible external folder
             if hasattr(self, '_android_public_log_dir') and self._android_public_log_dir:
                 try:
                     public_session = os.path.join(self._android_public_log_dir, f"session_{timestamp}.txt")
                     public_handler = logging.FileHandler(public_session, mode='w', encoding='utf-8')
                     public_handler.setFormatter(formatter)
                     root_logger.addHandler(public_handler)
-                    self.logger.info(f"Public log mirror: {public_session}")
+                    self.logger.info(f"Public log mirror initialized: {public_session}")
                 except Exception as e:
-                    self.logger.warning(f"Could not be bothered to create public log mirror: {e}")
+                    self.logger.warning(f"Failed to create public log mirror: {e}")
 
             self.logger.info(f"Smile! You're on candid logging!\nSnitch log ID: {session_log_file}")
 

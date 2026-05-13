@@ -1224,7 +1224,7 @@ class TutorialScreen(BaseScreen):
                 ),
             ),
             (
-                'From the Development Team (all one of me, haha)',
+                'From the Development Person',
                 (
                     color_text("If you are reading this, you are a tester. Thank you for braving the engine! Please report any ideas or bugs (and the situation that caused them) to DieNamicEngine@gmail.com.", "success", rm) + "\n" +
                     color_text("I hope you enjoy it, and I hope it captures the true, terrifying spirit of the franchise.", "warning", rm) + " " + color_text("Good luck.", "success", rm) + "\n"
@@ -2535,86 +2535,113 @@ class AchievementsScreen(BaseScreen):
         # Layout removed; handled by KV
 
     def on_enter(self, *args):
-        # Ensure we have the reference
-        if not self.grid_layout:
-            logging.warning("AchievementsScreen: grid_layout not connected via KV.")
-            return
-
+        if not self.grid_layout: return
         self.grid_layout.clear_widgets()
         
-        # Refresh system reference just in case
         if not self.achievements_system:
              app = App.get_running_app()
              self.achievements_system = getattr(app, 'achievements_system', None)
 
+        # 1. Fetch User Data (What they've actually unlocked)
+        user_unlocked = {}
         if self.achievements_system:
-            # load_achievements() returns a dict {id: {name, unlocked, ...}}
-            raw = self.achievements_system.load_achievements()
-            
-            if isinstance(raw, dict):
-                sorted_achievements = sorted(
-                    raw.values(),
-                    key=lambda ach: (not ach.get('unlocked', False), ach.get('name', ''))
-                )
-            elif isinstance(raw, list):
-                sorted_achievements = sorted(
-                    (ach for ach in raw if isinstance(ach, dict)),
-                    key=lambda ach: (not ach.get('unlocked', False), ach.get('name', ''))
-                )
-            else:
-                sorted_achievements = []
+            raw_user = self.achievements_system.load_achievements()
+            if isinstance(raw_user, dict):
+                user_unlocked = raw_user
+            elif isinstance(raw_user, list):
+                user_unlocked = {ach.get('name'): ach for ach in raw_user if isinstance(ach, dict)}
+
+        # 2. Fetch Master Data (All possible achievements in the game)
+        master_list = []
+        if self.resource_manager:
+            raw_master = self.resource_manager.get_data('player_achievements', {})
+            # Handle whether the master JSON is a list or a dict
+            if isinstance(raw_master, dict):
+                master_data = raw_master.get('achievements', raw_master)
+                if isinstance(master_data, dict):
+                    master_list = list(master_data.values())
+                elif isinstance(master_data, list):
+                    master_list = master_data
+            elif isinstance(raw_master, list):
+                master_list = raw_master
+
+        # 3. Cross-Reference and Merge
+        display_achievements = []
+        if master_list:
+            for ach in master_list:
+                display_data = ach.copy()
+                ach_name = display_data.get('name')
                 
-            # --- FIX 1: THE EMPTY STATE FALLBACK ---
-            if not sorted_achievements:
-                empty_label = Label(
-                    text="No achievements unlocked or discovered yet.",
-                    font_name=DEFAULT_FONT_REGULAR_NAME,
-                    size_hint_y=None,
-                    height=dp(50),
-                    halign='center',
-                    valign='middle',
-                    color=(0.5, 0.5, 0.5, 1) # Greyed out text
-                )
-                self.grid_layout.add_widget(empty_label)
-                return
-            # ---------------------------------------
-            
-            for ach_data in sorted_achievements:
-                is_unlocked = ach_data.get('unlocked', False)
-                status_color_name = 'success' if is_unlocked else 'error'
-                icon = ach_data.get('icon', '★')
+                # Check if this achievement name exists in the user's unlocked save file
+                is_unlocked = False
+                if ach_name:
+                    user_vals = user_unlocked.values() if isinstance(user_unlocked, dict) else user_unlocked
+                    for user_ach in user_vals:
+                        if isinstance(user_ach, dict) and user_ach.get('name') == ach_name:
+                            is_unlocked = True
+                            break
+
+                display_data['unlocked'] = is_unlocked
                 
-                # Use color_text utility if available
-                status_text = color_text('Unlocked' if is_unlocked else 'Locked', status_color_name, self.resource_manager)
-                
-                text = f"{icon} [b]{ach_data.get('name', 'Unknown')}[/b] ({status_text})\n   {ach_data.get('description', '')}"
-                
-                ach_label = Label(
-                    text=text, 
-                    font_name=DEFAULT_FONT_REGULAR_NAME, 
-                    markup=True, 
-                    size_hint_y=None, 
-                    # Removed hardcoded height!
-                    halign='left', 
-                    valign='top', 
-                    padding=(dp(10), dp(10))
-                )
-                
-                # --- FIX 2: KIVY'S MAGIC WORD-WRAP FORMULA ---
-                # 1. Bind the text_size width to the label's width so the text wraps properly
-                ach_label.bind(width=lambda instance, value: setattr(instance, 'text_size', (value, None)))
-                # 2. Bind the label's actual height to the rendered texture height so it expands dynamically!
-                ach_label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
-                # ---------------------------------------------
-                
-                self.grid_layout.add_widget(ach_label)
+                # Optional: Hide the description of secret achievements until unlocked
+                if not is_unlocked and display_data.get('secret', False):
+                    display_data['description'] = "???"
+                    display_data['name'] = "Hidden Achievement"
+                    
+                display_achievements.append(display_data)
         else:
-            self.grid_layout.add_widget(Label(
-                text="Achievements system not available.", 
+            # Fallback: If master list fails to load, just show the user's save file
+            display_achievements = list(user_unlocked.values()) if isinstance(user_unlocked, dict) else []
+
+        # Sort: Unlocked items first, then alphabetical by name
+        sorted_achievements = sorted(
+            display_achievements,
+            key=lambda ach: (not ach.get('unlocked', False), ach.get('name', ''))
+        )
+
+        # --- THE EMPTY STATE FALLBACK ---
+        if not sorted_achievements:
+            empty_label = Label(
+                text="Achievements system offline or data missing.",
                 font_name=DEFAULT_FONT_REGULAR_NAME,
                 size_hint_y=None,
-                height=dp(50)
-            ))
+                height=dp(50),
+                halign='center',
+                valign='middle',
+                color=(0.5, 0.5, 0.5, 1)
+            )
+            # Bind text_size so it wraps properly and doesn't get cut off!
+            empty_label.bind(size=empty_label.setter('text_size'))
+            self.grid_layout.add_widget(empty_label)
+            return
+
+        # --- RENDER THE UI ---
+        for ach_data in sorted_achievements:
+            is_unlocked = ach_data.get('unlocked', False)
+            status_color_name = 'success' if is_unlocked else 'error'
+            
+            # Change the icon if it's locked!
+            icon = ach_data.get('icon', '★') if is_unlocked else '🔒'
+            
+            status_text = color_text('Unlocked' if is_unlocked else 'Locked', status_color_name, self.resource_manager)
+            
+            text = f"{icon} [b]{ach_data.get('name', 'Unknown')}[/b] ({status_text})\n   {ach_data.get('description', '')}"
+            
+            ach_label = Label(
+                text=text, 
+                font_name=DEFAULT_FONT_REGULAR_NAME, 
+                markup=True, 
+                size_hint_y=None, 
+                halign='left', 
+                valign='top', 
+                padding=(dp(10), dp(10))
+            )
+            
+            # Kivy's magic word-wrap formula
+            ach_label.bind(width=lambda instance, value: setattr(instance, 'text_size', (value, None)))
+            ach_label.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
+            
+            self.grid_layout.add_widget(ach_label)
 
 class SettingsScreen(BaseScreen):
     text_slider = ObjectProperty(None)
@@ -4168,6 +4195,20 @@ class GameScreen(BaseScreen):
 
         except Exception as e:
             self.logger.error(f"Error processing QTE input: {e}", exc_info=True)
+            
+            # Emergency cleanup so a mid-chain exception doesn't softlock
+            try:
+                # Dismiss any lingering QTE popup
+                if self.active_qte_popup and not getattr(self.active_qte_popup, 'is_dismissed', False):
+                    self.active_qte_popup.dismiss()
+                self.active_qte_popup = None
+                
+                # Ensure qte_active is cleared so _drain_qte_queue can proceed
+                if self.game_logic:
+                    self.game_logic.player['qte_active'] = False
+                    self.game_logic._drain_qte_queue()
+            except Exception as cleanup_err:
+                self.logger.error(f"QTE cleanup also failed: {cleanup_err}", exc_info=True)
 
     def _normalize_ui_events(self, events):
         """Accept list/dict and unwrap common containers to a flat list of UI events."""

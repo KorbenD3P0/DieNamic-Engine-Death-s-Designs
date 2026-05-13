@@ -421,6 +421,11 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
     def _init_premonition_level(self, level_req: dict):
         """Generates the dynamic Level 0 (Premonition) environment and cast."""
         import random
+
+        # Clear existing roster for the new premonition
+        self.player['deaths_list'] = []
+        self.player['deaths_list'].append("Player")
+        self.player['npc_status'] = {}
         
         # 1. Select Archetypes & Generate Names FIRST
         level_0_data = self.resource_manager.get_data('rooms_level_0', {}) or self.resource_manager.get_data('rooms', {}).get('0', {})
@@ -438,6 +443,16 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
         self.player['_premonition_role_map'] = role_map
         self.player['premonition_visionary'] = role_map.get('visionary', 'A stranger')
+
+        # Register spawned NPCs in Death's Design roster
+        for _, npc_name in role_map.items():
+            if not npc_name or str(npc_name).lower() == 'player':
+                continue
+            self.player['npc_status'][npc_name.lower()] = 'alive'
+            if npc_name not in self.player['deaths_list']:
+                self.player['deaths_list'].append(npc_name)
+
+        self.logger.info(f"Premonition Roster Initialized: {self.player['deaths_list']}")
 
         # 2. NOW GENERATE THE DISASTER (It can finally use the Visionary's name!)
         if hasattr(self, '_generate_intro_disaster'):
@@ -2174,6 +2189,9 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         if current_act == 'act_4_the_plan':
             inv = [normalize_text(i) for i in self.player.get('inventory', [])]
             flags = self.player.get('flags', {})
+            if not isinstance(flags, dict):
+                flags = {}
+                self.player['flags'] = flags
 
             # ── 1. The Clinical Path (Vet/Clinic) ──
             if 'defibrillator_pads' in inv and 'medical_manual' in inv:
@@ -2994,7 +3012,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             'fear': self.player.get('fear', 0.0),
             'score': self.player.get('score', 0),
             'character_class': self.player.get('character_class'),
-            'flags': self.player.get('flags', set()),
+            'flags': self.player.get('flags', {}) if isinstance(self.player.get('flags'), dict) else {},
             'status_effects': self.player.get('status_effects', {}),
             'evaded_hazards': self.player.get('evaded_hazards', []),
             
@@ -3257,92 +3275,90 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             self.player.setdefault('status_effects', {})['bleeding'] = 10
             self.logger.info("Player gained 'bleeding' status (10 turns)")
 
-    def _kill_npc(self, npc_name: str, reason: str = "Killed.", silent: bool = False):
-        """
-        Directly mutates the game state to kill an NPC.
-        If silent=True, no UI events or logs are generated.
-        """
-        npc_lower = npc_name.lower()
+    def _kill_npc(self, npc_name: str, reason: str = "Unknown"):
+        """Canonical method to remove an NPC from the living world."""
+        name_lower = npc_name.lower()
         
-        # 1. Update Roster Status
-        self.player.setdefault('npc_status', {})[npc_lower] = 'dead'
+        # 1. Mark them as deceased in global status
+        self.player.setdefault('npc_status', {})[name_lower] = 'deceased'
         
-        # 2. Remove from Companions if they were recruited
-        companions = [c.lower() for c in self.player.get('companions', [])]
-        if npc_lower in companions:
-            self.player['companions'] = [c for c in self.player['companions'] if c.lower() != npc_lower]
+        # 2. THE FIX: Remove them from the active party!
+        current_companion = self.player.get('current_companion', '').lower()
+        if name_lower == current_companion:
+            self.logger.info(f"COMPANION REMOVAL: {npc_name} was the active companion and is now dead.")
+            self.player['current_companion'] = None  # Clear the party slot
             
-        if self.player.get('companion_id', '').lower() == npc_lower:
-            self.player['companion_id'] = None
+            # Optional: Add a UI event to notify the player they are now alone
+            self.add_ui_event({
+                "event_type": "show_message",
+                "message": f"\n[color=ff0000]With {npc_name} gone, you are on your own.[/color]\n"
+            })
 
-        # 3. Advance Death's List
-        deaths_list = self.player.get('deaths_list', [])
-        for i, char in enumerate(deaths_list):
-            if char.lower() == npc_lower:
-                deaths_list.pop(i)
-                break
-                
-        if not silent:
-            self.logger.info(f"NPC '{npc_name}' killed. Reason: {reason}")
+        # 3. Handle the rest of the death logic (removing from design list, achievement checks, etc.)
+        if npc_name in self.player.get('deaths_list', []):
+            self.player['deaths_list'].remove(npc_name)
+            self.player.setdefault('dead_survivors', []).append(npc_name)
+            
+        self.logger.info(f"NPC '{npc_name}' has been claimed by Death. Reason: {reason}")
 
-    def _qte_resolve_npc_fate(self, qte_result: dict, result_messages: list, tracer: TraceLogger):
+    def _qte_resolve_npc_fate(self, qte_result: dict, result_messages: list, tracer):
         """
-        Handles NPC interventions. Safely advances the deaths_list on success,
-        or triggers a fatal event for the NPC on failure.
+        Handles the aftermath of a QTE. 
+        Only shifts Death's Design if an actual NPC was saved.
         """
         target_npc = qte_result.get('target_npc')
         success = qte_result.get('success', False)
-
-        # --- PATH A: Successful Intervention (Player saved someone, or someone saved the player) ---
-        if success:
-            # If target_npc is present, the player saved them. 
-            # If not, the player saved themselves.
-            saved_entity = target_npc if target_npc else 'player'
-            
-            deaths_list = self.player.get('deaths_list', [])
-            if not deaths_list:
-                tracer.mark("death_list_empty_on_save")
-                return
-
-            saved_lower = saved_entity.lower()
-            
-            # Scenario 1: The entity was next in line
-            if deaths_list[0].lower() == saved_lower:
-                skipped = deaths_list.pop(0)
-                self.player.setdefault('death_design_skipped', []).append(skipped)
-                
-                new_target = deaths_list[0] if deaths_list else "None"
-                self.logger.info(f"[Death's Design] '{skipped}' was saved! Death moves on to: {new_target}")
-                tracer.mark("death_list_advanced", saved=skipped, new_target=new_target)
-                return
-
-            # Scenario 2: The entity was saved out of order
-            for i, char in enumerate(deaths_list):
-                if char.lower() == saved_lower:
-                    skipped = deaths_list.pop(i)
-                    self.player.setdefault('death_design_skipped', []).append(skipped)
-                    
-                    self.logger.info(f"[Death's Design] '{skipped}' was saved out of order. Removed from list.")
-                    tracer.mark("death_list_advanced_out_of_order", saved=skipped)
-                    return
-                    
-        # --- PATH B: Failed Intervention (NPC dies) ---
-        elif target_npc and qte_result.get('npc_fatal_on_failure'):
-            tracer.mark("npc_fatal_failure", target_npc=target_npc)
-            
-            if hasattr(self, '_kill_npc'):
-                self._kill_npc(
-                    target_npc, 
-                    qte_result.get('death_reason') or f"The hazard violently crushed {target_npc}."
-                )
-
-    def register_intervention(self, saved_npc: str):
-        """Shifts Death's Design to the next target and handles narrative consequences."""
-        self.logger.info(f"INTERVENTION: Player saved {saved_npc} from Death's Design!")
         
-        # 1. Update the Death List (The Endless Loop) - FIXED FOR CASE SENSITIVITY
+        # The QTE context contains our 'next_state_after_qte_success' links
+        qte_context = qte_result.get('qte_context', {})
+
+        # 1. Handle Death's Design Interventions
+        if success:
+            if target_npc and target_npc.lower() != 'player':
+                self.register_intervention(target_npc)
+                tracer.mark("intervention_success_registered", saved=target_npc)
+            else:
+                self.logger.info("Player successfully saved themselves. No design shift required.")
+        
+        # 2. Handle NPC Deaths on Failure
+        elif not success:
+            if target_npc and target_npc.lower() != 'player':
+                if qte_context.get('npc_fatal_on_failure'):
+                    self._kill_npc(target_npc, qte_context.get('failure_message'))
+
+        # --- THE FIX: Connect the Hazard Chain ---
+        # Look for where the hazard goes next based on success/failure
+        next_state = None
+        if success:
+            next_state = qte_context.get("next_state_after_qte_success")
+        else:
+            next_state = qte_context.get("next_state_after_qte_failure")
+
+        if next_state:
+            # We need the source hazard ID to know which hazard to advance
+            # Your log shows it as 'qte_source_hazard_id' in the context
+            hazard_id = qte_context.get('qte_source_hazard_id')
+            
+            if hazard_id:
+                # Strip the unique #hash if your set_state method requires the base key
+                hazard_key = hazard_id.split('#')[0]
+                self.logger.info(f"QTE Complete. Advancing {hazard_key} to {next_state}")
+                
+                # Check which method your class actually has for setting hazard states
+                if hasattr(self, '_set_hazard_state'):
+                    self._set_hazard_state(hazard_key, next_state)
+                elif hasattr(self, 'hazard_engine'):
+                    self.hazard_engine.change_hazard_state(hazard_key, next_state, self.player.get('location'))
+            else:
+                self.logger.warning("QTE resolved but no source hazard ID found to advance the chain.")
+
+    def register_intervention(self, saved_entity: str):
+        """Shifts Death's Design because someone was saved—by the player or an NPC."""
+        self.logger.info(f"INTERVENTION: {saved_entity} was saved from Death's Design!")
+        
+        # 1. Update the Death List (Endless Loop logic)
         death_list = self.player.get('deaths_list', [])
-        saved_lower = saved_npc.lower()
+        saved_lower = saved_entity.lower()
         skipped = None
         
         for i, char in enumerate(death_list):
@@ -3351,17 +3367,19 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 break
                 
         if skipped:
-            # Put them at the absolute back of the line!
             death_list.append(skipped)
             self.player['deaths_list'] = death_list
-            # Track the save for End-Game scoring
             self.player.setdefault('death_design_skipped', []).append(skipped)
         else:
-            self.logger.warning(f"register_intervention: {saved_npc} not found in death_list!")
-            skipped = saved_npc # Fallback for narrative
+            # If the player isn't on the list, the shift won't happen mechanically!
+            self.logger.warning(f"register_intervention: {saved_entity} not in list. No shift occurred.")
+            return # Exit early if no mechanical shift is possible
             
         # 2. Heal Visionary Distrust
-        flags = self.player.setdefault('flags', {})
+        flags = self.player.get('flags', {})
+        if not isinstance(flags, dict):
+            flags = {}
+            self.player['flags'] = flags
         if flags.get('visionary_distrusted'):
             self.logger.info("Visionary witnessed the save. Distrust removed.")
             flags['visionary_distrusted'] = False
@@ -3409,11 +3427,9 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 "priority": 900
             })
         else:
-            # Ignorant Bliss
-            self.add_ui_event({
-                "event_type": "show_message",
-                "message": f"\n[color=00ffff]You broke the chain! By saving {skipped}, Death has been forced to skip them. The design immediately moves to the next survivor.[/color]\n"
-            })
+            # Update this message to be neutral
+            msg = f"\n[color=00ffff]The chain was broken! By saving {skipped}, Death has been forced to skip them. The design moves to the next in line.[/color]\n"
+            self.add_ui_event({"event_type": "show_message", "message": msg})
 
     def _check_police_softlock(self):
         """If player arrived at the police station without learning the deaths list,
@@ -5601,6 +5617,9 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         # Collect all active flags from BOTH sources
         active_flags = set(getattr(self, 'interaction_flags', set()))
         player_flags = self.player.get('flags', {})
+        if not isinstance(player_flags, dict):
+            player_flags = {}
+            self.player['flags'] = player_flags
         
         if isinstance(player_flags, dict):
             active_flags.update(k for k, v in player_flags.items() if v)
@@ -5662,6 +5681,9 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         # Collect active flags from BOTH sources
         active_flags = set(getattr(self, 'interaction_flags', set()))
         player_flags = self.player.get('flags', {})
+        if not isinstance(player_flags, dict):
+            player_flags = {}
+            self.player['flags'] = player_flags
         
         if isinstance(player_flags, dict):
             active_flags.update(k for k, v in player_flags.items() if v)
@@ -8732,22 +8754,33 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
     def set_player_flag(self, flag_name: str, value: bool = True):
         """
-        Sets or removes a boolean flag on the player object.
-        These flags track temporary, narrative states.
-        We use a 'set' to efficiently store the flags.
+        Sets a persistent narrative flag in the player's profile.
+        Handles cases where 'flags' might be a dictionary or a set.
         """
-        # Ensure the 'flags' set exists on the player dictionary
-        if 'flags' not in self.player:
-            self.player['flags'] = set()
+        flags = self.player.setdefault('flags', {})
 
-        if value:
-            # Add the flag to the set
-            self.player['flags'].add(flag_name)
-            self.logger.info(f"Player flag set: '{flag_name}'")
-        else:
-            # Remove the flag from the set if it exists
-            self.player['flags'].discard(flag_name)
-            self.logger.info(f"Player flag removed: '{flag_name}'")
+        if isinstance(flags, dict):
+            # If it's a dictionary, set the key to the boolean value
+            flags[flag_name] = value
+        elif isinstance(flags, (set, list)):
+            # If it's a set or list, we only care about 'True' (existence)
+            if value:
+                if isinstance(flags, set):
+                    flags.add(flag_name)
+                elif flag_name not in flags:
+                    flags.append(flag_name)
+            else:
+                # If value is False, remove it from the set/list if it exists
+                try:
+                    if isinstance(flags, set):
+                        flags.discard(flag_name)
+                    else:
+                        while flag_name in flags:
+                            flags.remove(flag_name)
+                except (ValueError, KeyError):
+                    pass
+        
+        self.logger.info(f"Player flag set: '{flag_name}' = {value}")
 
     def get_player_flag(self, flag_name: str) -> bool:
         """
@@ -9326,213 +9359,106 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             )
 
     def _use_inventory_item(self, target_str: str, target_norm: str, current_room_id: str) -> Optional[dict]:
+        """Main pipeline for item usage. Delegates to specialized helpers with debug logging."""
         try:
             parsed = self._parse_use_command(target_str)
             item_name = parsed['item_name']
             target_name = parsed['target_name']
 
+            # 1. Resolve Entity (Handles space-to-underscore normalization)
             item_entity = self._find_entity_in_room(item_name, current_room_id)
-            if item_entity and item_entity['type'] == 'item_inventory':
-                item_key = item_entity['id_key']
-                item_data = item_entity['data']
+            if not item_entity or item_entity['type'] != 'item_inventory':
+                self.logger.debug(f"Use Failure: '{item_name}' not found in inventory or room.")
+                return self._build_response(message=f"You don't have a '{item_name}'.", turn_taken=False)
 
-                # If 'use [item] on [target]'
-                if target_name:
-                    target_entity = self._find_entity_in_room(target_name, current_room_id)
-                    if not target_entity:
-                        return self._build_response(message=f"You don't see a '{target_name}' to use that on.", turn_taken=False)
+            item_key = item_entity['id_key']
+            item_data = item_entity['data']
 
-                    # Priority 1: Check if the TARGET (e.g., furniture) has a rule for this ITEM.
-                    if target_entity['type'] == 'furniture':
-                        interaction_rules = target_entity['data'].get('use_item_interaction', [])
-                        
-                        # --- Support nested interactable_triggers ---
-                        if 'interactable_triggers' in target_entity['data']:
-                            interaction_rules.extend(target_entity['data']['interactable_triggers'].get('use', []))
-                            
-                        for rule in interaction_rules:
-                            # Support both 'item_names_required' and 'required_item_name' syntax
-                            req_items = rule.get('item_names_required', [])
-                            if isinstance(req_items, str): req_items = [req_items]
-                            if 'required_item_name' in rule: req_items.append(rule['required_item_name'])
-                            
-                            if item_key in req_items or item_name.lower() in [i.lower() for i in req_items]:
-                                message = rule.get('message_success', rule.get('message', f"You use the {item_entity['name']} on the {target_entity['name']}.")).format(item_name=item_entity['name'])
-                                
-                                # --- REVERSE RUBE GOLDBERG SPAWNER ---
-                                if 'spawns_hazard' in rule:
-                                    hazard_type = rule['spawns_hazard']
-                                    initial_state = rule.get('spawns_in_state', 'idle')
-                                    
-                                    self.logger.info(f"Player Sabotage! Spawning {hazard_type} in {current_room_id}")
-                                    
-                                    if hasattr(self, 'hazard_engine'):
-                                        self.hazard_engine.spawn_hazard(hazard_type, current_room_id, initial_state)
-                                        self.hazard_engine._check_synergies(current_room_id)
-                                # --------------------------------------
-                                
-                                self.logger.info(f"_use_inventory_item: Used '{item_key}' on furniture '{target_entity['name']}'.")
-                                return self._build_response(message=message, turn_taken=True)
-                        
-                            if item_key in rule.get('item_names_required', []):
-                                message = rule.get('message_success', f"You use the {item_entity['name']} on the {target_entity['name']}.").format(item_name=item_entity['name'])
-                                self.logger.info(f"_use_inventory_item: Used '{item_key}' on furniture '{target_entity['name']}'.")
-                                return self._build_response(message=message, turn_taken=True)
+            # 2. FINALE GATEWAY: Check for Endgame Items
+            if self.player.get('current_level') == 'level_finale':
+                # Map specific item IDs to your finale trigger types
+                finale_map = {
+                    'finale_chemical': 'trigger_finale_flatline',
+                    'finale_defibrillator': 'trigger_finale_override',
+                    'heavy_revolver': 'trigger_finale_dark_path'
+                }
+                
+                if item_key in finale_map:
+                    self.logger.info(f"FINALE INITIATED: Item '{item_key}' triggered {finale_map[item_key]}")
+                    # Start the QTE gauntlet you defined!
+                    return self._start_finale_qte_chain(finale_map[item_key])
 
-                    # Priority 1.5: Check if the TARGET is an object and has use_item_interaction rules
-                    if target_entity['type'] == 'object' or target_entity['type'] == 'hazard_entity':
-                        
-                        # Support checking both the object's direct interactions and its hazard state interactions
-                        interaction_rules = target_entity['data'].get('use_item_interaction', [])
-                        
-                        # If it's a hazard, we also need to pull the specific rules for the hazard's current state
-                        if 'player_interaction' in target_entity['data']:
-                            interaction_rules.extend(target_entity['data']['player_interaction'].get('use', []))
+            # 3. Targeted Usage: 'use [item] on [target]'
+            if target_name:
+                return self._handle_item_on_target(item_entity, target_name, current_room_id)
 
-                        valid_rule = None
-                        
-                        for rule in interaction_rules:
-                            # 1. Name Check (Exact Match)
-                            req_names = rule.get('item_names_required', [])
-                            if isinstance(req_names, str): req_names = [req_names]
-                            if 'required_item_name' in rule: req_names.append(rule['required_item_name'])
-                            
-                            name_match = False
-                            if not req_names or item_key in req_names or item_name.lower() in [i.lower() for i in req_names]:
-                                name_match = True
+            # 4. Self/General Usage: 'use [item]'
+            return self._handle_item_self_use(item_entity)
 
-                            # 2. Type Check (e.g., "tool")
-                            req_type = rule.get('required_item_type')
-                            type_match = False
-                            if not req_type or item_data.get('type', '').lower() == req_type.lower() or (req_type == 'tool' and item_data.get('is_tool')):
-                                type_match = True
-
-                            # 3. Subtype Check (e.g., "ignition_source")
-                            req_subtype = rule.get('required_item_subtype')
-                            subtype_match = False
-                            if not req_subtype or item_data.get('subtype', '').lower() == req_subtype.lower():
-                                subtype_match = True
-
-                            # ONLY if it matches the specific requirements dictated by the JSON do we accept it
-                            if name_match and type_match and subtype_match:
-                                # We only proceed if AT LEAST ONE requirement was actually defined and met, 
-                                # otherwise a completely empty rule block would match anything!
-                                if req_names or req_type or req_subtype:
-                                    valid_rule = rule
-                                    break
-
-                        if valid_rule:
-                            action_effect = valid_rule.get('action_effect')
-                            message = valid_rule.get('message_success', valid_rule.get('message', f"You use the {item_entity['name']} on the {target_entity['name']}.")).format(object_name=target_entity['name'], item_name=item_entity['name'])
-                            
-                            # Execute RNG for success/failure if defined in the rule
-                            success_chance = valid_rule.get('success_chance', 1.0)
-                            if random.random() > success_chance:
-                                # They failed the check!
-                                message = valid_rule.get('message_failure', f"You fumble with the {item_entity['name']}.")
-                                self.logger.info(f"_use_inventory_item: Player FAILED use check for '{item_key}' on '{target_entity['name']}'.")
-                                
-                                # Process escalation if failure triggers it
-                                escalation = valid_rule.get('failure_escalation')
-                                if escalation and hasattr(self, 'hazard_engine'):
-                                    self.hazard_engine.change_hazard_state(target_entity['data'].get('hazard_key', ''), escalation, current_room_id)
-                                
-                                return self._build_response(message=message, turn_taken=True)
-                            
-                            # If successful, process target state changes!
-                            target_state = valid_rule.get('target_state')
-                            if target_state and hasattr(self, 'hazard_engine'):
-                                hazard_key = target_entity['data'].get('hazard_key') or target_entity['data'].get('type')
-                                self.hazard_engine.change_hazard_state(hazard_key, target_state, current_room_id)
-                            
-                            self.logger.info(f"_use_inventory_item: Used '{item_key}' on object '{target_entity['name']}'.")
-                            return self._build_response(message=message, turn_taken=True)
-
-                    # Priority 2: Check if the ITEM has a rule for this TARGET.
-                    if target_entity['name'].lower() in [t.lower() for t in item_data.get('use_on', [])]:
-                        message = item_data.get('use_result', {}).get(target_entity['name'], f"You use the {item_entity['name']} on the {target_entity['name']}.")
-                        self.logger.info(f"_use_inventory_item: Used '{item_key}' on '{target_entity['name']}' via item rule.")
-                        return self._build_response(message=message, turn_taken=True)
-
-                    self.logger.info(f"_use_inventory_item: Can't use '{item_entity['name']}' on '{target_entity['name']}'.")
-                    return self._build_response(message=f"You can't use the {item_entity['name']} on the {target_entity['name']}.", turn_taken=False)
-
-                # If just 'use [item]'
-                else:
-                    has_heal = 'heal_amount' in item_data
-                    has_cure = 'cures_status' in item_data
-
-                    if has_heal or has_cure:
-                        actual_healed = 0
-                        cured_any = False
-                        
-                        default_msg = item_data.get('use_result', {}).get('general', f"You use the {item_entity['name']}.")
-                        messages_to_show = [default_msg]
-
-                        # --- 1. HEALING LOGIC ---
-                        if has_heal:
-                            base_heal = item_data['heal_amount']
-                            multiplier = 1.0
-
-                            # CHECK AFFINITY
-                            if self._player_has_affinity('item_types', item_data.get('type', '')):
-                                multiplier = 1.5
-                                self.add_ui_event({"event_type": "screen_flash", "color": "green", "duration": 0.5})
-
-                            # --- CLASS PERK LOGIC ---
-                            character_class = self.player.get('character_class', '')
-                            item_type = item_data.get('type', '')
-
-                            if character_class == "EMT" and item_type == "medical_supply":
-                                multiplier *= 1.5
-                                self.logger.info(f"EMT Bonus applied to {item_entity['name']}")
-
-                            final_heal = int(base_heal * multiplier)
-                            old_hp = self.player['hp']
-                            self.player['hp'] = min(self.player.get('max_hp', 30), old_hp + final_heal)
-                            actual_healed = self.player['hp'] - old_hp
-
-                            if actual_healed > 0:
-                                messages_to_show.append(f"[color=00ff00]Recovered {actual_healed} HP.[/color]")
-                                if self.death_ai:
-                                    self.logger.info("Healing Item Used - Increasing Entropy.")
-                                    self.death_ai.increase_entropy(5.0)
-
-                        # --- 2. CURE LOGIC ---
-                        if has_cure:
-                            cures = item_data.get('cures_status', [])
-                            status_effects = self.player.get('status_effects', {})
-                            
-                            for status in cures:
-                                if status in status_effects and status_effects[status] > 0:
-                                    del status_effects[status]
-                                    cured_any = True
-                                    
-                            if cured_any:
-                                messages_to_show.append("[color=00ff00]You successfully treated the wound and stopped the bleeding.[/color]")
-
-                        # --- ANTI-WASTE QUALITY OF LIFE FIX ---
-                        if actual_healed == 0 and not cured_any:
-                            return self._build_response(
-                                message=f"You don't need to use the {item_entity['name']} right now. You're fully healed and not bleeding.", 
-                                turn_taken=False
-                            )
-
-                        # --- CONSUMPTION ---
-                        if item_data.get('consumable_on_use'):
-                            if item_key in self.player['inventory']:
-                                self.player['inventory'].remove(item_key)
-
-                        return self._build_response(message="\n".join(messages_to_show), turn_taken=True)
-
-                    # Add more item self-use logic here as needed
-                    self.logger.info(f"_use_inventory_item: No self-use effect for '{item_entity['name']}'.")
-                    return self._build_response(message=f"Silly goose, you can't use the {item_entity['name']} by itself.", turn_taken=False)
-            
-            return None
         except Exception as e:
-            self.logger.error(f"_use_inventory_item: Error: {e}", exc_info=True)
-            return self._build_response(message="Something went wrong using the item.", turn_taken=False, success=False)
+            self.logger.error(f"_use_inventory_item CRASH: {e}", exc_info=True)
+            return self._build_response(message="The engine stuttered using that item.", turn_taken=False)
+        
+    def _handle_item_on_target(self, item_entity, target_name, room_id):
+        target_entity = self._find_entity_in_room(target_name, room_id)
+        if not target_entity:
+            return self._build_response(message=f"You don't see a '{target_name}' here.", turn_taken=False)
+
+        item_key = item_entity['id_key']
+        # Combine direct rules and interactable triggers from the JSON
+        rules = target_entity['data'].get('use_item_interaction', [])
+        if 'interactable_triggers' in target_entity['data']:
+            rules.extend(target_entity['data']['interactable_triggers'].get('use', []))
+
+        for rule in rules:
+            reqs = rule.get('item_names_required', [])
+            if isinstance(reqs, str): reqs = [reqs]
+            if 'required_item_name' in rule: reqs.append(rule['required_item_name'])
+
+            # Normalize and compare
+            if item_key in reqs or item_entity['name'].lower() in [i.lower() for i in reqs]:
+                self.logger.info(f"Interaction Match: {item_key} on {target_name}")
+                
+                # Execute Sabotage/Hazard Spawning
+                if 'spawns_hazard' in rule and hasattr(self, 'hazard_engine'):
+                    self.hazard_engine.spawn_hazard(rule['spawns_hazard'], room_id, rule.get('spawns_in_state', 'idle'))
+                
+                # Update Target State
+                if rule.get('target_state') and hasattr(self, 'hazard_engine'):
+                    h_key = target_entity['data'].get('hazard_key') or target_entity['data'].get('type')
+                    self.hazard_engine.change_hazard_state(h_key, rule['target_state'], room_id)
+
+                msg = rule.get('message_success', rule.get('message', "Used.")).format(item_name=item_entity['name'])
+                return self._build_response(message=msg, turn_taken=True)
+
+        return self._build_response(message=f"That doesn't seem to do anything to the {target_name}.", turn_taken=False)
+
+    def _handle_item_self_use(self, item_entity):
+        data = item_entity['data']
+        has_heal = 'heal_amount' in data
+        has_cure = 'cures_status' in data
+
+        if not (has_heal or has_cure):
+             return self._build_response(message=f"You can't use the {item_entity['name']} by itself.", turn_taken=False)
+
+        messages = [data.get('use_result', {}).get('general', f"You use the {item_entity['name']}.")]
+        
+        # HEALING LOGIC
+        if has_heal:
+            multiplier = 1.5 if self.player.get('character_class') == "EMT" else 1.0
+            heal = int(data['heal_amount'] * multiplier)
+            self.player['hp'] = min(self.player.get('max_hp', 30), self.player['hp'] + heal)
+            messages.append(f"[color=00ff00]+{heal} HP.[/color]")
+
+        # CURE LOGIC
+        if has_cure:
+            cures = data.get('cures_status', [])
+            for status in cures:
+                if status in self.player.get('status_effects', {}):
+                    del self.player['status_effects'][status]
+                    messages.append(f"[color=00ff00]Condition cleared: {status}[/color]")
+
+        return self._build_response(message="\n".join(messages), turn_taken=True)
 
     def _perform_item_transformation(self, current_entity: dict, transform_data: dict) -> list:
         """
@@ -10770,20 +10696,21 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         self.game_won = True
         self.is_game_over = True
 
-        # Park the ending type in app state so calculate_ending can read it
+        # 1. Park the ending type so calculate_ending can read it
         from kivy.app import App
         app = App.get_running_app()
         if app:
             app.epilogue_type = finale_type
 
-        # Fetch the epic custom narrative from your dispatcher!
+        # 2. Fetch the epic custom narrative from your dispatcher
+        # This already contains the specific epilogue text (Dark Path, Science, etc.)
         narrative = self.calculate_ending()
 
-        current_city = self.player.get('current_city', 'the city')
-        flavor_text = flavor_text.replace('{city_name}', current_city)
-        final_narrative = final_narrative.replace('{city_name}', current_city)
+        # 3. Apply global replacements (City Name) to the narrative string
+        current_city = self.player.get('current_city', 'McKinley')
+        narrative = narrative.replace('{city_name}', current_city)
 
-        # Fire the standard game_over event to trigger your existing UI
+        # 4. Fire the game_over event to transition to the Win/Lose screens
         self.add_ui_event({
             "event_type": "game_over",
             "death_reason": "You broke the design.",
@@ -11612,6 +11539,9 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         roster = self.player.get('npc_status', {})
         alive_npcs = [n for n, s in roster.items() if s in ('alive', 'injured') and n != 'player']
         flags = self.player.get('flags', {})
+        if not isinstance(flags, dict):
+            flags = {}
+            self.player['flags'] = flags
 
         # Condition 1: You are the last one left (or it's just you and the Visionary)
         cast_decimated = len(alive_npcs) <= 1

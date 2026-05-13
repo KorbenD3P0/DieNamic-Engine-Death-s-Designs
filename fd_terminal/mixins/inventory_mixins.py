@@ -308,27 +308,45 @@ class InventoryMixin:
             self.set_interaction_flag(flag)
 
     # --- NEW: The Rite of Discovery ---
-    def _command_search(self, target: str) -> dict:
+    def _command_search(self, target_name: str) -> dict:
         """Handles the 'search' command to find items within a container. Injected with robust debugging logic."""
-        self.logger.debug(f"_command_search called with target='{target}'")
+        self.logger.debug(f"_command_search called with target='{target_name}'")
         current_room_id = self.player['location']
 
-        if not target:
+        if not target_name:
             self.logger.info("_command_search: No target specified")
             return self._build_response(message="Search what?", turn_taken=False, success=False)
 
-        entity = self._find_entity_in_room(target, current_room_id)
+        entity = self._find_entity_in_room(target_name, current_room_id)
         self.logger.debug(f"_command_search: Entity found: {entity}")
 
         if not entity:
-            self.logger.info(f"_command_search: '{target}' not found in room '{current_room_id}'")
-            return self._build_response(message=f"You don't see a '{target}' to search here.", turn_taken=False, success=False)
-
-        if entity['type'] != 'furniture' or not entity['data'].get('is_container'):
-            self.logger.info(f"_command_search: Entity '{entity['name']}' is not a searchable container")
-            return self._build_response(message=f"You can't search the {entity['name']}.", turn_taken=False, success=False)
+            self.logger.info(f"_command_search: '{target_name}' not found in room '{current_room_id}'")
+            return self._build_response(message=f"You don't see a '{target_name}' to search here.", turn_taken=False, success=False)
 
         container_data = entity['data']
+
+        # --- THE FIX: Multi-Attribute Container Check ---
+        # Old way: strict furniture+is_container check.
+        # New way: type, subtype, OR explicit boolean flag.
+        is_searchable = (
+            entity.get('type') == 'container' or
+            entity.get('subtype') == 'storage_container' or
+            entity.get('is_container') is True or
+            container_data.get('type') == 'container' or
+            container_data.get('subtype') == 'storage_container' or
+            container_data.get('is_container') is True
+        )
+
+        if not is_searchable:
+            self.logger.info(f"_command_search: Entity '{target_name}' is not a searchable container")
+            return self._build_response(
+                message=f"The {target_name} isn't something you can search through.",
+                turn_taken=False,
+                success=False
+            )
+        # ------------------------------------------------
+
         self.logger.debug(f"_command_search: Container data: {container_data}")
 
         # Check both the top-level 'locked' flag and the nested 'locking.locked' sub-field.

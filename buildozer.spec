@@ -7,7 +7,7 @@ source.main = main.py
 source.include_exts = py,png,jpg,kv,atlas,json,wav,mp3,ogg,ttf,otf
 source.include_dirs = assets, data, fd_terminal
 source.include_patterns = assets/*,data/*
-version = 0.3.6.1
+version = 0.3.6.2
 requirements = python3,kivy==2.3.0,cython==0.29.36,plyer,ffpyplayer,android,libffi,openssl
 icon.filename = %(source.dir)s/assets/icon.png
 android.presplash = %(source.dir)s/assets/logo.png

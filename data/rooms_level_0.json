@@ -1925,7 +1925,7 @@
             "carnival+mechanical_failure": {
               "name": "Fairgrounds Entrance",
               "description": "A wrought-iron archway reads McKINLEY COUNTY FAIR in bulb letters, half of them burned out. The smell of funnel cake and livestock hits you immediately. Families stream through turnstiles.",
-              "first_entry_text": "[color=00ff00]You were strapped into the front car.[/color] The lap bar was locked. Then[color=#BC13FE] {visionary} [/color]started thrashing and screaming that the ride was going to crash. The operators had to unlock the whole train to get them out. You followed them to the exit, mostly out of secondhand embarrassment.\n\nBy the time you were walking away, the first car crests the lift hill. The chain disengages. The car descends, rockets upwards into its first big turn, and.. \n\n[color=ffff00]..something has broken the front car's wheels free[/color], causing sparks to shower the passengers, while [color=ffb366]all of their safety harnesses are disengaged[/color] from hydraulic failure. The coaster hits the sharp curve at fifty miles per hour, and [color=ff4444]the first section of cars leaves the tracks.[/color]\n\nThe steel frame of the row of seats snags the steel frame of the coaster itself just beyond the track, and the section is violently swung down into the frame of the coaster, [color=ff4444]breaking more track free ahead of the incoming cars[/color].\n\nYou watch in horror as the last connections between them break apart - right before each one hits the newly created gap in the tracks. One by one, they are launched into the nearby [color=00ccff]house of mirrors[/color], [color=ffff00]the ferris wheel looming above[/color], and [color=b266ff]the row of food carts[/color] standing in front of them.\n\nWatching the carnage unfold, you can't help but think to yourself: [color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
+              "first_entry_text": "[color=00ff00]You were strapped into the front car.[/color] The lap bar was locked. Then[color=#BC13FE] {visionary} [/color]started thrashing and screaming that the ride was going to crash. The operators had to unlock the whole train to get them out. You followed them to the exit, mostly out of secondhand embarrassment.\n\nBy the time you were walking away, the first car crests the lift hill. The chain disengages. The car descends, rockets upwards into its first big turn, and.. \n\n[color=ffff00]..something has broken the front car's wheels free[/color], causing sparks to shower the passengers, while [color=ffb366]all of their safety harnesses are disengaged[/color] from hydraulic failure. The coaster hits the sharp curve at fifty miles per hour, and [color=ff4444]the first section of cars leaves the tracks.[/color]\n\nThe steel frame of the row of seats snags the steel frame of the coaster itself just beyond the track; some riders are ejected then and there while the section of cars whips into the frame of the coaster, [color=ff4444]the sheer force breaking more track free[/color] that you're able to trace back to the cars - and they're coming fast.[/color].\n\nYou watch in horror as the last connections between them break apart - right before each one hits the newly created gap in the tracks. One by one, they are launched into the nearby [color=00ccff]house of mirrors[/color], [color=ffff00]the ferris wheel looming above[/color], and [color=b266ff]the row of food carts[/color] standing in front of them.\n\nWatching the carnage unfold, you can't help but think to yourself: [color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] was right.",
               "objects": [
                 "coaster_wreckage_view",
                 "track_gap"
@@ -2049,6 +2049,23 @@
                 "heat_shimmer": "The asphalt ripples with heat. It's at least 95 degrees out here."
               }
             },
+            "industrial_accident+machinery": {
+              "name": "Factory Parking Lot",
+              "description": "The asphalt lot outside the main factory. The rumble of heavy machinery inside vibrates through the soles of your shoes.",
+              "first_entry_text": "You were walking toward the main entrance when [color=#BC13FE]{visionary}[/color] bolted out the double doors, hyperventilating and screaming about the roof caving in.",
+              "furniture": [
+                "your_car",
+                "employee_vehicles"
+              ],
+              "objects": [
+                "factory_exterior",
+                "loading_bays"
+              ],
+              "examine_details": {
+                "factory_exterior": "A massive block of corrugated steel and aging brick. It looks like it was built in the 1940s and barely maintained since.",
+                "loading_bays": "Several semi-trucks are backed up to the loading docks. Forklifts dart in and out."
+              }
+            },
             "industrial_accident+chemical_hazard": {
               "name": "Access Road — Plant Perimeter",
               "description": "A two-lane access road runs along the chain-link perimeter fence of the McKinley industrial complex. Warning signs line the fence every twenty feet. A security booth sits unmanned at the gate.",
@@ -2121,6 +2138,18 @@
                 "frustrated_drivers": "People leaning on horns, scrolling phones, shouting into the air. One guy is standing on his car roof trying to see what's ahead."
               }
             },
+            "industrial_accident+machinery": {
+              "name": "Factory Walkway",
+              "description": "A concrete walkway leading to the main factory floor. The rhythmic, thunderous thud of the stamping presses echoes loudly here.",
+              "objects": [
+                "warning_signs",
+                "forklift_crossing"
+              ],
+              "examine_details": {
+                "warning_signs": "HARD HAT AND SAFETY GLASSES REQUIRED BEYOND THIS POINT. The sign is covered in a thick layer of industrial dust.",
+                "forklift_crossing": "Yellow lines painted on the concrete. The ground shakes with every cycle of the machines inside."
+              }
+            },
             "industrial_accident+chemical_hazard": {
               "name": "Plant Road — Loading Area",
               "description": "A wide loading area inside the perimeter. Forklifts sit idle. Pallets of chemical drums are stacked against a warehouse wall. A pressure gauge on a nearby pipe reads well into the red zone.",
@@ -2175,6 +2204,21 @@
                 "accident_report_board": "A faded DOT sign: THIS STRETCH OF ROUTE 42 HAS HAD 14 FATALITIES IN THE LAST 3 YEARS. DRIVE SAFE. Someone crossed out 14 and wrote 15."
               }
             },
+            "industrial_accident+machinery": {
+              "name": "Worker Break Area",
+              "description": "A chain-link enclosure with a few picnic tables for smokers. An overflowing ashtray sits in the center. The roar of the machines inside is muffled but ever-present.",
+              "furniture": [
+                "picnic_tables",
+                "vending_machine"
+              ],
+              "objects": [
+                "ashtray",
+                "safety_bulletin"
+              ],
+              "examine_details": {
+                "safety_bulletin": "A corkboard with OSHA regulations. Someone has tacked a handwritten note over it complaining about the roof leaking near the heavy presses."
+              }
+            },
             "industrial_accident+chemical_hazard": {
               "name": "Plant Break Room (Exterior)",
               "description": "A concrete slab with a picnic table and a coffee machine that's seen better decades. Safety posters peel from the wall. A whiteboard reads: DAYS WITHOUT INCIDENT: 0.",
@@ -2227,6 +2271,19 @@
                 "merge_bottleneck": "Cars, trucks, and semis jammed nose-to-tail trying to merge. Tempers are visible through windshields. A motorcycle weaves between lanes.",
                 "crane_overhead": "A construction crane swings a concrete slab over the traffic. The cable creaks. Workers below don't even look up anymore.",
                 "concrete_barrier": "Temporary jersey barriers separating traffic from the work zone. They look about as sturdy as cardboard."
+              }
+            },
+            "industrial_accident+machinery": {
+              "name": "Main Factory Floor",
+              "description": "A cavernous hall of catwalks, conveyor belts, and massive industrial presses. The noise is deafening. Looking up, the heavy steel roof trusses appear severely bowed under the weight of the overhead cranes.",
+              "objects": [
+                "stamping_presses",
+                "roof_trusses",
+                "assembly_line"
+              ],
+              "examine_details": {
+                "roof_trusses": "Thick steel beams spanning the ceiling. One of the central trusses has a visible, jagged crack running through its mounting plate.",
+                "stamping_presses": "Massive hydraulic machines stamping sheet metal. The floor physically drops a fraction of an inch every time they hit."
               }
             },
             "industrial_accident+chemical_hazard": {
@@ -2368,17 +2425,29 @@
           "base": {
             "name": "Street Level",
             "description": "A city street. Traffic passes. People walk. Everything is normal.",
-            "objects": [
-              "overhead_speakers"
+            "first_entry_text": "You are standing on the street. Everything seems fine.",
+            "exits": {
+              "north": "Building Entrance",
+              "east": "Side Street"
+            },
+            "floor": 1,
+            "furniture": [
+              "bus_stop_bench",
+              "trash_can"
             ],
-            "examine_details": {
-              "overhead_speakers": {
-                "name": "Overhead Speakers",
+            "objects": [
+              {
+                "name": "overhead speakers",
                 "description": "Speakers overhead crackle with muzak and announcements.",
                 "is_omen_provider": "radio",
                 "aliases": ["speakers", "overhead speakers", "speaker", "radio", "car radio"]
               }
-            }
+            ],
+            "items": [],
+            "hazards_present": [],
+            "locked": false,
+            "entry_room": true,
+            "npc_slots": 2
           },
           "overrides": {
             "structural_collapse+mechanical_failure": {
@@ -2401,10 +2470,31 @@
                 "traffic_flow": "Cars and trucks stream onto the bridge. A school bus. A moving van. An ambulance with no sirens. Just another commute."
               }
             },
+            "urban_disaster+geological_event": {
+              "name": "Business District — Main Intersection",
+              "description": "A bustling intersection in the business district. Food carts line the pavement. The asphalt underfoot feels strangely warm, and there is a faint, subterranean rumble.",
+              "first_entry_text": "You were walking across the street on your lunch break when [color=#BC13FE]{visionary}[/color] tugged at your shirt, crying about the ground collapsing.\n\nYou were in shock at this complete stranger, but then the pavement actually groaned beneath your boots. A hairline crack shot across the intersection.",
+              "furniture": [
+                "abandoned_food_cart"
+              ],
+              "objects": [
+                "sagging_asphalt",
+                "confused_pedestrians"
+              ],
+              "examine_details": {
+                "sagging_asphalt": "The center of the intersection is noticeably bowing inward. It looks like a shallow bowl.",
+                "confused_pedestrians": "People are stopping to look at the ground, pointing at the cracks. Nobody is running yet."
+              }
+            },
             "urban_disaster+construction_failure": {
               "name": "Elm Street — Residential Block",
               "description": "A quiet residential street lined with old brick apartment buildings. Cars are parallel parked tightly against the curb.",
               "first_entry_text": "You were walking home. It was a normal day.\n\nThen[color=#BC13FE] {visionary} [/color]practically tackled you into the street, screaming at everyone to get away from the buildings.",
+              "exits": {
+                "north": "Building Entrance",
+                "east": "Side Street",
+                "south": "Upper Level" 
+              },
               "furniture": [
                 "parked_cars",
                 "street_lamp"
@@ -2465,6 +2555,19 @@
                 "inspection_tag": "A small metal tag wired to the cable: LAST INSPECTED — 2019. It's been seven years."
               }
             },
+            "urban_disaster+geological_event": {
+              "name": "Parking Structure — Ground Floor",
+              "description": "The ground floor of a massive concrete parking garage. The concrete pillars look solid, but a fine dust is falling from the ceiling.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] dragged you off the street and into the parking garage. 'Not safe on the street!' they screamed, pointing wildly at the cracks forming on the pavement.\n\nThey run toward the stairwell. 'Get off the ground!'",
+              "objects": [
+                "concrete_pillars",
+                "stairwell_door"
+              ],
+              "examine_details": {
+                "concrete_pillars": "Thick, load-bearing pillars. You can feel a vibration humming through the concrete.",
+                "stairwell_door": "A heavy metal fire door leading to the stairs. It says 'ROOF ACCESS' on it."
+              }
+            },
             "urban_disaster+construction_failure": {
               "name": "Apartment Lobby",
               "description": "A dated lobby with fading floral wallpaper and a row of brass mailboxes. A small elevator sits with its doors open.",
@@ -2522,6 +2625,18 @@
                 "rust_stains": "Orange-brown streaks run down the concrete like tears. The steel is weeping."
               }
             },
+            "urban_disaster+geological_event": {
+              "name": "Flooded Alleyway",
+              "description": "A narrow alleyway behind the business district. A subterranean water main has clearly ruptured—thick, muddy water is bubbling violently up through the storm drains, rapidly washing away the soil beneath the asphalt.",
+              "objects": [
+                "bubbling_drains",
+                "sinking_dumpster"
+              ],
+              "examine_details": {
+                "bubbling_drains": "The water is thick with red clay. The city's foundation is literally liquefying and washing away into the sewers.",
+                "sinking_dumpster": "A heavy metal dumpster is slowly tilting backward as the pavement beneath its wheels sags into the earth."
+              }
+            },
             "urban_disaster+construction_failure": {
               "name": "Alleyway",
               "description": "A narrow alley between two apartment buildings. Fire escapes zigzag down the brick walls.",
@@ -2572,6 +2687,19 @@
                 "cracking_sound": "A deep, structural groan. Like the sound a frozen lake makes before it gives way. But this isn't ice. This is steel and concrete."
               }
             },
+            "urban_disaster+geological_event": {
+              "name": "Parking Structure — Stairwell",
+              "description": "A concrete stairwell echoing with the sound of car alarms going off outside. The entire building shudders periodically.",
+              "first_entry_text": "You push through the heavy fire doors into the stairwell. [color=#BC13FE]{visionary}[/color] is already climbing, looking down at you with terrified eyes.\n\nOutside, you hear a loud, subterranean SNAP.",
+              "objects": [
+                "concrete_stairs",
+                "vibrating_handrail"
+              ],
+              "examine_details": {
+                "concrete_stairs": "Solid concrete. They feel a lot safer than the asphalt outside.",
+                "vibrating_handrail": "The metal railing is humming like a tuning fork. Something massive is shifting beneath the city."
+              }
+            },
             "urban_disaster+construction_failure": {
               "name": "First Floor Hallway",
               "description": "A long, dimly lit corridor. The doors to the apartments are all shut. The floor is slanting noticeably to the left.",
@@ -2592,13 +2720,16 @@
             "description": "Higher ground. A view of what's below. A view of what's coming.",
             "first_entry_text": "From up here, you can see everything.",
             "exits": {
-              "down": "Building Entrance"
+              "down": "Interior"
             },
             "floor": 2,
             "furniture": [],
             "objects": [
               "view_below"
             ],
+            "examine_details": {
+              "view_below": "It's a long way down."
+            },
             "interactable_triggers": {},
             "items": [],
             "hazards_present": [],
@@ -2607,16 +2738,6 @@
             "exit_room": true
           },
           "overrides": {
-            "urban_disaster+geological_event": {
-              "name": "Business District — Alleyway",
-              "description": "You ducked into an alleyway between two high-rises. The asphalt beneath your feet feels soft. Unanchored.",
-              "first_entry_text": "[color=#BC13FE]{visionary}[/color] grabbed you by the shirt and hurled you backward into the alleyway just as the street ahead groaned.\n\nThe street didn't crack. It just... dropped.\n\nA perfectly circular hole, eighty feet across, swallowed the intersection. A city bus fell straight down into the darkness. The sound of the subterranean water main rushing into the void echoed up the sides.\n\nThe edges of the sinkhole are still crumbling, taking sidewalks, streetlights, and pedestrians with them into the abyss.\n\n[color=#FF3131]{reaction}[/color][color=#BC13FE] {visionary}[/color] wasn't kidding.",
-              "objects": ["sinkhole_edge", "falling_debris"],
-              "examine_details": {
-                "sinkhole_edge": "The asphalt is shearing off in massive chunks. You can hear the water rushing far below.",
-                "falling_debris": "A parking meter slides into the hole, disappearing without a sound."
-              }
-            },
             "structural_collapse": {
               "name": "East Bank Overlook",
               "description": "You made it off the bridge. You're standing on the east bank, looking back at the span. The swaying is visible now — a slow pendulum motion that bridges are not supposed to make.",
@@ -2630,17 +2751,17 @@
                 "river_debris": "Vehicles are visible just below the surface. One pair of taillights is still on, blinking red in the murk. Emergency sirens layer over each other from both banks."
               }
             },
-            "urban_disaster+flood_related": {
-              "name": "Parking Structure — Level Three",
-              "description": "The open third level of the parking structure. You came up here to get away from the street. The rain hit like a wall five minutes ago and hasn't stopped.",
-              "first_entry_text": "The storm drain on the corner of 4th and Main failed with a [color=#aaaaaa]sickening, subterranean vomit[/color]. You watched from the sidewalk as the street inverted—the water erupting [color=#55aaff]upward[/color] in a geyser of silt and sewage instead of draining away.\n\nYou scrambled up the concrete stairs of the parking structure, following the [color=#BC13FE]{visionary}[/color] as they clawed their way toward the upper decks. You felt like a fool—your car was parked on level one—but the [color=#BC13FE]{visionary}[/color] wouldn't stop screaming about [color=#FF3131]a flash flood that was coming.[/color]\n\nIn minutes, the downtown corridor is transformed into a [color=#55aaff]roaring, debris-choked canyon[/color]. It isn't just a flood; it’s a high-velocity river with a [color=#FF3131]killing current[/color] fast enough to tumble parked SUVs like [color=#aaaaaa]scrap metal[/color]. The water hits a blown transformer box on the corner. The blue flash arcs across the surface of the water, [color=#3399ff]electrocuting[/color] everyone still trying to swim.\n\nThe traffic signals are still cycling with [color=#aaaaaa]blind, robotic indifference[/color]. Green. Yellow. Red. Reflecting off a surface that is now [color=#FF3131]thick with gasoline and wreckage[/color].\n\n[color=#FF3131]{reaction}[/color] God... [color=#BC13FE]{visionary}[/color] felt the pressure in the pipes before the first manhole cover blew. You were supposed to be [color=#FF3131]drowned and crushed[/color] in that lower deck.",
+            "urban_disaster+geological_event": {
+              "name": "{city_name} Business District — Parking Structure Roof",
+              "description": "The open roof of the parking structure adjacent to the business district. You came up here on your lunch break. You weren't hungry.",
+              "first_entry_text": "[color=#BC13FE]{visionary}[/color] seized you by the collar, their breath smelling of [color=#FF3131]adrenaline and iron[/color], and dragged you up the concrete stairs of the parking structure. They wouldn't let you stay on the street—they kept screaming about [color=#aaaaaa]'the ground turning into a mouth.'[/color]\n\nThe section of pavement you were standing on thirty seconds ago [color=#FF3131]no longer exists[/color].\n\nIt didn't crack or settle with a warning. It [color=#aaaaaa]inverted[/color]—the center simply vanished into a black void, and the asphalt edges curled downward like [color=#FF3131]melting wax[/color]. There was no explosion, only the [color=#aaaaaa]sickening, wet slurp[/color] of a thousand tons of earth being swallowed at once.\n\nThe sinkhole is a [color=#FF3131]growing, hungry circle[/color]. From this height, you can see the cause: a massive, [color=#55aaff]corroded water main[/color] that has been scouring the soil into a slurry for years. The road is a hollow shell, and the weight of the world is finally breaking it. \n\nA food cart. Two parked cars. A bus stop shelter. [color=#FF3131]A person reaching for a door handle[/color]. \n\nThey don't fall; they are [color=#FF3131]erased[/color]. Plunged into a subterranean grave of [color=#55aaff]churning mud and broken concrete[/color].\n\n[color=#FF3131]{reaction}[/color] [color=#BC13FE]{visionary}[/color] felt the vibration in the soles of their feet before the first pebble dropped. You were supposed to be [color=#FF3131]suffocated[/color] in that dark.",
               "objects": [
-                "flood_street_view",
-                "drainage_failure"
+                "sinkhole_panorama",
+                "subsidence_crack"
               ],
               "examine_details": {
-                "flood_street_view": "The entire block is underwater. The water line is at the top of the parking meters — about four feet. It's still rising. The current is carrying debris: bins, tyres, a push-bike.",
-                "drainage_failure": "You can see where the storm drain gave out — a geyser of brown water is still shooting up from the grate like a fountain. The city's drainage system has reversed."
+                "sinkhole_panorama": "The sinkhole is approximately eighty feet across and still widening at its edges. The depth is unclear — the bottom isn't visible. Utility lines are dangling into it from all sides.",
+                "subsidence_crack": "A crack has propagated from the sinkhole along the street toward the parking structure you're standing on. It's about four inches wide. It wasn't there when you came up here."
               }
             },
             "construction_failure": {
@@ -2656,6 +2777,19 @@
                 "glass_scatter": "Glass covers the entire pavement on both sides of the street. Some pieces are still falling from the floors that haven't fully settled."
               }
             },
+            "natural_disaster+structural_collapse": {
+              "name": "Rooftop Terrace — Overlook",
+              "description": "The rooftop terrace of your highrise building. From up here, you have a terrifying, unobstructed view of the ruined city grid below.",
+              "first_entry_text": "You chased [color=#BC13FE]{visionary}[/color] up the emergency stairwell to the roof, screaming for them to make sense, as they burst through the terrace doors rasping about [color=#FF3131]'concrete rolling like waves'[/color]\n\nCar alarms triggered all at once—a frantic, [color=#aaaaaa]unison of terror[/color] echoing off the downtown highrises. Then came the P-wave. It was a rolling, almost [color=#55aaff]nauseating sensation[/color], the entire skyscraper swaying under your feet like a slow boat in deep swells. You looked down; the coffee in your hand was rippling in perfect, [color=#aaaaaa]concentric circles[/color] of doom.\n\nThe S-wave hit four seconds later, and the metro grid became a [color=#FF3131]meat-grinder[/color].\n\nThe historic masonry building across the avenue—six floors of heavy brick and mortar—didn't just crumble. In the distance, the suspension bridge violently whipped like a jump rope as the city's foundation [color=#aaaaaa]liquefied[/color]. The brick building tilted sideways with the slow, ponderous grace of a dying giant. You watched from above as the structural seams [color=#FF3131]erupted in a spray of red dust[/color] before the entire mass slammed into the asphalt, the impact [color=#FF3131]shattering[/color] the windows of every car on the block.\n\nThe highrise is still groaning. The earth has been moving for thirty seconds, a [color=#aaaaaa]low, rhythmic growl[/color] that sounds like the planet's own teeth grinding together. It doesn't stop. It just [color=#FF3131]keeps moving[/color].\n\n[color=#FF3131]{reaction}[/color] God... [color=#BC13FE]{visionary}[/color] felt the fault line snap before the first foundation shifted. You were supposed to be [color=#FF3131]pulverized[/color] down there under those floors of brick.",
+              "objects": [
+                "ruined_avenue",
+                "fractured_parapet"
+              ],
+              "examine_details": {
+                "ruined_avenue": "Half the buildings below are severely damaged, their facades sheared off to reveal the ruined apartments inside. Gas is burning somewhere two streets over. You can hear the fire roaring above the distant sirens.",
+                "fractured_parapet": "The concrete safety wall at the edge of the roof has cracked straight through. The fissure is four inches wide, a terrifying reminder of the sheer stress this skyscraper just endured."
+              }
+            },
             "drowning_water+transportation_water": {
               "name": "Lakeshore Promenade — North Pier",
               "description": "The north pier of the promenade. You watched the Queen Isabella pull away from here. You almost didn't get off in time.",
@@ -2667,6 +2801,19 @@
               "examine_details": {
                 "capsized_hull": "The hull of the Queen Isabella is visible above the waterline — red anti-fouling paint against black water. It's still moving, slowly rotating as it settles.",
                 "flotation_debris": "The lake surface between the pier and the wreck is covered in life rings, deck chairs, luggage, and people. Rescue boats are launching from the south pier."
+              }
+            },
+            "urban_disaster+flood_related": {
+              "name": "Parking Structure — Level Three",
+              "description": "The open third level of the parking structure. You came up here to get away from the street. The rain hit like a wall five minutes ago and hasn't stopped.",
+              "first_entry_text": "The storm drain on the corner of 4th and Main failed with a [color=#aaaaaa]sickening, subterranean vomit[/color]. You watched from the sidewalk as the street inverted—the water erupting [color=#55aaff]upward[/color] in a geyser of silt and sewage instead of draining away.\n\nYou scrambled up the concrete stairs of the parking structure, following the [color=#BC13FE]{visionary}[/color] as they clawed their way toward the upper decks. You felt like a fool—your car was parked on level one—but the [color=#BC13FE]{visionary}[/color] wouldn't stop screaming about [color=#FF3131]a flash flood that was coming.[/color]\n\nIn minutes, the downtown corridor is transformed into a [color=#55aaff]roaring, debris-choked canyon[/color]. It isn't just a flood; it’s a high-velocity river with a [color=#FF3131]killing current[/color] fast enough to tumble parked SUVs like [color=#aaaaaa]scrap metal[/color]. The water hits a blown transformer box on the corner. The blue flash arcs across the surface of the water, [color=#3399ff]electrocuting[/color] everyone still trying to swim.\n\nThe traffic signals are still cycling with [color=#aaaaaa]blind, robotic indifference[/color]. Green. Yellow. Red. Reflecting off a surface that is now [color=#FF3131]thick with gasoline and wreckage[/color].\n\n[color=#FF3131]{reaction}[/color] God... [color=#BC13FE]{visionary}[/color] felt the pressure in the pipes before the first manhole cover blew. You were supposed to be [color=#FF3131]drowned and crushed[/color] in that lower deck.",
+              "objects": [
+                "flood_street_view",
+                "drainage_failure"
+              ],
+              "examine_details": {
+                "flood_street_view": "The entire block is underwater. The water line is at the top of the parking meters — about four feet. It's still rising. The current is carrying debris: bins, tyres, a push-bike.",
+                "drainage_failure": "You can see where the storm drain gave out — a geyser of brown water is still shooting up from the grate like a fountain. The city's drainage system has reversed."
               }
             }
           }
@@ -2724,6 +2871,23 @@
                 "sky_color": "The sky is the color of a old bruise — yellow, grey, with veins of green. You've never seen a sky like this.",
                 "silent_trees": "The forest is absolutely silent. No birds. No insects. No wind in the leaves. It's like nature is holding its breath.",
                 "weather_station": "A small automated weather station. The wind speed dial is pinned. The barometer is dropping so fast you can watch the needle move."
+              }
+            },
+            "natural_disaster+geological_event": {
+              "name": "Hilltop Park — Entrance",
+              "description": "The paved entrance to the sprawling city park. Strangely, every dog in the vicinity is barking frantically, pulling at their leashes.",
+              "first_entry_text": "You arrived at the park to clear your head. [color=#BC13FE]{visionary}[/color] is already here, pacing wildly and claiming the ground is 'screaming'.\n\nA massive flock of birds suddenly erupts from the trees in unison, fleeing the area.",
+              "furniture": [
+                "park_gates",
+                "information_board"
+              ],
+              "objects": [
+                "fleeing_birds",
+                "panicked_dogs"
+              ],
+              "examine_details": {
+                "fleeing_birds": "Hundreds of them, flying erratically. Animals always know before we do.",
+                "panicked_dogs": "A dog walker is struggling to hold onto three golden retrievers that are desperately trying to drag him back toward the street."
               }
             },
             "infrastructure_failure+flood_related": {
@@ -2802,6 +2966,29 @@
                 "distant_rumble": "A low rumble from somewhere underground. Not thunder. Deeper. Constant."
               }
             },
+            "natural_disaster+geological_event": {
+              "name": "Hilltop Park — Great Lawn",
+              "description": "A wide expanse of grass. The air is dead still, but you can feel a distinct, high-frequency vibration buzzing through the soil.",
+              "objects": [
+                "vibrating_ground",
+                "distant_skyline"
+              ],
+              "examine_details": {
+                "vibrating_ground": "It tickles the soles of your feet. It's not a localized rumble; it feels like the entire tectonic plate is humming."
+              }
+            },
+            "infrastructure_failure+flood_related": {
+              "name": "River Trail",
+              "description": "A dirt trail running parallel to the river. The water is brown and churning violently, already cresting the muddy banks. An emergency siren wails continuously from the dam upstream.",
+              "objects": [
+                "swollen_river",
+                "siren_noise"
+              ],
+              "examine_details": {
+                "swollen_river": "The water level has risen two feet in the last ten minutes. It's moving with a terrifying, muscular speed.",
+                "siren_noise": "A mechanical, sustained wail echoing down the valley. It's an evacuation alarm."
+              }
+            },
             "winter_sports+mechanical_failure": {
               "name": "{city_name} Peak — Lift Loading Zone",
               "description": "The loading zone for Lift 3. Skiers shuffle forward, grabbing chairs as they swing around. An attendant waves people into position. The chairs climb steeply into the trees.",
@@ -2858,6 +3045,35 @@
                 "seismograph_printout": "A curl of paper from a portable seismograph, still printing. The line is no longer flat. It's spiking. Rhythmically. Getting bigger."
               }
             },
+            "natural_disaster+geological_event": {
+              "name": "Park Gazebo",
+              "description": "A sturdy wooden gazebo. The timber frame is groaning rhythmically, as if the foundation it sits on is subtly twisting.",
+              "furniture": [
+                "wooden_benches"
+              ],
+              "objects": [
+                "creaking_timbers",
+                "cracked_concrete"
+              ],
+              "examine_details": {
+                "creaking_timbers": "The wood is flexing. The gazebo isn't moving, but the earth beneath its footings is shifting in opposite directions."
+              }
+            },
+            "infrastructure_failure+flood_related": {
+              "name": "Riverside Picnic Pavilion",
+              "description": "A covered pavilion near the water. The roar of the swollen river almost drowns out the blaring warning sirens. The ground shakes with the force of the water pressing against the dam.",
+              "furniture": [
+                "picnic_tables",
+                "stone_barbecue"
+              ],
+              "objects": [
+                "flood_water",
+                "abandoned_picnic"
+              ],
+              "examine_details": {
+                "abandoned_picnic": "Half-eaten sandwiches and a spilled cooler. Whoever was here heard the siren and ran."
+              }
+            },
             "winter_sports+mechanical_failure": {
               "name": "{city_name} Peak — Ski Patrol Hut",
               "description": "A small red hut with a white cross. Ski patrol. A stretcher leans against the wall. A radio crackles inside with chatter about 'Lift 3 anomalies.'",
@@ -2910,6 +3126,29 @@
                 "valley_view": "{city_name} sprawls below. From here it looks peaceful. Orderly. Fragile.",
                 "vibrating_ground": "The ground is vibrating. Not shaking — vibrating. A constant, low-frequency hum. The railing buzzes against your palms.",
                 "railing": "A metal safety railing. The bolts anchoring it to the rock are loose. You can wiggle them with your fingers."
+              }
+            },
+            "natural_disaster+geological_event": {
+              "name": "City Overlook",
+              "description": "A stone wall looking down over the city grid. The low vibration has deepened into a subterranean roar, like a fleet of freight trains rushing beneath the earth.",
+              "objects": [
+                "city_grid",
+                "stone_wall"
+              ],
+              "examine_details": {
+                "city_grid": "The city looks completely normal from up here. Millions of people going about their day, totally unaware of the monstrous energy building beneath them.",
+                "stone_wall": "The mortar between the stones is turning to dust and spilling out as the vibrations intensify."
+              }
+            },
+            "infrastructure_failure+flood_related": {
+              "name": "Dam Observation Deck",
+              "description": "A steel platform looking directly at the face of the massive concrete dam. A terrifying network of spiderweb cracks is visibly spreading across the center span, weeping pressurized water.",
+              "objects": [
+                "cracked_dam",
+                "spillway"
+              ],
+              "examine_details": {
+                "cracked_dam": "Millions of gallons of water are pressing against failing concrete. The cracks are actively widening as you watch, shooting high-pressure jets of water into the air."
               }
             },
             "winter_sports+mechanical_failure": {
