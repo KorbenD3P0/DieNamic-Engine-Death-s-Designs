@@ -1,0 +1,153 @@
+{  
+  "Your Car - On the Road": {
+    "name": "Your Car — On the Road",
+    "description": "You gun the engine onto the city streets. Ahead, you can see taillights weaving between lanes. They are panicking. You have to catch them before they get somewhere they can't come back from.",
+    "first_entry_text": "Your knuckles are white on the wheel. {fleeing_npc} just blew through a red light — you barely kept them in sight. The streets are slick. One wrong move and this ends badly for both of you.",
+    "entry_room": true,
+    "tags": ["vehicle", "chase", "outdoor", "night"],
+    "exits": {
+      "accelerate": {
+        "target": "City Street - Block 1",
+        "description": "Floor it and close the gap."
+      }
+    },
+    "hazards_present": [],
+    "objects": [
+      {
+        "name": "Radio",
+        "description": "Static on the police band. They've had reports of erratic driving. You have maybe four minutes before units respond."
+      }
+    ],
+    "items": [],
+    "furniture": [],
+    "npc_slots": 0,
+    "_chase_metadata": {
+      "is_start_room": true,
+      "npc_starts_at": "City Street - Block 1"
+    }
+  },
+ 
+  "City Street - Block 1": {
+    "name": "City Street — Block 1",
+    "description": "A wide commercial street. Traffic is light. You can see {fleeing_npc}'s car fishtailing ahead, running every yellow light.",
+    "tags": ["vehicle", "chase", "outdoor"],
+    "exits": {
+      "accelerate": {"target": "City Street - Block 2"},
+      "swerve left": {"target": "City Street - Block 2"},
+      "swerve right": {"target": "City Street - Block 2"}
+    },
+    "hazards_present": ["pursuit_obstacle"],
+    "objects": [
+      {
+        "name": "Cross Traffic",
+        "description": "A delivery truck rolls into the intersection on your left. The light is already red."
+      }
+    ],
+    "items": [],
+    "furniture": [],
+    "npc_slots": 1,
+    "_chase_metadata": {
+      "npc_talk_possible": true
+    }
+  },
+ 
+  "City Street - Block 2": {
+    "name": "City Street — Block 2",
+    "description": "A narrower residential block. Parked cars line both sides. A gap just barely wide enough for one vehicle.",
+    "tags": ["vehicle", "chase", "outdoor", "tight_space"],
+    "exits": {
+      "accelerate": {"target": "City Street - Block 3"},
+      "swerve left": {"target": "City Street - Block 3"},
+      "swerve right": {"target": "City Street - Block 3"},
+      "cut through alley": {"target": "City Street - Block 3"}
+    },
+    "hazards_present": ["pursuit_obstacle"],
+    "objects": [
+      {
+        "name": "Parked Cars",
+        "description": "A wall of parked vehicles on both sides. There is barely room to breathe, let alone maneuver."
+      },
+      {
+        "name": "Fleeing NPC's Car",
+        "description": "Their rear bumper is thirty feet ahead of you. You can see their head snapping back and forth — they are terrified of something they don't fully understand.",
+        "is_omen_provider": "window",
+        "_present_when": "npc_in_same_room"
+      }
+    ],
+    "items": [],
+    "furniture": [],
+    "npc_slots": 1,
+    "_chase_metadata": {
+      "npc_talk_possible": true
+    }
+  },
+ 
+  "City Street - Block 3": {
+    "name": "City Street — Block 3",
+    "description": "An underpass. Concrete pillars blur past on both sides. The acoustics make the engine sound enormous.",
+    "tags": ["vehicle", "chase", "underpass", "enclosed"],
+    "exits": {
+      "accelerate": {"target": "Highway On-Ramp"},
+      "swerve left": {"target": "Highway On-Ramp"},
+      "brake": {"target": "Highway On-Ramp"}
+    },
+    "hazards_present": ["pursuit_obstacle"],
+    "objects": [
+      {
+        "name": "Concrete Pillars",
+        "description": "They strobe past. One miscalculation and the car folds around one of them."
+      }
+    ],
+    "items": [],
+    "furniture": [],
+    "npc_slots": 1,
+    "_chase_metadata": {
+      "npc_talk_possible": true
+    }
+  },
+ 
+  "Highway On-Ramp": {
+    "name": "Highway On-Ramp",
+    "description": "They are heading for the highway. If they get on the open road at this speed, in this state of mind, it is over.",
+    "tags": ["vehicle", "chase", "outdoor", "ramp"],
+    "exits": {
+      "accelerate": {"target": "Dangerous Intersection"},
+      "cut them off": {"target": "Dangerous Intersection"},
+      "brake hard": {"target": "Dangerous Intersection"}
+    },
+    "hazards_present": ["pursuit_obstacle"],
+    "objects": [
+      {
+        "name": "Concrete Barrier",
+        "description": "The on-ramp curves hard left. A jersey barrier runs along the right edge with nothing on the other side."
+      }
+    ],
+    "items": [],
+    "furniture": [],
+    "npc_slots": 1,
+    "_chase_metadata": {
+      "npc_talk_possible": true,
+      "final_approach": true
+    }
+  },
+ 
+  "Dangerous Intersection": {
+    "name": "Dangerous Intersection",
+    "description": "A blind T-junction where the on-ramp meets highway traffic at full speed. No barriers. No margin.",
+    "first_entry_text": "You see it before they do. The T-junction. Highway traffic barrelling across at 70 mph with no sight line. {fleeing_npc} does not know. They will not see it until it is too late.\n\nThis is the moment.",
+    "tags": ["vehicle", "chase", "outdoor", "endpoint"],
+    "exits": {
+      "leave": {"target": "LEVEL_TRANSITION_HUB"}
+    },
+    "hazards_present": [],
+    "objects": [],
+    "items": [],
+    "furniture": [],
+    "npc_slots": 1,
+    "_chase_metadata": {
+      "is_end_room": true,
+      "npc_talk_possible": true,
+      "is_fatal_if_npc_arrives_alone": true
+    }
+  }
+}

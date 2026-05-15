@@ -49,7 +49,7 @@
         "player_interaction": {
           "use": [
             {
-              "required_item_name": "loaded_revolver",
+              "required_item_name": "loaded_heavy_revolver",
               "required_item_type": "weapon",
               "target_state": "finale_triggered_dark",
               "message_success": "The steel is cold against your palm. A life for a life. That's the only rule that ever mattered. You find your target and pull the trigger.",
@@ -57,7 +57,71 @@
             }
           ]
         }
+      },
+        {
+    "name": "cooling chamber",
+    "description": "A sealed industrial freezer unit, now repurposed. The temperature readout shows -5°C and dropping. This is the hypothermia station.",
+    "examine_details": "Plan D. If you have the Hypothermia Survival Kit, you can use it here. Your companion must be present and willing to pull you out.",
+    "player_interaction": {
+      "use": [
+        {
+          "required_item_name": "hypothermia_survival_kit",
+          "required_item_type": "medical_equipment",
+          "target_state": "finale_triggered_hypothermia",
+          "message_success": "You seal yourself inside. The cold closes in like a fist. Your heartbeat slows to a crawl... and then stops.",
+          "on_success": {"action_effect": "trigger_finale_hypothermia"}
+        }
+      ]
+    }
+  },
+  {
+      "name": "breathing apparatus",
+      "description": "An industrial helium tank connected to a modified breathing mask. Next to it, a pure oxygen resuscitator on a timer.",
+      "examine_details": "Plan E. The Asphyxiation Survival Kit goes here. Four minutes. Your companion has to be ready with the resuscitator.",
+      "player_interaction": {
+        "use": [
+          {
+            "required_item_name": "asphyxiation_survival_kit",
+            "required_item_type": "medical_equipment",
+            "target_state": "finale_triggered_asphyxiation",
+            "message_success": "You breathe in. Once, twice. Then you stop feeling the need to breathe at all. Then you stop feeling anything.",
+            "on_success": {"action_effect": "trigger_finale_asphyxiation"}
+          }
+        ]
       }
+    },
+    {
+      "name": "companion",
+      "description": "Someone who came this far with you. They're standing near the wall, watching you quietly.",
+      "examine_details": "They gave you a note. They're ready. Whether you accept what they're offering is another matter entirely.",
+      "player_interaction": {
+        "use": [
+          {
+            "required_item_name": "willing_companion_token",
+            "required_item_type": "document",
+            "target_state": "finale_triggered_sacrifice",
+            "message_success": "You take their hands. You let go of the thread. It passes between you like heat.",
+            "on_success": {"action_effect": "trigger_finale_sacrifice"}
+          }
+        ]
+      }
+    },
+    {
+      "name": "bludworth's formula",
+      "description": "A page of notes tacked to the warehouse wall. The math is laid out in full. The plan is insane. It might work.",
+      "examine_details": "Plan G: The Loop Exploit. No items required. Just timing, nerve, and a willingness to step in front of a car with exact precision.",
+      "player_interaction": {
+        "use": [
+          {
+            "required_flag": "knows_loop_exploit",
+            "message_no_flag": "You've heard of this theory but you don't have the formula. You'd need Bludworth's notes to know the exact method.",
+            "target_state": "finale_triggered_loop",
+            "message_success": "You memorize the timing. You walk out of the warehouse. The street is right there. The car is coming on schedule. You have one shot at this.",
+            "on_success": {"action_effect": "trigger_finale_loop_exploit"}
+          }
+        ]
+      }
+    }
     ],
     "examine_details": {
       "industrial battery array": "The core of Plan A. If you have the Defibrillator Pads, you can use them here to stop and restart your heart with raw voltage.",

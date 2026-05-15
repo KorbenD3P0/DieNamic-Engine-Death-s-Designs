@@ -83,8 +83,21 @@ class InteractionMixin:
                 
                 if not has_temp_flag and not has_perm_flag:
                     continue 
-            # ----------------------------------
-                    
+            
+            # --- THE NEW NEGATIVE FLAG CHECK ---
+            req_not_flag = opt.get('requires_not_flag')
+            if req_not_flag:
+                has_temp_not = req_not_flag in interaction_flags
+                has_perm_not = False
+                if isinstance(raw_flags, dict):
+                    has_perm_not = bool(raw_flags.get(req_not_flag))
+                elif isinstance(raw_flags, (set, list)):
+                    has_perm_not = req_not_flag in raw_flags
+                
+                # If they DO have the forbidden flag, hide the option!
+                if has_temp_not or has_perm_not:
+                    continue 
+            # -----------------------------------                    
             if 'condition' in opt and not self._npc_condition_met(opt['condition']):
                 continue
                 
@@ -119,7 +132,7 @@ class InteractionMixin:
             node = dialogue_states.get(current_state)
 
             # 4. Companion Fallback
-            is_companion = npc.get('name', '').lower() == self.player.get('current_companion', '').lower()
+            is_companion = str(npc.get('name') or '').lower() == str(self.player.get('current_companion') or '').lower()
             if not node and is_companion:
                 node = self._get_companion_fallback_node(npc, room_id)
 

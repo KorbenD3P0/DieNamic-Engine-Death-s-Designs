@@ -55,17 +55,6 @@ from .widgets import (
 )
 
 
-# --- CUSTOM POPUP CLASSES ---
-class MapPopup(ModalView):
-    """
-    A full-screen popup for reviewing the level map.
-    """
-    map_content = StringProperty("")
-    
-    def __init__(self, map_content="", **kwargs):
-        super().__init__(**kwargs)
-        self.map_content = map_content
-
 
 # --- NEW: FONT LOGIC AND GLOBAL DEFINITIONS AT THE TOP ---
 
@@ -228,43 +217,88 @@ def get_scaled_font_size(font_name, base_size):
     scale = FONT_SIZE_SCALING.get(font_name, 1.0)
     return base_size * scale
 
-def _wrap_button_text(button, align=None):
+def disaster_explain_fragment(full_explain: str) -> str:
     """
-    Ensures a Kivy Button wraps its text and grows vertically to fit, optimized for Android screens.
-    - Sets halign/valign, text_size, and binds height to texture_size.
-    - Optionally sets alignment ('left', 'center', 'right').
+    Trim a visionary_explains entry to a punchy fragment suitable for
+    mid-sentence use. Takes up to the first sentence break.
+    Defined at module level (no backslash inside f-string; uses str.split).
     """
-    # Set horizontal alignment
-    if align:
-        button.halign = align
-    else:
-        button.halign = 'center'
-    button.valign = 'middle'
+    # Split on period+space or exclamation; keep first chunk
+    for sep in ['. ', '! ', '? ']:
+        parts = full_explain.split(sep)
+        if len(parts) > 1:
+            fragment = parts[0].lower().rstrip('.!?')
+            return fragment
+    # No sentence break found — trim to 80 chars with ellipsis
+    trimmed = full_explain[:80].lower().rstrip('.!?, ')
+    if len(full_explain) > 80:
+        trimmed = trimmed + "..."
+    return trimmed
 
-    # Padding for touch targets and visual comfort
-    button.padding_x = dp(10)
-    button.padding_y = dp(8)
 
-    # Set text_size to wrap at button width minus padding
-    def update_text_size(instance, value):
-        # Subtract horizontal padding for accurate wrapping
-        pad_x = getattr(instance, 'padding_x', 0)
-        instance.text_size = (value - 2 * pad_x, None)
-    button.bind(width=update_text_size)
-    update_text_size(button, button.width)
+class AutoFitButton(Button):
+    """
+    A custom button that dynamically reduces its font_size to ensure
+    the text fits entirely within its width/height boundaries without wrapping.
+    """
+    # Define a starting font size (will be scaled down if needed)
+    base_font_size = NumericProperty(sp(15)) 
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Bind to properties that might change the required font size
+        self.bind(text=self._update_font_size, 
+                  size=self._update_font_size, 
+                  base_font_size=self._update_font_size)
+        
+    def _update_font_size(self, *args):
+        # Safety checks
+        if not self.text or self.width <= 0 or self.height <= 0:
+            return
 
-    # Grow height to fit text
-    def update_height(instance, value):
-        # Add vertical padding to texture height
-        pad_y = getattr(instance, 'padding_y', 0)
-        instance.height = value[1] + 2 * pad_y
-    button.bind(texture_size=update_height)
-    update_height(button, button.texture_size)
+        # Start with the base size (adjusted by any global app scaling if needed)
+        app = App.get_running_app()
+        scale = getattr(app, 'text_scale', 1.0)
+        current_size = self.base_font_size * scale
+        
+        # Calculate maximum available space (minus padding)
+        pad_x = self.padding[0] * 2 if isinstance(self.padding, list) else dp(20)
+        pad_y = self.padding[1] * 2 if isinstance(self.padding, list) else dp(20)
+        
+        max_w = self.width - pad_x
+        max_h = self.height - pad_y
+        
+        if max_w <= 0 or max_h <= 0:
+            return
 
-    # Ensure minimum touch target (Android guideline: 48dp)
-    min_height = dp(48)
-    if button.height < min_height:
-        button.height = min_height
+        # Loop to find the perfect fitting font size
+        while current_size > sp(8): # Don't go completely illegible (min 8sp)
+            # Create a hidden core label just to measure the texture size
+            l = CoreLabel(text=self.text, font_name=self.font_name, font_size=current_size, markup=self.markup)
+            l.refresh()
+            
+            # If the rendered texture fits within our max boundaries, we found our size!
+            if l.texture.size[0] <= max_w and l.texture.size[1] <= max_h:
+                break
+                
+            # Otherwise, shrink it slightly and try again
+            current_size -= sp(0.5)
+
+        self.font_size = current_size
+
+
+
+# --- CUSTOM POPUP CLASSES ---
+class MapPopup(ModalView):
+    """
+    A full-screen popup for reviewing the level map.
+    """
+    map_content = StringProperty("")
+    
+    def __init__(self, map_content="", **kwargs):
+        super().__init__(**kwargs)
+        self.map_content = map_content
+
 
 # A base screen for common functionality
 class BaseScreen(Screen):
@@ -705,9 +739,27 @@ class CharacterSelectScreen(BaseScreen):
         from kivy.graphics import RoundedRectangle as RR, Line, Color as GColor
         description   = details.get('description', '')
         max_hp        = details.get('max_hp', 30)
-        strength      = details.get('strength', 5)
-        intuition     = details.get('intuition', 2)
-        perception    = details.get('perception', 2)
+        
+        # --- D.E.A.T.H. STAT EXTRACTION ---
+        # Prefers the new "stats" dict, but gracefully falls back to legacy keys if the JSON isn't fully updated yet
+        stats = details.get('stats', {})
+        d_val = stats.get('D', details.get('agility', 3))
+        e_val = stats.get('E', stats.get('endurance', int(max_hp / 10))) 
+        a_val = stats.get('A', details.get('perception', 3))
+        t_val = stats.get('T', details.get('strength', 3))
+        h_val = stats.get('H', details.get('intuition', 3))
+        
+        death_stats = [
+            ('D', 'Dexterity', d_val),
+            ('E', 'Endurance', e_val),
+            ('A', 'Awareness', a_val),
+            ('T', 'Tenacity', t_val),
+            ('H', 'Hunches', h_val)
+        ]
+        # Find the highest value so we know which one(s) to highlight
+        max_stat_val = max(val for _, _, val in death_stats)
+        # ----------------------------------
+
         affinities    = details.get('affinities', {})
         quote         = details.get('observations', {}).get('inter_level_thought', '')
         all_affs = (
@@ -722,7 +774,9 @@ class CharacterSelectScreen(BaseScreen):
         PAD_H    = dp(12)
         SPACING  = dp(8)
         NAME_H   = dp(38)   # tall enough to tap
-        STATS_H  = dp(3*24 + 2*4)
+        
+        # --- UPDATED HEIGHT FOR 5 STATS ---
+        STATS_H  = dp(5*22 + 4*4) 
         AFF_H    = dp(30)
         BTN_H    = dp(52)   # 52dp = comfortable phone tap target
 
@@ -760,11 +814,37 @@ class CharacterSelectScreen(BaseScreen):
             card.add_widget(desc_lbl)
             fixed_h += dp(20) + SPACING
 
-        # ── Stat bars: STR / INT / PER ──
+        # ── D.E.A.T.H. Stat Block ──
         sc = BoxLayout(orientation='vertical', size_hint_y=None,
                        height=STATS_H, spacing=dp(4))
-        for lbl_text, val in [('STR', strength), ('INT', intuition), ('PER', perception)]:
-            sc.add_widget(self._stat_row(lbl_text, val, 8))
+                       
+        for letter, name, val in death_stats:
+            is_max = (val == max_stat_val)
+            color_hex = "00ff00" if is_max else "aaaaaa"
+            name_color = "ffffff" if is_max else "cccccc"
+
+            row = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(22))
+
+            # Acronym letter + Full Name (e.g. D - Dexterity)
+            lbl_name = Label(
+                text=f"[b][color={color_hex}]{letter}[/color][/b] [color={name_color}]- {name}[/color]",
+                markup=True, font_name='RobotoMono', font_size=dp(13),
+                halign='left', valign='middle', size_hint_x=0.8
+            )
+            lbl_name.bind(size=lambda i, v: setattr(i, 'text_size', v))
+
+            # Numeric Value
+            lbl_val = Label(
+                text=f"[b][color={color_hex}]{val}[/color][/b]",
+                markup=True, font_name='RobotoMonoBold', font_size=dp(14),
+                halign='right', valign='middle', size_hint_x=0.2
+            )
+            lbl_val.bind(size=lambda i, v: setattr(i, 'text_size', v))
+
+            row.add_widget(lbl_name)
+            row.add_widget(lbl_val)
+            sc.add_widget(row)
+            
         card.add_widget(sc)
         fixed_h += STATS_H + SPACING
 
@@ -986,11 +1066,48 @@ class IntroScreen(BaseScreen):
             weather     = atmosphere.get('weather',     fallback['weather'])
             smell       = atmosphere.get('smell',       fallback['smell'])
             crowd       = atmosphere.get('crowd',       fallback['crowd'])
+            INVESTIGATIVE = ('Detective', 'Journalist', 'Reporter', 'Private Investigator')
+            MEDICAL       = ('Medic', 'Nurse', 'Doctor', 'Paramedic', 'EMT')
+            SUPERNATURAL  = ('Medium', 'Visionary', 'Psychic')
 
             location_name = game_logic.player.get('location', '')
             if not location_name or location_name.startswith('_'):
                 # Find a better label from the disaster template or the first room name
                 location_name = details.get('setting_name', 'the scene')
+
+            if char_class in INVESTIGATIVE:
+                attention_hook = (
+                    f"You've been trained to notice when someone's story doesn't match their body language. "
+                    f"{color_text(visionary_name, 'special', rm)}'s story checks out. "
+                    f"That's what's bothering you."
+                )
+            elif char_class in MEDICAL:
+                attention_hook = (
+                    f"You've seen panic attacks. You've seen genuine distress. "
+                    f"{color_text(visionary_name, 'special', rm)} is not panicking — they're warning. "
+                    f"There's a difference, and your training won't let you ignore it."
+                )
+            elif char_class == "Visionary":
+                full_intro = self._build_visionary_intro(
+                    game_logic, rm, selected_city, location_name,
+                    disaster_name, time_of_day, weather, smell, crowd
+                )
+                self.intro_text_label.text = full_intro
+                return  # don\'t fall through to the generic text below
+            elif char_class in SUPERNATURAL:
+                attention_hook = (
+                    f"You felt something the moment you walked in. A pressure behind your eyes. "
+                    f"And then {color_text(visionary_name, 'special', rm)} started talking, and suddenly "
+                    f"the pressure had a shape."
+                )
+            else:
+                attention_hook = (
+                    f"You're not sure why, but "
+                    f"{color_text('something about the way they talk made the hair on the back of your neck stand up.', 'location', rm)} "
+                    f"You find yourself oddly concerned. "
+                    f"{color_text('Like you almost believe them.', 'npc', rm)}"
+                )
+
             full_intro = (
                 f"Welcome to {color_text(selected_city, 'location', rm)}.\n\n"
                 f"It's a {time_of_day}. {weather} The air smells vaguely of {smell}.\n\n"
@@ -1000,9 +1117,8 @@ class IntroScreen(BaseScreen):
                 f"Except {color_text(visionary_name, 'special', rm)} suddenly doesn't think so.\n\n"
                 f"One minute they were fine, and the next they're suddenly agitated. Talking fast. Warning anyone who'll "
                 f"listen about {color_text(disaster_name, 'error', rm)}.\n"
-                f"Except..that hasn't happened; everybody is here, {color_text('alive','npc', rm)}, so naturally, nobody's listening.\n\n"
-                f"You're not sure why, but {color_text('something about the way they talk made the hair on the back of your neck stand up.','location',rm)} "
-                f"You find yourself oddly concerned. {color_text('Like you almost believe them.','npc',rm)}\n\n"
+                f"Except..that hasn't happened; everybody is here, {color_text('not dead','npc', rm)}, so naturally, nobody's listening.\n\n"
+                f"{attention_hook}\n\n"
                 f"Maybe you should find them. Talk to them. {color_text('Try to get everyone away.','evidence',rm)} "
                 f"Or maybe you should mind your own business.\n\n"
                 f"Do you make your way to the exit alone or {color_text('try to convince anybody else to leave', 'special', rm)} if you can?\n\n"
@@ -1017,6 +1133,192 @@ class IntroScreen(BaseScreen):
             self.logger.info(f"IntroScreen bypassed for level {current_level}. Jumping to game.")
             Clock.schedule_once(self.proceed_to_game, 0)
             return
+            
+    def _build_visionary_intro(self, game_logic, rm, city, location_name,
+                                disaster_name, time_of_day, weather, smell, crowd):
+            """
+            First-person intro for the Visionary class.
+            Pulls from the live disaster, NPC role map, and atmosphere data to
+            give the player a specific, populated premonition — not a flat disaster name.
+            """
+            import random
+            from .utils import color_text
+
+            p               = game_logic.player
+            disaster        = p.get('intro_disaster', {})
+            role_map        = p.get('_premonition_role_map', {})
+            npc_workplaces  = p.get('npc_workplaces', {})
+
+            # ── Coloured string helpers ──────────────────────────────────────────
+            def c(text, style):
+                return color_text(str(text), style, rm)
+
+            city_str     = c(city, 'location')
+            location_str = c(location_name, 'location')
+
+            # ── Disaster details ─────────────────────────────────────────────────
+            # Capitalise first letter; the raw key is lowercase ("a luxury ferry...")
+            disaster_display = disaster_name[0].upper() + disaster_name[1:]
+            disaster_str     = c(disaster_display, 'error')
+
+            # --- THE FIX: Safe fallback for empty explanation arrays ---
+            explains_list = disaster.get('visionary_explains')
+            chosen_explain = random.choice(explains_list) if explains_list else 'I saw it happen.'
+            # -----------------------------------------------------------
+
+            # ── Pull archetype data for NPC mentions ─────────────────────────────
+            level_0_data  = rm.get_data('rooms_level_0', {})
+            archetypes    = level_0_data.get('npc_archetypes_premonition', {})
+
+            def _get_appearance(role):
+                pool = archetypes.get(role, {}).get('appearance_pool', [])
+                return random.choice(pool) if pool else None
+
+            # --- THE FIX: Dynamic Fate Generation ---
+            # If the disaster JSON is missing a 'debris_pool', build one dynamically!
+            fate_pool = disaster.get('debris_pool', [])
+            if not fate_pool:
+                tags = disaster.get('tags', [])
+                d_name = disaster_name.lower()
+                if 'fire_related' in tags or 'explosion' in d_name or 'gas' in d_name:
+                    fate_pool = ['incinerated by the blast wave', 'crushed by flaming debris', 'engulfed in the fireball']
+                elif 'transportation_road' in tags or 'highway' in d_name or 'pile-up' in d_name or 'crash' in d_name:
+                    fate_pool = ['crushed between two colliding vehicles', 'impaled by shattered windshield glass', 'thrown violently into the concrete barrier']
+                elif 'transportation_water' in tags or 'ferry' in d_name or 'ship' in d_name:
+                    fate_pool = ['dragged under the freezing water', 'crushed by the collapsing hull', 'drowned in the lower decks']
+                elif 'transportation_air' in tags or 'plane' in d_name or 'flight' in d_name:
+                    fate_pool = ['sucked out of the breached fuselage', 'crushed as the cabin crumpled', 'incinerated in the jet fuel explosion']
+                elif 'heights' in tags or 'falling' in d_name or 'collapse' in d_name or 'escalator' in d_name:
+                    fate_pool = ['crushed by falling structural steel', 'swept off the ledge to the pavement below', 'dragged into the grinding machinery']
+                elif 'flood_related' in tags or 'water' in d_name or 'storm' in d_name:
+                    fate_pool = ['swept away by the churning floodwaters', 'drowned when the underpass submerged', 'battered against a concrete pillar']
+                else:
+                    fate_pool = ['crushed beyond recognition', 'torn apart in the initial impact', 'impaled by flying shrapnel']
+            # ----------------------------------------
+
+            # Build a short list of NPCs the player will recognise by face
+            # (they know how each person died — that's the horror)
+            face_lines = []
+            ROLES_WITH_APPEARANCES = ['skeptic', 'bystander_1', 'bystander_2']
+            for role in ROLES_WITH_APPEARANCES:
+                npc_name   = role_map.get(role)
+                appearance = _get_appearance(role)
+                if not (npc_name and appearance):
+                    continue
+
+                fate = random.choice(fate_pool) if fate_pool else None
+
+                if fate:
+                    # Format gracefully whether it's a noun ("shattered glass") or an action ("crushed by...")
+                    if fate.startswith('a ') or fate.startswith('shattered ') or fate.startswith('flying '):
+                        death_desc = f"get hit by {fate}"
+                    else:
+                        death_desc = fate
+
+                    face_lines.append(
+                        c(appearance, 'npc') +
+                        f" — you know their name is {c(npc_name, 'special')},"
+                        f" even though you've never met. You watched them"
+                        f" {death_desc}."
+                    )
+                else:
+                    face_lines.append(
+                        c(appearance, 'npc') +
+                        f" — you don't know them. You know their name is"
+                        f" {c(npc_name, 'special')}. You know what happens to them."
+                    )
+
+            # ── Authority figure mention (optional) ──────────────────────────────
+            authority_name = role_map.get('authority_figure')
+            if authority_name:
+                authority_line = (
+                    f"There's a {c(authority_name, 'npc')} in your peripheral vision."
+                    " You know they won't believe you."
+                    " You know exactly what their face looks like when they don't."
+                )
+            else:
+                authority_line = ""
+
+            # ── Panicking / friend NPC ────────────────────────────────────────────
+            friend_name    = role_map.get('friend')
+            panicking_name = role_map.get('panicking')
+            if friend_name:
+                companion_line = (
+                    f"Someone named {c(friend_name, 'special')} is going to listen to you."
+                    " You don't know that yet. You will."
+                )
+            elif panicking_name:
+                companion_line = (
+                    f"{c(panicking_name, 'special')} is already uneasy —"
+                    " you can see it from here. They felt something too."
+                )
+            else:
+                companion_line = ""
+
+            # ── Warning fragment (what you screamed in the vision) ───────────────
+            # --- THE FIX: Safe fallback for empty warning arrays ---
+            warnings_list = disaster.get('warnings')
+            raw_warning = random.choice(warnings_list) if warnings_list else 'RUN! GET OUT NOW!'
+            # -------------------------------------------------------
+            # Strip any leading quote marks the data includes
+            warning_clean = raw_warning.strip().strip("'\"")
+            warning_str   = c(warning_clean, 'warning')
+
+            # ── Assemble ─────────────────────────────────────────────────────────
+
+            opening = (
+                f"Welcome to {city_str}.\n\n"
+                f"It's a {time_of_day}. {weather} "
+                f"The air smells of {smell}.\n\n"
+                f"You've just arrived at the {location_str}.\n"
+                f"The crowd is {crowd}.\n\n"
+            )
+
+            premonition_core = (
+                f"Everything was normal. {c('Everything was fine.', 'npc')}\n\n"
+                f"Except you've just had the weirdest daydream. No-\n\n"
+                f"Not a dream. Not a metaphor. A vision. "
+                f"{c('Actual footage', 'warning')} - running behind your eyes, playing out like a movie.. "
+                f"{c(disaster_display + '.', 'error')}\n\n"
+                f"""In it, you heard yourself screaming, "\n"""
+                f"""{c(warning_clean, 'warning')}" Then you literally felt what it was like to die.\n"""
+                f"Until you just snapped back to reality, gasping for air like life was being breathed back into you. "
+                f"That's what you know about what's coming. "
+                f"This is what you possibly know about the next few minutes:\n\n"
+            )
+
+            # Face paragraph — who the player recognises
+            if face_lines:
+                faces_block = "\n\n".join(face_lines) + "\n\n"
+            else:
+                faces_block = (
+                    "You don't recognise anyone here by name."
+                    " You recognise them by what happens to them."
+                    " You've watched every single one of them die.\n\n"
+                )
+
+            context_lines = []
+            if authority_line:
+                context_lines.append(authority_line)
+            if companion_line:
+                context_lines.append(companion_line)
+            context_block = "\n\n".join(context_lines) + ("\n\n" if context_lines else "")
+
+            middle = (
+                f"You know how {c(disaster_explain_fragment(chosen_explain), 'special')}.\n\n"
+                f"You know the exact sequence. You've replayed it enough times.\n\n"
+                f"What you don't know is how long you have.\n\n"
+            )
+
+            closing = (
+                f"The question is not whether you're right.\n"
+                f"The question is whether anyone here will believe"
+                f" a stranger who knows their name"
+                f" and is already shaking.\n\n"
+                f"Get them out. Now. {c('Before you prove yourself right.', 'warning')}"
+            )
+
+            return opening + premonition_core + faces_block + context_block + middle + closing
 
     def proceed_to_game(self, instance=None):
         logging.info("IntroScreen: Proceeding to GameScreen.")
@@ -2818,6 +3120,36 @@ class JournalScreen(BaseScreen):
             app = App.get_running_app()
             if app: self.achievements_system = getattr(app, 'achievements_system', None)
         
+        # --- THE FIX: Force Header Labels to Wrap and Expand ---
+        if not getattr(self, '_headers_fixed', False):
+            from kivy.metrics import dp, sp
+            for header in [self.evidence_details_title, self.story_details_title]:
+                if header:
+                    # 1. Turn off Kivy's default truncation (...)
+                    header.shorten = False 
+                    
+                    # 2. Release vertical lock so it can grow
+                    header.size_hint_y = None
+                    
+                    # 3. Decouple font_size from height (prevents infinite growth loops)
+                    header.font_size = sp(22) 
+                    
+                    # 4. Center the text
+                    header.halign = 'center'
+                    header.valign = 'middle'
+                    
+                    # 5. Bind width to text_size (Forces the text to wrap at the edges)
+                    header.bind(width=lambda inst, w: setattr(inst, 'text_size', (w - dp(20), None)))
+                    
+                    # 6. Bind texture height to container height (Pushes the descriptions down!)
+                    header.bind(texture_size=lambda inst, ts: setattr(inst, 'height', max(dp(45), ts[1] + dp(10))))
+                    
+                    # Force initial dimensional update
+                    header.text_size = (header.width - dp(20), None)
+                    
+            self._headers_fixed = True
+        # -------------------------------------------------------
+
         self.populate_evidence_list()
         self.populate_unlocked_stories_list()
         self.evidence_details_scroll = self.ids.get('evidence_details_scroll_id')
@@ -2856,8 +3188,7 @@ class JournalScreen(BaseScreen):
         for ev_id, ev_data in sorted_evidence:
             btn_text = ev_data.get('name', ev_id).title()
             
-            # PATCH START: Use standard Button to avoid KV conflicts
-            # We manually apply the style to ensure sizing works perfectly
+            # Use standard Button to avoid KV conflicts
             btn = Button(
                 text=btn_text,
                 size_hint_y=None,
@@ -2873,7 +3204,6 @@ class JournalScreen(BaseScreen):
             )
 
             # --- The Sizing Fix ---
-            # 1. Define a concise update function
             def update_btn_geometry(instance, _):
                 # Constrain text width to button width minus padding
                 instance.text_size = (instance.width - dp(20), None)
@@ -2881,27 +3211,24 @@ class JournalScreen(BaseScreen):
                 if instance.texture_size[1] > 0:
                     instance.height = instance.texture_size[1] + dp(20)
 
-            # 2. Bind to critical properties
             btn.bind(width=update_btn_geometry)
             btn.bind(texture_size=update_btn_geometry)
 
-            # 3. Add custom border drawing (manual since we aren't using TerminalButton)
+            # Add custom border drawing
             with btn.canvas.before:
                 Color(0.1, 0.8, 0.1, 1) # Border Color
                 btn.border_line = Factory.Line(width=dp(1), rounded_rectangle=(btn.x, btn.y, btn.width, btn.height, dp(4)))
             
-            # Update border position when button moves/resizes
             def update_border(instance, _):
                 instance.border_line.rounded_rectangle = (instance.x, instance.y, instance.width, instance.height, dp(4))
             btn.bind(pos=update_border, size=update_border)
 
-            # 4. Bind action
+            # Bind action
             btn.bind(on_release=lambda x, eid=ev_id: self.show_evidence_details(eid))
             
             self.evidence_list_layout.add_widget(btn)
             # Force one update immediately to set initial size
             Clock.schedule_once(lambda dt, b=btn: update_btn_geometry(b, None), 0)
-            # PATCH END
         
         # Reset details panel
         self.evidence_details_title.text = "Select to View"
@@ -2912,7 +3239,6 @@ class JournalScreen(BaseScreen):
         self.stories_list_layout.clear_widgets()
         
         if not self.achievements_system or not self.achievements_system.unlocked_stories:
-            # [Existing logic for empty state remains same...]
             evidence_count = len(self.achievements_system.evidence_collection) if self.achievements_system else 0
             if evidence_count == 0:
                 message = "No stories unlocked yet.\nStart collecting evidence to unlock complete backstories!"
@@ -2924,7 +3250,6 @@ class JournalScreen(BaseScreen):
                 size_hint_y=None, height=dp(80),
                 halign='center', valign='middle'
             )
-            # Simple bind for the label is fine
             lbl.bind(width=lambda i, w: setattr(i, 'text_size', (w, None)))
             self.stories_list_layout.add_widget(lbl)
             
@@ -2957,28 +3282,16 @@ class JournalScreen(BaseScreen):
             )
             
             def update_story_btn_layout(instance, width):
-                if width < dp(80):
+                # Width Guard: Skip only the Kivy default 100px init
+                if width < dp(80): 
                     return
+                # Apply text wrapping and auto-height
                 instance.text_size = (width - dp(20), None)
                 instance.texture_update()
                 instance.height = max(dp(40), instance.texture_size[1] + dp(16))
 
             btn.bind(width=update_story_btn_layout)
-            # Force initial layout
             Clock.schedule_once(lambda dt, b=btn: update_story_btn_layout(b, b.width), 0.1)
-            
-            def update_story_btn_layout(instance, width):
-                # Width Guard: Skip only the Kivy default 100px init
-                if width < dp(80): 
-                    return
-                
-                # Apply text wrapping and auto-height
-                instance.text_size = (width - dp(20), None)
-                instance.texture_update()
-                instance.height = max(dp(36), instance.texture_size[1] + dp(16))
-
-            btn.bind(width=update_story_btn_layout)
-            # ---------------------------
 
             btn.bind(on_release=lambda x, s_name=story_name: self.show_story_details(s_name))
             self.stories_list_layout.add_widget(btn)
@@ -2992,6 +3305,8 @@ class JournalScreen(BaseScreen):
         Display detailed information about a specific piece of evidence.
         Canonical: Always shows character association, description, and story set(s).
         """
+        from .utils import normalize_text, color_text
+        
         if not self.achievements_system or evidence_id not in self.achievements_system.evidence_collection:
             self.evidence_details_title.text = "Evidence Not Found"
             self.evidence_details_description.text = "This evidence could not be found in your collection."
@@ -3006,7 +3321,6 @@ class JournalScreen(BaseScreen):
         # Description: Prefer 'description', fallback to 'examine_details'
         desc = evidence_data.get('description')
         if not desc or desc.strip() == "":
-            # Try to get from items.json
             app = App.get_running_app()
             items_data = app.resource_manager.get_data('items', {}) if app and app.resource_manager else {}
             item_master = items_data.get(evidence_id.lower()) or items_data.get(evidence_id)
@@ -3014,30 +3328,24 @@ class JournalScreen(BaseScreen):
 
         found_date_str = evidence_data.get('found_date', 'Unknown time')
 
-        # --- PATCH START: Robust Story Set Lookup using centralized normalize_text ---
-        
+        # Robust Story Set Lookup using centralized normalize_text
         app = App.get_running_app()
         evidence_by_source = app.resource_manager.get_data('evidence_by_source', {}) if app and app.resource_manager else {}
         story_sets = []
         
-        # Prepare our comparison keys (ID and Name) using centralized normalization
         target_keys = {normalize_text(evidence_id), normalize_text(evidence_data.get('name', ''))}
 
         for story_name, story_data in evidence_by_source.items():
             raw_list = story_data.get('evidence_list', [])
-            # Check if any item in the story list matches our ID or Name
             if any(normalize_text(story_item) in target_keys for story_item in raw_list):
                 story_sets.append(story_name)
-        
-        # --- PATCH END ---
 
         if story_sets:
             story_text = "\n\n[b]Story Set(s):[/b] " + ", ".join(color_text(s, 'special', self.resource_manager) for s in story_sets)
         else:
             story_text = "\n\n[i][color=aaaaaa]This evidence is not part of any known story set.[/color][/i]"
 
-        # --- Canonical: Always show character association if present ---
-        # Try evidence_data, then items.json
+        # Canonical: Always show character association if present
         character_assoc = evidence_data.get('character_connection')
         if not character_assoc:
             app = App.get_running_app()
@@ -3046,12 +3354,10 @@ class JournalScreen(BaseScreen):
             character_assoc = item_master.get('character_connection') if item_master else None
 
         if character_assoc:
-            # Use canonical color name 'special' for character association
             char_info_text = f"\n[b]Victim/Character:[/b] {color_text(character_assoc, 'special', self.resource_manager)}"
         else:
             char_info_text = ""
 
-        # Use canonical color name 'light_grey' via color_text for found date
         self.evidence_details_description.text = (
             f"[b]Description:[/b]\n{desc}\n\n"
             f"[size={int(dp(13))}sp]{color_text(f'Found: {found_date_str}', 'light_grey', self.resource_manager)}[/size]"
@@ -3075,10 +3381,9 @@ class JournalScreen(BaseScreen):
         # Update UI
         self.story_details_title.text = title
         
-        # --- FIX: Enable Markup ---
-        self.story_details_description.markup = True  # <--- Force this ON
+        # Enable Markup
+        self.story_details_description.markup = True 
         self.story_details_description.text = f"[b]Backstory:[/b]\n\n{backstory}"
-        # --------------------------
 
         # Scroll to top
         if self.story_details_scroll:
@@ -3086,6 +3391,8 @@ class JournalScreen(BaseScreen):
 
     def _get_evidence_story_info(self, evidence_id):
         """Get information about which story set this evidence belongs to."""
+        from .utils import normalize_text
+        
         app = App.get_running_app()
         if not app or not app.resource_manager:
             return None
@@ -3094,22 +3401,30 @@ class JournalScreen(BaseScreen):
         if not evidence_by_source:
             return None
         
+        # Normalize the incoming evidence ID
+        target_norm = normalize_text(evidence_id)
+        
         for story_name, story_data in evidence_by_source.items():
-            if evidence_id in story_data.get('evidence_list', []):
-                # Count how many pieces from this story we have
-                story_evidence_ids = set(story_data['evidence_list'])
-                collected_ids = set(self.achievements_system.evidence_collection.keys()) if self.achievements_system else set()
-                collected_from_story = story_evidence_ids.intersection(collected_ids)
+            # Extract and normalize the master list of evidence for this story
+            raw_story_list = story_data.get('evidence_list', [])
+            norm_story_list = [normalize_text(i) for i in raw_story_list]
+            
+            if target_norm in norm_story_list:
+                # Grab the player's collected items and normalize them
+                collected_keys = self.achievements_system.evidence_collection.keys() if self.achievements_system else []
+                norm_collected = set(normalize_text(k) for k in collected_keys)
+                
+                # Perform an apples-to-apples intersection
+                collected_from_story = set(norm_story_list).intersection(norm_collected)
                 
                 return {
                     'story_name': story_name,
                     'collected_count': len(collected_from_story),
-                    'total_count': len(story_evidence_ids),
+                    'total_count': len(norm_story_list),
                     'is_complete': story_name in (self.achievements_system.unlocked_stories if self.achievements_system else set())
                 }
         
         return None
-    
 class LoadGameScreen(BaseScreen):
     slots_layout = ObjectProperty(None)
     status_label = ObjectProperty(None)
@@ -3403,310 +3718,1037 @@ class InterLevelScreen(BaseScreen):
 
         game_logic = app.game_logic
         rm = self.resource_manager
-        
+
+        # --- AUDIO HOOK: Play Interlevel Music ---
+        app = App.get_running_app()
+        if hasattr(app, 'audio_manager'):
+            # Play a moody track, fallback to title theme if it's missing
+            app.audio_manager.play_music('inter_level', fallback='title_theme')
+
         # --- THE CORRECTED NARRATIVE GATE ---
         # Check for both 'level_0' and '0' and ensure it's not empty
         if prev_id_norm in ("level_0", "0"):
             self.title_label.text = "THE SURVIVORS"
-            self.narrative_label.text = self._build_post_premonition_intro(game_logic, rm)
+            # --- THE FIX: Respect GameLogic's custom narrative payload! ---
+            level_data = getattr(app, 'level_complete_data', {})
+            payload_narrative = level_data.get('narrative', '').strip()
+            
+            # If GameLogic sent a custom, highly-detailed narrative (like the Visionary intro), USE IT!
+            # Otherwise, fall back to the UI's dynamic component builder.
+            if payload_narrative and payload_narrative != "You survived this area. Keep moving.":
+                self.narrative_label.text = payload_narrative
+            else:
+                self.narrative_label.text = self._build_post_premonition_intro(game_logic, rm)
+            # --------------------------------------------------------------
         else:
             # Fallback to midgame intro
             self.title_label.text = "THE DESIGN CONTINUES"
             self.narrative_label.text = self._build_midgame_intro(
                 game_logic, rm, self.next_level_id, self.previous_level_id
             )
-    def _build_post_premonition_intro(self, game_logic, rm) -> str:
+
+    def _intro_read_state(self, game_logic, rm):
         """
-        Build the Level 1 intro text using actual game state from
-        the premonition level. Branches entirely if there are no survivors.
+        Extract every piece of state needed by both intro builders into one dict.
+        Call once at the top of each public builder and pass the result down.
         """
+        import random as _random
         from .utils import color_text
-        
-        details = game_logic.player.get('intro_disaster', {})
-        city = game_logic.player.get('current_city', 'McKinley')
-        hospital = game_logic.player.get('current_hospital', 'the hospital')
-        char_class = game_logic.player.get('character_class', 'Survivor')
-        visionary_name = game_logic.player.get('premonition_visionary', 'a stranger')
-        
-        disaster_name = details.get('name', details.get('event_description', 'the disaster'))
+    
+        p     = game_logic.player
+        flags = p.get('flags', {}) if isinstance(p.get('flags'), dict) else {}
+        interaction_flags = getattr(game_logic, 'interaction_flags', set())
+    
+        details      = p.get('intro_disaster', {})
+        city         = p.get('current_city', 'McKinley')
+        hospital     = p.get('current_hospital', 'the hospital')
+        char_class   = p.get('character_class', 'Survivor')
+        vis_name     = p.get('premonition_visionary', 'a stranger')
+        disaster_name = (details.get('name') or
+                        details.get('event_description', 'the disaster'))
         killed_count = details.get('killed_count', 'dozens')
-        
-        survivors = game_logic.player.get('premonition_survivors', [])
-        
-        # --- BRANCH 1: THE SOLE SURVIVOR (False Security) ---
-        if not survivors:
-            intro = (
-                "It's been about a week since " + color_text(disaster_name, 'special', rm) + " killed " + color_text(killed_count, 'warning', rm) + ". "
-                "The news called it a freak tragedy. Not wrong. You called it a miracle that you walked away with just a minor concussion.\n\n"
-                "You are still a little weirded out about " + color_text(visionary_name, 'special', rm) + " and their crashing out right before everyone died, but that problem died with them so you try not to think about it too much. " +
-                color_text("You're alive and well!", 'success', rm) + " Life is finally starting to feel normal again. You just got that promotion at work, you finally met a quality guy.. " + color_text("Dying didn't really fit into your 5-year plan, you know?", 'furniture', rm) + "\n\nYou've just arrived at " + color_text(hospital, 'location', rm) + " "
-                "for a routine follow-up scan in the " + color_text("Radiology department", 'special', rm) + ", just to be safe, and then you can go home.\n\n"
-                "Whatever you escaped from in " + color_text(city, 'location', rm) + "... " + color_text("You're glad it's in the past!", 'success', rm) + "\n\n"
-                "Commands: type " + color_text("help", 'special', rm) + " to see everything you can do.\n"
-                "Find keys, examine clues, and " + color_text("have an awesome life!", 'warning', rm) + "\n\n"
-            )
-            return intro
-
-        # --- Process Off-Screen Casualties First ---
-        offscreen_casualties = game_logic.player.get('offscreen_casualties', [])
-        
-        # Calculate everyone who made it out of Level 0 (Active Survivors + Culled Survivors)
+    
+        survivors  = p.get('premonition_survivors', [])
+        offscreen  = p.get('offscreen_casualties', [])
+        witnessed  = p.get('witnessed_deaths', [])
+    
         initial_survivors = list(survivors)
-        for c in offscreen_casualties:
-            if c['name'] not in initial_survivors:
-                initial_survivors.append(c['name'])
+        for c in offscreen:
+            # --- THE FIX: Safely skip strings and use .get() ---
+            if not isinstance(c, dict):
+                continue
+            
+            c_name = c.get('name')
+            if c_name and c_name not in initial_survivors:
+                initial_survivors.append(c_name)
+            # ---------------------------------------------------
+    
+        vis_survived   = vis_name in initial_survivors
+        vis_antagonist = flags.get('visionary_antagonist', False)
+        vis_distrusted = flags.get('visionary_distrusted', False)
+    
+        INVESTIGATIVE = ('Detective', 'Journalist', 'Reporter', 'Private Investigator')
+        MEDICAL       = ('Medic', 'Nurse', 'Doctor', 'Paramedic', 'EMT')
+        SUPERNATURAL  = ('Medium', 'Visionary', 'Psychic')
+        char_tone = ('investigative' if char_class in INVESTIGATIVE else
+                    'medical'        if char_class in MEDICAL       else
+                    'supernatural'  if char_class in SUPERNATURAL  else
+                    'civilian')
+    
+        roster    = p.get('npc_status', {})
+        alive_npcs = [n.title() for n, s in roster.items()
+                    if s in ('alive', 'injured') and n.lower() != 'player']
+        dead_npcs  = [n.title() for n, s in roster.items()
+                    if s in ('dead', 'deceased') and n.lower() != 'player']
+    
+        level_reqs  = rm.get_data('level_requirements', {})
+        npc_wp      = p.get('npc_workplaces', {})
+    
+        knows_cycle = (flags.get('knows_death_cycle') or
+                    'knows_death_cycle' in interaction_flags or
+                    'bludworths_final_notes' in [
+                        i.get('id', i) if isinstance(i, dict) else i
+                        for i in p.get('inventory', [])
+                    ])
+    
+        vis_rel = ('antagonist' if flags.get('visionary_antagonist')    else
+                'reconciled' if flags.get('visionary_trusts_player') else
+                'distrusted' if flags.get('visionary_distrusted')    else
+                'allied')
+    
+        disaster_str = disaster_name.replace('{city_name}', city)
+    
+        return {
+            'p':                  p,
+            'flags':              flags,
+            'interaction_flags':  interaction_flags,
+            'details':            details,
+            'city':               city,
+            'hospital':           hospital,
+            'char_class':         char_class,
+            'char_tone':          char_tone,
+            'vis_name':           vis_name,
+            'vis_rel':            vis_rel,
+            'vis_survived':       vis_survived,
+            'vis_antagonist':     vis_antagonist,
+            'vis_distrusted':     vis_distrusted,
+            'vis_dead_l0':        not vis_survived,
+            'disaster_name':      disaster_name,
+            'disaster_str':       disaster_str,
+            'killed_count':       killed_count,
+            'survivors':          survivors,
+            'offscreen':          offscreen,
+            'witnessed':          witnessed,
+            'initial_survivors':  initial_survivors,
+            'survivor_count':     len(initial_survivors),
+            'roster':             roster,
+            'alive_npcs':         alive_npcs,
+            'dead_npcs':          dead_npcs,
+            'npc_wp':             npc_wp,
+            'level_reqs':         level_reqs,
+            'current_act':        p.get('current_act', 'act_1_survival'),
+            'companion_id':       p.get('companion_id', ''),
+            'police_status':      p.get('police_status'),
+            'is_fugitive':        p.get('is_fugitive', False),
+            'global_dread':       float(p.get('global_dread', 0)),
+            'covered_blood':      (p.get('status_effects', {}).get('covered_in_blood', False)
+                                if isinstance(p.get('status_effects'), dict) else False),
+            'saved_npcs':         p.get('death_design_skipped', []),
+            'loops':              p.get('death_design_loops_completed', 0),
+            'vis_saves_seen':     p.get('visionary_saves_witnessed', 0),
+            'knows_cycle':        knows_cycle,
+            'knows_resurr':       flags.get('knows_resurrection', False),
+            'knows_blood':        flags.get('knows_blood_pact', False),
+            'visited':            p.get('visited_levels', set()),
+            'rm':                 rm,
+            '_random':            _random,
+        }
+    
+    
+    def _intro_helpers(self, s):
+        """
+        Return (c, pick, fmt_names) closures pre-bound to this state dict.
+    
+        c(text, style)       → color_text wrapper
+        pick(*variants)      → random choice, skips empty and [PLACEHOLDER] strings
+        fmt_names(names)     → Oxford-comma colored NPC name list
+        """
+        import random as _random
+        from .utils import color_text
+        rm = s['rm']
+    
+        def c(text, style):
+            return color_text(str(text), style, rm)
+    
+        def pick(*variants):
+            valid = [v for v in variants if v and '[PLACEHOLDER]' not in str(v)]
+            return _random.choice(valid) if valid else (variants[0] if variants else '')
+    
+        def fmt_names(names):
+            if not names:
+                return ''
+            if len(names) == 1:
+                return c(names[0], 'npc')
+            if len(names) == 2:
+                return f"{c(names[0], 'npc')} and {c(names[1], 'npc')}"
+            return ', '.join(c(n, 'npc') for n in names[:-1]) + f", and {c(names[-1], 'npc')}"
+    
+        return c, pick, fmt_names
+    
+    
+    # ─────────────────────────────────────────────────────────────────────────────
+    # PUBLIC BUILDER — post-premonition (after level_0)
+    # ─────────────────────────────────────────────────────────────────────────────
+    
+    def _build_post_premonition_intro(self, game_logic, rm) -> str:
+        s               = self._intro_read_state(game_logic, rm)
+        c, pick, fmt    = self._intro_helpers(s)
+        p               = s.get('p', {}) if isinstance(s, dict) else {}
+    
+        # Select frame
+        sc = s['survivor_count']
+        frame = ('visionary_player'     if p.get('player_is_visionary') else
+            'sole_survivor'        if sc == 0 else
+                'antagonist_survivor'  if s['vis_antagonist'] and s['vis_survived'] else
+                'antagonist_dead'      if s['vis_antagonist'] and s['vis_dead_l0']  else
+                'skeptic'              if s['vis_distrusted']                        else
+                'large_group'          if sc >= 3                                    else
+                'allied')
+    
+        # Shared blocks
+        trauma     = self._intro_block_trauma(s, c, pick)
+        escalation = self._intro_block_escalation_l0(s, c, pick)
+        char_hook  = self._intro_block_char_hook(s, c, pick)
+        closer     = self._intro_block_closer_l1(s, c, pick)
+    
+        # --- THE FIX: Add 'visionary_player' to the dictionary! ---
+        dispatch = {
+            'visionary_player':    self._intro_frame_visionary_player,
+            'sole_survivor':       self._intro_frame_sole_survivor,
+            'antagonist_survivor': self._intro_frame_antagonist_survivor,
+            'antagonist_dead':     self._intro_frame_antagonist_dead,
+            'skeptic':             self._intro_frame_skeptic,
+            'large_group':         self._intro_frame_large_group,
+            'allied':              self._intro_frame_allied,
+        }
+        # ----------------------------------------------------------
 
-        # --- BRANCH 2: THE PARANOID SURVIVORS (Hunting for Answers) ---
-        if len(initial_survivors) == 0:
-            survivor_text = "You didn't get anyone else out with you."
+        parts = dispatch[frame](s, c, pick, fmt, trauma, escalation, char_hook, closer)
+        return "\n\n".join(p for p in parts if p)
+    
+    
+    # ─────────────────────────────────────────────────────────────────────────────
+    # POST-PREMONITION FRAMES
+    # ─────────────────────────────────────────────────────────────────────────────
+    
+    def _intro_frame_visionary_player(self, s, c, pick, fmt, trauma, escalation,
+                                    char_hook, closer):
+        """
+        Post-premonition intro frame for Visionary class.
+        Player WAS the visionary — inverted perspective throughout.
+        """
+        disaster_str   = c(s['disaster_str'], 'special')
+        killed_str     = c(str(s['killed_count']), 'warning')
+        city_str       = c(s['city'], 'location')
+        survivor_names = fmt(s['initial_survivors'])
+        sc             = s['survivor_count']
+    
+        opening = pick(
+            f"Three days since {disaster_str}. {killed_str} dead in {city_str}. "
+            f"And you're the one who knew it was coming.",
+            f"It's been seventy-two hours since you watched everything you "
+            f"predicted happen exactly the way you said it would.",
+            f"Three days. You've been right about everything. "
+            f"That has not made anything better.",
+        )
+    
+        if sc == 0:
+            save_block = pick(
+                "Nobody listened. You got out alone. "
+                "You keep telling yourself you tried hard enough.",
+                f"You warned them all. None of them believed you. "
+                f"The ones who didn't follow you out are dead.",
+            )
+        elif sc == 1:
+            save_block = pick(
+                f"One person followed you. {survivor_names} is still alive "
+                f"because they looked at you and decided to take the risk of believing someone "
+                f"who sounded completely unhinged.",
+                f"{survivor_names} ran when you ran. "
+                f"You don't know if it was trust or panic. You're choosing not to ask.",
+            )
         else:
-            # Format the list with correct grammar (Oxford comma style)
-            if len(initial_survivors) == 1:
-                formatted_names = initial_survivors[0]
-            elif len(initial_survivors) == 2:
-                formatted_names = f"{initial_survivors[0]} and {initial_survivors[1]}"
-            else:
-                formatted_names = ", ".join(initial_survivors[:-1]) + f", and {initial_survivors[-1]}"
+            save_block = pick(
+                f"{c(str(sc), 'special')} people followed you. {survivor_names}. "
+                f"They thought you were losing your mind. "
+                f"They followed you anyway. "
+                f"That's the only kind of faith that matters.",
+                f"You got {survivor_names} out. {c(str(sc), 'special')} people "
+                f"who would have died if you hadn't been standing there, "
+                f"certain about the wrong thing at exactly the right moment.",
+            )
+    
+        inversion_block = pick(
+            f"The hard part isn't that you were right. "
+            f"The hard part is that being right didn't feel like enough. "
+            f"It doesn't feel like enough now.",
+            f"You've spent three days waiting for someone to thank you. "
+            f"Nobody has. They're still too busy processing. "
+            f"You understand. You're still processing too.",
+            f"Everyone wants to know how you knew. "
+            f"You don't have an answer they'd accept, so you've stopped trying.",
+        )
+    
+        return [opening, save_block, inversion_block, trauma, escalation, char_hook, closer]
 
-            survivor_text = (
-                f"{len(initial_survivors)} "
-                f"{'person' if len(initial_survivors) == 1 else 'people'} either left with you or because {visionary_name} freaked them out enough: "
-                f"{color_text(formatted_names, 'npc', rm)}."
+    def _intro_frame_sole_survivor(self, s, c, pick, fmt, trauma, escalation, char_hook, closer):
+        vis_str      = c(s['vis_name'], 'npc')
+        disaster_str = c(s['disaster_str'], 'special')
+        killed_str   = c(str(s['killed_count']), 'warning')
+        city_str     = c(s['city'], 'location')
+    
+        opening = pick(
+            f"It's been about a week since {disaster_str} killed {killed_str}.",
+            f"A week. That's how long it's been since {killed_str} people died in {city_str}.",
+            f"The news stopped covering {disaster_str} after three days. The internet moved on.",
+        )
+        middle = pick(
+            f"You are still a little weirded out by {vis_str} and their breakdown right before it happened, "
+            f"but that problem died with them, so you try not to think about it. "
+            + c("You're alive and well!", "success") +
+            " Life is finally starting to feel normal again.",
+            f"You were the only one to walk away. The police called it miraculous. "
+            f"You called it a fluke. {vis_str} would have called it something else, but {vis_str} is dead.",
+        )
+        return [opening, middle, char_hook, closer]
+    
+    
+    def _intro_frame_antagonist_survivor(self, s, c, pick, fmt, trauma, escalation, char_hook, closer):
+        vis_str      = c(s['vis_name'], 'npc')
+        disaster_str = c(s['disaster_str'], 'special')
+        killed_str   = c(str(s['killed_count']), 'warning')
+        city_str     = c(s['city'], 'location')
+        
+        # --- THE FIX: Filter the visionary out of the "dragged" list ---
+        other_survivors = [n for n in s['initial_survivors'] if n.lower() != s['vis_name'].lower()]
+        other_names_str = fmt(other_survivors)
+        
+        if other_survivors:
+            drag_text = f"They shoved past you, and dragged {other_names_str} out of the kill zone with them."
+            save_text = f"{vis_str} didn't listen to you about staying put, and it saved {other_names_str}."
+        else:
+            drag_text = "They shoved past you and ran out of the kill zone."
+            save_text = f"{vis_str} didn't listen to you about staying put, and it saved their own life."
+        # ---------------------------------------------------------------
+        
+        opening = pick(
+            f"Three days since {disaster_str}. {killed_str} dead. And {vis_str} was right.",
+            f"You told {vis_str} they were having a panic attack. {killed_str} people proved you wrong.",
+            "It's been " + c("three very long days", "warning") + f" since {disaster_str} in {city_str}.",
+        )
+        
+        vis_block = pick(
+            f"You tried to stop them. You said they were crazy. {drag_text}\n\n"
+            f"{vis_str} remembers you trying to stop them. " + c("They are not going to be happy to see you.", "warning"),
+            
+            f"{save_text} There is no version of the next conversation that doesn't start with them being right "
+            f"and you being wrong. " + c("They know it. You know it.", "warning"),
+        )
+        
+        return [opening, vis_block, trauma, escalation, char_hook, closer]
+    
+    def _intro_frame_antagonist_dead(self, s, c, pick, fmt, trauma, escalation, char_hook, closer):
+        vis_str        = c(s['vis_name'], 'npc')
+        disaster_str   = c(s['disaster_str'], 'special')
+        killed_str     = c(str(s['killed_count']), 'warning')
+        survivor_names = fmt(s['initial_survivors'])
+    
+        opening = pick(
+            f"Three days since {disaster_str}. {killed_str} dead, including {vis_str}.",
+            f"You argued with {vis_str}. You told them to calm down. They didn't. And then they died anyway.",
+        )
+        vis_block = pick(
+            f"The thing you can't stop thinking about is that you almost stopped them. "
+            f"Almost talked them back into the disaster zone. "
+            f"If you had been more persuasive, {survivor_names} might have died with them. "
+            + c("The math doesn't sit right.", "warning"),
+        )
+        return [opening, vis_block, trauma, escalation, char_hook, closer]
+    
+    
+    def _intro_frame_skeptic(self, s, c, pick, fmt, trauma, escalation, char_hook, closer):
+        vis_str        = c(s['vis_name'], 'npc')
+        disaster_str   = c(s['disaster_str'], 'special')
+        survivor_names = fmt(s['initial_survivors'])
+    
+        opening = pick(
+            f"Three days. You've been telling yourself the same story for three days.",
+            f"It's been {c('seventy-two hours', 'special')} since {disaster_str}.",
+            f"You keep telling people you don't know why you ran. That's not entirely true.",
+        )
+        vis_block = pick(
+            f"You told {vis_str} it was a panic attack. Then you followed them anyway, along with "
+            f"{survivor_names}. Now they know they were right, and you both have to live with the fact "
+            f"that you almost got everyone killed by trying to be the voice of reason.",
+            f"You didn't believe {vis_str}. You followed them anyway because something in the back of "
+            f"your head said {c('what if', 'warning')}. Good thing it did. "
+            f"{survivor_names} are still breathing because of that instinct.",
+        )
+        return [opening, vis_block, trauma, escalation, char_hook, closer]
+    
+    
+    def _intro_frame_large_group(self, s, c, pick, fmt, trauma, escalation, char_hook, closer):
+        vis_str        = c(s['vis_name'], 'npc')
+        disaster_str   = c(s['disaster_str'], 'special')
+        killed_str     = c(str(s['killed_count']), 'warning')
+        city_str       = c(s['city'], 'location')
+        survivor_names = fmt(s['initial_survivors'])
+        n_str          = c(str(s['survivor_count']), 'special')
+    
+        opening = pick(
+            f"Three days since {disaster_str}. {killed_str} dead in {city_str}.",
+            f"The group text has been going off nonstop for three days.",
+        )
+        vis_block = pick(
+            f"You listened to {vis_str}. Because you did, {n_str} people are still here: "
+            f"{survivor_names}. But a group that size means {n_str} different people dealing "
+            f"with this in {n_str} different ways.",
+            f"You got {survivor_names} out. That's {n_str} people who owe you something — "
+            f"or who you owe something to, depending on how you look at it. "
+            f"The next few days will tell which it is.",
+        )
+        group_dynamic = pick(
+            f"Some of them are calling. Some of them have gone completely silent. "
+            f"The silence is the one you worry about.",
+            f"They're not all coping the same way. At least one of them has stopped returning calls.",
+        )
+        return [opening, vis_block, group_dynamic, trauma, escalation, char_hook, closer]
+    
+    
+    def _intro_frame_allied(self, s, c, pick, fmt, trauma, escalation, char_hook, closer):
+        vis_str        = c(s['vis_name'], 'npc')
+        disaster_str   = c(s['disaster_str'], 'special')
+        killed_str     = c(str(s['killed_count']), 'warning')
+        city_str       = c(s['city'], 'location')
+        survivor_names = fmt(s['initial_survivors'])
+    
+        opening = pick(
+            f"Three days since {disaster_str}. {killed_str} dead in {city_str}.",
+            f"It has been {c('seventy-two hours', 'special')} since {disaster_str} in {city_str}.",
+            f"The news stopped talking about {disaster_str} by day two. You haven't.",
+        )
+
+        # --- THE FIX: Grammatical branching based on the number of survivors ---
+        if s['survivor_count'] == 1:
+            # Only the Visionary survived with the Player
+            vis_block = pick(
+                f"You listened to {vis_str}. You didn't have to. Because you did, the two of you "
+                f"are still breathing. But the fact that they knew it was coming — "
+                f"that defies everything you believe about how the world works.",
+                
+                f"You believed {vis_str} when almost no one else did. You both made it out "
+                f"because of that. You don't know how to feel about being the one person who believed "
+                f"the unbelievable."
+            )
+        else:
+            # The Visionary AND others survived with the Player
+            vis_block = pick(
+                f"You listened to {vis_str}. You didn't have to. Because you did, {survivor_names} "
+                f"are still breathing. But the fact that they knew it was coming — "
+                f"that defies everything you believe about how the world works.",
+                
+                f"You believed {vis_str} when almost no one else did. {survivor_names} made it out "
+                f"because of that. You don't know how to feel about being one of the people who believed "
+                f"the unbelievable (other than not dead)."
+            )
+        # -----------------------------------------------------------------------
+
+        return [opening, vis_block, trauma, escalation, char_hook, closer]
+    
+    
+    # ─────────────────────────────────────────────────────────────────────────────
+    # SHARED BLOCK BUILDERS  (post-premonition)
+    # ─────────────────────────────────────────────────────────────────────────────
+    
+    def _intro_block_trauma(self, s, c, pick):
+        """Witnessed-deaths block for post-premonition frames."""
+        witnessed = s['witnessed']
+        if not witnessed:
+            return pick(
+                "You got out clean. No witnessed deaths. That's either luck or the design "
+                "is saving you for something worse.",
+                "You didn't watch anyone die. You're not sure if that makes this easier or harder.",
+                "",
+            )
+        wd = [c(d, 'warning') for d in witnessed]
+        if len(wd) == 1:
+            return pick(
+                f"You still see it when you close your eyes. {wd[0]}.",
+                f"The thing you can't shake is {wd[0]}. It replays on a loop.",
+                f"You couldn't save everyone. You watched {wd[0]} and there was nothing you could do.",
+            )
+        return pick(
+            f"You couldn't save everyone. You watched {wd[0]}, and saw {wd[1]}.",
+            f"The images won't leave you: {wd[0]}. Then {wd[1]}.",
+            f"You're going to need a long time to process {wd[0]}, and {wd[1]}.",
+        )
+    
+    
+    def _intro_block_escalation_l0(self, s, c, pick):
+        """Offscreen-deaths-since-level-0 block for post-premonition frames."""
+        raw_offscreen = s['offscreen']
+        if not raw_offscreen:
+            return pick(
+                "For now, everyone who made it out is still breathing. "
+                "The other shoe hasn't dropped yet.",
+                f"No one else has died. {c('Yet.', 'warning')}",
             )
 
-        # --- Inject Witnessed Deaths (Failed Interactions) ---
-        witnessed_deaths = game_logic.player.get('witnessed_deaths', [])
-        witnessed_text = ""
-        
-        if witnessed_deaths:
-            # Wrap every death description in the bright red 'warning' color!
-            wd = [color_text(death, 'warning', rm) for death in witnessed_deaths]
-            
-            if len(wd) == 1:
-                witnessed_text = f"\n\nBut you couldn't save everyone you saw or tried to warn. You watched {wd[0]}."
-            elif len(wd) == 2:
-                witnessed_text = f"\n\nBut you couldn't save everyone you saw or tried to warn. You watched {wd[0]}, and saw {wd[1]}."
-            else:
-                witnessed_text = f"\n\nBut you couldn't save everyone you saw or tried to warn. You watched {wd[0]}, saw {wd[1]}, and could do nothing about {wd[2]}."
+        # --- THE FIX: Normalize mixed lists of strings and dicts so ['name'] lookups never crash! ---
+        offscreen = []
+        for item in raw_offscreen:
+            if isinstance(item, str):
+                offscreen.append({'name': item, 'fate': 'a sudden, inexplicable accident'})
+            elif isinstance(item, dict):
+                offscreen.append({
+                    'name': item.get('name', 'Someone'), 
+                    'fate': item.get('fate', 'a sudden, inexplicable accident')
+                })
 
-        # Add it directly to the end of the survivor text
-        survivor_text += witnessed_text
+        if not offscreen:
+            return ""
+        # --------------------------------------------------------------------------------------------
 
-        # --- Resolve the Post-Disaster Deaths Narrative ---
-        if offscreen_casualties:
-            if len(offscreen_casualties) == 1:
-                c = offscreen_casualties[0]
-                post_deaths = (
-                    "But since the disaster, " + color_text("things have gotten worse.", "warning", rm) + " " +
-                    color_text(c['name'], "npc", rm) + " died yesterday after " + color_text(c['fate'], "warning", rm) + ". "
-                    "The police called it a freak accident. You're not so sure."
-                )
-            else:
-                c1 = offscreen_casualties[0]
-                c2 = offscreen_casualties[1]
-                post_deaths = (
-                    "But since the disaster, " + color_text("things have gotten worse.", "warning", rm) + " " +
-                    color_text(c1['name'], "npc", rm) + " died yesterday after " + color_text(c1['fate'], "warning", rm) + ". "
-                    "Then, just hours ago, you got a call from " + color_text(visionary_name, "npc", rm) + " about how " + color_text(c2['name'], "npc", rm) + " died after " + color_text(c2['fate'], "warning", rm) + ". "
-                    "The police are calling them freak accidents. " + color_text("At this point you're not so sure.", "warning", rm)
-                )
-        else:
-            if len(survivors) == 0:
-                post_deaths = (
-                    "You are the only one left breathing. "
-                    "But you can't shake the feeling that your own time is still coming."
-                )
-            elif len(survivors) == 1:
-                post_deaths = (
-                    color_text(survivors[0], "npc", rm) + ", the only person who survived with you, is still breathing. "
-                    "But you can't shake the feeling that " + color_text("something bad is going to happen.", "warning", rm)
-                )
-            else:
-                post_deaths = (
-                   color_text("Everyone who survived with you", "npc", rm) + " is still breathing. "
-                   "But you can't shake the feeling that " + color_text("something bad is going to happen.", "warning", rm)
-                )
-
-        intro = (
-            "It's been three days since " + color_text(disaster_name, "special", rm) + " in " + color_text(city, "location", rm) + ".\n\n" +
-            color_text(str(killed_count), "warning", rm) + " people didn't make it.\n\n" +
-            survivor_text + "\n\n" +
-            "The news calls it a tragedy. " + color_text("An act of God.", "npc", rm) + " "
-            "But you were there. You know " + color_text(visionary_name, "npc", rm) + " saw it coming. ..and you don't really know how to reconcile that with everything you believe in.\n\n" +
-            post_deaths + "\n\n" +
-            "You came to " + color_text(hospital, "location", rm) + " for some routine scans after a possible concussion at the disaster site. "
-            "The weird thing is you feel like it's where you need to be, but " + color_text("you can't say if that's good or bad", "location", rm) + ".\n\n" +
-            "The " + color_text(char_class, "special", rm) + " in you is saying you're running out of time to figure out which it is.\n\n" +
-            "Until you figure that out, however, make your way to " + color_text("Radiology", "special", rm) + " for those scans in the MRI suite. \n" +
-            color_text("You just be careful, now.", "warning", rm)
+        c1       = offscreen[0]
+        esc_base = pick(
+            f"But since the disaster, {c('things have gotten worse.', 'warning')} "
+            f"{c(c1['name'], 'npc')} died yesterday after {c(c1['fate'], 'warning')}.",
+            f"And then, because the universe has no mercy, "
+            f"{c(c1['name'], 'npc')} was killed after {c(c1['fate'], 'warning')}.",
+            f"You tried to feel safe. Then you heard about "
+            f"{c(c1['name'], 'npc')}: {c(c1['fate'], 'warning')}.",
         )
-        return intro
+        if len(offscreen) > 1:
+            c2 = offscreen[1]
+            return esc_base + pick(
+                f" Then, hours later, {c(c2['name'], 'npc')} was killed after "
+                f"{c(c2['fate'], 'warning')}.",
+                f" {c(c2['name'], 'npc')} followed within hours. {c(c2['fate'], 'warning')}.",
+            )
+        return esc_base + pick(
+            f" The police are calling it a freak accident. {c('You know better.', 'warning')}",
+            " The official report says 'natural causes'. You know what you know.",
+        )
+    
 
+    def _intro_block_char_hook(self, s, c, pick):
+        """Character-class flavour line."""
+        char_str  = c(s['char_class'], 'special')
+        char_tone = s['char_tone']
+        if char_tone == 'investigative':
+            return pick(
+                f"As a {char_str}, you've covered disasters before. You've never been inside one.",
+                f"You've built a career on finding the story others miss. This one might kill you.",
+                f"A {char_str}'s instinct: there's a pattern here. You just haven't found the thread yet.",
+            )
+        if char_tone == 'medical':
+            return pick(
+                f"Your {char_str} training keeps pushing you to stay clinical. It's not working.",
+                f"You've seen trauma. You've never been the one who needed treatment.",
+                f"As a {char_str}, you keep assessing: vitals, exits, risks. "
+                f"Muscle memory that might save your life.",
+            )
+        if char_tone == 'supernatural':
+            return pick(
+                f"You've always been more sensitive than most. What you felt during the disaster "
+                f"wasn't premonition. It was recognition.",
+                f"As a {char_str}, you don't believe in coincidence. This was designed.",
+            )
+        return pick(
+            f"You're not a detective or a prophet. You're just someone who got out.",
+            f"You have no special training for this. You have instincts and a bad feeling.",
+            f"As a {char_str}, you've learned to trust your gut. Your gut is screaming.",
+        )
+    
+    
+    def _intro_block_closer_l1(self, s, c, pick):
+        """CTA block directing the player to Radiology."""
+        hospital_str = c(s['hospital'], 'location')
+        rad_str      = c('Radiology', 'special')
+        return pick(
+            f"You're at {hospital_str} for a routine concussion follow-up. "
+            f"Get to {rad_str}. Keep your eyes open.",
+            f"Your appointment in {rad_str} is the excuse you're using to be here. "
+            f"The real reason is answers.",
+            f"{hospital_str}. {rad_str}. You made an appointment for some scans to make sure "
+            f"you're okay. That's the next step.\nAfter that, you improvise.",
+            f"[color=aaaaaa]Tip: use [color=ffffff]examine[/color] and "
+            f"[color=ffffff]search[/color] to interact with objects and furniture.[/color]"
+        )
+    
+    
+    # ─────────────────────────────────────────────────────────────────────────────
+    # PUBLIC BUILDER — midgame (levels 2 through finale)
+    # ─────────────────────────────────────────────────────────────────────────────
+    
     def _build_midgame_intro(self, game_logic, rm, next_level_id, prev_level_id=None) -> str:
-        """
-        Builds the escalating narrative for levels 2 through the finale.
-        Patched: Prioritizes disaster 'name' over 'event_description' and 
-        includes unique 'previously on' context.
-        """
-        from .utils import color_text
-        p = game_logic.player
-
-        # 1. Resolve level names and config
-        level_reqs    = rm.get_data('level_requirements', {})
-        next_cfg      = level_reqs.get(str(next_level_id), {})
-        prev_cfg      = level_reqs.get(str(prev_level_id), {}) if prev_level_id else {}
-
+        s            = self._intro_read_state(game_logic, rm)
+        c, pick, fmt = self._intro_helpers(s)
+    
+        # Destination type flags — computed once, passed to every section
+        nli = str(next_level_id).lower()
+        dest = {
+            'is_hub':       'hub'     in nli,
+            'is_finale':    'finale'  in nli,
+            'is_funnel':    'funnel'  in nli,
+            'is_bludworth': 'house'   in nli or nli == 'level_house',
+            'is_police':    'police'  in nli,
+        }
+        dest['is_workplace'] = not any(dest.values())
+    
+        next_cfg        = s['level_reqs'].get(str(next_level_id), {})
+        prev_cfg        = s['level_reqs'].get(str(prev_level_id), {}) if prev_level_id else {}
         level_name      = next_cfg.get('name', 'your next destination')
         prev_level_name = prev_cfg.get('name', 'there')
         base_intro      = next_cfg.get('intro_text', '')
-
-        # 2. Extract active Game State
-        roster      = p.get('npc_status', {})
-        alive_npcs  = [n.title() for n, s in roster.items()
-                       if s in ('alive', 'injured') and n != 'player']
-        offscreen   = p.get('offscreen_casualties', [])
-        visited     = p.get('visited_levels', set())
-        npc_wp      = p.get('npc_workplaces', {})
-        city        = p.get('current_city', 'the city')
-        
-        # --- THE DISASTER NAME PATCH ---
-        # Prioritize 'name', fall back to 'event_description'
-        disaster = p.get('intro_disaster', {})
-        raw_disaster = disaster.get('name') or disaster.get('event_description', 'the disaster')
-        disaster_str = raw_disaster.replace('{city_name}', city)
-        # -------------------------------
-
-        is_hub       = 'hub' in str(next_level_id).lower()
-        is_finale    = 'finale' in str(next_level_id).lower()
-        is_funnel    = 'funnel' in str(next_level_id).lower()
-        is_bludworth = 'house' in str(next_level_id).lower() or 'level_house' == str(next_level_id)
-
-        narrative_parts = []
-
-        # ── SECTION A: What just happened (The "Previously on..." opener) ──
+    
+        parts = [
+            self._intro_section_depart(s, c, pick, prev_level_id, prev_level_name, dest),
+            self._intro_section_ride(s, c, pick),
+            self._intro_section_arrive(s, c, pick, next_level_id, level_name,
+                                    base_intro, dest),
+            self._intro_section_pressure(s, c, pick, dest),
+            self._intro_section_closer(s, c, pick, dest),
+        ]
+        return "\n\n".join(p for p in parts if p)
+    
+    
+    # ─────────────────────────────────────────────────────────────────────────────
+    # MIDGAME SECTION BUILDERS
+    # ─────────────────────────────────────────────────────────────────────────────
+    
+    def _intro_section_depart(self, s, c, pick, prev_level_id, prev_level_name, dest):
+        """Section A — what just happened at the previous level."""
+        p           = s['p']
+        roster      = s['roster']
+        npc_wp      = s['npc_wp']
+        saved_npcs  = s['saved_npcs']
+        is_fugitive = s['is_fugitive']
+        pol_status  = s['police_status']
+        current_act = s['current_act']
+    
         if prev_level_id in ('level_1', 'level_hospital'):
-            narrative_parts.append(
-                f"You push through the {color_text('hospital doors', 'location', rm)}, "
-                f"the fluorescent hum fading behind you. "
-                f"Whatever answers the {color_text('hospital', 'location', rm)} held, "
-                f"you've squeezed them out. Time to move."
+            if s.get('current_act') == 'act_1_survival':
+                return pick(
+                    "You push through the " + c("hospital doors", "location") + ", the fluorescent hum "
+                    "fading behind you. You're alive. " + c("Somehow.", "warning") + " "
+                    "That machine could have killed you. Death is not waiting for a convenient moment.",
+                    
+                    "The " + c("hospital", "location") + " is behind you. The MRI room is a wreck. "
+                    "You are not going back in there."
+                )
+            else:
+                return pick(
+                    "You leave the " + c("hospital", "location") + " behind. "
+                    "Whatever answers it held, you've squeezed them out. Time to move.",
+                    
+                    "The fluorescent hum of " + c("Radiology", "location") + " fades. "
+                    "You got what you needed. Whether it's enough is a different question."
+                )
+    
+        if prev_level_id in ('level_house', 'level_bludworth') or dest['is_bludworth']:
+            if p.get('visited_bludworth'):
+                return pick(
+                    "Bludworth's house is behind you. What you found there is going to take "
+                    "a while to process.",
+                    "You leave " + c("Bludworth's", "location") + " with answers you almost wish "
+                    "you didn't have.",
+                )
+    
+        if prev_level_id == 'level_police_station':
+            if pol_status == 'fought' or is_fugitive:
+                return pick(
+                    "The " + c("precinct", "location") + " is behind you, along with at least two " +
+                    c("very unhappy officers", "warning") + ". You're not cuffed. Everything else is negotiable.",
+                    
+                    "You fought your way out. That's not a thing you can take back. " + 
+                    c("You are a fugitive now.", "warning") + " Act accordingly.",
+                )
+            return pick(
+                "The " + c("precinct", "location") + "'s lights shrink in your mirrors. "
+                "You're not cuffed. That's something. Now you decide what comes next.",
+                
+                "You walked out of the police station under your own power. "
+                "That was not guaranteed an hour ago.",
             )
-        elif prev_level_id == 'level_house' or (is_bludworth and prev_level_id):
-            narrative_parts.append(
-                f"Bludworth's house is in ruins behind you. "
-                f"You got what you came for. Now the question is whether it's enough."
-            )
-        elif prev_level_id == 'level_police_station':
-            narrative_parts.append(
-                f"The precinct's lights shrink in your mirrors. "
-                f"You're not cuffed. That's something. "
-                f"Now you have to decide what comes next."
-            )
-        elif prev_level_id and prev_level_name != 'there':
-            prev_npc_wp_name = next(
-                (wp.get('workplace_name', prev_level_name) for wp in npc_wp.values()
-                 if wp.get('level_id') == prev_level_id),
+            
+        if prev_level_id and prev_level_name != 'there':
+            prev_wp_name = next(
+                (wp.get('workplace_name', prev_level_name)
+                for wp in npc_wp.values() if wp.get('level_id') == prev_level_id),
                 prev_level_name
             )
             target_npc = next(
                 (n.title() for n, wp in npc_wp.items()
-                 if wp.get('level_id') == prev_level_id
-                 and roster.get(n, 'alive') in ('alive', 'injured')),
+                if wp.get('level_id') == prev_level_id
+                and roster.get(n.lower(), 'alive') in ('alive', 'injured')),
                 None
             )
+            dead_target = next(
+                (n.title() for n, wp in npc_wp.items()
+                if wp.get('level_id') == prev_level_id
+                and roster.get(n.lower(), 'alive') not in ('alive', 'injured')),
+                None
+            )
+            if target_npc and target_npc.lower() in [sn.lower() for sn in saved_npcs]:
+                return pick(
+                    "You leave " + c(prev_wp_name, "location") + " with " + c(target_npc, "npc") + " "
+                    "still breathing. Death had a plan. You interrupted it. " +
+                    c("That never comes for free.", "warning"),
+                    
+                    c(target_npc, "npc") + " is alive because of what you did back there. "
+                    "Hold onto that. The list is already shifting."
+                )
+                
+            if dead_target:
+                return pick(
+                    "You leave " + c(prev_wp_name, "location") + " behind. " +
+                    c(dead_target, "npc") + " didn't make it. " +
+                    c("The design collected its due.", "warning"),
+                    
+                    c(dead_target, "npc") + " is gone. " +
+                    c(prev_wp_name, "location") + " is just a place now."
+                )
+                
             if target_npc:
-                narrative_parts.append(
-                    f"You leave {color_text(prev_npc_wp_name, 'location', rm)} behind, "
-                    f"{color_text(target_npc, 'npc', rm)} still on your mind. "
-                    f"You warned them. Whether they'll listen is out of your hands now."
+                return pick(
+                    "You leave " + c(prev_wp_name, "location") + " behind, " +
+                    c(target_npc, "npc") + " still on your mind. "
+                    "You warned them. Whether they'll listen is out of your hands.",
+                    
+                    c(target_npc, "npc") + " heard you. What they do with that is up to them. "
+                    "You have to keep moving."
                 )
-            else:
-                narrative_parts.append(
-                    f"You leave {color_text(prev_npc_wp_name, 'location', rm)} in the rearview mirror. "
-                    f"Another stop on Death's itinerary, checked off."
-                )
-        else:
-            narrative_parts.append(
-                f"You leave {color_text(prev_level_name or 'the last danger', 'location', rm)} behind."
+                
+            return pick(
+                "You leave " + c(prev_wp_name, "location") + " in the rearview mirror. "
+                "Another stop on Death's itinerary, checked off.",
+                
+                c(prev_wp_name, "location") + " is done. Whatever happened there, it's behind you now."
             )
-
-        # ── SECTION B: Destination context ──
-        if is_hub:
-            visits = len([l for l in visited if l not in ('level_0', 'level_1', 'level_hub')])
-            if visits == 0:
-                narrative_parts.append(
-                    f"You're back in the car. {color_text(city, 'location', rm)} spreads out around you. "
-                    f"The memory of {color_text(disaster_str, 'special', rm)} is still fresh. "
-                    f"The list is real. The question now is who you go to first."
-                )
+    
+        return "You leave " + c(prev_level_name or "the last danger", "location") + " behind."
+    
+    def _intro_section_ride(self, s, c, pick):
+        """Section B — the moment between levels (companion, dread, loops)."""
+        parts       = []
+        companion   = s['companion_id']
+        vis_rel     = s['vis_rel']
+        vis_name    = s['vis_name']
+        is_fugitive = s['is_fugitive']
+        loops       = s['loops']
+        knows_cycle = s['knows_cycle']
+        dread       = s['global_dread']
+    
+        if companion:
+            comp = companion.title()
+            if vis_rel == 'antagonist' and companion.lower() == vis_name.lower():
+                parts.append(pick(
+                    f"{c(comp, 'npc')} is in the passenger seat and has been silent since you left. "
+                    f"The silence is doing a lot of work right now.",
+                    f"You and {c(comp, 'npc')} are not speaking. "
+                    f"That's fine. You don't need to speak. You just need them to stay.",
+                ))
+            elif vis_rel == 'reconciled' and companion.lower() == vis_name.lower():
+                parts.append(pick(
+                    f"{c(comp, 'npc')} is quiet in the passenger seat. "
+                    f"Not angry-quiet. Thinking-quiet. You've earned that.",
+                    f"A week ago {c(comp, 'npc')} wanted nothing to do with you. "
+                    f"Now they're watching the road ahead like they're counting exits. "
+                    f"That's what trust looks like in a situation like this.",
+                ))
             else:
-                narrative_parts.append(
-                    f"Back in the car. {color_text(str(visits), 'special', rm)} "
+                parts.append(pick(
+                    f"{c(comp, 'npc')} is with you. That counts for something.",
+                    f"You're not alone in the car. {c(comp, 'npc')} hasn't run yet. "
+                    f"You're choosing to treat that as a good sign.",
+                ))
+    
+        if is_fugitive:
+            parts.append(pick(
+                f"Every set of headlights in the mirror is a potential "
+                f"{c('patrol car', 'warning')}. "
+                f"You've been driving side streets since the precinct.",
+                f"You are a wanted person. That's a sentence you have to just keep saying "
+                f"until it means something practical rather than terrifying.",
+            ))
+    
+        if loops >= 1 and knows_cycle:
+            parts.append(pick(
+                "You saved them. You know that now means Death just moved them to the back "
+                "of the line. " + c("The list doesn't end. It circles.", "warning"),
+                "Bludworth's words keep coming back: "
+                + c("skip someone and it just moves to the next.", "warning")
+                + " You've run a full loop. The design is still running.",
+            ))
+        elif loops >= 1:
+            parts.append(pick(
+                f"You've been through the entire list once. "
+                f"The accidents haven't stopped. Something is wrong with your math.",
+                f"You saved everyone you could find. The city doesn't feel any safer. "
+                + c("That should bother you more than it does.", "warning"),
+            ))
+    
+        if dread >= 0.5:
+            parts.append(pick(
+                f"Your hands haven't stopped shaking since the last one.",
+                f"You keep checking the mirrors. The road. The sky. "
+                f"Every object is a weapon now. You know that.",
+                f"The near-misses are stacking up. You don't know how much margin you have left.",
+            ))
+    
+        return '\n'.join(parts)
+    
+    
+    def _intro_section_arrive(self, s, c, pick, next_level_id, level_name,
+                            base_intro, dest):
+        """Section C — destination context, act-aware."""
+        p           = s['p']
+        flags       = s['flags']
+        current_act = s['current_act']
+        visited     = s['visited']
+        city        = s['city']
+        disaster_str = s['disaster_str']
+        alive_npcs  = s['alive_npcs']
+        npc_wp      = s['npc_wp']
+        roster      = s['roster']
+        pol_status  = s['police_status']
+        is_fugitive = s['is_fugitive']
+        covered     = s['covered_blood']
+        knows_cycle = s['knows_cycle']
+    
+        if dest['is_hub']:
+            visits = len([l for l in visited
+                        if l not in ('level_0', 'level_1', 'level_hub')])
+            if covered:
+                return pick(
+                    f"You park the car. You sit there. There is blood on the steering wheel "
+                    f"and you don't want to think about how it got there. "
+                    + c("Figure out your next move.", "warning"),
+                    f"Back in the car. The city looks the same as it always does. "
+                    f"You do not look the same as you always do.",
+                )
+            if visits == 0 and current_act == 'act_1_survival':
+                return pick(
+                    f"You're back in the car. {c(city, 'location')} spreads out around you. "
+                    f"The memory of {c(disaster_str, 'special')} is still fresh. "
+                    f"The list is real. The question now is who you go to first.",
+                    f"The engine idles. {c(city, 'location')} doesn't know what's coming. "
+                    f"You do. {c('Barely.', 'warning')}",
+                )
+            if current_act == 'act_2_investigation':
+                return pick(
+                    f"Back in the car. You have the names. You still don't fully understand the rules. "
+                    + c("Bludworth's", "location") + " might change that.",
+                    f"You're between stops. The list exists. The mechanism that drives it is still "
+                    f"unclear. That needs to change before someone else dies.",
+                )
+            if current_act in ('act_3_hunted', 'act_4_the_plan'):
+                hunts_left = len([n for n in alive_npcs
+                                if not p.get(f'visited_workplace_{n.lower()}')])
+                if hunts_left > 0:
+                    return pick(
+                        f"Back in the car. {c(str(hunts_left), 'special')} "
+                        f"{'stop' if hunts_left == 1 else 'stops'} left on the list. "
+                        + c("Death keeps moving. So do you.", "warning"),
+                        f"The car again. {c(str(visits), 'special')} levels down. "
+                        f"The design hasn't stopped. Neither can you.",
+                    )
+                return pick(
+                    "The list is done. Everyone still breathing is still breathing. "
+                    "That should feel like a victory. " + c("It doesn't.", "warning"),
+                )
+            return (f"Back in the car. {c(str(visits), 'special')} "
                     f"stop{'s' if visits != 1 else ''} down. "
-                    f"Death keeps moving. So do you."
+                    f"Death keeps moving. So do you.")
+    
+        if dest['is_bludworth']:
+            return (
+                f"Bludworth's house. You've heard the name — {c('William Bludworth', 'npc')}, "
+                f"the mortician who seemed to know too much about "
+                + c("Death's design", "warning") + ". "
+                "He passed a few years back, but if anyone left behind answers, it's him.\n\n"
+                "You arrive and see construction equipment. You'd better be quiet.\n"
+                "Try the front door."
+            )
+    
+        if dest['is_police']:
+            if pol_status == 'fought' or is_fugitive:
+                return pick(
+                    "You're walking into the " + c("police station", "location") + " as a fugitive. "
+                    "Everything about this is wrong. Do it anyway.",
+                    "The " + c("precinct", "location") + ". After everything you did to avoid this. "
+                    "Here you are.",
                 )
-        elif is_bludworth:
-            narrative_parts.append(
-                f"""Bludworth's house. You've heard the name before, but it's been a few years since he passed.\n"""
-                f"""If anyone understood the rules of {color_text("Death's design", 'warning', rm)} or had a hint of who else might be able to help, it's him.\nYou can only hope there's answers at his old place.\n\n"""
-                f"""You arrive and see signs of construction equipment. You'd better be both quiet and quick about this. Try the front door."""
+            return pick(
+                "The " + c("police station", "location") + ". You're going in voluntarily. "
+                "That either makes you brave or very, very tired.",
+                "Surrendering is not the same as giving up. "
+                "That's what you're telling yourself walking into the "
+                + c("precinct", "location") + ".",
             )
-        elif is_funnel:
-            narrative_parts.append(
-                f"Everything is converging. The survivors, the list, the design — "
-                f"all of it is collapsing toward a single point. "
-                f"You can feel it in the way the city feels quieter than it should."
+    
+        if dest['is_funnel']:
+            if knows_cycle:
+                return pick(
+                    "Everything is converging. The survivors, the list, the design — "
+                    "all of it is collapsing toward a single point. "
+                    "You understand now that saving people just " + c("deferred", "warning")
+                    + " the problem. A permanent solution is the only option left.",
+                    "The design doesn't negotiate. It just reroutes. "
+                    "You've learned that the hard way. Whatever comes next has to actually "
+                    + c("break", "warning") + " something.",
+                )
+            return (
+                "Everything is converging. The survivors, the list, the design — "
+                "all of it is collapsing toward a single point. "
+                "You can feel it in the way the city feels quieter than it should."
             )
-        elif is_finale:
-            narrative_parts.append(
-                f"[b][color=ff0000]This is it. The end of the line. "
-                f"There's nowhere left to run.[/color][/b]"
+    
+        if dest['is_finale']:
+            path_lines = []
+            if flags.get('path_clinical_ready'):
+                path_lines.append(
+                    f"The {c('defibrillator', 'special')} is ready. "
+                    f"Clinical death. Controlled. Reversible — maybe.")
+            if flags.get('path_dark_ready'):
+                path_lines.append(
+                    f"You have the {c('weapon', 'warning')}. A life for a life. The oldest rule.")
+            if flags.get('path_resurrection_ready'):
+                path_lines.append(
+                    f"The {c('new life path', 'special')} is open. "
+                    f"Whether it actually works is another question.")
+            if flags.get('path_elemental_ready'):
+                path_lines.append(
+                    f"The {c('elemental method', 'special')} is ready. "
+                    f"Suffocation. The oldest death of all.")
+            path_text = ('\n'.join(path_lines) if path_lines else
+                        "You don't have a clean plan yet. " + c("You're going anyway.", "warning"))
+            return (c("[b]This is it. The end of the line.[/b]", "error")
+                    + "\n\n" + path_text + "\n\n"
+                    + "Whatever you brought with you is all you have. Make it count.")
+    
+        if dest['is_workplace'] and base_intro:
+            return base_intro
+    
+        if dest['is_workplace']:
+            target_npc = next(
+                (n.title() for n, wp in npc_wp.items()
+                if wp.get('level_id') == next_level_id
+                and roster.get(n.lower(), 'alive') in ('alive', 'injured')),
+                None
             )
-        elif base_intro:
-            narrative_parts.append(base_intro)
-
-        # ── SECTION C: Recent offscreen death ──
-        shown_offscreen_idx = p.get('_interlevel_shown_offscreen_idx', 0)
-        if offscreen and shown_offscreen_idx < len(offscreen):
-            recent = offscreen[shown_offscreen_idx]
-            narrative_parts.append(
+            wp_name = next(
+                (wp.get('workplace_name', level_name)
+                for wp in npc_wp.values() if wp.get('level_id') == next_level_id),
+                level_name
+            )
+            if target_npc:
+                return pick(
+                    f"You're heading to {c(wp_name, 'location')}. "
+                    f"{c(target_npc, 'npc')} is there. "
+                    f"You have to reach them before Death does.",
+                    f"{c(target_npc, 'npc')}. {c(wp_name, 'location')}. "
+                    f"Get there. Warn them. Hope they listen.",
+                )
+            return (f"You're heading to {c(level_name, 'location')}. "
+                    f"The design has a plan for this place. So do you.")
+    
+        return ''
+    
+    
+    def _intro_section_pressure(self, s, c, pick, dest):
+        """Section D — offscreen death reveal + survivor tally."""
+        p          = s['p']
+        offscreen  = s['offscreen']
+        alive_npcs = s['alive_npcs']
+    
+        shown_idx = p.get('_interlevel_shown_offscreen_idx', 0)
+        death_line = ''
+        if offscreen and shown_idx < len(offscreen):
+            recent = offscreen[shown_idx]
+            death_line = pick(
                 f"But the relief is shattered by a grim reality check. "
-                f"You get word that {color_text(recent['name'], 'npc', rm)} is dead. "
-                f"They were killed after {color_text(recent['fate'], 'warning', rm)}.\n\n"
+                f"You get word that {c(recent['name'], 'npc')} is dead — "
+                f"{c(recent['fate'], 'warning')}.\n\n"
                 f"The news is calling it a freak accident. "
-                f"You know better. Death is just tying up loose ends."
+                + c("You know better.", "warning") + " Death is tying up loose ends.",
+                f"{c(recent['name'], 'npc')} didn't make it. "
+                f"{c(recent['fate'], 'warning')}. Police are calling it accidental. "
+                f"They always do. The design never looks like murder.",
             )
-            p['_interlevel_shown_offscreen_idx'] = shown_offscreen_idx + 1
-
-        # ── SECTION D: Survivor tally ──
+            p['_interlevel_shown_offscreen_idx'] = shown_idx + 1
+    
+        if dest['is_finale']:
+            return death_line  # No tally line before the finale
+    
         n = len(alive_npcs)
         if n == 0:
-            narrative_parts.append(
-                f"There is {color_text('no one left', 'error', rm)} to warn. "
-                f"You are the sole survivor. The design has isolated you completely."
-            )
+            tally = (f"There is {c('no one left', 'error')} to warn. "
+                    f"You are the sole survivor. The design has isolated you completely.")
         elif n == 1:
-            narrative_parts.append(
-                f"Only you and {color_text(alive_npcs[0], 'npc', rm)} remain. "
-                f"The circle is closing fast."
+            tally = pick(
+                f"Only you and {c(alive_npcs[0], 'npc')} remain. The circle is closing fast.",
+                f"{c(alive_npcs[0], 'npc')} is still alive. For now. "
+                f"That's the only good news you have.",
             )
         else:
-            names = ", ".join(alive_npcs[:-1]) + f", and {alive_npcs[-1]}"
-            narrative_parts.append(
-                f"There are {color_text(str(n), 'special', rm)} other survivors still out there: "
-                f"{color_text(names, 'npc', rm)}. But for how much longer?"
+            name_str = (', '.join(c(n, 'npc') for n in alive_npcs[:-1])
+                        + f", and {c(alive_npcs[-1], 'npc')}")
+            tally = pick(
+                f"There are {c(str(n), 'special')} survivors still out there: "
+                f"{name_str}. But for how much longer?",
+                f"{name_str} — {c(str(n), 'special')} people still breathing. "
+                f"That number has been going in the wrong direction.",
             )
-
-        # ── SECTION E: Closer ──
-        if not is_finale:
-            narrative_parts.append(
-                color_text(
-                    'Keep your eyes open. Assume every object around you is a weapon. Cheat Death.',
-                    'warning', rm
-                )
+    
+        return "\n\n".join(p for p in [death_line, tally] if p)
+    
+    
+    def _intro_section_closer(self, s, c, pick, dest):
+        """Section E — CTA, toned by knowledge state and dread."""
+        if dest['is_finale']:
+            return ''
+    
+        knows_cycle = s['knows_cycle']
+        loops       = s['loops']
+        dread       = s['global_dread']
+    
+        if knows_cycle and loops >= 1:
+            return c(
+                "The list circles back. Saving someone just delays them. "
+                "You need a permanent solution, not another intervention.",
+                "warning"
             )
-
-        return "\n\n".join(narrative_parts)
+        if knows_cycle:
+            return pick(
+                c("Saving them skips them to the back. It doesn't free them. "
+                "Keep moving, but understand the math.", "warning"),
+                c("Death doesn't forget. It just reorders. "
+                "Every save buys time. Time is not the same as safety.", "warning"),
+            )
+        if dread >= 0.6:
+            return pick(
+                c("You've been lucky. Luck is not a strategy. "
+                "Keep your eyes open. Trust nothing that looks stable.", "warning"),
+                c("Every object is a weapon. You know that now. "
+                "Assume every room is already a kill zone.", "warning"),
+            )
+        return c(
+            "Keep your eyes open. Assume every object around you is a weapon. Cheat Death.",
+            "warning"
+        )
+    
 
     def proceed_to_next_level(self, instance=None):
         app = App.get_running_app()
@@ -3773,31 +4815,8 @@ class WinScreen(BaseScreen):
 class LoseScreen(BaseScreen):
     def on_enter(self, *args):
         self.logger.info("LoseScreen on_enter triggered.")
-        app = App.get_running_app()
-        game_logic = getattr(app, 'game_logic', None)
-        
-        if not game_logic:
-            return
 
-        player_state = game_logic.player
-        current_city = player_state.get('current_city', 'the city')
-
-        # 1. Clean the Reason
-        reason = player_state.get('death_reason', 'a freak accident')
-        self.death_reason_label.text = reason.replace('{city_name}', current_city)
-
-        # 2. Clean the Flavor Text
-        flavor = player_state.get('flavor_text', '')
-        
-        # --- THE FIX: De-duplication check ---
-        # If flavor is empty OR identical to the reason, hide the label to prevent double-display
-        if not flavor or flavor.strip() == reason.strip():
-            self.flavor_text_label.text = ""
-            self.flavor_text_label.height = 0
-            self.flavor_text_label.opacity = 0
-        else:
-            self.flavor_text_label.text = flavor.replace('{city_name}', current_city)
-            self.flavor_text_label.opacity = 1
+        # ----------------------------------------------------
 
     def set_death_info(self, death_reason, final_narrative, flavor_text, hide_stats=False, player_state=None):
         """
@@ -3806,7 +4825,7 @@ class LoseScreen(BaseScreen):
         """
         self.logger.info(f"LoseScreen: Receiving death info - Reason: {death_reason}")
         
-        # We update the labels immediately if they are available
+        # Update the labels immediately
         if hasattr(self, 'death_reason_label') and self.death_reason_label:
             self.death_reason_label.text = death_reason
         
@@ -3814,7 +4833,14 @@ class LoseScreen(BaseScreen):
             self.final_narrative_label.text = final_narrative
             
         if hasattr(self, 'flavor_text_label') and self.flavor_text_label:
-            self.flavor_text_label.text = flavor_text
+            # Hide flavor text if it's empty or identical to the death reason
+            if not flavor_text or flavor_text.strip() == death_reason.strip():
+                self.flavor_text_label.text = ""
+                self.flavor_text_label.height = 0
+                self.flavor_text_label.opacity = 0
+            else:
+                self.flavor_text_label.text = flavor_text
+                self.flavor_text_label.opacity = 1
 
         # If stats panel exists, handle visibility
         if hasattr(self, 'ids') and 'stats_panel' in self.ids:
@@ -5330,18 +6356,14 @@ class GameScreen(BaseScreen):
     def _handle_game_over(self, event: dict):
         self.logger.info("_handle_game_over: Player has died. Transitioning to LoseScreen.")
         
-        # WRONG — GameScreen has no .player attribute:
-        # death_reason = self.player.get('death_reason', '...')
-        
-        # RIGHT — player state is on game_logic:
         player_state = self.game_logic.player if self.game_logic else {}
         
-        death_reason   = event.get('death_reason') or player_state.get('death_reason', 'a freak accident')
+        death_reason    = event.get('death_reason') or player_state.get('death_reason', 'a freak accident')
         final_narrative = event.get('final_narrative') or player_state.get('final_narrative', '')
-        flavor_text = event.get('flavor_text') or ''
-        hide_stats     = event.get('hide_stats', False)
+        flavor_text     = event.get('flavor_text') or ''
+        hide_stats      = event.get('hide_stats', False)
 
-        # Resolve {city_name} here too (fixes the previous session's bug)
+        # Resolve {city_name} dynamically
         current_city = player_state.get('current_city', 'the city')
         death_reason    = death_reason.replace('{city_name}', current_city)
         final_narrative = final_narrative.replace('{city_name}', current_city)
@@ -5358,9 +6380,11 @@ class GameScreen(BaseScreen):
                 hide_stats=hide_stats,
                 player_state=player_state
             )
-            app.root.current = 'lose'
+            # --- THE FIX: Schedule the transition so Kivy doesn't deadlock ---
+            Clock.schedule_once(lambda dt: self._execute_screen_transition('lose'), 0.5)
+            # -----------------------------------------------------------------
         elif app and app.root:
-            app.root.current = 'title'
+            Clock.schedule_once(lambda dt: self._execute_screen_transition('title'), 0.5)
 
     def _check_popup_and_transition(self, target_screen):
         """Polls until the active popup is dismissed, then safely transitions."""

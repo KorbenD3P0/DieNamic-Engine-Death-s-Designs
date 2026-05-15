@@ -1,7 +1,7 @@
 import collections
 import random
 import logging
-
+from kivy.clock import Clock
 from fd_terminal import hazard_engine
 
 from .resource_manager import ResourceManager
@@ -25,6 +25,10 @@ class DeathAI:
         self.object_threat_scores = collections.defaultdict(float)
         self.room_safety_perception = collections.defaultdict(float)
         
+        # --- NEW: Real-Time Pressure Variables ---
+        self.impatience_timer = None
+        self.current_pressure_room = None
+
         # Behavioral pattern tracking
         self.player_behavior_patterns = {
             'preferred_escape_routes': collections.deque(maxlen=10),
@@ -61,7 +65,78 @@ class DeathAI:
         self.entropy = 0.0
         self.freak_accident_cooldown = 0
 
+    # --- NEW: REAL-TIME PRESSURE SYSTEM ---
+    def cancel_impatience(self):
+        """Stops the real-time Death Clock if the player escapes or the hazard triggers."""
+        if self.impatience_timer:
+            self.impatience_timer.cancel()
+            self.impatience_timer = None
 
+    def evaluate_room_pressure(self, room_id):
+        """Scans the room for hazards that have real-time countdowns and starts the clock."""
+        self.cancel_impatience()
+        self.current_pressure_room = room_id
+
+        if not self.hazard_engine:
+            return
+
+        active_hazards = self.hazard_engine.get_active_hazards_for_room(room_id)
+        for hazard in active_hazards:
+            hazard_id = hazard.get('hazard_id')
+            current_state = hazard.get('current_state')
+            
+            # --- THE FIX: Strip the instance hash to get the base JSON key! ---
+            hazard_key = hazard.get('hazard_key', hazard_id.split('#')[0])
+            
+            # Fetch the JSON data for this exact state
+            h_data = self.hazard_engine.hazards_data.get(hazard_key, {})
+            state_data = h_data.get('states', {}).get(current_state, {})
+            # ------------------------------------------------------------------
+            
+            # Check if this state has an impatience timer
+            time_limit = state_data.get('real_time_escalation_seconds')
+            
+            if time_limit:
+                self.logger.info(f"DeathAI: Player entered kill zone. '{hazard_id}' will force trigger in {time_limit}s.")
+                # Start the Kivy Clock. Pass the hazard_id and the expected next state.
+                self.impatience_timer = Clock.schedule_once(
+                    lambda dt, h_id=hazard_id, r_id=room_id, n_state=state_data.get('next_state'): 
+                        self._force_real_time_escalation(h_id, r_id, n_state),
+                    time_limit
+                )
+                break # Only track one master real-time threat at a time to prevent UI chaos
+
+    def _force_real_time_escalation(self, hazard_id, room_id, next_state):
+        """Executes when the player dawdles for too long. Forces the hazard to spring."""
+        # Safety check: Did they leave the room at the exact millisecond this fired?
+        if self.game_logic.player.get('location') != room_id:
+            return 
+            
+        self.logger.warning(f"DeathAI: Player took too long in {room_id}. Forcing '{hazard_id}' to '{next_state}'!")
+        self.impatience_timer = None
+
+        # 1. Force the HazardEngine to transition the state immediately
+        hazard_ref = next((h for h in self.hazard_engine.active_hazards if h['hazard_id'] == hazard_id), None)
+        if hazard_ref and next_state:
+            self.hazard_engine._transition_hazard(hazard_ref, next_state)
+            
+            # 2. Flush the UI events so the player is instantly interrupted!
+            events = self.hazard_engine.flush_ui_events()
+            if events:
+                # Add to queue and trigger the UI to process them immediately
+                self.game_logic.ui_event_queue.extend(events)
+                
+                # If you have a real-time UI flusher (like in your UI.py), call it here.
+                # If not, App.get_running_app() allows you to reach the UI directly from the backend:
+                try:
+                    from kivy.app import App
+                    app = App.get_running_app()
+                    if app and hasattr(app, 'root'):
+                        game_screen = app.root.get_screen('game')
+                        game_screen._handle_ui_events(events)
+                        self.game_logic.ui_event_queue.clear()
+                except Exception as e:
+                    self.logger.error(f"DeathAI failed to flush real-time UI: {e}")
 
     def _check_hazard_cap(self) -> bool:
         """

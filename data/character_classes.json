@@ -5,11 +5,13 @@
     "observations": {
       "inter_level_thought": "These people are lucky a \"professional\" is on the case."
     },
-    "intuition": 5,
-    "perception": 4,
-    "strength": 2,
-    "agility": 3,
-    "luck": 2,
+    "stats": {
+      "D": 3,
+      "E": 5,
+      "A": 5,
+      "T": 2,
+      "H": 6
+    },
     "affinities": {
       "item_types": ["evidence"],
       "hazard_tags": ["crime_scene", "forensic"],
@@ -18,14 +20,17 @@
   },
   "EMT": {
     "description": "Trained on medical equipment and saving lives. Gets a bonus to medical supplies and certain QTEs (more health, less input needed).",
-
     "max_hp": 60,
     "observations": {
       "inter_level_thought": "My job is literally keeping people alive in situations like this. I need to stay calm and do what I was trained to do."
     },
-    "intuition": 2,
-    "perception": 3,
-    "strength": 6,
+    "stats": {
+      "D": 4,
+      "E": 6,
+      "A": 4,
+      "T": 6,
+      "H": 2
+    },
     "affinities": {
       "item_types": ["medical_supply"],
       "hazard_tags": ["medical_equipment", "biohazard"],
@@ -38,22 +43,60 @@
     "observations": {
       "inter_level_thought": "I can't shake the feeling that something terrible is about to happen. ..and may have before. I need to stay alert."
     },
-    "intuition": 2,
-    "perception": 2,
-    "strength": 1,
+    "stats": {
+      "D": 3,
+      "E": 4,
+      "A": 7,
+      "T": 2,
+      "H": 4
+    },
     "affinities": {
       "item_types": ["document", "electronic_evidence"],
       "disaster_tags": ["industrial_accident", "transportation_air"]
     }
   },
+  "Visionary": {
+    "description": "You saw it before it happened. Not a gut feeling — actual footage, played out behind your eyes in terrifying detail. Nobody believes you yet.\n\nYou know they will.\n\nThe Visionary begins the game inside their own premonition. You experience the disaster first-hand, die, and wake up at the start with full knowledge of what is coming — and no way to prove it.",
+    "max_hp": 45,
+    "observations": {
+      "inter_level_thought": "I know what happens next. I've already watched it.\n\nThe problem is getting anyone else to listen before it's too late."
+    },
+    "stats": {
+      "D": 4,
+      "E": 4,
+      "A": 5,
+      "T": 2,
+      "H": 9
+    },
+    "affinities": {
+      "item_types": ["evidence", "document", "occult"],
+      "hazard_tags": ["paranormal", "deaths_breath", "omen"],
+      "skilled_actions": ["talk", "persuade", "examine"]
+    },
+    "class_flags": {
+      "player_is_visionary": true,
+      "starts_with_premonition_knowledge": false,  
+      "visionary_npc_removed": true              
+    },
+    "special_mechanics": [
+      "Phase 1: Experience the disaster in first-person (no NPC visionary exists)",
+      "Phase 2: Wake up at the start, now you ARE the warning — NPCs think you're unstable",
+      "Bonus: Slight omen detection advantage (Medium-tier omen reveals)",
+      "Penalty: NPCs are initially harder to convince (skeptic threshold +1)"
+    ]
+  },
   "Medium": {
     "description": "Not quite a visionary, but they see the most warnings and omens (at a cost of fear and paranoia). Think Clear Rivers near the end of FD1 or all of FD2.",
-    "intuition": 5,
-    "perception": 5,
-    "strength": 2,
     "max_hp": 40,
     "observations": {
       "inter_level_thought": "They don't see the signs like I do. The way the air shifts, the little hints that something's wrong.. I just hope I can stay one step ahead of it."
+    },
+    "stats": {
+      "D": 3,
+      "E": 4,
+      "A": 6,
+      "T": 2,
+      "H": 8
     },
     "affinities": {
       "hazard_tags": ["paranormal", "deaths_breath"],
@@ -62,31 +105,39 @@
   },
   "Mechanic": {
     "description": "Can use tools in ways others can't.\n(Bonus to mechanical/electrical hazards, tools & fixes).",
-    "intuition": 2,
-    "perception": 4,
-    "strength": 6,
     "max_hp": 50,
+    "observations": {
+      "inter_level_thought": "There isn't any such thing as a 'freak accident' in my line of work. Every failure has a cause, and I intend to find it."
+    },
+    "stats": {
+      "D": 6,
+      "E": 5,
+      "A": 4,
+      "T": 7,
+      "H": 2
+    },
     "affinities": {
       "item_types": ["tool"],
       "hazard_tags": ["mechanical", "electrical", "industrial"],
       "skilled_actions": ["repair", "combine", "force"]
-    },
-    "observations": {
-      "inter_level_thought": "There isn't any such thing as a 'freak accident' in my line of work. Every failure has a cause, and I intend to find it."
     }
   },
   "Athlete": {
     "description": "Physically gifted, you 'just win', but can you outrun Fate?\n(More base health  ..wtf is a Bruin anyway?)",
-    "intuition": 1, 
-    "perception": 3, 
-    "strength": 8,
-    "max_hp": 70, 
+    "max_hp": 70,
+    "observations": {
+      "inter_level_thought": "Baby I just win, that's all I know how to do."
+    },
+    "stats": {
+      "D": 8,
+      "E": 7,
+      "A": 3,
+      "T": 8,
+      "H": 1
+    },
     "affinities": {
       "hazard_tags": ["physical", "falling_object"],
       "skilled_actions": ["force", "run", "climb"]
-    },
-    "observations": {
-      "inter_level_thought": "Baby I just win, that's all I know how to do."
     }
   }
 }

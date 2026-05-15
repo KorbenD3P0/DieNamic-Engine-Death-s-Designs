@@ -20,20 +20,24 @@
       "file": "assets/audio/sfx/47.ogg",
       "volume": 0.7
     },
+    "health_use": {
+      "file": "assets/audio/sfx/health_use.ogg",
+      "volume": 0.6
+    },
     "hit": {
-      "file": "assets/audio/sfx/v01.ogg",
+      "file": "assets/audio/sfx/hit_1.ogg",
       "volume": 0.7
     },
     "medium_hit": {
-      "file": "assets/audio/sfx/V03.ogg",
+      "file": "assets/audio/sfx/hit_3.ogg",
       "volume": 0.7
     },
     "heavy_hit": {
-      "file": "assets/audio/sfx/V04.ogg",
+      "file": "assets/audio/sfx/hit_4.ogg",
       "volume": 0.7
     },
     "final_hit": {
-      "file": "assets/audio/sfx/V05.ogg",
+      "file": "assets/audio/sfx/hit_5.ogg",
       "volume": 0.7
     },
     "guy_groan": {
@@ -44,30 +48,34 @@
       "file": "assets/audio/sfx/V07.ogg",
       "volume": 0.8
     },
-    "enemy_scream": {
-      "file": "assets/audio/sfx/V10.ogg",
+    "npc_man_die_1": {
+      "file": "assets/audio/sfx/npc_man_die_1.ogg",
       "volume": 0.6
     },
-    "goofy_villian_laugh": {
-      "file": "assets/audio/sfx/V19.ogg",
+    "daffy_cackle": {
+      "file": "assets/audio/sfx/daffy_cackle.ogg",
       "volume": 0.5
     },
     "big_bubba_laugh": {
-      "file": "assets/audio/sfx/V33.ogg",
+      "file": "assets/audio/sfx/V33.wav",
       "volume": 0.5
     },
-    "engine_rev": {
-      "file": "assets/audio/sfx/V20.ogg",
+    "motor_rev": {
+      "file": "assets/audio/sfx/motor_rev.wav",
       "volume": 0.7,
       "loop": true
     },
     "get_the_claw": {
-      "file": "assets/audio/sfx/V22.ogg",
+      "file": "assets/audio/sfx/V22.wav",
       "volume": 0.6
     },
     "taco_bell_shits": {
       "file": "assets/audio/sfx/V46.ogg",
       "volume": 0.6
+    },
+    "level_end_sfx": {
+      "file": "assets/audio/sfx/level_end_sfx.wav",
+      "volume": 0.8
     }
   },
   "music": {
@@ -81,8 +89,43 @@
       "volume": 0.3,
       "loop": true
     },
+    "inter_level": {
+      "file": "assets/audio/music/inter_level.mp3",
+      "volume": 0.3,
+      "loop": true
+    },
+    "qte_music": {
+      "file": "assets/audio/music/qte_music.ogg",
+      "volume": 0.3,
+      "loop": true
+    },
     "lobby_ambience": {
       "file": "assets/audio/music/lobby_hum.ogg",
+      "volume": 0.3,
+      "loop": true
+    },
+    "hospital_ambience": {
+      "file": "assets/audio/music/hospital_ambience.ogg",
+      "volume": 0.3,
+      "loop": true
+    },
+    "police_station_ambience": {
+      "file": "assets/audio/music/police_station_ambience.ogg",
+      "volume": 0.3,
+      "loop": true
+    },
+    "carnival_theme": {
+      "file": "assets/audio/music/carnival_theme.ogg",
+      "volume": 0.3,
+      "loop": true
+    },
+    "lose_game": {
+      "file": "assets/audio/music/lose_game.mp3",
+      "volume": 0.3,
+      "loop": true
+    },
+    "win_game": {
+      "file": "assets/audio/music/win_game.mp3",
       "volume": 0.3,
       "loop": true
     }

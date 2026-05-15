@@ -9,7 +9,7 @@
     "is_hidden": true,
     "is_critical": true,
     "is_metallic": true,
-    "level": 2,
+    "level": "house",
     "subtype": "room_key",
     "is_evidence": false,
     "is_flammable": false,
@@ -60,20 +60,11 @@
     "is_readable": true,
     "is_critical": true,
     "description": "A crumpled, blood-stained piece of paper. The handwriting is frantic and erratic.",
-    "examine_details": "It looks like a roster or a seating chart from the disaster, but names are crossed out in a specific sequence.",
+    "examine_details": "It looks like a roster of people's names from the disaster, but names are crossed out in a specific sequence.",
     "read_text": "'We didn't escape. We just paused the clock. It's coming back for us in the exact order we were meant to die!'\n\nBelow is the complete, terrifying sequence of survivors. You now know Death's Design.",
     "on_read_action": {
        "set_player_flag": "knows_death_list"
     }
-  },
-  "heavy_revolver": {
-    "name": "Heavy Revolver",
-    "description": "A .357 caliber reminder that there is always a way out.",
-    "examine_details": "There's only one way out of this now.",
-    "use_effect": "finale_dark_path_check",
-    "type": "weapon",
-    "is_metallic": true,
-    "takeable": true
   },
     "deadbolt_key":{
     "name": "Deadbolt Key",
@@ -84,7 +75,7 @@
     "is_hidden": true,
     "is_critical": true,
     "is_metallic": true,
-    "level": 2,
+    "level": "house",
     "unlocks": ["Back Porch"]
   },
   "desk_drawer_key": {
@@ -140,6 +131,7 @@
   "warehouse_key": {
     "name": "Warehouse Key",
     "description": "A heavy brass key on a City Shipping Warehouse lanyard. It opens the main warehouse bay. It was hard to get.",
+    "examine_details": "This key is large and heavy, made of solid brass. The lanyard is worn but sturdy, with the City Shipping Warehouse logo clearly visible. This key likely grants access to the main warehouse bay, where critical resources are stored.",
     "type": "key",
     "subtype": "workplace_key",
     "takeable": true,
@@ -148,6 +140,12 @@
     "is_critical": true,
     "is_evidence": true,
     "weight": "featherweight",
+    "spawn_rules": {
+      "target_workplace_tags": ["industrial", "construction", "warehouse", "outdoor"],
+      "loot_tier": "key",
+      "spawn_limit": 1,
+      "fallback_room": "crossroads_room"  
+      },
     "is_distributable_in_containers": false,
     "custom_fields": {}
   },
@@ -211,7 +209,7 @@
     "description": "A heavy iron key labeled 'Basement'. Feels cold to the touch.",
     "examine_details": "A standard, sturdy-looking key. The label is clear and deeply etched. It should unlock the basement entrance. The metal feels unnaturally cold, as if it's been sitting in a freezer.",
     "type": "key",
-    "level": 2,
+    "level": "house",
     "subtype": "room_key",
     "weight": "light",
     "takeable": true,
@@ -270,7 +268,7 @@
     "description": "A small brass key labeled 'Storage Room'.",
     "examine_details": "This key looks like it opens a storage room somewhere in the hospital. The brass has a dull patina, suggesting it's been used frequently. Small scratches around the keyhole indicate regular use.",
     "type": "key",
-    "level": 2,
+    "level": "house",
     "subtype": "room_key",
     "weight": "light",
     "takeable": true,
@@ -1589,7 +1587,16 @@
       "spawn_limit": 1
     },
     "character_connection": "Iris Campbell",
-    "special_property": "research_notes"
+    "special_property": "research_notes",
+    "is_alias": true,
+    "alias": [
+      "gammy death book", 
+      "gammys death book", 
+      "death book", 
+      "gammy book", 
+      "book", 
+      "journal"
+    ]
   },
   "bloodied_lawn_mower_spark_plug": {
     "name": "Bloodied Lawn Mower Spark Plug",
@@ -2745,7 +2752,7 @@
   "train_ticket": {
     "name": "Train Ticket",
     "description": "A creased train ticket stub.\nThe fourth factory worker... was later run over by a speeding train while fleeing.",
-    "examine_details": "A ticket for a commuter train. The destination is McKinley Central.",
+    "examine_details": "A ticket for a commuter train. The destination is {city_name} Central.",
     "takeable": true,
     "is_distributable_in_containers": true,
     "weight": "light",
@@ -3108,7 +3115,7 @@
     "examine_details": "The clipped article is about a woman who narrowly escaped a major pileup on Route 23 decades back and wound up briefly dying in a separate incident. Reading it sends a chill down your spine as it dawns on you: everything led to this moment right now. The disaster, the other survivors dying, you coming here of all places: you're all being deliberately hunted.\nGrab the PICTURE OF KIMBERLY and get out of here before something happens to you!",
     "type": "evidence",
     "takeable": true,
-    "level": 2,
+    "level": "house",
     "is_evidence": true,
     "is_metallic": false,
     "is_time_consuming_examine": true,
@@ -3183,6 +3190,7 @@
     "name": "Bludworth's House Key",
     "aliases": ["bludworths house key", "house key", "bludworths key"],
     "description": "A tarnished brass key labeled 'Bludworth Residence'.",
+    "examine_details": "The key is old and tarnished, with a simple design. The label 'Bludworth Residence' is etched into the metal. This could be the key to finding Bludworth's home and uncovering more about his research.",
     "type": "key",
     "subtype": "house_key",
     "level": 1,
@@ -3233,6 +3241,7 @@
   "movie_stub": {
     "name": "Torn Movie Stub",
     "type": "item",
+    "examine_details": "The ticket stub is torn and smudged with a dark, sticky substance. The movie title is partially obscured but appears to be for a midnight showing at the McKineplex.",
     "description": "A ticket stub for a midnight showing at the McKineplex. The seat number is smudged with something dark and sticky.",
     "is_distributable_in_containers": true,
     "tags": ["clue", "narrative", "paper"]
@@ -3240,6 +3249,7 @@
   "greasy_work_order": {
     "name": "Greasy Work Order",
     "type": "item",
+    "examine_details": "The work order is stained with grease and has a faint smell of motor oil. It lists a repair for a '2005 Honda Civic' with the customer's name, 'Pete', scrawled at the top.",
     "description": "A crumpled invoice from Pete's Auto Repair. The mechanic's signature, '{npc_name}', is circled in red ink repeatedly.",
     "is_distributable_in_containers": true,
     "tags": ["clue", "narrative", "paper"]
@@ -3247,6 +3257,7 @@
   "presage_paper_memo": {
     "name": "Presage Paper Memo",
     "type": "item",
+    "examine_details": "The memo is printed on standard office paper, with the Presage Paper logo at the top. The text discusses 'recent workplace accidents' and mentions a 'safety review'. The recipient's name has been violently scratched out with a pen.",
     "description": "A corporate memo from Presage Paper regarding 'recent workplace accidents'. The recipient's name has been violently scratched out.",
     "is_distributable_in_containers": true,
     "tags": ["clue", "narrative", "paper"]
@@ -3254,13 +3265,15 @@
   "mall_directory_pamphlet": {
     "name": "Mall Directory",
     "type": "item",
-    "description": "A glossy map of the McKinley Galleria. A red 'X' has been drawn over the escalator icon in the center atrium.",
+    "examine_details": "The pamphlet is glossy and slightly worn. It shows a map of the {city_name} Galleria, with various stores and amenities labeled. A red 'X' has been drawn over the escalator icon in the center atrium.",
+    "description": "A glossy map of the {city_name} Galleria. A red 'X' has been drawn over the escalator icon in the center atrium.",
     "is_distributable_in_containers": true,
     "tags": ["clue", "narrative", "paper"]
   },
   "monogrammed_bowling_towel": {
     "name": "Monogrammed Bowling Towel",
     "type": "item",
+    "examine_details": "The towel is made of a soft microfiber material and has a faint scent of lane wax. The logo for 'Strike & Spare Lanes' is embroidered on the front, with a name scrawled in sharpie on the tag.",
     "description": "A microfiber towel smelling of lane wax. The logo for 'Strike & Spare Lanes' is embroidered on the front, with a name scrawled in sharpie on the tag.",
     "is_distributable_in_containers": true,
     "tags": ["clue", "narrative", "fabric"]
@@ -3268,6 +3281,7 @@
   "bloodstained_punch_card": {
     "name": "Bloodstained Punch Card",
     "type": "item",
+    "examine_details": "The punch card is made of thick cardstock, with nine punched holes and one remaining. The last hole is stained with a dark red substance that looks like dried blood.",
     "description": "A 'Daily Grind' loyalty card. Nine out of ten coffees are punched. The last punch looks suspiciously like a drop of dried blood.",
     "is_distributable_in_containers": true,
     "tags": ["clue", "narrative", "paper"]
@@ -3275,6 +3289,7 @@
   "true_companions_transfer_form": {
     "name": "True Companions Transfer Form",
     "type": "item",
+    "examine_details": "The form is filled out in a rushed, messy handwriting. It details the transfer of a pet from the True Companions adoption center to a new owner. The receiving veterinarian's signature is hastily scribbled at the bottom, stained with a few drops of dark liquid.",
     "description": "A medical transfer sheet from the True Companions adoption center. The receiving veterinarian's signature is scribbled hastily at the bottom, stained with a few drops of dark liquid.",
     "is_distributable_in_containers": true,
     "tags": ["clue", "narrative", "paper"]
@@ -3282,21 +3297,24 @@
   "laminated_pool_pass": {
     "name": "Laminated Pool Pass",
     "type": "item",
-    "description": "A faded membership card for the McKinley Community Center. It smells faintly of chlorine and cheap plastic.",
+    "examine_details": "The pass is laminated and has a faint smell of chlorine. The name on the pass is smudged but appears to be 'Emily R.' The back of the pass has a stamp for the {city_name} Community Center pool.",
+    "description": "A faded membership card for the {city_name} Community Center. It smells faintly of chlorine and cheap plastic.",
     "is_distributable_in_containers": true,
     "tags": ["clue", "narrative", "plastic"]
   },
   "union_id_card": {
     "name": "Union ID Card",
     "type": "item",
-    "description": "A plastic identification card for Local 404 Ironworkers. The portrait is smudged with dried cement, but the McKinley Heights project site is clearly stamped on the back.",
+    "examine_details": "The card is made of cheap plastic and has a photo of a man with a hard hat and safety goggles. The name on the card is 'John Doe', and it lists his occupation as 'Ironworker'. The back of the card has a stamp for the {city_name} Heights construction site.",
+    "description": "A plastic identification card for Local 404 Ironworkers. The portrait is smudged with dried cement, but the {city_name} Heights project site is clearly stamped on the back.",
     "is_distributable_in_containers": true,
     "tags": ["clue", "narrative", "plastic"]
   },
   "coastal_survey_clipboard": {
     "name": "Coastal Survey Clipboard",
     "type": "item",
-    "description": "A weather-resistant clipboard holding architectural schematics for the Old McKinley Lighthouse. A bright red 'CONDEMNED' stamp is visible on the top page.",
+    "examine_details": "The clipboard is weathered and has a faint salty smell. The top page shows detailed measurements and notes about the coastline near {city_name}, with a focus on the area around the Old Lighthouse.",
+    "description": "A weather-resistant clipboard holding architectural schematics for the Old {city_name} Lighthouse. A bright red 'CONDEMNED' stamp is visible on the top page.",
     "is_distributable_in_containers": true,
     "tags": ["clue", "narrative", "paper"]
   },
@@ -3318,7 +3336,7 @@
     "description": "A smartphone with a cracked screen. The lock screen shows a frantic, half-finished text message: 'MOM I SAW IT ALL THE BULLS THE FIRE EVERY'.",
     "examine_details": "The phone's battery is nearly dead. The last message is a desperate warning. There are smudges of dirt and what might be blood on the case.",
     "type": "evidence",
-    "level": 3,
+    "level": "fairgrounds",
     "subtype": "electronic_evidence",
     "weight": "light",
     "takeable": true,
@@ -3361,7 +3379,7 @@
     "examine_details": "The photos are faded and the last one is almost unrecognizable. The images seem to hint at something terrible.",
     "type": "evidence",
     "subtype": "photographic_evidence",
-    "level": 3,
+    "level": "fairgrounds",
     "weight": "featherweight",
     "takeable": true,
     "is_hidden": false,
@@ -3402,7 +3420,7 @@
     "description": "A large, blue ribbon awarded for 'Best in Show'. It has a small metal clasp.",
     "examine_details": "The ribbon is slightly frayed at the edges. The clasp is tarnished but still functional.",
     "type": "item",
-    "level": 3,
+    "level": "fairgrounds",
     "subtype": "award",
     "weight": "featherweight",
     "takeable": true,
@@ -3476,7 +3494,7 @@
   "Ski Lift Safety Report": {
     "name": "Ski Lift Safety Report",
     "type": "evidence",
-    "description": "A technical report bound in a faded blue cover, stamped 'McKinley Resort'.",
+    "description": "A technical report bound in a faded blue cover, stamped '{city_name} Resort'.",
     "examine_details": "The report, dated three weeks before the accident, explicitly warns of 'critical metal fatigue' in the main cable and recommends immediate replacement. A handwritten note in the margin says 'Postpone until after the holiday rush'.",
     "takeable": true,
     "is_evidence": true,
@@ -3485,7 +3503,7 @@
   "Resort Staff Badge": {
     "name": "Resort Staff Badge",
     "type": "evidence",
-    "description": "A laminated staff ID badge for a McKinley Resort maintenance worker.",
+    "description": "A laminated staff ID badge for a {city_name} Resort maintenance worker.",
     "examine_details": "The name on the badge is 'Glen McNamara'. On the back, scratched hastily, are the words 'They won't listen. Cable is bad.'",
     "takeable": true,
     "is_evidence": true,
@@ -3504,7 +3522,7 @@
   "Carnival Inspection Records": {
     "name": "Carnival Inspection Records",
     "type": "evidence",
-    "description": "A clipboard holding inspection records for the McKinley County Fair.",
+    "description": "A clipboard holding inspection records for the {city_name} County Fair.",
     "examine_details": "The safety inspection for the 'Devil's Wheel' is pencil-whipped. The inspector's signature is a lazy, illegible squiggle, and several critical checks are marked 'N/A'.",
     "takeable": true,
     "is_evidence": true,
@@ -3560,7 +3578,7 @@
   "Stage Production Schedule": {
     "name": "Stage Production Schedule",
     "type": "evidence",
-    "description": "A detailed schedule for the production of 'McKinley: The Musical!'.",
+    "description": "A detailed schedule for the production of '{city_name}: The Musical!'.",
     "examine_details": "Notes in the margin indicate that the weight of the new lighting rig was never tested with the old stage supports. A circled note reads: 'Is this safe???'",
     "takeable": true,
     "is_evidence": true,
@@ -3671,7 +3689,7 @@
   "Fractured Suspension Cable": {
     "name": "Fractured Suspension Cable",
     "type": "evidence",
-    "description": "A section of thick steel cable from the McKinley Memorial Bridge.",
+    "description": "A section of thick steel cable from the {city_name} Memorial Bridge.",
     "examine_details": "A clean fracture reveals a dark, rusted core. The cable was rotting from the inside out.",
     "takeable": true,
     "is_evidence": true,
@@ -3708,7 +3726,7 @@
   "Safety Violation Notice": {
     "name": "Safety Violation Notice",
     "type": "evidence",
-    "description": "An official notice of safety violations issued to the McKinley Chemical Plant.",
+    "description": "An official notice of safety violations issued to the {city_name} Chemical Plant.",
     "examine_details": "The notice lists 'improper storage of volatile chemicals' as a critical issue. The fine was paid, but the problem was never fixed.",
     "takeable": true,
     "is_evidence": true,
@@ -3735,7 +3753,7 @@
   "Park Ranger's Map": {
     "name": "Park Ranger's Map",
     "type": "evidence",
-    "description": "A map of McKinley National Forest, with handwritten notes.",
+    "description": "A map of {city_name} National Forest, with handwritten notes.",
     "examine_details": "The ranger has circled several areas, noting 'high fire risk' and 'dry conditions'. The origin of the fire is in one of these circled areas.",
     "takeable": true,
     "is_evidence": true,
@@ -3762,7 +3780,7 @@
   "Weather Alert Printout": {
     "name": "Weather Alert Printout",
     "type": "evidence",
-    "description": "A printout of a severe weather alert for McKinley.",
+    "description": "A printout of a severe weather alert for {city_name}.",
     "examine_details": "The alert warns of 'unprecedented rainfall' and 'high risk of flash flooding'. It was issued hours before the storm hit.",
     "takeable": true,
     "is_evidence": true,
@@ -3780,7 +3798,7 @@
   "Faulty Signal Report": {
     "name": "Faulty Signal Report",
     "type": "evidence",
-    "description": "A maintenance report for the McKinley rail system.",
+    "description": "A maintenance report for the {city_name} rail system.",
     "examine_details": "The report details a 'persistent malfunction' in the signal system at the site of the collision. It was deemed 'non-critical'.",
     "takeable": true,
     "is_evidence": true,
@@ -3872,7 +3890,7 @@
   "Evacuation Order": {
     "name": "Evacuation Order",
     "type": "evidence",
-    "description": "A mandatory evacuation order for the coastal areas of McKinley.",
+    "description": "A mandatory evacuation order for the coastal areas of {city_name}.",
     "examine_details": "The order was issued just hours before the typhoon hit, too late for many to escape.",
     "takeable": true,
     "is_evidence": true,
@@ -3890,7 +3908,7 @@
   "Geological Survey Map": {
     "name": "Geological Survey Map",
     "type": "evidence",
-    "description": "A geological map of the McKinley area, showing a network of underground caves.",
+    "description": "A geological map of the {city_name} area, showing a network of underground caves.",
     "examine_details": "The business district was built directly on top of an unstable cave system. The sinkhole was a geological certainty.",
     "takeable": true,
     "is_evidence": true,
@@ -4167,6 +4185,7 @@
     "weight": "default",
     "is_metallic": false,
     "is_distributable_in_containers": true,
+    "play_sfx_on_use": "health_use",
     "consumable_on_use": true,
     "heal_amount": 25,
     "use_result": {
@@ -4185,6 +4204,7 @@
     "is_metallic": false,
     "is_distributable_in_containers": true,
     "consumable_on_use": true,
+    "play_sfx_on_use": "health_use",
     "heal_amount": 10,
     "use_result": {
       "general": "You apply the bandages to your wounds, feeling immediate relief."
@@ -4223,6 +4243,7 @@
     "weight": "light",
     "is_metallic": false,
     "is_distributable_in_containers": true,
+    "play_sfx_on_use": "health_use",
     "consumable_on_use": true,
     "heal_amount": 5,
     "use_result": {
@@ -4259,6 +4280,7 @@
   },
   "adrenaline": {
     "name": "Adrenaline",
+    "examine_details": "A pre-loaded epinephrine auto-injector. The label warns it's for cardiac emergency use only. It looks like it could be used to give a powerful boost of adrenaline in a pinch, but the consequences could be severe.",
     "description": "A pre-loaded epinephrine auto-injector. For cardiac emergency use only. Do not use unless prepared for the consequences.",
     "type": "medical",
     "subtype": "chemical",
@@ -4274,6 +4296,7 @@
     "tranquilizer": {
     "name": "Tranquilizer",
     "description": "A fast-acting sedative. Reduces fear.",
+    "examine_details": "A syringe filled with a clear, fast-acting sedative. It looks like it could knock out even the most resistant patient.",
     "type": "medical_supply",
     "weight": "featherweight",
     "is_metal": false,
@@ -4369,6 +4392,7 @@
   "screwdriver": {
     "name": "Screwdriver",
     "description": "A sturdy flat-head screwdriver. Useful for repairs and prying things open.",
+    "examine_details": "A solid flat-head screwdriver with a comfortable grip. The steel shaft is strong and the tip is slightly worn from use, but it still looks like it could handle most screws or be used for prying.",
     "type": "tool",
     "takeable": true,
     "weight": "light",
@@ -4381,6 +4405,7 @@
   "multi_tool": {
     "name": "Multi-Tool",
     "description": "A compact multi-tool with pliers, knife, screwdriver, and more.",
+    "examine_details": "A compact multi-tool, about the size of a large pocket knife. It has a variety of built-in tools, including pliers, a knife blade, a flat-head screwdriver, and a Phillips-head screwdriver. It's a versatile tool that could come in handy in many situations.",
     "weight": "light",
     "type": "tool",
     "takeable": true,
@@ -4393,6 +4418,7 @@
   "insulating_tape": {
     "name": "Insulating Tape",
     "description": "A roll of insulating tape. Useful for covering exposed wires.",
+    "examine_details": "A roll of black insulating tape. It's stretchy and sticky, designed to insulate electrical wires and prevent short circuits.",
     "weight": "featherweight",
     "type": "tool",
     "takeable": true,
@@ -4405,6 +4431,7 @@
   "hammer": {
     "name": "Hammer",
     "description": "A heavy hammer. Good for construction, repairs, or smashing things.",
+    "examine_details": "A heavy claw hammer with a wooden handle. The head is solid steel, and the handle is worn from use. It feels sturdy and reliable in your hands.",
     "weight": "light",
     "type": "tool",
     "takeable": true,
@@ -4417,6 +4444,7 @@
   "wedge": {
     "name": "Wedge",
     "description": "A small wooden wedge. Can be used to stabilize objects.",
+    "examine_details": "A simple wooden wedge, about 6 inches long. It could be used to stabilize a wobbly table or prop open a door.",
     "weight": "light",
     "type": "tool",
     "takeable": true,
@@ -4429,6 +4457,7 @@
   "rope": {
     "name": "Rope",
     "description": "A sturdy length of rope. Useful for tying or securing objects.",
+    "examine_details": "A thick, sturdy rope made of natural fibers. It has a rough texture and a strong tensile strength, making it ideal for tying, securing, or even climbing.",
     "weight": "light",
     "type": "tool",
     "takeable": true,
@@ -4441,6 +4470,7 @@
   "support_beam": {
     "name": "Support Beam",
     "description": "A heavy metal support beam. Can reinforce structures.",
+    "examine_details": "A heavy steel support beam, about 10 feet long. It's designed to bear immense weight and provide structural integrity.",
     "weight": "very_heavy",
     "type": "tool",
     "takeable": true,
@@ -4453,6 +4483,7 @@
   "cloth": {
     "name": "Cloth",
     "description": "A clean piece of cloth. Useful for cleaning, absorbing, or insulating.",
+    "examine_details": "A piece of clean, durable cloth. It could be used for a variety of purposes, from cleaning up spills to providing insulation or padding.",
     "weight": "light",
     "type": "tool",
     "takeable": true,
@@ -4462,7 +4493,7 @@
       "tool_type": "absorbent"
     }
   },
-    "pliers": {
+  "pliers": {
     "key": "pliers",
     "name": "Pliers",
     "aliases": [
@@ -4584,6 +4615,7 @@
     "name": "Tool Kit",
     "description": "A compact tool kit containing various hand tools like pliers, wrenches, and a small hammer.",
     "weight": "default",
+    "examine_details": "The tool kit is a sturdy, portable case filled with an assortment of hand tools. It includes pliers, wrenches, a small hammer, and a few screwdrivers. The tools are well-organized and look like they could handle a variety of repair tasks.",
     "type": "tool",
     "takeable": true,
     "is_metal": false,
@@ -4595,6 +4627,7 @@
   "mop": {
     "name": "Mop",
     "description": "A standard mop. Useful for cleaning up spills.",
+    "examine_details": "A mop with a long handle and a thick, absorbent head. It looks like it could be used to clean up spills or maybe even to trip someone if wielded aggressively.",
     "weight": "light",
     "type": "tool",
     "takeable": true,
@@ -4730,6 +4763,7 @@
 
   "poster_scrap": {
     "name": "Poster Scrap",
+    "examine_details": "The torn strip of paper is from a movie poster advertising 'The Last Sunset'. The partial phone number on the back is intriguing, but without the full number, it's hard to know who it belongs to.",
     "description": "A torn strip from a movie poster. On the back, someone has written a partial phone number and the words CALL AFTER 9.",
     "type": "evidence",
     "subtype": "paper",
@@ -4742,6 +4776,7 @@
   },
   "crumpled_note": {
     "name": "Crumpled Note",
+    "examine_details": "The note is hastily scrawled on a theater napkin. The handwriting is rushed and uneven, as if the writer was in a hurry or under stress.",
     "description": "A note hastily written on theater napkin. It reads: 'He knows. Booth. Do NOT go to the booth. Trust me.'",
     "type": "evidence",
     "subtype": "paper",
@@ -4754,6 +4789,7 @@
   },
   "note_from_concessions": {
     "name": "Note from Concessions",
+    "examine_details": "The note is written on the back of a concession stand receipt. The handwriting is hurried and slightly smudged, as if the writer was in a rush. The message is cryptic but urgent.",
     "description": "Scrawled on a receipt: 'Projector overheating AGAIN. Called maintenance. Nobody answered. Going to check it myself.' It is dated today.",
     "type": "evidence",
     "subtype": "paper",
@@ -4766,6 +4802,7 @@
   },
   "movie_ticket": {
     "name": "Movie Ticket",
+    "examine_details": "The ticket is for a showing of 'The Last Sunset' at Theater 7. The date and time match the night of the incident. The name on the ticket is scratched out, but you can make out the first name: 'Alex'.",
     "description": "A ticket stub for Theater 7. Seat J14. Someone left this at the will-call. It is in your name.",
     "type": "document",
     "subtype": "ticket",
@@ -4794,6 +4831,7 @@
   },
   "gym_membership_card": {
     "name": "Gym Membership Card",
+    "examine_details": "The card is for Body and Soul Fitness. The name on the card is scratched out, but you can make out the first name: 'Alex'.",
     "description": "A Body and Soul Fitness membership card. It belongs to someone whose name is on the list. It was in the locker.",
     "type": "evidence",
     "subtype": "card",
@@ -4806,6 +4844,7 @@
   "protein_bar": {
     "name": "Protein Bar",
     "description": "A half-eaten protein bar left on a locker bench. Still fresh.",
+    "examine_details": "The protein bar is a standard chocolate-flavored variety, partially unwrapped. It looks like it was recently eaten, with only a few bites taken.",
     "type": "consumable",
     "subtype": "food",
     "takeable": true,
@@ -4816,6 +4855,7 @@
   "water_bottle": {
     "name": "Water Bottle",
     "description": "A plastic water bottle, still sealed.",
+    "examine_details": "The water bottle is a standard plastic bottle with a secure cap. It appears to be unopened and full of clean water.",
     "type": "consumable",
     "subtype": "drink",
     "takeable": true,
@@ -4825,6 +4865,7 @@
   },
   "heavy_dumbbell": {
     "name": "Heavy Dumbbell",
+    "examine_details": "The dumbbell is made of solid cast iron, with a rough, textured surface. It feels heavy and unwieldy in your hands, but it could be used as a blunt weapon or to break something if you swung it hard enough.",
     "description": "A 25-pound cast iron dumbbell. Could be used as a weapon. Definitely could be used to break something.",
     "type": "tool",
     "subtype": "weight",
@@ -4836,6 +4877,7 @@
   "protein_shake": {
     "name": "Protein Shake",
     "description": "A sealed shaker cup of protein powder mixed with water. Still cold.",
+    "examine_details": "The protein shake is in a standard shaker cup with a secure lid. The contents are still cold, suggesting it was recently made. It looks like a typical post-workout shake.",
     "type": "consumable",
     "subtype": "drink",
     "takeable": true,
@@ -5203,6 +5245,7 @@
     "takeable": false,
     "type": "environment",
     "description": "A large revolving door at the hospital entrance.",
+    "examine_details": "The revolving door is made of glass and metal, with a central pivot. It appears to be slightly warped, causing it to stick and not rotate smoothly. The glass is smudged and has some cracks, but it's still mostly intact.",
     "weight": "immovable"
   },
   "emergency_generator": {
@@ -5214,6 +5257,7 @@
     "takeable": false,
     "type": "environment",
     "description": "A backup generator that powers the hospital during outages.",
+    "examine_details": "The generator is humming softly, indicating it's ready to provide power if needed. It's well-maintained but shows signs of heavy use.", 
     "weight": "immovable"
   },
   "power_line": {
@@ -5224,6 +5268,7 @@
     "takeable": false,
     "type": "environment",
     "description": "A high-voltage power line supplying electricity to the building.",
+    "examine_details": "The power line is heavily insulated but shows signs of wear and damage. Sparks occasionally fly from exposed sections, and the hum of electricity is loud. It poses a significant hazard if tampered with.",
     "weight": "immovable"
   },
   "gas_meter": {
@@ -5234,6 +5279,7 @@
     "takeable": false,
     "type": "environment",
     "description": "A meter that measures the flow of gas into the hospital.",
+    "examine_details": "The gas meter is damaged, with exposed wiring and a strong smell of gas. It looks like it could be a potential hazard if tampered with.",
     "weight": "immovable"
   },
   "ventilator": {
@@ -5241,6 +5287,7 @@
     "takeable": false,
     "type": "medical_equipment",
     "description": "A machine that assists patients with breathing in the hospital.",
+    "examine_details": "The ventilator is a complex machine with various tubes and settings. It hums softly as it operates, providing critical respiratory support to patients in need.",
     "weight": "very_heavy"
   },
   "patient in bed": {
@@ -5251,6 +5298,7 @@
     "takeable": false,
     "type": "environment",
     "description": "A hospital patient lying in bed, possibly in need of care.",
+    "examine_details": "The patient appears to be resting, with a slight rise and fall of the chest indicating breathing. Vital signs are stable but should be monitored closely.",
     "weight": "immovable"
   },
   "vital signs monitor": {
@@ -5261,6 +5309,7 @@
     "takeable": false,
     "type": "medical_equipment",
     "description": "A monitor displaying the patient's vital signs.",
+    "examine_details": "The monitor shows the patient's heart rate, blood pressure, and oxygen levels. The screen flickers occasionally, and the readings are erratic.",
     "weight": "heavy"
   },
   "robo_vacuum": {
@@ -5325,6 +5374,7 @@
       "scrap"
     ],
     "description": "A handful of charred plastic, wiring, and a single, sad googly eye.",
+    "examine_details": "These parts are clearly from the robotic vacuum. The plastic is melted and the wiring is frayed, but the googly eye is somehow still intact.",
     "type": "item",
     "value": 5,
     "tags": [
@@ -5342,7 +5392,7 @@
     "type": "medical_equipment",
     "subtype": "life_support",
     "takeable": true,
-    "level": 1,
+    "level": "all",
     "weight": "medium",
     "is_metallic": true,
     "is_distributable_in_containers": false,
@@ -5353,10 +5403,9 @@
     },
     "current_state": "full",
     "pressure_level": "high",
-    
     "is_usable": true
   },
-    "elevator": {
+  "elevator": {
     "name": "elevator",
     "aliases": [
       "hospital elevator"
@@ -5364,7 +5413,7 @@
     "takeable": false,
     "type": "environment",
     "description": "A stainless steel hospital elevator, used for moving between floors.",
-    "examine_text": "A stainless steel hospital elevator. The panel hums softly.",
+    "examine_details": "A stainless steel hospital elevator. The panel hums softly.",
     "weight": "immovable"
   },
   "elevator_call_panel": {
@@ -5376,12 +5425,13 @@
     "takeable": false,
     "type": "environment",
     "description": "A wall-mounted control panel for calling the elevator.",
-    "examine_text": "A wall-mounted control panel with worn buttons.",
+    "examine_details": "A wall-mounted control panel with worn buttons.",
     "weight": "immovable"
   },
   "padded_magazine_guards": {
     "name": "Magazine Armor",
     "description": "Thick rolls of fashion magazines taped to your body. +10 HP buffer vs Physical.",
+    "examine_details": "You wrap the magazine pages around your torso, taping them in place. The glossy paper provides a surprising amount of cushioning against physical blows.",
     "type": "protective_gear",
     "defense_bonus": 10,
     "defense_type": "physical",
@@ -5390,6 +5440,7 @@
   "insulated_wrench": {
     "name": "Insulated Wrench",
     "description": "A heavy wrench with a rubberized grip. Safe for electrical work.",
+    "examine_details": "This wrench is designed for electrical work, with a rubberized grip that provides insulation. It looks sturdy enough to turn stubborn bolts, but it also offers some protection against electric shock.",
     "type": "tool",
     "force_bonus": 5,
     "tags": [
@@ -5427,186 +5478,463 @@
 
 
 
-
-
-    "syringe": {
-    "name": "syringe",
-    "description": "A sterile, disposable syringe with a fine needle, still in its packaging.",
-    "examine_details": "The syringe is new and appears to be medical grade. The needle is capped for safety. It could be used to inject something... or someone. The packaging indicates it's a 10ml capacity.",
-    "type": "medical_supply",
-    "subtype": "injection_device",
+  "defibrillator_pads": {
+    "name": "Defibrillator Pads",
+    "description": "A pair of adhesive defibrillator electrode pads, still in sterile packaging.",
+    "examine_details": "Each pad is rated for 360 joules. They're useless without a power source, but with one — they can stop a heart or start one.",
+    "type": "medical_equipment",
+    "subtype": "finale_component",
     "takeable": true,
-    "weight": "light",
-    "is_metallic": true,
     "is_distributable_in_containers": true,
-    "damage_if_weapon": 1,
-    "use_on": [
-      "patient_dummy",
-      "poison_vial",
-      "medication_vial",
-      "blood_sample"
-    ],
-    "use_result": {
-      "patient_dummy": "You practice your injection technique on the dummy. It offers no resistance.",
-      "poison_vial": "You carefully draw the contents of the vial into the syringe.",
-      "medication_vial": "You draw the medication into the syringe, preparing it for injection.",
-      "blood_sample": "You draw a small blood sample into the syringe."
+    "is_critical": true,
+    "spawn_rules": {
+      "target_workplace_tags": ["medical", "hospital", "clinic"],
+      "loot_tier": "evidence",
+      "spawn_limit": 1,
+      "paired_with": "industrial_jumper_cables"
     },
-    "consumable_on_use": true,
-    "special_properties": [
-      "precision_tool",
-      "medical_device"
-    ],
-    "spawn_rules":{
-      "required_tags":
-      ["veterinary", "hospital", "chemical"],
+    "alias": ["pads", "defib pads", "electrode pads"]
+  },
+ 
+  "industrial_jumper_cables": {
+    "name": "Industrial Jumper Cables",
+    "description": "Heavy-gauge copper jumper cables from a maintenance closet. More than capable of carrying enough current to kill.",
+    "examine_details": "The clamps are rated for 800 amps. Spliced into a defibrillator circuit, they'd turn a car battery into a crude but functional cardiac device.",
+    "type": "tool",
+    "subtype": "finale_component",
+    "takeable": true,
+    "is_distributable_in_containers": true,
+    "spawn_rules": {
+      "target_workplace_tags": ["industrial", "medical", "construction", "workshop"],
+      "loot_tier": "filler",
       "spawn_limit": 1
-      },
-    "safety_warnings": [
-      "needle_stick_hazard"
-    ],
-    "spawn_pool": [
-      {
-        "room": "MRI Scan Room",
-        "container": "equipment cart",
-        "chance": 0.4
-      },
-      {
-        "room": "Patient Room 101",
-        "container": "bedside table",
-        "chance": 0.3
-      },
-      {
-        "room": "Supply Closet",
-        "container": "medical supplies",
-        "chance": 0.3
-      }
+    },
+    "alias": ["cables", "jumper cables", "clamps"]
+  },
+ 
+  "bullets": {
+    "name": "Revolver Ammunition",
+    "description": "A speed-loader of .357 Magnum rounds. Found in an evidence bag.",
+    "examine_details": "Six rounds of hollow-point .357. Whoever owned this gun wasn't playing around.",
+    "type": "weapon",
+    "subtype": "finale_component",
+    "takeable": true,
+    "is_distributable_in_containers": true,
+    "spawn_rules": {
+      "target_workplace_tags": ["security", "industrial", "outdoor"],
+      "loot_tier": "rare",
+      "spawn_limit": 1,
+      "paired_with": "empty_heavy_revolver"
+    },
+    "alias": ["ammo", "ammunition", "rounds", ".357", "revolver bullets"]
+  },
+ 
+  "police_narcan": {
+    "name": "Naloxone Auto-Injector",
+    "description": "A police-issue Narcan auto-injector, found in the evidence storage first-aid kit.",
+    "examine_details": "Two milligrams of naloxone. Enough to reverse a fatal overdose. Enough, specifically, to reverse confiscated fentanyl — if someone uses it within three minutes.",
+    "type": "medical_supply",
+    "subtype": "finale_component",
+    "takeable": true,
+    "is_distributable_in_containers": true,
+    "spawn_rules": {
+      "target_workplace_tags": ["medical", "security", "police"],
+      "loot_tier": "evidence",
+      "spawn_limit": 1,
+      "paired_with": "confiscated_fentanyl"
+    },
+    "alias": ["narcan", "naloxone", "auto-injector", "overdose kit"]
+  },
+ 
+ 
+  "hypothermia_survival_kit": {
+    "name": "Hypothermia Survival Kit",
+    "description": "A liquid nitrogen canister rigged to a slow-release valve, bundled with a thermal rewarming blanket. A controlled death and a calculated resurrection.",
+    "examine_details": "The plan: breathe slowly, let your core temperature drop, let your heart stop. Someone wraps you in the blanket and uses the rewarming pack. You either come back or you don't.",
+    "type": "medical_equipment",
+    "subtype": "trigger_finale_hypothermia",
+    "takeable": true,
+    "use_on": ["self", "crossroads_room"],
+    "alias": ["nitrogen kit", "hypothermia kit", "cold kit", "freezing kit"]
+  },
+ 
+  "asphyxiation_survival_kit": {
+    "name": "Asphyxiation Survival Kit",
+    "description": "An industrial helium tank feeding into an oxygen resuscitator mask on standby. Clinical death by oxygen deprivation with a hard revival window.",
+    "examine_details": "The helium displaces all the oxygen in your blood. Your heart stops. The resuscitator pumps pure O2 until it restarts. Four-minute window. Not forgiving.",
+    "type": "medical_equipment",
+    "subtype": "trigger_finale_asphyxiation",
+    "takeable": true,
+    "use_on": ["self", "crossroads_room"],
+    "alias": ["helium kit", "asphyxiation kit", "oxygen kit", "breathing kit"]
+  },
+ 
+  "fentanyl_reversal_kit": {
+    "name": "Fentanyl Reversal Kit",
+    "description": "A loaded syringe of confiscated fentanyl with a Narcan auto-injector taped to your wrist. Clinical death in ninety seconds. Revival requires someone else.",
+    "examine_details": "You can't press the Narcan yourself. That's the point. It's not a solo ending.",
+    "type": "medical_supply",
+    "subtype": "trigger_finale_flatline",
+    "takeable": true,
+    "use_on": ["self", "crossroads_room"],
+    "alias": ["fentanyl kit", "overdose kit", "narcan kit", "reversal kit"]
+  },
+ 
+ 
+  "bludworths_ledger": {
+    "name": "Bludworth's Ledger",
+    "description": "A leather-bound journal in Bludworth's cramped handwriting. The last pages describe a theory about willingly transferring your remaining time to someone who wants it.",
+    "examine_details": "He called it 'the gift.' A survivor who wants to die — truly wants to die — can accept the list's remaining time, removing your name permanently. You need to find someone willing.",
+    "type": "evidence",
+    "subtype": "knowledge_sacrifice_path",
+    "takeable": true,
+    "is_readable": true,
+    "is_critical": true,
+    "spawn_rules": {
+      "allowed_levels": ["level_house"],
+      "loot_tier": "evidence",
+      "spawn_limit": 1
+    },
+    "on_read_set_flag": "knows_sacrifice_path",
+    "alias": [
+      "bludworths ledger", 
+      "bludworth ledger", 
+      "master ledger", 
+      "ledger", 
+      "book", 
+      "bludworths master ledger"
     ]
   },
-  "vet_sedatives": {
-    "name": "Vet Sedatives",
-    "description": "A sealed vial of veterinary-grade sedative. Enough to stop a large animal's heart — or a human's. Handle with extreme care.",
-    "type": "medical",
-    "subtype": "chemical",
+ 
+  "bludworths_formula": {
+    "name": "Bludworth's Formula",
+    "description": "A single folded page torn from a larger document. Mathematical notation and a single sentence: 'If you were never supposed to survive, Death will eventually remove the anomaly itself — unless you force the issue first.'",
+    "examine_details": "It describes a way to exploit the skip mechanism by placing yourself at the end of the list deliberately, then engineering a situation where Death skips you as the anomaly. No guarantees.",
+    "type": "evidence",
+    "subtype": "knowledge_loop_exploit",
     "takeable": true,
-    "is_key_item": true,
-    "is_unique": true,
-    "is_critical": true,
-    "is_evidence": true,
-    "weight": "featherweight",
-    "is_distributable_in_containers": true,
-    "spawn_rules":{
-      "required_tags":
-      ["veterinary", "chemical"],
-      "spawn_limit": 1
-      },
-    "custom_fields": {}
-  },
-  "defibrillator_pads": {
-    "name": "defibrillator pads",
-    "description": "A pair of defibrillator pads, still sealed in their sterile packaging. They look like they connect to a larger machine.",
-    "examine_details": "These pads are meant to deliver a powerful electrical shock to restart a heart. They're useless without the main defibrillator unit, but the conductive gel and metal contacts might have other applications.",
-    "type": "medical_equipment",
-    "subtype": "electrical_component",
-    "takeable": true,
-    "weight": "light",
-    "is_metallic": true,
-    "is_distributable_in_containers": true,
-    "spawn_rules":{
-      "required_tags":[
-        "hospital", "chemical"
-        ],
-      "spawn_limit": 2
-      },
-    "is_conductive": true,
-    "use_on": [
-      "defibrillator_unit",
-      "faulty_wiring",
-      "electrical_panel"
-    ],
-    "use_result": {
-      "defibrillator_unit": "You connect the pads to the defibrillator unit, preparing it for use.",
-      "faulty_wiring": "You try to use the pads on the faulty wiring. A dangerous idea that yields no positive results, only a shower of sparks!",
-      "electrical_panel": "The conductive pads create a dangerous connection. Sparks fly!"
-    },
-    "hazard_effectiveness": {
-      "electrical_fire_hazard": {
-        "effectiveness_modifier": -0.9,
-        "failure_message": "Using conductive pads on electrical fires causes a massive short circuit!",
-        "hp_damage_on_bad_use": 5
-      }
-    },
-    "special_properties": [
-      "medical_device",
-      "electrical_component"
-    ],
-    "voltage_rating": "High voltage - use with extreme caution"
-  },
-  "bludworths_ledger": {
-    "name": "Bludworth's Master Ledger",
-    "type": "document",
-    "description": "A large, leather-bound ledger filled with meticulous handwriting.",
     "is_readable": true,
-    "read_text": "The ink is smeared, but the math is clear: 'A life for a life. To cheat the design, you must take the days of someone who was never meant to die.'",
-    "on_read_action": {
-      "set_player_flag": "knows_blood_pact"
+    "spawn_rules": {
+      "allowed_levels": ["level_house"],
+      "loot_tier": "evidence",
+      "spawn_limit": 1
+    },
+    "on_read_set_flag": "knows_loop_exploit",
+    "alias": ["formula", "formula page", "bludworth formula", "folded page"]
+  },
+ 
+  "willing_companion_token": {
+    "name": "A Folded Note",
+    "description": "Someone pressed this into your hand. It reads: 'I know what you're trying to do. I'll take what's left. I'm ready. — [companion name]'",
+    "examine_details": "This isn't something you found. It's something someone gave you. The weight of it is enormous.",
+    "type": "document",
+    "subtype": "trigger_finale_sacrifice",
+    "takeable": true,
+    "is_given_by_companion": true,
+    "use_on": ["self", "companion", "crossroads_room"],
+    "alias": ["note", "the note", "companion note", "their note"]
+  },
+  "empty_heavy_revolver": {
+    "name": "Heavy Revolver (Empty)",
+    "examine_details": "The cylinder is completely empty. You could probably load it if you had the right ammunition.",
+    "description": "A .357 caliber revolver from the Police Station. The cylinder is completely empty.",
+    "type": "weapon",
+    "takeable": true,
+    "spawn_rules": {
+      "target_workplace_tags": ["police", "security", "law_enforcement"],
+      "paired_with": "bullets"
+    },
+    "is_alias": true,
+    "alias": ["heavy revolver", "empty revolver", "revolver", "gun", "empty gun"],
+    "combine_with": {
+      "bullets": {
+        "result_item": "loaded_heavy_revolver",
+        "success_message": "You slide the heavy .357 rounds into the cylinder and snap it shut with a satisfying click. It's ready."
+      }
     }
   },
+  "loaded_heavy_revolver": {
+    "name": "Loaded Heavy Revolver",
+    "description": "A .357 caliber reminder that there is always a way out.",
+    "examine_details": "There's only one way out of this now. Six rounds ready to fire.",
+    "type": "weapon",
+    "subtype": "finale_dark_path_trigger",
+    "is_metallic": true,
+    "takeable": true,
+    "weight": "heavy",
+    "use_on": ["self", "other_survivor", "crossroads_room", "stranger"],
+    "is_alias": true,
+    "alias": ["loaded revolver", "heavy revolver", "revolver", "gun", "loaded gun", "weapon"]
+  },
+
+  "armed_nail_gun": {
+    "name": "Armed Nail Gun",
+    "description": "A pneumatic nail gun pressurized to 120 PSI. It will easily fire a 3-inch framing nail through a human skull.",
+    "examine_details": "This isn't a tool anymore. It's a weapon. The air tank is full, and the nails are loaded. There's no safety on this thing.",
+    "type": "weapon",
+    "subtype": "finale_dark_path_trigger",
+    "is_metallic": true,
+    "takeable": true,
+    "use_on": ["self", "other_survivor", "crossroads_room", "stranger"],
+    "is_alias": true,
+    "alias": ["nail gun", "armed nail gun", "pneumatic nail gun", "gun", "nailgun"]
+  },
+
+  "charged_defibrillator_rig": {
+    "name": "Charged Defibrillator Rig",
+    "description": "A terrifying, makeshift defibrillator rigged to output raw industrial voltage.",
+    "examine_details": "It can output enough raw voltage to instantly stop a human heart... or jumpstart one.",
+    "type": "medical_equipment",
+    "subtype": "trigger_finale_override",
+    "takeable": true,
+    "use_on": ["self", "other_survivor", "crossroads_room"],
+    "is_alias": true,
+    "alias": ["defibrillator", "defib", "rig", "capacitor rig", "charged rig", "finale_defibrillator"]
+  },
+
+  "vet_sedatives": {
+    "name": "Veterinary Sedatives",
+    "description": "A sealed vial of veterinary sedatives, potent enough to knock out a large animal.",
+    "type": "medical_supply",
+    "subtype": "trigger_finale_flatline",
+    "is_distributable_in_containers": true,
+    "is_critical": true,
+    "spawn_rules": {
+        "target_workplace_tags": ["veterinary", "medical", "clinic", "laboratory"],
+        "loot_tier": "evidence",
+        "spawn_limit": 1
+    },
+    "examine_details": "A sealed syringe of veterinary-grade pentobarbital. Enough to stop a heart. Temporarily, if you're lucky.",
+    "takeable": true,
+    "is_alias": true,
+    "alias": ["sedatives", "vet sedatives", "vial", "sedative vial"]
+  },
+
+  "lethal_syringe": {
+    "name": "Lethal Syringe",
+    "description": "A syringe loaded with enough pentobarbital to stop a human heart.",
+    "examine_details": "This syringe is loaded with a lethal dose of pentobarbital. It will stop a heart, but it won't restart it. You'd need someone else to revive you within minutes, and even then... it's not guaranteed.",
+    "type": "medical_supply",
+    "subtype": "trigger_finale_flatline",
+    "takeable": true,
+    "use_on": ["self", "other_survivor", "crossroads_room"],
+    "is_alias": true,
+    "alias": ["syringe", "lethal syringe", "pentobarbital", "needle", "finale_chemical", "chemical"]
+  },
+  
+  "confiscated_fentanyl": {
+    "name": "Confiscated Fentanyl",
+    "description": "An evidence bag containing pure fentanyl powder.",
+    "examine_details": "Lethal in micro-doses. It would trigger instant respiratory depression and cardiac arrest.",
+    "type": "evidence",
+    "subtype": "trigger_finale_flatline",
+    "takeable": true,
+    "spawn_rules": {
+      "target_workplace_tags": ["police", "law_enforcement"],
+      "paired_with": "police_narcan"
+    },
+    "use_on": ["self", "other_survivor", "crossroads_room"],
+    "is_alias": true,
+    "alias": ["fentanyl", "powder", "drugs", "evidence bag", "finale_chemical", "chemical"]
+  },
+
+  "adrenaline_syringe": {
+    "name": "Epinephrine Syringe",
+    "description": "A massive syringe of pure adrenaline.",
+    "examine_details": "The needle is thick. Driven directly into the chest cavity, it could theoretically kickstart a stopped heart.",
+    "type": "medical_supply",
+    "subtype": "trigger_finale_flatline",
+    "takeable": true,
+    "spawn_rules": {
+      "target_workplace_tags": ["medical", "clinic", "hospital"]
+    },
+    "use_on": ["self", "other_survivor", "crossroads_room"],
+    "is_alias": true,
+    "alias": ["adrenaline", "adrenaline syringe", "epinephrine", "epipen", "syringe", "needle"]
+  },
+
+  "loaded_flare_gun": {
+    "name": "Loaded Flare Gun",
+    "examine_details": "The flare gun is made of bright orange plastic with a thick red barrel. It feels heavy and solid in your hands.",
+    "description": "A desperate weapon. Fired into a human chest, it will burn straight through to the spine.",
+    "type": "weapon",
+    "subtype": "trigger_finale_dark_path",
+    "takeable": true,
+    "use_on": ["self", "other_survivor", "crossroads_room", "stranger"],
+    "is_alias": true,
+    "alias": ["flare gun", "loaded flare gun", "flare", "gun", "weapon"]
+  },
+
   "coroners_report": {
     "name": "Classified Coroner's Report",
-    "is_readable": true,
     "type": "document",
+    "examine_details": "A confidential report detailing the circumstances of a recent death.",
     "description": "A confidential report detailing the circumstances of a recent death.",
-    "read_text": "The victim drowned, but was resuscitated 4 minutes later by paramedics. The report notes a strange anomaly: since their heart stopped and restarted, they have miraculously survived at least two subsequent 'freak accidents' unscathed, though others around them were not so lucky, like a Brian Gibbons who later died in a barbecue explosion. It's as if they were wiped from the ledger.",
+    "is_readable": true,
+    "read_text": "The victim drowned, but was resuscitated 4 minutes later by paramedics. The report notes a strange anomaly: since their heart stopped and restarted, they have miraculously survived at least two subsequent 'freak accidents' unscathed. It's as if they were wiped from the ledger.",
     "on_read_action": {
       "set_player_flag": "knows_resurrection"
     }
   },
-  "survivor_contact_sheet": {
-    "name": "Survivor Contact Sheet",
-    "type": "document",
-    "description": "A folded piece of official hospital stationery.",
-    "examine_details": "The social worker hastily jotted down the names and numbers of everyone who made it out of the disaster.",
-    "is_readable": true,
+  "industrial_helium_tank": {
+    "name": "Industrial Helium Tank",
+    "examine_details": "Used for filling hundreds of balloons. Breathing pure helium displaces oxygen without triggering the 'choking' reflex. You just pass out... and then your heart stops.",
+    "description": "Used for filling hundreds of balloons. Breathing pure helium displaces oxygen without triggering the 'choking' reflex. You just pass out... and then your heart stops.",
+    "type": "tool",
+    "subtype": "finale_asphyxiation_stop",
     "takeable": true,
-    "is_evidence": true,
-    "read_text": "It's a grim roll call. Seeing the names written down like this makes it all feel too real. You carefully commit the names to memory."
-  },
-  "bludworths_house_address": {
-    "name": "Bludworth's Address",
-    "type": "document",
-    "description": "A torn scrap of paper with an address scribbled in Dr. Hall's handwriting.",
-    "examine_details": "It's the home address of William Bludworth. The mortician who seems to know entirely too much about Death.",
-    "is_readable": true,
-    "takeable": true,
-    "is_evidence": true,
-    "read_text": "The ink is slightly smudged, but the location is clear. If there are answers to be found, they are at this house."
-  },
-  "loaded_revolver": {
-    "name": "Loaded Revolver",
-    "type": "weapon",
-    "description": "A heavy, cold, steel-framed revolver.",
-    "examine_details": "It feels impossibly heavy in your hand. You pop the cylinder—it is fully loaded. This isn't a tool for self-defense. It's a tool for transferring fate.",
-    "takeable": true,
-    "is_evidence": true,
-    "is_distributable_in_containers": true,
-    "weight": "heavy",
-    "damage": 10,
-    "special_properties": [
-      "fate_transfer",
-      "high_risk"
-    ],
-    "use_on": [
-      "self",
-      "other_survivor"
-    ],
-    "use_result": {
-      "self": "You pull the trigger, and everything goes black. When you come to, you feel... different. It's as if you've cheated death, but at what cost?",
-      "other_survivor": "You point the revolver at another survivor and pull the trigger. They collapse, seemingly unaffected. But you can feel the weight of their fate shifting onto you."
-    },
     "spawn_rules": {
-      "required_tags": ["police", "security", "dark_path"],
-      "spawn_limit": 1
+      "target_workplace_tags": ["food_service", "entertainment", "recreation"],
+      "paired_with": "pure_oxygen_resuscitator"
     }
+  },
+  "pure_oxygen_resuscitator": {
+    "name": "Emergency Oxygen Resuscitator",
+    "examine_details": "A heavy-duty EMT breathing mask with a pressurized pure oxygen tank. Capable of forcing oxygen back into dead lungs.",
+    "description": "A heavy-duty EMT breathing mask with a pressurized pure oxygen tank. Capable of forcing oxygen back into dead lungs.",
+    "type": "medical_supply",
+    "subtype": "finale_asphyxiation_start",
+    "takeable": true
+  },
+
+  "liquid_nitrogen_dewar": {
+    "name": "Liquid Nitrogen Dewar",
+    "examine_details": "A heavy, insulated canister of LN2. Used in high-end kitchens for flash-freezing, or medical clinics for tissue preservation. It will drop a human's core temperature to clinical death in minutes.",
+    "description": "A heavy, insulated canister of LN2. Used in high-end kitchens for flash-freezing, or medical clinics for tissue preservation. It will drop a human's core temperature to clinical death in minutes.",
+    "type": "tool",
+    "subtype": "finale_hypothermia_stop",
+    "takeable": true,
+    "spawn_rules": {
+      "target_workplace_tags": ["food_service", "medical", "industrial"],
+      "paired_with": "thermal_rewarming_blanket"
+    }
+  },
+  "thermal_rewarming_blanket": {
+    "name": "Active Thermal Rewarming Blanket",
+    "examine_details": "A specialized trauma blanket with built-in heating elements. It can pump scalding hot fluid through its lining to rapidly raise a person's core temperature.",
+    "description": "A specialized trauma blanket that pumps scalding hot fluid through its lining to reverse profound hypothermia.",
+    "type": "medical_supply",
+    "subtype": "finale_hypothermia_start",
+    "takeable": true
+  },
+
+  "empty_flare_gun": {
+    "name": "Maritime Flare Gun (Empty)",
+    "description": "A heavy-duty emergency flare gun. Fired at point-blank range, it is absolutely lethal.",
+    "examine_details": "The flare gun is made of bright orange plastic with a thick red barrel. It feels heavy and solid in your hands.",
+    "type": "weapon",
+    "takeable": true,
+    "spawn_rules": {
+      "target_workplace_tags": ["maritime", "water", "public"],
+      "paired_with": "phosphorus_flare"
+    },
+    "combine_with": {
+      "phosphorus_flare": {
+        "result_item": "loaded_flare_gun",
+        "success_message": "You slide the thick red flare into the bright orange plastic barrel and snap it shut."
+      }
+    }
+  },
+  "phosphorus_flare": {
+    "name": "Phosphorus Distress Flare",
+    "description": "Burns at 2,900 degrees Fahrenheit.",
+    "examine_details": "The flare is cylindrical, with a bright red body and a white tip. It feels heavy for its size.",
+    "type": "tool",
+    "takeable": true
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  "fairgrounds_ticket": {
+    "name": "Fairgrounds Wristband",
+    "description": "A neon green paper wristband granting all-access to the county fair.",
+    "examine_details": "The wristband is slightly sticky to the touch and smells faintly of cotton candy.",
+    "type": "evidence",
+    "is_evidence": true,
+    "takeable": true
+  },
+  "grease_stained_receipt": {
+    "name": "Grease-Stained Receipt",
+    "description": "A crumpled thermal receipt from the Taco Time Truck.",
+    "examine_details": "It smells like cumin and old frying oil.",
+    "type": "evidence",
+    "is_evidence": true,
+    "takeable": true
+  },
+  "shipping_manifest": {
+    "name": "Shipping Manifest",
+    "description": "A clipboard with a printed list of cargo weights.",
+    "examine_details": "The letterhead reads: City Shipping Warehouse.",
+    "type": "document",
+    "is_evidence": true,
+    "is_readable": true,
+    "read_text": "Pallet weights are severely unbalanced. Someone at the warehouse is cutting corners.",
+    "takeable": true
+  },
+  "corporate_keycard": {
+    "name": "Corporate Keycard",
+    "description": "A blank white RFID card attached to a retractable lanyard.",
+    "examine_details": "The back has a sticker that says 'Downtown Office Building - Floor 12'.",
+    "type": "evidence",
+    "is_evidence": true,
+    "takeable": true
+  },
+  "hotel_room_keycard": {
+    "name": "Hotel Keycard",
+    "description": "A plastic swipe card with the logo for the Grand Central Hotel.",
+    "type": "evidence",
+    "is_evidence": true,
+    "takeable": true
+  },
+  "bistro_matchbook": {
+    "name": "Bistro Matchbook",
+    "description": "A small cardboard matchbook with only two matches left.",
+    "examine_details": "The cover reads: Luigi's Italian Bistro. 'The best fire-roasted pizza in the city.'",
+    "type": "evidence",
+    "is_evidence": true,
+    "takeable": true
+  },
+  "museum_exhibit_guide": {
+    "name": "Museum Exhibit Guide",
+    "description": "A tri-fold brochure for the City History Museum.",
+    "examine_details": "It outlines a new exhibit on medieval weaponry.",
+    "type": "document",
+    "is_evidence": true,
+    "is_readable": true,
+    "read_text": "City History Museum: Preserving the past, inspiring the future.",
+    "takeable": true
+  },
+  "cab_receipt": {
+    "name": "Cab Receipt",
+    "description": "A printed receipt from City Taxi Service.",
+    "examine_details": "The driver's medallion number is clearly printed at the top.",
+    "type": "evidence",
+    "is_evidence": true,
+    "takeable": true
+  },
+  "school_id_badge": {
+    "name": "School Staff Badge",
+    "description": "A photo ID badge for Downtown High School.",
+    "examine_details": "The job title listed under the scratched-out photo is 'Janitorial Services'.",
+    "type": "evidence",
+    "is_evidence": true,
+    "takeable": true
   }
 }

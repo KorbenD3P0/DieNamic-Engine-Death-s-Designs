@@ -49,13 +49,8 @@
         "text": "I've seen enough paperwork cross my desk to know this isn't over for you.\n\nI don't have anywhere else to be right now that matters more than this. Let me come with you.\n\n*She sets down her clipboard.*\n\nI know every hospital in this city. Every clinic. If someone ends up hurt, I know who to call and what to say to get them seen. You need that.",
         "options": [
           {
-            "text": "I could use the help. Let's go.",
-            "target_state": "joined",
-            "on_select_action": {
-              "action_effect": "add_companion",
-              "companion_name": "social_worker",
-              "companion_display_name": "The Social Worker"
-            }
+            "text": "I could use the help.",
+            "target_state": "joined"
           },
           {
             "text": "It's too dangerous. Stay here.",
@@ -289,58 +284,102 @@
   "act_1_survival": {
     "visionary": {
       "first_meeting": {
-        "text": "'You believed me. You actually believed me. Nobody ever believes me.'",
+        "text": "You track down {visionary}. They are pacing back and forth, visibly shaking from the adrenaline of the disaster.",
         "options": [
           {
-            "text": "What you saw — has it happened before?",
-            "target_state": "confession"
+            "text": "[color=#00ff00]You were right. Everything you said was right. Are you okay?[/color]",
+            "requires_flag": "visionary_allied",
+            "target_state": "friendly_greeting"
           },
+          {
+            "text": "[color=#ff0000]Hey! We need to talk about what just happened in there.[/color]",
+            "requires_flag": "visionary_antagonist",
+            "target_state": "hostile_greeting"
+          },
+          {
+            "text": "[color=#cc9900]You knew that was going to happen. How?[/color]",
+            "requires_not_flag": "visionary_antagonist",
+            "target_state": "confession"
+          }
+        ]
+      },
+
+      "friendly_greeting": {
+        "text": "'[color=#3399ff]You believed me. You actually believed me. Nobody ever believes me.[/color]'",
+        "next_state": "confession"
+      },
+      "confession": {
+        "text": "'[color=#3399ff]I've had that bad feeling and intrusive thoughts before, but this... this was like a bad acid trip. And now it's worse. We cheated... and now it's coming back for us.[/color]'",
+        "options": [
           {
             "text": "Who did you see die first? Who is next?",
             "target_state": "reveal_list"
           },
           {
-            "text": "People who survived are dying. Do you know why?",
-            "target_state": "fear"
+            "text": "There's a mortician who studied this; Bludworth. I'm going to find out what he knew.",
+            "target_state": "desperate_hope"
           }
         ]
-      },
-      "confession": {
-        "text": "'No, nothing like this. I've had that bad feeling and intrusive thoughts, but this was like a bad acid trip.'",
-        "next_state": "haunted"
-      },
-      "fear": {
-        "text": "'Dying? No. No no no. It's not supposed to work like that. We got OUT. We SURVIVED. That's supposed to be the end of it.'",
-        "next_state": "terrified"
       },
       "reveal_list": {
         "text": "'I... I remember the exact order. God, I wish I didn't, but it's burned into my memory.'",
         "on_talk_action": {
           "type": "ask_who_is_next"
-        }
-      },
-      "haunted": {
-        "text": "'I've spent my whole life trying to forget that feeling. And now it's back. And it's worse.'",
-        "options": [
-          {
-            "text": "There's a doctor who studied this. Bludworth. I'm going to find his research.",
-            "target_state": "desperate_hope"
-          }
-        ]
-      },
-      "terrified": {
-        "text": "'Then it's not over. Oh God. It's not over. We cheated and now it's... it's coming back for us.'",
-        "options": [
-          {
-            "text": "I'm going to find answers. A Dr. Bludworth studied this.",
-            "target_state": "desperate_hope"
-          }
-        ]
+        },
+        "next_state": "desperate_hope"
       },
       "desperate_hope": {
-        "text": "'Bludworth? I've heard that name. I'm coming with you; let's figure out what the hell is going on.'",
+        "text": "'I'm coming with you; let's figure out what the hell is going on.'",
         "on_talk_action": {
           "special_effect": ["recruit_companion", "despawn_npc"]
+        }
+      },
+
+      "hostile_greeting": {
+        "text": "'[color=#ff0000]YOU. You told me I was crazy! You told me to sit down and relax! You were going to let me DIE in there![/color]'",
+        "options": [
+          {
+            "text": "I didn't know for sure, I was just trying to keep people calm.",
+            "target_state": "hostile_blame"
+          },
+          {
+            "text": "But you survived. We both did.",
+            "target_state": "hostile_spite"
+          }
+        ]
+      },
+      "hostile_blame": {
+        "text": "'Keep people calm while they were about to die?!\n[color=#ff0000]You're sick. Stay the hell away from me.[/color]'",
+        "options": [
+          {
+            "text": "People who survived are dying. Who is next on the list? We need to know.",
+            "target_state": "hostile_withhold_list"
+          }
+        ]
+      },
+      "hostile_spite": {
+        "text": "'No thanks to you! You wanted me dead, and now whatever that was is coming for the rest of us.[color=#ff0000]If it's between you and me, I'm making sure it's YOU.[/color]'",
+        "options": [
+          {
+            "text": "Fine. But people are dying in order. Who is next? You saw it.",
+            "target_state": "hostile_withhold_list"
+          }
+        ]
+      },
+      "hostile_withhold_list": {
+        "text": "'You want to know who's next? Figure it out yourself. I'm not telling you shit.'",
+        "options": [
+          {
+            "text": "People are going to die if you don't tell me!",
+            "target_state": "hostile_reveal_list"
+          }
+        ]
+      },
+      "hostile_reveal_list": {
+        "text": "'Let them! As long as it's not me... Fine! I remember the exact order. But I'm not lifting a finger to help you save them. I'm looking out for myself.'\n\nThey shove past you and disappear down the street.",
+        "on_talk_action": {
+          "type": "ask_who_is_next",
+          "special_effect": "despawn_npc"
         }
       }
     },
@@ -388,7 +427,7 @@
         ]
       },
       "hopeful": {
-        "text": "'Find him. Find whatever he knew. I'll be here when you get back.'"
+        "text": "'Let's find out whatever he knew.'"
       }
     },
     "panicking": {
@@ -464,8 +503,7 @@
         "next_state": "standard_loop"
       },
       "standard_loop": {
-        "text": "'Thank you. I don't know what else to say. Is it true? Are we all still in danger?'"
-      },
+        "text": "'Thank you. I don't know what else to say. Is it true? Are we all still in danger?'",
         "options": [
             { "text": "I don't know. I'm trying to find answers.", 
               "on_talk_action": {
@@ -480,8 +518,7 @@
         "next_state": "standard_loop"
       },
       "standard_loop": {
-        "text": "'I'll do whatever you say. Just keep us alive.'"
-      },
+        "text": "'I'll do whatever you say. Just keep us alive.'",
       "options": [
         { "text": "I don't know how to do that yet. I'm trying to find answers.", 
           "on_talk_action": {
@@ -595,9 +632,9 @@
   },
   "act_3_hunted_workplace": {
     "greeting_oblivious": {
-      "text": "'Hey! I know you! You're the one who was freaking out right before it happened. What are you doing here at {workplace_name}??'",
+      "text": "'Hey! I know you! You're one of the ones who was freaking out right before it happened. What are you doing here at {workplace_name}??'",
       "options": [
-        { "text": "You are in terrible danger. You need to leave right now.", "target_state": "disbelief" },
+        { "text": "{npc_name} are in so much fuckin danger. You need to leave right now.", "target_state": "disbelief" },
         { "text": "I came to check on you. Are you working today?", "target_state": "working" }
       ]
     },
@@ -731,6 +768,15 @@
     "bystander_2": { "text": "[WRITE THIS]" }
     },
 
+  "panic_and_flee": {
+    "text": "{npc_name} goes completely white. Before you can say another word, they shove past you and run for the parking lot.\n\n\"I'm NOT going to just WAIT to die!\"",
+    "options": [],
+    "next_state": null,
+    "on_talk_action": {
+      "special_effect": "trigger_chase_level",
+      "target_npc": "{npc_name}"
+    }
+  },
 
   "_default": {
     "_context": "Fallback dialogue for any level not explicitly defined.",
@@ -764,8 +810,136 @@
     "visionary": {
       "greeting": {
         "text": "'I can feel it getting closer. We're running out of time.'"
+        }
+      }
+    },
+  "FLEEING_NPC_DIALOGUE": {
+    "chase_cornered": {
+      "panicking": {
+        "first_contact": {
+          "text": "'{npc_name} SLAMS on the brakes as you pull alongside them. They are hyperventilating, both hands on the wheel, staring at you with wild eyes.'\n\n\"GET AWAY FROM ME! YOU DON'T UNDERSTAND WHAT'S HAPPENING!\"",
+          "options": [
+            {
+              "text": "\"I DO understand. That's why I followed you.\"",
+              "target_state": "listen_reluctant",
+              "on_talk_action": {"set_flag": "used_empathy_approach"}
+            },
+            {
+              "text": "\"You are going to die at that intersection. I've seen it.\"",
+              "target_state": "shocked",
+              "on_talk_action": {"set_flag": "used_direct_approach"}
+            },
+            {
+              "text": "[Stay quiet. Let them breathe.]",
+              "target_state": "calming",
+              "requires_flag": "player_has_companion_witness"
+            }
+          ]
+        },
+        "listen_reluctant": {
+          "text": "Their grip on the wheel tightens. \"...How could you possibly understand?\"\n\nTheir eyes are darting between you and the road ahead. The intersection is close.",
+          "options": [
+            {
+              "text": "\"Because I was there too. I survived for a reason and so did you.\"",
+              "target_state": "talked_down",
+              "on_talk_action": {"special_effect": "resolve_chase_success"}
+            },
+            {
+              "text": "\"Tell me what you're running from.\"",
+              "target_state": "confessing"
+            }
+          ]
+        },
+        "shocked": {
+          "text": "Their face goes completely blank. The car slows slightly.\n\n\"...What did you just say?\"",
+          "options": [
+            {
+              "text": "\"There's a T-junction at the end of this road. Highway traffic. You won't see it coming.\"",
+              "target_state": "talked_down",
+              "on_talk_action": {"special_effect": "resolve_chase_success"}
+            },
+            {
+              "text": "\"Pull over. Right now. I'll explain everything.\"",
+              "target_state": "talked_down",
+              "on_talk_action": {"special_effect": "resolve_chase_success"}
+            }
+          ]
+        },
+        "confessing": {
+          "text": "\"I keep seeing it,\" they say, voice cracking. \"The disaster. Over and over. In dreams. I thought if I just got far enough away...\"\n\nThey trail off. The intersection is very close now.",
+          "options": [
+            {
+              "text": "\"Running won't help. It follows us. But I know how to fight it.\"",
+              "target_state": "talked_down",
+              "on_talk_action": {"special_effect": "resolve_chase_success"}
+            }
+          ]
+        },
+        "calming": {
+          "text": "You say nothing. You just stay alongside them. Somehow that's enough — they see you're not afraid. The panic in their eyes starts to dim.\n\nThe car slows.",
+          "options": [
+            {
+              "text": "[Keep pace silently until they stop.]",
+              "target_state": "talked_down",
+              "on_talk_action": {"special_effect": "resolve_chase_success"}
+            }
+          ]
+        },
+        "talked_down": {
+          "text": "Their car rolls to a stop on the shoulder. They sit there shaking, both hands still on the wheel.\n\n\"...Okay,\" they finally say. \"Okay. I'm listening.\"",
+          "options": [],
+          "next_state": "chase_resolved",
+          "on_talk_action": {"special_effect": "resolve_chase_success"}
+        }
+      }
+    },
+    "chase_crashed": {
+      "panicking": {
+        "stunned": {
+          "text": "Their car has clipped a parked vehicle and stalled. They are sitting there dazed, airbag powder on their face. The door is open. They are not going anywhere — for about thirty seconds.",
+          "options": [
+            {
+              "text": "\"Hey. Hey, look at me. Are you hurt?\"",
+              "target_state": "listen_reluctant",
+              "on_talk_action": {"set_flag": "used_empathy_approach"}
+            },
+            {
+              "text": "\"You need to stop running. Right now. It won't help.\"",
+              "target_state": "shocked"
+            }
+          ]
+        }
       }
     }
   }
+  },
+  "reaction_pool": {
+    "crush": {
+      "visionary": "'That... the weight of it. That was exactly what I saw in the premonition.'",
+      "skeptic": "'Christ! The structural integrity of this place is a joke. We need to report that.'",
+      "panicking": "'It almost crushed me! We're not safe! Nowhere is safe!'"
+    },
+    "fire": {
+      "visionary": "'The smoke... it's just like the dream. It burns exactly the same.'",
+      "skeptic": "'Faulty wiring, probably. Still, that was way too close.'",
+      "panicking": "'I can't breathe! Get me out of here before something else catches!'"
+    },
+    "electrical": {
+      "visionary": "'The sparks... I knew it was coming, but I still couldn't move.'",
+      "skeptic": "'Who passed the safety inspection on this grid? That was a lethal surge.'",
+      "panicking": "'Did you see that?! We were almost fried!'"
+    },
+    "magnetic": {
+      "visionary": "'The pull of it... Death isn't just accidents. It's physics. It's using the world against us.'",
+      "skeptic": "'An MRI doesn't just turn on by itself. Someone bypassed the safety locks.'",
+      "panicking": "'It was sucking us in! It was going to tear us apart!'"
+    },
+    "generic": {
+      "visionary": "'It's adapting. The design is adapting to us.'",
+      "skeptic": "'Okay. That was too close. What the hell is going on?'",
+      "panicking": "'I'm going to die. I'm actually going to die today.'"
+    }
   }
+}
+}
 }

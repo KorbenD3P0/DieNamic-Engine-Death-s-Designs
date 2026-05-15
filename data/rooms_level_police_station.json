@@ -39,8 +39,8 @@
                 "initial_state_override": "dormant"
             }
         ],
-        "npc_slots": 1,
-        "npcs_present": ["Detective Ween"],
+        "npc_slots": 0,
+        "npcs": ["detective_ween"],
         "objects": [
             {
                 "name": "Fluorescent Lights",
@@ -173,7 +173,16 @@
         "exits": {
             "south": "Evidence Locker Hallway"
         },
-        "furniture": [],
+        "furniture": [
+            {
+                "name": "Evidence Lockup Cabinet",
+                "description": "A row of wire mesh lockers, each tagged with a case number. Most are padlocked. One near the end is open — the lock broken, contents disturbed.",
+                "is_container": true,
+                "locked": false,
+                "items": ["bludworths_house_key"],
+                "search_description": "Inside the open locker: a tagged evidence bag containing personal effects from a John Doe case from three years ago. Most of it is junk. But at the bottom of the bag is a [color=ffff00]worn house key[/color] with a faded tag. Someone wrote [color=ffff00]BLUDWORTH[/color] on it in permanent marker."
+            }
+        ],
         "items": [],
         "hazards_present": [
             {
@@ -192,6 +201,10 @@
             }
         ],
         "objects": [
+            {
+                "name": "Evidence Tag",
+                "description": "The tag on the open locker reads: CASE #2847-B. Deceased: William John Bludworth. Personal effects, unclaimed."
+            },
             {
                 "name": "Evidence Pile",
                 "description": "Decades of dangerous confiscated items in one room."

@@ -118,8 +118,8 @@
         "forceable_text": "The desk drawers are sturdy, but with enough effort you could force them open. It will be noisy and might damage the contents."
       }
     ],
-    "npcs_present": [
-      "Dr. Marcus Hall"
+    "npcs": [
+      "dr_marcus_hall"
     ],
     "locked": true,
     "unlocks_with": "coroners_office_key"
@@ -348,7 +348,7 @@
         "MRI Control Room"
       ]
     },
-    "first_entry_text": "Walking through the metal detectors, your makes an audible chirp-\n[color=#FF3131]*NFC Active!*[/color]\n\nHm.\nYou slide your phone into your back pocket as the guard waves you through.\n\nIn the ambulance bay past reception, you see a gurney holding a large, body-sized black bag being wheeled into an elevator headed for the basement [color=#BC13FE]Morgue[/color].\n\nWell shit. [color=#FF3131]Wonder where that person is headed[/color].",
+    "first_entry_text": "Walking through the metal detectors, your makes an audible chirp-\n[color=#FF3131]*NFC Active!*[/color]\n\nHm.\nYou slide your phone into your back pocket as the guard waves you through.\n\nIn the ambulance bay past reception, you see a gurney holding a large, body-sized black bag being wheeled into an elevator headed for the basement [color=#BC13FE]Morgue[/color].\n\nWell shit. [color=#FF3131]You'd hate to be going where they are.[/color]",
     "floor": 1,
     "furniture": [
       {
@@ -385,7 +385,7 @@
     },
     "hazards_present": [],
     "items": [],
-    "npc_slots": 1,
+    "npc_slots": 0,
     "npcs": ["hospital_nurse"],
     "objects": [
       {
@@ -589,48 +589,71 @@
     "items": [],
     "objects": [
       {
-        "name": "fire extinguisher",
+        "name": "Fire Extinguisher",
+        "id": "fire_extinguisher",
+        "aliases": ["extinguisher"],
         "is_metallic": true,
-        "weight": "light"
+        "weight": "medium"
       },
       {
-        "name": "oxygen tank",
+        "name": "Oxygen Tank",
+        "id": "oxygen_tank",
+        "aliases": ["tank", "gas tank"],
         "is_metallic": true,
-        "weight": "light",
+        "weight": "heavy",
         "trigger_hazard_on_action": {
           "mri_pull": "leaking"
         }
       },
       {
-        "name": "gurney",
-        "is_metallic": true,
-        "weight": "massive"
-      },
-      {
-        "name": "wheelchair",
+        "name": "IV Stand",
+        "id": "iv_stand",
+        "aliases": ["stand", "pole"],
         "is_metallic": true,
         "weight": "medium"
       },
       {
-        "name": "scalpel",
+        "name": "Gurney",
+        "id": "gurney",
+        "aliases": ["bed", "stretcher"],
         "is_metallic": true,
-        "weight": 1.0
+        "weight": "massive"
       },
       {
-        "name": "computer_console",
-        "is_metallic": false,
+        "name": "Wheelchair",
+        "id": "wheelchair",
+        "aliases": ["chair"],
+        "is_metallic": true,
         "weight": "heavy"
       },
       {
-        "name": "observation_window",
+        "name": "Surgical Scalpel",
+        "id": "scalpel",
+        "aliases": ["blade", "knife"],
+        "is_metallic": true,
+        "weight": "light"
+      },
+      {
+        "name": "Computer Console",
+        "id": "computer_console",
+        "aliases": ["console", "computer", "desk"],
         "is_metallic": false,
-        "weight": "heavy"
+        "weight": "massive"
+      },
+      {
+        "name": "Observation Window",
+        "id": "observation_window",
+        "aliases": ["window", "glass"],
+        "is_metallic": false,
+        "weight": "massive"
       }
     ],
     "objects_post_mri_removed_or_altered": [
-      "IV_stand",
+      "iv_stand",
       "oxygen_tank",
-      "wheelchair"
+      "wheelchair",
+      "scalpel",
+      "fire_extinguisher"
     ],
     "locked": false
   },
@@ -665,12 +688,9 @@
       "force": "gas_leak"
     },
     "hazards_present": [
-      "mri",
-      "oxygen_tank"
+      "mri"
     ],
-    "items": [
-      "gurney"
-    ],
+    "items": [],
     "connections": {
     "hvac": ["Patient Room 101", "MRI Control Room", "Upper Floor Hallway"]
     },
@@ -876,7 +896,7 @@
       "north": "MRI Control Room",
       "west": "Upper Floor Hallway"
     },
-    "first_entry_text": "Slipping out of the room to the north and headed for the exit, you see an equipment technician talking into a chunky work phone while clutching a pack of smokes.\n\n\"Uhh-of course I took the cart and dirty equipment to the basement,\" they say, eyeing the room they just exited.\n\"and I'll be back to swap out that broken IV stand in 101, I just need a quick break. This place gives me a splitting headache...\"",
+    "first_entry_text": "Slipping out of the room to the [color=#ff00ff]north[/color] and headed for the exit, you see an equipment technician talking into a chunky work phone while clutching a pack of smokes.\n\n\"Uhh-of course I took the [color=#ff0]cart and dirty equipment[/color] to the basement,\" they say, eyeing the room they just exited.\n\"and I'll be back to swap out that [color=#0024ff]broken IV stand[/color] in 101, I just need a quick break. This place gives me a [color=#ff0000]splitting headache...[/color]\"",
     "floor": 2,
     "forceable": true,
     "force_threshold": 3,

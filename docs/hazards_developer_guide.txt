@@ -148,7 +148,8 @@ Hazards are defined as JSON objects in `data/hazards.json`. The engine reads the
 | `on_state_entry_consequences` | object | Compound entry effects: `hp_damage`, `fear_increase`, `fear_decrease`, `message` |
 | `on_state_entry_rewards` | object | Rewards: `score_bonus`, `turns_bonus`, `achievements_to_unlock` |
 | `on_state_entry_move_player_to` | string | Forces the player to a different room |
-| `on_state_entry_play_sfx` | string | Triggers a sound effect |
+| `play_sfx_on_entry` | string | Triggers a sound effect from a hazard |
+| `play_sfx` | string | Triggers a sound effect from an item |
 | `pause_for_player_acknowledgement` | bool | Pauses progression until player dismisses a popup |
 | `progress_while_in_room` | bool | Only progresses while the player is in this room |
 | `progression_condition` | object | Gates progression on conditions (see below) |

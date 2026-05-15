@@ -25,6 +25,11 @@
       {"type": "play_music", "track": "hospital_ambience"},
       {"type": "set_flag", "flag": "entered_hospital"}
     ],
+    "loot_hints": [
+      "Evidence Storage has an unlocked locker — case #2847-B.",
+      "The Evidence Racks in the hallway may have Bludworth's old files."
+    ],
+    "item_presence": ["bludworths_house_key", "bludworths_ledger", "bullets"],
     "on_exit_level_events": [
       {"type": "unlock_achievement", "achievement": "survived_the_hospital"}
     ],
@@ -53,6 +58,11 @@
       {"type": "show_popup", "title": "In Custody", "message": "The fluorescent lights of the precinct buzz overhead. You are safe from Death in here... but you are trapped."},
       {"type": "play_music", "track": "police_station_ambience"}
     ],
+    "loot_hints": [
+      "Evidence Storage has an unlocked locker — case #2847-B.",
+      "The Evidence Racks in the hallway may have Bludworth's old files."
+    ],
+    "item_presence": ["bludworths_house_key", "bludworths_ledger", "bullets"],
     "conditional_transitions": [
       {
         "condition": "default",
@@ -80,10 +90,27 @@
       }
     ]
   },
+  "level_car_chase": {
+    "entry_room": "Your Car - On the Road",
+    "display_name": "The Pursuit",
+    "description": "A panicking survivor has fled. You must catch them before Death does.",
+    "time_limit_turns": 12,
+    "on_enter_level_events": [
+      {
+        "type": "show_message",
+        "message": "\n[color=ffaa00]Follow them. Don't lose them. Talk them down.[/color]\n"
+      }
+    ]
+  },
   "level_auto_shop": {
     "name": "Pete's Auto Repair",
     "description": "The smell of oil and gasoline is overwhelming. The air is thick with the hum of machinery and the hiss of leaking compressors. The floor is slick with oil stains, and the walls are adorned with faded posters of classic cars and neon signs that buzz aggressively.",
     "entry_room": "Garage Forecourt",
+    "loot_hints": [
+      "The garage has industrial equipment — jumper cables rated for more than just cars.",
+      "The lockbox under the workbench is worth forcing."
+    ],
+    "item_presence": ["industrial_jumper_cables", "empty_heavy_revolver"],
     "conditional_transitions": [
       {
         "condition": "has_flag", 
@@ -120,6 +147,11 @@
         "next_level_id": "level_hub"
       }
     ],
+    "loot_hints": [
+      "Bludworth left notes. Look everywhere — attic, study, hidden compartments.",
+      "His formula for the loop exploit is somewhere in the study."
+    ],
+    "item_presence": ["bludworths_final_notes", "bludworths_ledger", "bludworths_formula"],
     "level_requirements": {
       "required_items": ["bludworths_house_key"]
     },
@@ -139,6 +171,11 @@
   "level_fairgrounds": {
     "name": "McKinley County Fairgrounds",
     "entry_room": "Midway (Center)",
+    "loot_hints": [
+      "The carnival supply trailer has pressurized tanks. Not all of them are CO2.",
+      "The prize booth has a locked cabinet in the back."
+    ],
+    "item_presence": ["industrial_helium_tank", "pure_oxygen_resuscitator"],
     "on_enter_level_events": [
       {"type": "show_popup", "title": "The Fairgrounds", "message": "The smell of fried food and livestock fills the air. You need to find who you're looking for before the rides become weapons."},
       {"type": "play_music", "track": "carnival_theme"}
@@ -177,6 +214,11 @@
       {"type": "show_popup", "title": "City Vet Clinic", "message": "The harsh smell of bleach fails to cover the underlying scent of frightened animals and old copper. The quiet hum of the fluorescent lights feels like a trap waiting to spring."},
       {"type": "play_music", "track": "sterile_dread_ambience"}
     ],
+    "loot_hints": [
+      "The veterinary clinic's medication locker is what you came for.",
+      "Check the surgical prep area — the adrenaline stores are kept separately."
+    ],
+    "item_presence": ["vet_sedatives", "adrenaline", "confiscated_fentanyl"],
     "unlock_conditions": {
       "or": [
         {"npc_target_location": "clinic"},
@@ -190,6 +232,11 @@
   "level_clinic": {
     "name": "Hope River Outpatient Clinic",
     "entry_room": "Waiting Area",
+    "loot_hints": [
+      "The clinical supply room has a defibrillator unit.",
+      "The crash cart in the hallway — check its drawers."
+    ],
+    "item_presence": ["defibrillator_pads", "adrenaline_syringe"],
     "on_enter_level_events": [
       {"type": "show_popup", "title": "Outpatient Clinic", "message": "Sterile and quiet. But Death doesn't make an appointment."}
     ],
@@ -318,6 +365,11 @@
     "on_enter_level_events": [
       {"type": "show_popup", "title": "Grand Central Hotel", "message": "A sprawling historic hotel with ancient wiring, heavy chandeliers, and a boiler room that hasn't been inspected in a decade."}
     ],
+    "loot_hints": [
+      "The hotel maintenance closet has industrial equipment.",
+      "Room 217 has something in the minibar that doesn't belong there."
+    ],
+    "item_presence": ["liquid_nitrogen_dewar", "thermal_rewarming_blanket"],
     "conditional_transitions": [
       {"condition": "default", "next_level_id": "level_hub"}
     ]

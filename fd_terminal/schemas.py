@@ -293,15 +293,22 @@ class OmenDataTypedDict(TypedDict, total=False):
     sfx: str
     color_sting: str  # NEW: Hex color code (e.g., "ff0000" for red)
 
-class CharacterClassTypedDict(TypedDict):
-    name: NotRequired[str]
+class DeathStatsTypedDict(TypedDict, total=False):
+    D: int
+    E: int
+    A: int
+    T: int
+    H: int
+
+class CharacterClassTypedDict(TypedDict, total=False):
     description: str
     max_hp: int
-    perception: int
-    intuition: int
-    strength: float
-    affinities: NotRequired[CharacterAffinityTypedDict]
-
+    stats: DeathStatsTypedDict
+    observations: Dict[str, str]
+    affinities: Dict[str, List[str]]
+    class_flags: Dict[str, bool]
+    special_mechanics: List[str]
+    
 class DisasterTypedDict(TypedDict):
     name: NotRequired[str]
     description: str

@@ -1,0 +1,133 @@
+{
+  "Museum Foyer": {
+    "name": "Museum Foyer",
+    "description": "A grand, echoing hall with marble floors and vaulted ceilings. A massive, heavy banner for the new 'Ancient Rome' exhibit hangs precariously over the main walkway. The ticket desk sits empty.",
+    "first_entry_text": "The museum is eerily quiet. The heavy marble echoes your every footstep. History is dead, but it feels like something here is very much alive.",
+    "entry_room": true,
+    "exits": {
+      "north": "Dinosaur Hall",
+      "east": "Restoration Lab",
+      "south": {
+        "target": "LEVEL_TRANSITION_HUB"
+      }
+    },
+    "furniture": [
+      {
+        "name": "Ticket Desk",
+        "description": "A polished wooden desk with a powered-off register.",
+        "is_container": true,
+        "items": ["museum_map"]
+      }
+    ],
+    "hazards_present": [
+      "falling_marquee_letters",
+      "water_puddle"
+    ],
+    "objects": [
+      {
+        "name": "Exhibition Banner",
+        "description": "A multi-ton brass and canvas banner hanging from the ceiling. One of the mounting brackets looks severely bent.",
+        "id": "falling_marquee_letters",
+        "aliases": ["banner", "heavy banner", "sign"]
+      },
+      {
+        "name": "Leaking Skylight",
+        "description": "A small crack in the glass dome above is letting in rain, forming a puddle on the smooth marble.",
+        "id": "water_puddle",
+        "aliases": ["puddle", "water"]
+      }
+    ],
+    "items": [],
+    "npcs": [],
+    "npc_slots": 2
+  },
+  "Dinosaur Hall": {
+    "name": "Dinosaur Hall",
+    "description": " towering T-Rex skeleton dominates the center of the room. The floorboards here are old and creak loudly. To the west is the Archives staircase.",
+    "exits": {
+      "south": "Museum Foyer",
+      "west": "Basement Archives Stairs"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "precarious_object",
+      "weak_floorboards"
+    ],
+    "objects": [
+      {
+        "name": "T-Rex Skull",
+        "description": "The massive fossilized skull is suspended by steel cables, but it looks unbalanced and leans heavily to one side.",
+        "id": "precarious_object",
+        "aliases": ["skull", "dinosaur", "fossil"]
+      },
+      {
+        "name": "Warped Floorboard",
+        "description": "The antique hardwood floor sags dangerously near the center exhibit.",
+        "id": "weak_floorboards",
+        "aliases": ["floor", "floorboard", "wood"]
+      }
+    ],
+    "items": [],
+    "npcs": [],
+    "npc_slots": 2
+  },
+  "Restoration Lab": {
+    "name": "Restoration Lab",
+    "description": "A sterile, brightly lit room where artifacts are cleaned. The air smells sharply of chemicals. There is a large sink and rows of heavy metal shelving.",
+    "exits": {
+      "west": "Museum Foyer"
+    },
+    "furniture": [
+      {
+        "name": "Supply Shelf",
+        "description": "A tall metal shelf overloaded with plaster and stone busts. It leans dangerously away from the wall.",
+        "id": "unstable_shelf",
+        "is_container": false
+      }
+    ],
+    "hazards_present": [
+      "unstable_shelf",
+      "leaking_solvent_drum"
+    ],
+    "objects": [
+      {
+        "name": "Solvent Drum",
+        "description": "A 55-gallon drum of industrial solvent used for stripping lacquer. A steady drip from a rusted seam is forming a puddle.",
+        "id": "leaking_solvent_drum",
+        "aliases": ["drum", "barrel", "solvent"]
+      }
+    ],
+    "items": ["duct_tape"],
+    "npcs": [],
+    "npc_slots": 1
+  },
+  "Basement Archives Stairs": {
+    "name": "Basement Archives Stairs",
+    "description": "A narrow, dark wooden staircase descending into the museum's basement storage. It smells of rot and mildew.",
+    "exits": {
+      "east": "Dinosaur Hall"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "collapsing_stairs",
+      "faulty_wiring"
+    ],
+    "objects": [
+      {
+        "name": "Rickety Staircase",
+        "description": "The wooden stairs are deeply rotted. Several treads are cracked, and the whole structure groans.",
+        "id": "collapsing_stairs",
+        "aliases": ["stairs", "staircase", "steps"]
+      },
+      {
+        "name": "Exposed Wall Wiring",
+        "description": "An old junction box is missing its cover. The wires inside frequently arc with blue sparks.",
+        "id": "faulty_wiring",
+        "aliases": ["wiring", "junction box", "sparks"]
+      }
+    ],
+    "items": [],
+    "npcs": [],
+    "npc_slots": 1
+  }
+}

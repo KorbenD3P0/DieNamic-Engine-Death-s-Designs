@@ -9,28 +9,43 @@ class DoorMixin:
     commands delegate here instead of reimplementing the logic.
     """
 
+
     def _resolve_exit(self, direction: str, exits: dict) -> dict:
         """
         Resolve an exit direction into a standardized result dict.
-        Handles both string exits (lock on destination room) and
-        dict exits (lock on the exit itself).
+        Case-insensitive so lowercased direction strings match mixed-case exit keys.
         """
+        # Case-insensitive lookup (original did exits.get(direction) — case-sensitive miss)
         dest = exits.get(direction)
         if dest is None:
-            return {"can_pass": False, "target_room": None, "is_locked": False,
-                    "lock_message": f"You can't go {direction}.", "exit_type": "missing", "_raw_ref": None}
-
-        # Dict exit (lock info on the exit itself)
+            direction_lower = direction.lower()
+            for k, v in exits.items():
+                if k.lower() == direction_lower:
+                    dest = v
+                    direction = k   # use the canonical key for any downstream references
+                    break
+    
+        if dest is None:
+            return {
+                "can_pass": False, "target_room": None, "is_locked": False,
+                "lock_message": f"You can't go {direction}.", "exit_type": "missing",
+                "_raw_ref": None
+            }
+    
+        # --- rest of _resolve_exit is UNCHANGED from door_mixin.py ---
         if isinstance(dest, dict):
             target = dest.get('target')
             if not target:
-                return {"can_pass": False, "target_room": None, "is_locked": False,
-                        "lock_message": "You can't go that way.", "exit_type": "dict", "_raw_ref": dest}
-
+                return {
+                    "can_pass": False, "target_room": None, "is_locked": False,
+                    "lock_message": "You can't go that way.", "exit_type": "dict",
+                    "_raw_ref": dest
+                }
             if dest.get('dynamic_destination'):
-                return {"can_pass": True, "target_room": None, "is_locked": False,
-                        "lock_message": "", "exit_type": "dynamic", "_raw_ref": dest}
-
+                return {
+                    "can_pass": True, "target_room": None, "is_locked": False,
+                    "lock_message": "", "exit_type": "dynamic", "_raw_ref": dest
+                }
             if dest.get('locked', False):
                 lock_msg = dest.get('locked_description', f"The way {direction} is locked.")
                 return {
@@ -41,13 +56,16 @@ class DoorMixin:
                     "force_threshold": dest.get('force_threshold', 5),
                     "exit_type": "dict", "_raw_ref": dest
                 }
-
-            return {"can_pass": True, "target_room": target, "is_locked": False,
-                    "lock_message": "", "exit_type": "dict", "_raw_ref": dest}
-
-            # String exit (lock info on destination room)
-        dest_data = self.current_level_rooms_world_state.get(dest) or self.get_room_data(dest) or {}
-
+            return {
+                "can_pass": True, "target_room": target, "is_locked": False,
+                "lock_message": "", "exit_type": "dict", "_raw_ref": dest
+            }
+    
+        dest_data = (
+            self.current_level_rooms_world_state.get(dest)
+            or self.get_room_data(dest)
+            or {}
+        )
         if dest_data.get('locked', False):
             if dest_data.get('locked_by_mri'):
                 lock_msg = "The magnetic field has sealed that door shut!"
@@ -61,9 +79,10 @@ class DoorMixin:
                 "force_threshold": dest_data.get('force_threshold', 5),
                 "exit_type": "string", "_raw_ref": dest
             }
-
-        return {"can_pass": True, "target_room": dest, "is_locked": False,
-                "lock_message": "", "exit_type": "string", "_raw_ref": dest}
+        return {
+            "can_pass": True, "target_room": dest, "is_locked": False,
+            "lock_message": "", "exit_type": "string", "_raw_ref": dest
+        }
 
     def _attempt_auto_unlock(self, direction: str, exits: dict, resolved: dict, current_room_id: str):
         """Secretly attempts to auto-unlock a door if the player has the key."""

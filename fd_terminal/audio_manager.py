@@ -1,5 +1,6 @@
 # fd_terminal/audio_manager.py
 import logging
+import random
 from kivy.core.audio import SoundLoader
 from kivy.clock import Clock
 from .resource_manager import ResourceManager
@@ -42,11 +43,13 @@ class AudioManager:
         sound_info = sfx_data[key]
         file_path = sound_info.get('file')
         volume = sound_info.get('volume', 1.0) * self.master_volume
+        pitch = random.uniform(0.95, 1.05)
 
         try:
             sound = SoundLoader.load(file_path)
             if sound:
                 sound.volume = volume
+                sound.pitch = pitch
                 sound.play()
                 self.logger.info(f"[AudioManager] Playing SFX: {key}")
             else:

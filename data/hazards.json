@@ -477,32 +477,20 @@
       ],
       "force": [
         {
-          "on_target_name": [
-            "door",
-            "west door",
-            "east door",
-            "stairwell door",
-            "control room door",
-            "Upper Floor Stairwell Access"
-          ],
+          "on_target_name": ["east", "west", "door", "doors"],
           "requires_hazard_state": [
-              "field_active_doors_locked",
-              "mri_wave_evaluator",
-              "dynamic_projectile_incoming",
-              "projectile_stage_1_cart",
-              "projectile_stage_2_window",
-              "final_barrage_wheelchair",
-              "final_barrage_gurney"
+            "magnetic_pull_active", 
+            "dynamic_projectile_incoming", 
+            "mri_wave_evaluator", 
+            "mri_projectile_impact"
           ],
-          "qte_type": "button_mash",
-          "qte_context": {
-            "ui_prompt_message": "The magnetic field is immense! MASH to force the door!",
-            "duration": 4.0,
-            "target_mash_count": 14,
-            "success_message": "You wrench the metal door open enough to slip into the crack, just as your phone slips from your back pocket...",
-            "failure_message_wrong_input": "You can't fight the pull! The door remains sealed shut!",
-            "next_state_after_qte_success": "death_by_door_bisection",
-            "next_state_after_qte_failure": "mri_wave_evaluator"
+          "effect_on_self": {
+            "target_state": "death_by_door_bisection"
+          },
+          "ui_popup_event": {
+            "type": "show_popup",
+            "title": "A Fatal Mistake",
+            "message": "You wrench the metal door open enough to slip into the crack, just as your phone slips from your back pocket..."
           }
         }
       ],
@@ -534,19 +522,21 @@
       },
       "field_active_doors_locked": {
         "on_state_entry_special_action": "mri_lock_doors_and_initiate_qtes",
-        "description":  "As your fingers touch the key, the door you entered through closes with a deafening [color=FFFF00]SLAM![/color]\n\nThe vibration knocks a clipboard in the control room from its hook; it falls onto the workstation, the metal clip sliding across the console's keyboard, and...\n\n[color=ff0000]*BEEP!*[/color]\n\n...shit.",
+        "play_sfx_on_entry": "mri_activated",
+        "description":  "As your fingers touch the key, the door you entered through closes with a deafening [color=FFFF00]SLAM![/color]\n\nThe vibration knocks a clipboard in the control room from its hook; it falls onto the workstation, the metal clip sliding across the console's keyboard, and...\n\n[color=ff0000]*BEEP!*[/color]\nshit.\n\n\nThe key is pulled from your grasp and clatters against the MRI's casing as its lights flicker to life with an ominous hum.\n[color=#cc00ff]Then you hear something slam into the Control Room door from the other side while the employee stairwell exit's metal door seals firmly in place.[/color] The exits are now sealed shut by the magnetic force!\n\nYou approach the machine; attempt to[color=ff0000] 'take'[/color] the key again, or try to[color=00ff00] 'force'[/color] a door open!",
         "ui_popup_event": {
           "type": "show_popup",
           "title": "Doors Sealed!",
-          "message": "As your fingers touch the key, the door you entered through closes with a deafening [color=FFFF00]SLAM![/color]\n\nThe vibration knocks a clipboard in the control room from its hook; it falls onto the workstation, the metal clip sliding across the console's keyboard, and...\n\n[color=ff0000]*BEEP!*[/color]\n\n...shit.\n\n\nThe key is pulled from your grasp and clatters against the MRI's casing as its lights flicker to life with an ominous hum.\n[color=ff0000]Then you hear something slam into the Control Room door from the other side while the employee stairwell exit's metal door seals firmly in place.[/color] The exits are now sealed shut by the magnetic force!\n\nYou approach the machine; attempt to[color=ff0000] 'take'[/color] the key again, or try to[color=00ff00] 'force'[/color] a door open!",
+          "message": "As your fingers touch the key, the door you entered through closes with a deafening [color=FFFF00]SLAM![/color]\n\nThe vibration knocks a clipboard in the control room from its hook; it falls onto the workstation, the metal clip sliding across the console's keyboard, and...\n\n[color=ff0000]*BEEP!*[/color]\n...shit.\n\n\nThe key is pulled from your grasp and clatters against the MRI's casing as its lights flicker to life with an ominous hum.\n[color=#cc00ff]Then you hear something slam into the Control Room door from the other side while the employee stairwell exit's metal door seals firmly in place.[/color] The exits are now sealed shut by the magnetic force!\n\nYou approach the machine; attempt to[color=ff0000] 'take'[/color] the key again, or try to[color=00ff00] 'force'[/color] a door open!",
           "output_panel": true
         }
       },
       "mri_wave_evaluator": {
-        "on_state_entry_special_action": "mri_process_wave"
+        "on_state_entry_special_action": "mri_process_wave",
+        "play_sfx_on_entry": "mri_pissed"
       },
       "dynamic_projectile_incoming": {
-        "description": "The magnetic field grabs hold of a {object_name} from an adjacent room and violently rips it towards the MRI machine—with you in the crossfire!",
+        "description": "You done done it now!\n\nThe magnetic field grabs hold of a {object_name} from an adjacent room and violently rips it through the observation window towards the MRI machine—with you in the crossfire!",
         "triggers_qte_on_entry": {
           "qte_type": "random",
           "duration": 6.5,
@@ -606,10 +596,18 @@
           }
         }
       },
+      "mri_projectile_impact": {
+        "description": "You reel from the impact, blood welling from the wound. You survived the hit, but the machine isn't done. The machine beeps as the levels continue climbing, and the magnetic field reaches for heavier objects!",
+        "pause_for_player_acknowledgement": true,
+        "chance_to_progress": 1.0,
+        "play_sfx_on_entry": "light_impact",
+        "next_state": "mri_wave_evaluator"
+      },
       "projectile_stage_1_damaged": {
         "description": "Bruised and bleeding from the cart impact, you struggle to pull yourself free from the wreckage. The observation window above is cracking...",
         "pause_for_player_acknowledgement": true,
         "chance_to_progress": 1,
+        "play_sfx_on_entry": "light_impact",
         "next_state": "mri_wave_evaluator"
       },
       "qte_pause_1": {
@@ -658,6 +656,7 @@
         "description": "You struggle to your feet, gasping for breath. Blood runs from a gash on your forehead. The magnetic field continues to intensify...",
         "pause_for_player_acknowledgement": true,
         "chance_to_progress": 1,
+        "play_sfx_on_entry": "metal_obj_med",
         "next_state": "mri_wave_evaluator"
       },
       "final_barrage_wheelchair": {
@@ -745,11 +744,12 @@
         "next_state": "mri_cooldown"
       },
       "mri_cooldown": {
-        "description": "With a final, deafening GROAN and a shower of sparks, the MRI machine shudders to a halt, overloaded by the impacts. The magnetic field collapses. Silence falls, broken only by the crackle of fried electronics.",
+        "description": "The gurney demolishes the control panel, and with a final, deafening GROAN and a shower of sparks, the MRI machine shudders to a halt.\nThe magnetic field collapses.\nSilence falls, broken only by the crackle of fried electronics.\n\n[color=00ff00]Grab your stuff and get![/color]",
         "ui_popup_event": {
           "type": "show_popup",
           "title": "MRI Shutdown",
-          "message": "With a final, deafening GROAN and a shower of sparks, the MRI machine shudders to a halt, overloaded by the impacts.\n\nThe magnetic field collapses. Silence falls, broken only by the crackle of fried electronics.",
+          "play_sfx_on_entry": "mri_destroyed",
+          "message": "With a final, deafening GROAN and a shower of sparks, the MRI machine shudders to a halt, overloaded by the impacts.\n\nThe magnetic field collapses. Silence falls, broken only by the crackle of fried electronics.\n\n[color=00ff00]You survived the ordeal![/color]",
           "output_panel": true
         },
         "is_terminal_state": true,
@@ -1249,6 +1249,24 @@
             "message": "You step into the revolving door and push.\nSuddenly, with a gut-wrenching screech, it jams solid, trapping you inside!"
           }
         }
+      ],
+      "wait": [
+        {
+          "requires_hazard_state": [
+            "door_force_qte",
+            "falling_sign_qte",
+            "ambulance_qte",
+            "spinning_blades_qte"
+          ],
+          "effect_on_self": {
+            "target_state": "neutralized"
+          },
+          "ui_popup_event": {
+            "type": "show_popup",
+            "title": "The Dust Settles",
+            "message": "You take a shaky breath. The chaotic sequence of events has finally ended. The mangled remains of the door and the sign have left a clear path outside."
+          }
+        }
       ]
     },
     "examine_responses": {
@@ -1449,6 +1467,7 @@
         "death_message": "Mostly decapitated by flying hospital sign debris."
       },
       "safe_exit_ending": {
+        "message": "You lie on the pavement, chest heaving.\n\nThe door is grinding to a halt, the ambulance is gone, and the heavy metal 'L' is deeply embedded in the concrete a few feet away.\n\nYou are shaken as hell, but alive.",
         "description": "You lie on the pavement, chest heaving.\n\nThe door is grinding to a halt, the ambulance is gone, and the heavy metal 'L' is deeply embedded in the concrete a few feet away.\n\nYou are shaken as hell, but alive.",
         "is_terminal_state": true,
         "on_state_entry_consequences": [
@@ -1464,6 +1483,7 @@
       },
       "narrow_escape_ending": {
         "description": "You scramble away from the horrifyingly fast revolving door as it continues to spin itself into a frenzy.\n\nOne door panel jams and breaks loose from the base as the remaining three panels make one final grinding revolution, slamming into it one at a time with a 'WHAM!-WHAM!-WHAM!' like a book made of metal and glass coming to a violent close.\n\nWith an address, a key, and a purpose, you are safe. For now.",
+        "message": "You scramble away from the horrifyingly fast revolving door as it continues to spin itself into a frenzy.\n\nOne door panel jams and breaks loose from the base as the remaining three panels make one final grinding revolution, slamming into it one at a time with a 'WHAM!-WHAM!-WHAM!' like a book made of metal and glass coming to a violent close.\n\nWith an address, a key, and a purpose, you are safe. For now.",
         "is_terminal_state": true,
         "on_state_entry_consequences": [
           {
@@ -1478,6 +1498,7 @@
       },
       "blast_wave_ending": {
         "description": "[color=BC13FE]You lie panting on the asphalt, the smell of diesel fumes filling your lungs. You survived. The sign is rubble, the door is silent, and you are alive. You've made it out.[/color]",
+        "message": "[color=BC13FE]You lie panting on the asphalt, the smell of diesel fumes filling your lungs. You survived. The sign is rubble, the door is silent, and you are alive. You've made it out.[/color]",        
         "is_terminal_state": true,
         "on_state_entry_consequences": [
           {
@@ -1488,6 +1509,19 @@
         "on_state_entry_rewards": {
           "achievements_to_unlock": ["road_hazard"],
           "score_bonus": 60
+        }
+      },
+      "neutralized": {
+        "description": "The massive sign lies in a mangled heap on the pavement. The shattered revolving door offers clear passage outside.",
+        "is_terminal_state": true,
+        "on_state_entry_consequences": [
+          {
+            "type": "move_player_to_room",
+            "target_room": "Hospital Parking Garage"
+          }
+        ],
+        "on_state_entry_rewards": {
+          "score_bonus": 50
         }
       },
       "death_by_door_crush": {
@@ -2507,11 +2541,11 @@
         "progress_while_in_room": true
       },
       "moving": {
-        "description": "The elevator is moving between floors.",
-        "next_state": "shaking",
-        "chance_to_progress": 0.35,
-        "progress_while_in_room": true,
-        "pause_for_player_acknowledgement": false
+        "duration_in_state": 1, 
+          "on_enter": [
+              { "type": "show_popup", "title": "Notice", "message": "The elevator is moving between floors.",
+                "on_close_set_hazard_state": {"hazard_id": "{self_id}", "target_state": "shaking"} }
+          ]
       },
       "shaking": {
         "description": "The elevator lurches violently! Cables groan above!",
@@ -2569,30 +2603,22 @@
     "ai_can_accelerate": true,
     "progress_while_offscreen": false,
     "initial_state": "dormant",
-    "player_interaction": {
-      "examine": [
-        {
-          "on_target_name": [
-            "wrecking ball",
-            "ball",
-            "crane",
-            "construction equipment"
-          ],
-          "requires_hazard_state": ["dormant"],
-          "effect_on_self": {
-            "target_state": "swinging_for_qte"
-          },
-          "ui_popup_event": {
-            "type": "show_popup",
-            "title": "You done done it now!",
-            "message": "The wind howls through the steel. Something feels off.\n\nDeath is about to make a move!"
-          }
-        }
-      ]
-    },
+    "is_alias": true,
+    "alias": ["wrecking ball", "ball", "crane", "iron ball", "wrecking_ball"],
     "states": {
       "dormant": {
-        "description": "The massive iron sphere hangs motionless from the crane's cable, suspended against the McKinley skyline."
+        "base_description": "A massive iron wrecking ball hangs motionless from a crane's cable just outside the porch.",
+        "duration_in_state": 4, 
+        "chance_to_progress": 0.4, 
+        "real_time_escalation_seconds": 6.0,
+        "next_state": "chain_reaction_warning"
+      },
+      "chain_reaction_warning": {
+        "description": "A sudden, violent gust of wind catches a loose tarp, whipping it around the crane's primary release lever. The heavy iron gears groan in protest as the brake completely slips. Death is making its move.",
+        "environmental_effect": { "noise_level": 5 },
+        "duration_in_state": 1.5,
+        "chance_to_progress": 1.0,
+        "next_state": "swinging_for_qte"
       },
       "swinging_for_qte": {
         "description": "With a terrifying shriek of unspooling cable, the massive wrecking ball drops and swings in a deadly pendulum arc directly toward the scaffolding!",
@@ -2605,14 +2631,13 @@
             "expected_input_word": "dodge",
             "alternative_input": "dive",
             "input_type": "word",
-            "success_message": "You lunge aside, the wind from the passing wrecking ball tearing at your clothes! It smashes through the guardrail where you were standing, sending steel bolts flying...",
-            "alternative_success_message": "With a desperate, sprawling dive, you hit the metal grating hard as the wrecking ball screams through the space your head occupied moments before! It obliterates the outer scaffold with a deafening CRUNCH.",
+            "success_message": "You lunge aside, the wind from the passing wrecking ball tearing at your clothes! It smashes through the guardrail where you were standing.",
+            "alternative_success_message": "With a desperate, sprawling dive, you hit the metal grating hard! It obliterates the outer scaffold with a deafening CRUNCH.",
             "hp_damage_on_failure": 200,
             "is_fatal_on_failure": true,
-            "next_state_after_qte_success": "return_swing_warning",
-            "next_state_after_alternative_success": "miraculous_escape_positioning",
-            "next_state_after_qte_failure": "obliterated_by_first_swing",
-            "failure_message_wrong_input": "You freeze for a fraction of a second too long. The iron sphere connects with a sickening thud, turning you into a red mist against the high-rise framework."
+            "next_state_after_qte_success": "return_swing_qte",
+            "next_state_after_alternative_success": "cable_snap_qte",
+            "failure_message_wrong_input": "You freeze. The iron sphere connects with a sickening thud, turning you into a red mist against the high-rise framework."
           }
         },
         "npc_intervention_qte": {
@@ -8431,5 +8456,48 @@
         }
       }
     }
+  },
+  "pursuit_obstacle": {
+    "id": "pursuit_obstacle",
+    "name": "Road Obstacle",
+    "description": "Something is blocking the road ahead.",
+    "tags": ["vehicle", "collision_risk"],
+    "initial_state": "clear",
+    "can_move_between_rooms": false,
+    "progress_while_offscreen": false,
+    "states": {
+      "clear": {
+        "description": "The road ahead is clear.",
+        "chance_to_progress": 0.45,
+        "next_state": "obstacle_incoming",
+        "duration_in_state": 1
+      },
+      "obstacle_incoming": {
+        "description": "Something is in the road!",
+        "is_terminal_state": false,
+        "chance_to_progress": 1.0,
+        "next_state": "clear",
+        "on_state_entry_consequences": [
+          {
+            "type": "start_qte",
+            "qte_type": "directional_input",
+            "qte_context": {
+              "ui_type": "directional_pad",
+              "ui_prompt_message": "OBSTACLE! SWERVE!",
+              "required_sequence": ["LEFT", "RIGHT"],
+              "button_labels": ["LEFT", "RIGHT", "UP", "DOWN"],
+              "duration": 4.0,
+              "success_message": "You thread through the gap!",
+              "failure_message": "The impact rattles your teeth. You lose ground.",
+              "next_state_after_qte_success": "clear",
+              "next_state_after_qte_failure": "clear",
+              "hp_damage_on_failure": 8,
+              "chase_penalty_on_failure": 1
+            }
+          }
+        ]
+      }
+    },
+    "player_interaction": {}
   }
 }

@@ -13,6 +13,22 @@ from datetime import datetime
 from kivy.app import App
 from .resource_manager import ResourceManager
 
+# fd_terminal/achievements.py
+"""
+The Chronicler of Deeds.
+
+This system tracks player achievements, evidence collected, and stories unlocked.
+It provides the methods for recording and retrieving player legacy persistently.
+"""
+
+import logging
+import json
+import os
+from datetime import datetime
+from kivy.app import App
+from .resource_manager import ResourceManager
+from .utils import normalize_text  # <-- ADDED: Centralized text normalization
+
 class AchievementsSystem:
     def __init__(self, resource_manager: ResourceManager, notify_callback=None):
         self.logger = logging.getLogger("AchievementsSystem")
@@ -73,8 +89,6 @@ class AchievementsSystem:
 
     def save_achievements(self):
         """Saves the user profile to disk."""
-        # FIX: Use the helper method to get the path dynamically.
-        # Do NOT use 'self.achievements_file'.
         path = self._get_save_path()
         
         data = {
@@ -93,7 +107,6 @@ class AchievementsSystem:
     def unlock(self, achievement_id: str) -> bool:
         """Unlocks an achievement if it exists and isn't already unlocked."""
         if achievement_id not in self.achievements:
-            # self.logger.debug(f"Achievement '{achievement_id}' not found in definitions.") # Optional noise reduction
             return False
         
         ach = self.achievements[achievement_id]
@@ -136,38 +149,29 @@ class AchievementsSystem:
     def _check_for_story_completion(self, specific_evidence_id=None):
         """
         Checks evidence_by_source.json to see if ANY story set is now complete.
-        
-        Args:
-            specific_evidence_id: (Optional) If provided, only checks stories 
-                                  related to this item. If None, checks ALL stories
-                                  (used for retroactive fixes).
         """
         evidence_map = self.resource_manager.get_data('evidence_by_source', {})
         
         # --- STEP 1: Build a Robust Lookup Set ---
-        # We add both the ID (snake_case) and the Name (Title Case) 
-        # to a normalized set to ensure matching works regardless of JSON format.
         collected_lookup = set()
         for evid, data in self.evidence_collection.items():
-            # Add ID (e.g., "charred_mug")
-            collected_lookup.add(str(evid).lower().strip())
-            # Add Name (e.g., "Charred Mug")
+            # Apply universal normalization to IDs
+            collected_lookup.add(normalize_text(evid))
+            # Apply universal normalization to Names
             name = data.get('name', '')
             if name:
-                collected_lookup.add(str(name).lower().strip())
+                collected_lookup.add(normalize_text(name))
 
         # --- STEP 2: Check Stories ---
         for story_key, story_data in evidence_map.items():
-            # Optimization: If we are checking a specific item, skip stories that don't need it
             required_list = story_data.get('evidence_list', [])
             
             # If specific_id passed, ensure it's relevant to this story
             if specific_evidence_id:
-                # We have to normalize the check here too
                 is_relevant = False
-                norm_specific = str(specific_evidence_id).lower().strip()
+                norm_specific = normalize_text(specific_evidence_id)
                 for req in required_list:
-                    if str(req).lower().strip() == norm_specific:
+                    if normalize_text(req) == norm_specific:
                         is_relevant = True
                         break
                 if not is_relevant:
@@ -177,10 +181,7 @@ class AchievementsSystem:
             all_met = True
             for req in required_list:
                 # Normalize the requirement from the JSON
-                norm_req = str(req).lower().strip()
-                
-                # Check against our robust lookup
-                if norm_req not in collected_lookup:
+                if normalize_text(req) not in collected_lookup:
                     all_met = False
                     break
             

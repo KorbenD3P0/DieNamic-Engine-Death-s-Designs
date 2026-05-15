@@ -1,0 +1,168 @@
+{
+  "Main Foyer": {
+    "name": "Main Foyer",
+    "description": "The school entrance. Trophy cases line the walls, and the linoleum shines under flickering fluorescent lights. The double doors to the outside are chained shut from the inside.",
+    "first_entry_text": "The school is deserted after hours. The silence is oppressive. The squeak of your shoes echoes far down the locker-lined hallways.",
+    "entry_room": true,
+    "exits": {
+      "north": "Locker Hallway",
+      "south": {
+        "target": "LEVEL_TRANSITION_HUB"
+      }
+    },
+    "furniture": [
+      {
+        "name": "Trophy Case",
+        "description": "A heavy glass cabinet filled with old brass trophies.",
+        "id": "unstable_shelf",
+        "is_container": false
+      }
+    ],
+    "hazards_present": [
+      "faulty_wiring",
+      "unstable_shelf"
+    ],
+    "objects": [
+      {
+        "name": "Flickering Fluorescents",
+        "description": "The overhead lights buzz and flicker violently, occasionally throwing sparks.",
+        "id": "faulty_wiring",
+        "aliases": ["lights", "wiring", "sparks"]
+      }
+    ],
+    "items": [],
+    "npcs": [],
+    "npc_slots": 1
+  },
+  "Locker Hallway": {
+    "name": "Locker Hallway",
+    "description": "A long, narrow corridor lined with blue metal lockers. An emergency fire alarm is mounted on the wall. To the east is the Gymnasium, and to the west is the Janitor's Closet.",
+    "exits": {
+      "south": "Main Foyer",
+      "east": "Gymnasium",
+      "west": "Janitor's Closet",
+      "down": "Boiler Room"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "blaring_alarm",
+      "loose_bolt"
+    ],
+    "objects": [
+      {
+        "name": "Fire Alarm",
+        "description": "A standard pull-station alarm. Its green indicator light blinks.",
+        "id": "blaring_alarm",
+        "aliases": ["alarm", "panel"]
+      },
+      {
+        "name": "Heavy AC Grate",
+        "description": "A massive steel ventilation grate above the lockers. One of the bolts is rattling loose.",
+        "id": "loose_bolt",
+        "aliases": ["grate", "bolt", "vent"]
+      }
+    ],
+    "items": [],
+    "npcs": [],
+    "npc_slots": 2
+  },
+  "Gymnasium": {
+    "name": "Gymnasium",
+    "description": "A massive indoor basketball court. The polished wood floor squeaks. Massive motorized bleachers are retracted against the far wall. An emergency exit sits at the back.",
+    "exits": {
+      "west": "Locker Hallway",
+      "east": {
+        "destination": "Parking Lot",
+        "locked": true,
+        "locked_message": "The exit door is jammed shut. You will have to force it open."
+      }
+    },
+    "furniture": [],
+    "hazards_present": [
+      "retractable_bleachers",
+      "jammed_exit_bar"
+    ],
+    "objects": [
+      {
+        "name": "Motorized Bleachers",
+        "description": "Tons of wood and steel held against the wall by a magnetic latch. They loom over the court.",
+        "id": "retractable_bleachers",
+        "aliases": ["bleachers", "seats", "stands"]
+      },
+      {
+        "name": "Crash Bar",
+        "description": "The metal bar on the emergency exit shows signs of wear and is jammed tight.",
+        "id": "jammed_exit_bar",
+        "aliases": ["bar", "exit door", "door"]
+      }
+    ],
+    "items": [],
+    "npcs": [],
+    "npc_slots": 1
+  },
+  "Janitor's Closet": {
+    "name": "Janitor's Closet",
+    "description": "A cramped, chemical-smelling room filled with mops, buckets, and industrial cleaners. The main electrical breaker box for this wing is mounted here.",
+    "exits": {
+      "east": "Locker Hallway"
+    },
+    "furniture": [
+      {
+        "name": "Supply Cabinet",
+        "description": "A metal cabinet full of cleaning supplies.",
+        "is_container": true,
+        "items": ["duct_tape"]
+      }
+    ],
+    "hazards_present": [
+      "main_breaker_box",
+      "leaking_solvent_drum"
+    ],
+    "objects": [
+      {
+        "name": "Breaker Box",
+        "description": "The central electrical nervous system for the school. It hums with 240 volts of electricity.",
+        "id": "main_breaker_box",
+        "aliases": ["breaker", "panel", "electrical box"]
+      },
+      {
+        "name": "Floor Stripper Drum",
+        "description": "A large barrel of highly flammable floor wax stripper. It is leaking.",
+        "id": "leaking_solvent_drum",
+        "aliases": ["drum", "chemical", "barrel"]
+      }
+    ],
+    "items": [],
+    "npcs": [],
+    "npc_slots": 1
+  },
+  "Boiler Room": {
+    "name": "Boiler Room",
+    "description": "The subterranean heart of the school. It is sweltering hot, dark, and filled with a labyrinth of pipes, valves, and a massive furnace.",
+    "exits": {
+      "up": "Locker Hallway"
+    },
+    "furniture": [],
+    "hazards_present": [
+      "gas_leak",
+      "leaking_pipe"
+    ],
+    "objects": [
+      {
+        "name": "Furnace Valve",
+        "description": "A massive, corroded gas valve feeding the boiler. You can smell a faint hint of mercaptan.",
+        "id": "gas_leak",
+        "aliases": ["valve", "furnace", "gas"]
+      },
+      {
+        "name": "Steam Pipe",
+        "description": "A high-pressure overhead pipe wrapped in degrading insulation. Boiling water drips from a joint.",
+        "id": "leaking_pipe",
+        "aliases": ["pipe", "steam", "leak"]
+      }
+    ],
+    "items": ["wrench"],
+    "npcs": [],
+    "npc_slots": 0
+  }
+}

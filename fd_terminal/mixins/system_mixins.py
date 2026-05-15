@@ -686,10 +686,6 @@ class SystemMixin:
     def _command_gimme(self, target_name_str: str) -> dict:
         """
         DEBUG COMMAND: Injects items directly into the player's inventory.
-        Usage: 
-            'gimme movie stub' (adds 1)
-            'gimme 5 bandage' (adds 5)
-            'gimme all' (adds 1 of every item in the game)
         """
         import re
 
@@ -701,7 +697,6 @@ class SystemMixin:
             )
 
         # 1. Aggregate all items from the Resource Manager
-        # This safely catches 'items.json' or 'items_medical.json', etc.
         items_db = {}
         for key, data in getattr(self, 'resource_manager', None).master_data.items():
             if key.startswith('items') and isinstance(data, dict):
@@ -715,12 +710,23 @@ class SystemMixin:
 
         # 2. Handle the "God Mode" keyword
         if target_name_str.lower() == "all":
-            for item_id in items_db.keys():
+            for item_id, item_data in items_db.items():
                 self.player.setdefault('inventory', []).append(item_id)
+                
+                # --- THE FIX: Record Evidence in Journal ---
+                if getattr(self, 'achievements_system', None) and item_data.get('is_evidence'):
+                    self.achievements_system.record_evidence(
+                        evidence_id=item_id,
+                        name=item_data.get('name', item_id),
+                        description=item_data.get('description', ''),
+                        char_connection=item_data.get('character_connection')
+                    )
+                # -------------------------------------------
+                
             return self._build_response(
                 message=f"[color=00ff00]DEBUG:[/color] Added ALL {len(items_db)} items to your inventory.", 
                 turn_taken=False,
-                ui_events=[{"event_type": "refresh_ui"}] # Adjust event name to match your UI refresh hook
+                ui_events=[{"event_type": "refresh_ui"}] 
             )
 
         # 3. Parse optional quantity using regex (e.g., "5 bandages")
@@ -734,21 +740,16 @@ class SystemMixin:
         search_query = target_name_str.lower()
         found_item_id = None
         
-        # Pass A: Exact ID match
         if search_query in items_db:
             found_item_id = search_query
-        # Pass B: ID match with spaces converted to underscores
         elif search_query.replace(' ', '_') in items_db:
             found_item_id = search_query.replace(' ', '_')
-        # Pass C: Search the actual 'name' field inside the JSON
         else:
             for item_id, item_data in items_db.items():
                 item_name = item_data.get('name', '').lower()
-                # Try exact name match first
                 if search_query == item_name:
                     found_item_id = item_id
                     break
-                # Fallback to partial substring match (e.g., "stub" matches "movie stub")
                 elif search_query in item_name:
                     found_item_id = item_id
                     break
@@ -763,10 +764,21 @@ class SystemMixin:
         for _ in range(quantity):
             self.player.setdefault('inventory', []).append(found_item_id)
 
-        display_name = items_db[found_item_id].get('name', found_item_id)
+        item_data = items_db[found_item_id]
+        display_name = item_data.get('name', found_item_id)
+        
+        # --- THE FIX: Record Single Evidence in Journal ---
+        if getattr(self, 'achievements_system', None) and item_data.get('is_evidence'):
+            self.achievements_system.record_evidence(
+                evidence_id=found_item_id,
+                name=item_data.get('name', found_item_id),
+                description=item_data.get('description', ''),
+                char_connection=item_data.get('character_connection')
+            )
+        # --------------------------------------------------
         
         return self._build_response(
             message=f"[color=00ff00]DEBUG:[/color] Injected {quantity}x [{display_name}] into inventory.", 
             turn_taken=False,
-            ui_events=[{"event_type": "refresh_ui"}]  # Force the inventory UI to update immediately
+            ui_events=[{"event_type": "refresh_ui"}]  
         )

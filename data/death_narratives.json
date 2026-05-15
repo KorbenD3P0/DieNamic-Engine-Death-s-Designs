@@ -69,12 +69,6 @@
       "{name} being buried alive under a sudden, suffocating wave of mud and debris",
       "{name} plummeting into a dark, subterranean cavern when the bedrock gave out"
     ],
-    "weather_event": [
-      "{name} being swept away and battered against parked cars by a raging flash flood",
-      "{name} getting impaled by a street sign launched at ballistic speed by hurricane winds",
-      "{name} being electrocuted by a downed power line hidden in the murky floodwaters",
-      "{name} drowning in a rapidly filling basement after the storm drains catastrophically failed"
-    ],
     "fire_related": [
       "{name} screaming as they were engulfed in a sudden flashover of roaring flames",
       "{name} burning alive while hopelessly trapped behind a blocked fire exit",
@@ -86,6 +80,96 @@
       "{name} disintegrating almost instantly within the fiery epicenter of the blast radius",
       "{name} being shredded by high-velocity shrapnel launched from the detonation",
       "{name} being slammed fatally against a concrete wall by the concussive force"
+    ],
+    "mechanical_failure": [
+      "{name} being violently pulled into a set of exposed, grinding gears",
+      "{name} getting crushed when a massive hydraulic piston catastrophically failed",
+      "{name} being severed by a snapped, high-tension steel cable",
+      "{name} plunging to their death when an emergency brake mechanism shattered"
+    ],
+    "impact_blunt": [
+      "{name} being pulverized against a concrete barrier at high velocity",
+      "{name} having their skull caved in by a massive, flying piece of debris",
+      "{name} being thrown hundreds of feet and shattering every bone on impact",
+      "{name} being flattened instantly by a heavy, falling structure"
+    ],
+    "construction_failure": [
+      "{name} being crushed underneath a collapsing steel crane tower",
+      "{name} getting impaled by a collapsing array of heavy scaffolding",
+      "{name} plummeting into an unfinished elevator shaft in the panic",
+      "{name} disappearing beneath a sudden landslide of unsecured building materials"
+    ],
+    "cargo_spill": [
+      "{name} being completely crushed under two tons of rolling timber",
+      "{name} getting pulverized by massive, falling shipping containers",
+      "{name} being flattened by heavy concrete pipes rolling off a flatbed",
+      "{name} being decapitated by sheet metal slicing through the air like a guillotine"
+    ],
+    "sharp_objects": [
+      "{name} being cleanly decapitated by a flying, oversized sheet of glass",
+      "{name} getting impaled by a jagged, red-hot piece of metal shrapnel",
+      "{name} being sliced completely open by a snapped guide wire",
+      "{name} bleeding out in seconds after debris severed their major arteries"
+    ],
+    "drowning_water": [
+      "{name} inhaling freezing, dark water as they were forcibly pulled under",
+      "{name} drowning in a blind panic while trapped inside a submerged compartment",
+      "{name} being swept away into the depths by a vicious, inescapable undertow",
+      "{name} losing the fight for air as the freezing waters paralyzed their lungs"
+    ],
+    "entertainment_venue": [
+      "{name} being crushed under a collapsed, sparking stage lighting rig",
+      "{name} suffocating beneath the weight of a massive, panicked crowd surge",
+      "{name} burning alive after misfiring stage pyrotechnics ignited the curtains",
+      "{name} being trampled to death in the stampede for the narrow fire exits"
+    ],
+    "natural_disaster": [
+      "{name} being violently swept away by hurricane-force winds into the abyss",
+      "{name} getting crushed instantly under a massive, falling old-growth tree",
+      "{name} being battered to death by oversized hail and flying environmental debris",
+      "{name} vanishing into the raging elements without a single trace"
+    ],
+    "urban_disaster": [
+      "{name} being crushed by a multi-ton chunk of falling brick facade",
+      "{name} getting run over by a panicked driver fleeing the scene of the disaster",
+      "{name} falling to their doom through a shattered subterranean subway grate",
+      "{name} being impaled by a streetlamp that was sheared off at the base"
+    ],
+    "flood_related": [
+      "{name} being swept away by a roaring wall of muddy, debris-choked water",
+      "{name} getting pinned underwater by a rolling, submerged vehicle",
+      "{name} drowning in a rapidly filling basement when the structural doors gave way",
+      "{name} being electrocuted instantly when the floodwaters reached a blown transformer"
+    ],
+    "winter_sports": [
+      "{name} plummeting screaming into the snowy trees from a snapped ski lift cable",
+      "{name} being violently shredded by the treads of a runaway snow groomer",
+      "{name} getting buried alive and suffocating in a suddenly triggered avalanche",
+      "{name} freezing to death after being thrown into an inaccessible, icy ravine"
+    ],
+    "heights": [
+      "{name} plummeting hundreds of feet onto the unforgiving pavement below",
+      "{name} falling screaming into an open abyss as the floor vanished beneath them",
+      "{name} slipping from the twisted metal edge and dropping into the deadly void",
+      "{name} experiencing a horrifying freefall before suffering a fatal, crushing impact"
+    ],
+    "coastal_disaster": [
+      "{name} being dragged out to sea by a monstrous, churning storm surge",
+      "{name} getting battered to a pulp against the concrete seawall by twenty-foot waves",
+      "{name} being crushed underneath the hull of a violently capsized fishing vessel",
+      "{name} drowning in the dark foam as the boardwalk collapsed into the surf"
+    ],
+    "machinery": [
+      "{name} being pulled screaming into the grinding gears of a massive industrial machine",
+      "{name} getting mangled beyond recognition by a high-speed, runaway conveyor belt",
+      "{name} being crushed instantly by a heavy, malfunctioning robotic assembly arm",
+      "{name} having their limbs severed by a violently spinning, unguarded turbine"
+    ],
+    "rural_disaster": [
+      "{name} being pulverized by the concussive blast of an exploding grain silo",
+      "{name} getting trampled to death by a stampede of massive, terrified livestock",
+      "{name} being crushed beneath the heavy, collapsing roof of an old timber barn",
+      "{name} being shredded by heavy farming equipment that broke loose in the chaos"
     ]
   },
   "generic_deaths": [

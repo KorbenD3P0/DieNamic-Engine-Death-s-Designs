@@ -30,22 +30,21 @@
 
 # --- MODERN COMPONENT STYLES ---
 
-<TerminalButton@Button>:
+<TerminalButton@AutoFitButton>:
     background_normal: ''
     background_down: ''
     background_color: (0, 0, 0, 0)
     color: term_fg
     font_name: font_bold
 
-    # 1. Use scalable pixels (sp) tied to your Settings slider
-    # This prevents the font from getting massive on tall buttons!
-    font_size: sp(15) * app.text_scale
+    # 1. Base font size. The AutoFitButton class will scale this down if needed!
+    base_font_size: sp(15)
 
-    # 2. The Wrap Fix: Change self.height to 'None'.
-    # This lets Kivy calculate the exact height of the text block no matter how many lines there are.
-    text_size: self.width - dp(12), None
+    # 2. Text Alignment constraints
+    text_size: self.size # Constrain to exactly the button size
     halign: 'center'
     valign: 'middle'
+    padding: [dp(10), dp(5)]
 
     canvas.before:
         # The Border
@@ -115,31 +114,29 @@
             size: self.size
 
 <MenuButton@TerminalButton>:
-    # Make the font slightly larger for main menus
-    font_size: sp(17) * app.text_scale
-
     size_hint_y: None
-
-    # 3. The Magic Container Stretch!
-    # This tells the button: "Be at least 55dp tall. But if the text inside you (texture_size)
-    # gets taller than that, expand automatically to fit it plus 20dp of padding!"
-    height: max(dp(55), self.texture_size[1] + dp(20))
+    height: dp(55)
+    # Removed hardcoded font_size: dp(18) so it uses the TerminalButton's proportional scale!
 
 <HeaderLabel@Label>:
-    # 1. Your original styling AND CRITICAL SIZING
     font_name: app.thematic_font_name
     color: term_accent
     markup: True
-    size_hint_y: None    # <--- Stops it from eating the screen!
-    height: dp(45)       # <--- Locks the container height
 
-    # 2. The Dynamic Boundary Fix
-    text_size: self.width - dp(20), self.height
+    # 1. Free the vertical constraint
+    size_hint_y: None
+
+    # 2. Wrap horizontally, but allow infinite vertical space for measuring
+    text_size: self.width - dp(20), None
+
+    # 3. Bind the container height directly to the rendered text height (minimum 45dp)
+    height: max(dp(45), self.texture_size[1] + dp(10))
+
     halign: 'center'
     valign: 'middle'
-    font_size: self.height * 0.6  # Scales font to exactly 60% of the 45dp container
-    shorten: True
-    shorten_from: 'right'
+
+    # 4. Fixed font size (scalable) so it doesn't blow up if the label gets taller!
+    font_size: sp(24) * getattr(app, 'text_scale', 1.0)
 
 # --- WIDGET DEFINITIONS ---
 

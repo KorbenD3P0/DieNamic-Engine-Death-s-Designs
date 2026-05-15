@@ -1170,7 +1170,7 @@ class HazardEngine:
             })
 
         # C. Check for Audio Trigger
-        sfx_key = sdef.get('on_state_entry_play_sfx')
+        sfx_key = sdef.get('play_sfx_on_entry')
         if sfx_key:
             consequences.append({
                 "type": "play_sfx",
@@ -2112,9 +2112,11 @@ class HazardEngine:
         consequences: list = []
         messages: list = []
         matched_rules: list = []
+        ui_events: list = []  
+        
         if not self.game_logic:
             self.logger.warning("[process_player_interaction] Game logic not set. Cannot process player interaction.")
-            return {"consequences": consequences, "messages": messages, "blocks_action": False}
+            return {"consequences": consequences, "messages": messages, "ui_events": ui_events, "blocks_action": False}
 
         player_location = self.game_logic.player.get('location')
         items_master = self.resource_manager.get_data('items', {})
@@ -2138,6 +2140,19 @@ class HazardEngine:
 
                 matched_rules.append(rule)
                 hazard['started_by_player'] = True
+
+                # --- AUDIO & UI POPUP HOOK ---
+                sfx_key = rule.get('play_sfx')
+                if sfx_key:
+                    ui_events.append({
+                        "event_type": "play_sfx",
+                        "sound_key": sfx_key
+                    })
+                
+                popup_data = rule.get('ui_popup_event')
+                if popup_data:
+                    ui_events.append(popup_data)
+                # -----------------------------
 
                 # Apply all side effects for this rule
                 rule_cons, rule_msgs, _ = self._apply_rule_side_effects(hazard_id, rule)
@@ -2181,11 +2196,18 @@ class HazardEngine:
         # ABSOLUTE DOMINANCE: If the MRI generates ANY consequences, it MUST block the action.
         if any('mri' in str(c).lower() for c in consequences):
             should_block = True
+
+        # Check if the player is uniquely skilled at this verb
+        if verb in self.game_logic.player.get('affinities', {}).get('skilled_actions', []):
+            # Auto-success! Override the rule's blocks_action or failure consequence
+            ui_events.append({"event_type": "show_popup", "title": "Expertise Used!"})
+            should_block = False  # They slice right through the problem
         # --------------------------------
 
         return {
             "consequences": consequences,
             "messages": messages,
+            "ui_events": ui_events,  # <--- ADDED: Return the events to game_logic!
             "blocks_action": should_block
         }
 
@@ -2685,6 +2707,128 @@ class HazardEngine:
                 consequences.extend(result.get('consequences', []))
 
         return messages, consequences
+
+
+    def _move_fleeing_npc(self, hazard_id: str, hazard: dict, player_location: str) -> tuple:
+        """
+        Mobile hazard handler for 'fleeing_npc' type.
+        Advances the fleeing NPC one room per turn along the chase corridor.
+        Stops if:
+        - NPC is in 'cornered' or 'talked_down' state (player caught up)
+        - NPC has reached the end room ('Dangerous Intersection')
+        Triggers a 'crash' chance each room.
+        """
+        messages    = []
+        consequences = []
+    
+        if not self.game_logic:
+            return messages, consequences
+    
+        chase = self.game_logic.player.get('chase_state', {})
+        if not chase:
+            return messages, consequences
+    
+        npc_state = chase.get('npc_state', 'fleeing')
+    
+        # Don't move if cornered, talked down, or already lost
+        if npc_state in ('cornered', 'talked_down', 'lost', 'crashed'):
+            return messages, consequences
+    
+        ROOM_ORDER = [
+            'Your Car - On the Road',
+            'City Street - Block 1',
+            'City Street - Block 2',
+            'City Street - Block 3',
+            'Highway On-Ramp',
+            'Dangerous Intersection',
+        ]
+    
+        current_npc_room = chase.get('npc_room', 'City Street - Block 2')
+    
+        try:
+            current_idx = ROOM_ORDER.index(current_npc_room)
+        except ValueError:
+            return messages, consequences
+    
+        # Already at end
+        if current_idx >= len(ROOM_ORDER) - 1:
+            return messages, consequences
+    
+        # Crash chance — 15% per room transition
+        import random
+        if random.random() < 0.15:
+            # NPC clips something and stalls for a turn
+            chase['npc_state'] = 'crashed'
+            npc_name = chase.get('npc_name', 'They').title()
+            self.logger.info(
+                f"_move_fleeing_npc: '{npc_name}' crashed in '{current_npc_room}'!"
+            )
+            # Update the NPC entity's dialogue to crashed branch
+            self._update_npc_chase_state(chase['npc_name'], 'crashed')
+    
+            consequences.append({
+                "type": "show_message",
+                "message": (
+                    f"\n[color=ffaa00]{npc_name} clips a parked car! "
+                    f"Their car stalls — you have one turn to reach them![/color]\n"
+                )
+            })
+            return messages, consequences
+    
+        # Advance one room
+        next_idx     = current_idx + 1
+        next_room    = ROOM_ORDER[next_idx]
+        chase['npc_room'] = next_room
+    
+        # Move the NPC entity between room npcs_present lists
+        self._relocate_npc_entity(chase['npc_name'], current_npc_room, next_room)
+    
+        self.logger.info(
+            f"_move_fleeing_npc: '{chase['npc_name']}' advanced "
+            f"'{current_npc_room}' → '{next_room}'"
+        )
+    
+        if next_room == 'Dangerous Intersection':
+            consequences.append({
+                "type": "show_message",
+                "message": (
+                    f"\n[color=ff0000]{chase['npc_name'].title()} has reached the intersection. "
+                    f"CATCH THEM NOW or it's over.[/color]\n"
+                )
+            })
+    
+        return messages, consequences
+    
+    
+    def _relocate_npc_entity(self, npc_name: str, from_room: str, to_room: str):
+        """Move an NPC entity's npcs_present entry from one room to another."""
+        world = self.rooms_world_state or {}
+        npc_id = npc_name.lower()
+    
+        from_list = world.get(from_room, {}).get('npcs_present', [])
+        npc_entity = None
+        for i, npc in enumerate(from_list):
+            if isinstance(npc, dict) and npc.get('id', '').lower() == npc_id:
+                npc_entity = from_list.pop(i)
+                break
+    
+        if npc_entity is None:
+            return
+    
+        npc_entity['location'] = to_room
+        world.setdefault(to_room, {}).setdefault('npcs_present', []).append(npc_entity)
+    
+    
+    def _update_npc_chase_state(self, npc_name: str, new_chase_state: str):
+        """Update the chase_state field on the NPC entity in any room."""
+        world  = self.rooms_world_state or {}
+        npc_id = npc_name.lower()
+        for room_data in world.values():
+            for npc in room_data.get('npcs_present', []):
+                if isinstance(npc, dict) and npc.get('id', '').lower() == npc_id:
+                    npc['chase_state'] = new_chase_state
+                    return
+    
 
     def _move_robo_vacuum(self, hazard_id: str, hazard: dict, player_location: str) -> tuple:
         """
@@ -3584,6 +3728,7 @@ class HazardEngine:
 HazardEngine.MOBILE_HAZARD_HANDLERS = {
     'deaths_breath': HazardEngine._move_deaths_breath,
     'robo_vacuum':   HazardEngine._move_robo_vacuum,
+    'fleeing_npc':    HazardEngine._move_fleeing_npc,
     'stray_cat':     HazardEngine._move_stray_cat,
     'pigeon':        HazardEngine._move_pigeon,
     'stampeding_bull': HazardEngine._move_bull

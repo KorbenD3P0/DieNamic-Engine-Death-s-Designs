@@ -2693,12 +2693,11 @@ class ContextualActionsWidget(ScrollView):
                 
         # Back Button Generation
         from kivy.factory import Factory
-        from kivy.metrics import dp
+        
         back_btn = Factory.TerminalButton(
             text="< Back", 
-            size_hint_y=None, 
-            height=dp(40),
             background_color=(0.3, 0.3, 0.3, 1)
+            # STRIPPED: size_hint_y and height (KV will now handle this dynamically!)
         )
         back_btn.bind(on_release=lambda x: self.clear_buttons())
         self.grid.add_widget(back_btn)

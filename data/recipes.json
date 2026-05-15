@@ -1,9 +1,4 @@
 {
-  "improvised_splint": {
-    "ingredients": ["magazines", "duct_tape"],
-    "result": "improvised_splint",
-    "message": "You bind the rolled-up magazines tight with the tape. It's not pretty, but it will stabilize a limb."
-  },
   "insulated_gloves": {
     "ingredients": ["rubber_gloves", "duct_tape"],
     "result": "insulated_gloves",
@@ -30,9 +25,45 @@
     "result": "alkaline_solution",
     "message": "You mix the soda and water. Good for neutralizing acid burns."
   },
-  "sticky_bomb_decoy": {
-    "ingredients": ["alarm_clock", "duct_tape"],
-    "result": "taped_alarm",
-    "message": "You create a throwable distraction. It ticks loudly."
+    "recipe_loaded_revolver": {
+    "ingredients": ["empty_heavy_revolver", "bullets"],
+    "result": "loaded_heavy_revolver",
+    "message": "You load the revolver. The cylinder snaps shut with a sound that feels very final.",
+    "lore": "Six rounds. That's all you need."
+  },
+ 
+  "recipe_charged_defibrillator": {
+    "ingredients": ["defibrillator_pads", "industrial_jumper_cables"],
+    "result": "charged_defibrillator_rig",
+    "message": "You splice the jumper cables into the pad leads and clamp them to the battery array terminals. The capacitors whine as they charge. This will either save you or cook you alive.",
+    "lore": "300 joules. More than enough to stop a heart. Hopefully enough to restart one."
+  },
+ 
+  "recipe_hypothermia_kit": {
+    "ingredients": ["liquid_nitrogen_dewar", "thermal_rewarming_blanket"],
+    "result": "hypothermia_survival_kit",
+    "message": "You set the dewar valve to slow-release and bundle the rewarming blanket alongside it. Controlled hypothermia. Clinical death by cold. Someone has to wrap you in that blanket at exactly the right moment.",
+    "lore": "Your core temperature will drop to 28°C. At that point, your heart stops. So does the list."
+  },
+ 
+  "recipe_asphyxiation_kit": {
+    "ingredients": ["industrial_helium_tank", "pure_oxygen_resuscitator"],
+    "result": "asphyxiation_survival_kit",
+    "message": "You rig the helium line to the mask and set the oxygen resuscitator on standby. The theory is sound. The margin for error is not.",
+    "lore": "Four minutes. That's how long you have before brain damage becomes permanent. Your companion better be fast."
+  },
+ 
+  "recipe_fentanyl_reversal": {
+    "ingredients": ["confiscated_fentanyl", "police_narcan"],
+    "result": "fentanyl_reversal_kit",
+    "message": "You draw the fentanyl into the syringe and tape the Narcan auto-injector to your wrist. There is only one person who can press that button, and it isn't you.",
+    "lore": "The dose will stop your breathing in under ninety seconds. The Narcan will restart it — if someone uses it in time."
+  },
+ 
+  "recipe_loaded_flare_gun": {
+    "ingredients": ["empty_flare_gun", "phosphorus_flare"],
+    "result": "loaded_flare_gun",
+    "message": "You crack the breech and seat the phosphorus flare. It snaps shut. 2,700 degrees Fahrenheit at the point of impact.",
+    "lore": "Not subtle. Not precise. Absolutely final."
   }
 }

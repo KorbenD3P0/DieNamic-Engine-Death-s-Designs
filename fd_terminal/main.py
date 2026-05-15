@@ -272,17 +272,15 @@ class FinalDestinationApp(App):
             'settings': 'intro_theme',
             'character_select': 'intro_theme',
             'intro': 'intro_theme',
-            'tutorial': 'title_theme',
-            'achievements': 'title_theme',
-            'load_game': 'title_theme',
-            'save_game': 'title_theme',
-            # The Reality
-            'game': None,  # Silence (or 'lobby_ambience' if you prefer)
-            
+            'tutorial': 'intro_theme',
+            'achievements': 'intro_theme',
+            'load_game': 'intro_theme',
+            'save_game': None,
+            'game': None,  
             # The Endings (Currently defaulting to None/Silence, or add keys here)
-            'lose': 'game_over_theme',
-            'win': 'victory_theme',
-            'inter_level': None 
+            'lose': 'lose_game',
+            'win': 'win_game',
+            'inter_level': 'inter_level' 
         }
 
         # 2. Determine the Target

@@ -410,76 +410,67 @@ class InventoryMixin:
             return self._build_response(message="Something went wrong while trying to use that.", turn_taken=False, success=False)
     
     def _command_combine(self, target_str: str) -> dict:
-        """
-        Combines two items from inventory. 
-        Syntax: "combine A with B" or "combine A and B"
-        """
-        if not target_str:
-            return self._build_response(message="Combine what with what?", turn_taken=False)
+        """Combines two items in the player's inventory to create a new one."""
+        target_str = target_str.lower().strip()
+        
+        # 1. Parse the separator
+        if " with " in target_str:
+            parts = target_str.split(" with ", 1)
+        elif " and " in target_str:
+            parts = target_str.split(" and ", 1)
+        else:
+            return self._build_response("Format must be: 'combine [item] with [item]'.", turn_taken=False)
 
-        # 1. Parse Input
-        parts = re.split(r'\s+(?:with|and)\s+', target_str.lower())
-        if len(parts) != 2:
-            return self._build_response(message="Try 'combine [item] with [item]'.", turn_taken=False)
-        
-        item_a_name, item_b_name = parts[0].strip(), parts[1].strip()
-        
-        # 2. Validate Inventory
-        inv_keys = self.player.get('inventory', [])
-        # Helper to find key by name
-        def find_key(name):
-            items_master = self.resource_manager.get_data('items', {})
-            for key in inv_keys:
-                # Handle list of strings or dicts
-                k_str = key if isinstance(key, str) else key.get('id')
-                data = items_master.get(k_str, {})
-                if normalize_text(data.get('name', k_str)) == normalize_text(name):
-                    return k_str
-            return None
+        item_a_name = parts[0].strip()
+        item_b_name = parts[1].strip()
 
-        key_a = find_key(item_a_name)
-        key_b = find_key(item_b_name)
+        # 2. Inventory Resolution Helper
+        inv = self.player.get('inventory', [])
+        
+        def _get_inv_item(search_name):
+            for i_id in inv:
+                data = self.resource_manager.get_data('items', {}).get(i_id, {})
+                if search_name == i_id or search_name in data.get('name', '').lower():
+                    return i_id, data
+            return None, None
 
-        if not key_a:
-            return self._build_response(message=f"You don't have '{item_a_name}'.", turn_taken=False)
-        if not key_b:
-            return self._build_response(message=f"You don't have '{item_b_name}'.", turn_taken=False)
-        if key_a == key_b:
-            return self._build_response(message="You can't combine an item with itself.", turn_taken=False)
+        id_a, data_a = _get_inv_item(item_a_name)
+        id_b, data_b = _get_inv_item(item_b_name)
 
-        # 3. Check Recipes
-        recipes = self.resource_manager.get_data('recipes', {})
-        found_recipe = None
-        
-        # We check if the set of ingredients matches
-        player_ingredients = {key_a, key_b}
-        
-        for r_id, r_data in recipes.items():
-            required = set(r_data.get('ingredients', []))
-            if required == player_ingredients:
-                found_recipe = r_data
-                break
-        
-        if not found_recipe:
-            return self._build_response(message=f"You can't combine {item_a_name} and {item_b_name}.", turn_taken=False)
+        # 3. Validation
+        if not id_a:
+            return self._build_response(f"You don't have a '{item_a_name}' in your inventory.", turn_taken=False)
+        if not id_b:
+            return self._build_response(f"You don't have a '{item_b_name}' in your inventory.", turn_taken=False)
+        if id_a == id_b:
+            return self._build_response("You can't combine an item with itself.", turn_taken=False)
 
-        # 4. Execute Combination
-        # Remove ingredients
-        if isinstance(self.player['inventory'], list):
-            # Safe removal handling
-            new_inv = [i for i in self.player['inventory'] if (i if isinstance(i, str) else i.get('id')) not in player_ingredients]
-            self.player['inventory'] = new_inv
-        
-        # Add result
-        result_item = found_recipe['result']
-        self.player['inventory'].append(result_item)
-        
-        # Log & Return
-        success_msg = found_recipe.get('message', "Items combined successfully.")
-        self.logger.info(f"Crafted {result_item} from {key_a} + {key_b}")
-        
-        # Award achievement if applicable
-        if self.achievements_system:
-            self.achievements_system.unlock("macgyver")
+        # 4. Check for Valid Recipes
+        recipe = None
+        if 'combine_with' in data_a and id_b in data_a['combine_with']:
+            recipe = data_a['combine_with'][id_b]
+        elif 'combine_with' in data_b and id_a in data_b['combine_with']:
+            recipe = data_b['combine_with'][id_a]
 
-        return self._build_response(message=color_text(success_msg, 'success', self.resource_manager), turn_taken=True, success=True)
+        if not recipe:
+            return self._build_response(
+                f"You can't figure out a way to combine the {data_a.get('name', id_a)} and the {data_b.get('name', id_b)}.", 
+                turn_taken=False
+            )
+
+        # 5. Execute Combination
+        result_id = recipe['result_item']
+        success_msg = recipe.get('success_message', f"You combine them to make a {result_id.replace('_', ' ').title()}.")
+
+        # Swap the inventory items
+        self.player['inventory'].remove(id_a)
+        self.player['inventory'].remove(id_b)
+        self.player['inventory'].append(result_id)
+        
+        # Trigger UI refresh so the inventory widget updates immediately
+        self.add_ui_event({"event_type": "refresh_context_actions"})
+
+        return self._build_response(
+            message=f"[color=00ff00]{success_msg}[/color]", 
+            turn_taken=True
+        )
