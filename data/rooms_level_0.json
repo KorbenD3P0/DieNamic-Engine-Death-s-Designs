@@ -135,7 +135,7 @@
       "dialogue_by_shell": {
         "_default": {
           "warning": {
-            "text": "'I'm sorry for freaking out but something terrible is about to happen. I SAW it.\nPlease, [color=#b266ff]you have to help me warn the others[/color] \u2014 nobody will listen to me.'",
+            "text": "'I'm sorry for freaking out but something terrible is about to happen. \nPlease, [color=#b266ff]I can't explain how but I SAW it[/color]. You have to help me warn the others \u2014 nobody will listen to me.'",
             "options": [
               {
                 "text": "[color=#00ff00]Look, I believe you, but you need to calm tf down. I'll help warn people.[/color]",
@@ -589,6 +589,47 @@
         "outdoor": "solitary camper"
       },
       "dialogue_by_shell": {
+        "player_is_visionary_states": {
+          "resigned": {
+            "text": "They watch you panicking with a sort of morbid curiosity. '[color=#ffa500]You look like you know something we don't. Have you ever considered: whatever happens, happens?[/color]'",
+            "options": [
+              {
+                "text": "[color=#00ff00]It doesn't have to happen to YOU, dipshit! Move![/color]",
+                "target_state": "persuasion_check_fatalist"
+              },
+              {
+                "text": "[color=#ffa500]I'm not leaving you here to die. Get up.[/color]",
+                "target_state": "persuasion_check_fatalist"
+              }
+            ]
+          },
+          "persuasion_check_fatalist": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.75,
+                "success_state": "spark_of_hope",
+                "failure_state": "given_up",
+                "success_message": "They stare at you for a long second, weighing your conviction. '[color=#00ff00]...Fine. Let's see if you're right.[/color]' They stand up.",
+                "failure_message": "'[color=#ff1]'Nah. I've had a good life.'\nThey see the dumbfounded look on your face and almost seem amused. '[color=#ff0000]You go ahead, though.[/color]'"
+              }
+            }
+          },
+          "spark_of_hope": {
+            "text": "'[color=#00ff00]Point the way, prophet.[/color]'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "given_up": {
+            "text": "'[color=#ff0000]They close their eyes and lean their head back. They don't respond anymore.[/color]'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        },
         "_default": {
           "resigned": {
             "text": "'[color=#ffa500]Oh come ON, are you kidding me? Even if it IS true, if it's our time, it's our time. You gonna listen to that fuckin psycho?[/color]'",
@@ -662,6 +703,47 @@
         "outdoor": "vlogger"
       },
       "dialogue_by_shell": {
+        "player_is_visionary_states": {
+          "oblivious": {
+            "text": "They don't even notice you until you are standing directly in their personal space. They pull out one earbud. '[color=#ffa500]...What? Did you say something?[/color]'",
+            "options": [
+              {
+                "text": "[color=#00ff00]*Yank the headphones out*[/color] THERE IS NO TIME! RUN!",
+                "target_state": "persuasion_check_distracted"
+              },
+              {
+                "text": "[color=#ffa500]Look around you! You have to leave right now![/color]",
+                "target_state": "persuasion_check_distracted"
+              }
+            ]
+          },
+          "persuasion_check_distracted": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.4,
+                "success_state": "snapped_to_reality",
+                "failure_state": "ignored",
+                "success_message": "They drop their phone, the spell finally broken by your panic. '[color=#00ff00]Oh shit! Okay, I'm out![/color]'",
+                "failure_message": "'[color=#ff0000]What is your problem?![/color]' They snatch their headphones back."
+              }
+            }
+          },
+          "snapped_to_reality": {
+            "text": "'[color=#00ff00]I'm going, I'm going![/color]'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "ignored": {
+            "text": "They roll their eyes, jam the earbud back in, and turn up the volume.",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        },
         "_default": {
           "oblivious": {
             "text": "'[color=#ffa500]...Hold on, let me finish this level. What did you say? Evacuate?[/color]'",
@@ -752,6 +834,47 @@
         "outdoor": "geared-up tourist"
       },
       "dialogue_by_shell": {
+        "player_is_visionary_states": {
+          "hostile": {
+            "text": "They glare at you as you approach, gripping their belongings. '[color=#ff0000]Whatever you're selling, I don't want it. Back off.[/color]'",
+            "options": [
+              {
+                "text": "[color=#00ff00]I'm not selling anything. I'm trying to save your life. Move![/color]",
+                "target_state": "persuasion_check_selfish"
+              },
+              {
+                "text": "[color=#ffa500]Get out of the way before you get yourself killed.[/color]",
+                "target_state": "persuasion_check_selfish"
+              }
+            ]
+          },
+          "persuasion_check_selfish": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.6,
+                "success_state": "bolting",
+                "failure_state": "dismissive",
+                "success_message": "They look around, see the raw terror in your eyes, and their survival instinct overrides their attitude. '[color=#00ff00]Out of my way![/color]' they yell, shoving past you toward the exit.",
+                "failure_message": "'[color=#ff0000]Yeah, right. Nice try. I'm not giving up my spot.[/color]'"
+              }
+            }
+          },
+          "bolting": {
+            "text": "'[color=#00ff00]Move it![/color]'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "dismissive": {
+            "text": "'[color=#ff0000]Don't you have someone else to bother?[/color]' They turn their back on you.",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        },
         "_default": {
           "hostile": {
             "text": "'[color=#ff0000]Back off! I'm not waiting around for whatever disaster they're blabbering about. I'm looking out for number one![/color]'",
@@ -1008,6 +1131,47 @@
       "examinable": true,
       "initial_state": "oblivious",
       "dialogue_by_shell": {
+        "player_is_visionary_states": {
+          "oblivious": {
+            "text": "They look up, startled by your intensity. '[color=#ff00ff]Excuse me? Are you talking to me?[/color]'",
+            "options": [
+              {
+                "text": "[color=#00ff00]You need to move. Right now. This place is a death trap.[/color]",
+                "target_state": "persuasion_check_bystander"
+              },
+              {
+                "text": "[color=#ffa500]Please, just trust me. It isn't safe here.[/color]",
+                "target_state": "persuasion_check_bystander"
+              }
+            ]
+          },
+          "persuasion_check_bystander": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.5,
+                "success_state": "leaving",
+                "failure_state": "annoyed",
+                "success_message": "'[color=#00ff00]Okay, okay! Geez, you don't have to yell. I'm going.[/color]'",
+                "failure_message": "'[color=#ff0000]Look, leave me alone or I'm calling security.[/color]'"
+              }
+            }
+          },
+          "leaving": {
+            "text": "'[color=#00ff00]I'm leaving! I'm leaving![/color]'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "annoyed": {
+            "text": "'[color=#ff0000]Seriously, back off.[/color]'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        },
         "_default": {
           "oblivious": {
             "text": "'[color=#ff00ff]Hmm?\n\nSorry, I wasn't paying attention. What's going on?[/color]'",
@@ -1088,6 +1252,55 @@
       "examinable": true,
       "initial_state": "curious",
       "dialogue_by_shell": {
+        "player_is_visionary_states": {
+          "curious": {
+            "text": "'[color=#ff00ff]You look like you're about to have a heart attack. Are you okay?[/color]  \n\n[color=#00ffff]Do you know something I don't?[/color]'",
+            "options": [
+              {
+                "text": "[color=#00ff00]This place isn't safe. You need to leave while you still can.[/color]",
+                "target_state": "persuasion_check_bystander2"
+              },
+              {
+                "text": "[color=#ffa500]I'm not sure. Just stay alert.[/color]",
+                "target_state": "alert"
+              }
+            ]
+          },
+          "persuasion_check_bystander2": {
+            "text": "",
+            "on_talk_action": {
+              "persuasion_check": {
+                "base_difficulty": 0.45,
+                "success_state": "convinced_b2",
+                "failure_state": "hesitant",
+                "success_message": "'[color=#00ff00]You seem completely serious. Alright, I'm not sticking around to find out.[/color]'",
+                "failure_message": "'[color=#ffa500]Ehhh... I'll keep an eye out but I'm not leaving yet.[/color]'"
+              }
+            }
+          },
+          "convinced_b2": {
+            "text": "'[color=#00ff00]Good looking out. I'm getting out of here.[/color]'",
+            "on_talk_action": {
+              "persuasion_result": "convinced",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "hesitant": {
+            "text": "'[color=#ffa500]I'll stay near the exit, how about that?[/color]'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          },
+          "alert": {
+            "text": "'[color=#ff00ff]Okay... I guess I'll pay more attention.[/color]'",
+            "on_talk_action": {
+              "persuasion_result": "unsure",
+              "special_effect": "despawn_npc"
+            }
+          }
+        },
+
         "_default": {
           "curious": {
             "text": "'[color=#ff00ff]What's all the commotion? That person looks really freaked out.[/color]  \n\n[color=#00ffff]Do you know what's going on?[/color]'",

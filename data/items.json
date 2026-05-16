@@ -3109,6 +3109,26 @@
     },
     "character_connection": "Corbin Wainright"
   },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   "newspaper_clipping": {
     "name": "Newspaper Clipping",
     "description": "A faded newspaper clipping lies inside the crate with a key on top of it. The headline screams about the horrific disaster you survived; scattered papers underneath show the other survivors, or rather, recount their strange deaths.",
@@ -3226,7 +3246,16 @@
     "narrative_snippet_on_collect": "These are Bludworth's last set of notes; they detail how Kimberly Corman is the last person he knew of to have escaped Death's design. Her method of survival was unique (often imitated, but never duplicated), and he believed she was the key to understanding how to disrupt Death's design - but he never got the chance to share his findings with her.",
     "special_property": "final_research"
   },
-
+  "hospital_safety_memo": {
+    "name": "Notice: Defibrillator Storage",
+    "description": "A memo pinned to a corkboard.",
+    "type": "document",
+    "is_readable": true,
+    "read_text": "The memo discusses missing DEFIBRILLATOR PADS and other equipment from the hospital's emergency supplies. It urges staff to be vigilant and report any suspicious activity around the storage areas.\nTBH, you could probably rig up those pads to a power source with some kind of cable and use it as a makeshift defibrillator.",
+    "on_read_action": {
+        "learn_recipe": "recipe_defibrillator_rig"
+    }
+  },
 
 
 
@@ -3240,7 +3269,7 @@
 
   "movie_stub": {
     "name": "Torn Movie Stub",
-    "type": "item",
+    "type": "document",
     "examine_details": "The ticket stub is torn and smudged with a dark, sticky substance. The movie title is partially obscured but appears to be for a midnight showing at the McKineplex.",
     "description": "A ticket stub for a midnight showing at the McKineplex. The seat number is smudged with something dark and sticky.",
     "is_distributable_in_containers": true,
@@ -3248,7 +3277,7 @@
   },
   "greasy_work_order": {
     "name": "Greasy Work Order",
-    "type": "item",
+    "type": "document",
     "examine_details": "The work order is stained with grease and has a faint smell of motor oil. It lists a repair for a '2005 Honda Civic' with the customer's name, 'Pete', scrawled at the top.",
     "description": "A crumpled invoice from Pete's Auto Repair. The mechanic's signature, '{npc_name}', is circled in red ink repeatedly.",
     "is_distributable_in_containers": true,
@@ -3256,7 +3285,7 @@
   },
   "presage_paper_memo": {
     "name": "Presage Paper Memo",
-    "type": "item",
+    "type": "document",
     "examine_details": "The memo is printed on standard office paper, with the Presage Paper logo at the top. The text discusses 'recent workplace accidents' and mentions a 'safety review'. The recipient's name has been violently scratched out with a pen.",
     "description": "A corporate memo from Presage Paper regarding 'recent workplace accidents'. The recipient's name has been violently scratched out.",
     "is_distributable_in_containers": true,
@@ -3264,7 +3293,7 @@
   },
   "mall_directory_pamphlet": {
     "name": "Mall Directory",
-    "type": "item",
+    "type": "document",
     "examine_details": "The pamphlet is glossy and slightly worn. It shows a map of the {city_name} Galleria, with various stores and amenities labeled. A red 'X' has been drawn over the escalator icon in the center atrium.",
     "description": "A glossy map of the {city_name} Galleria. A red 'X' has been drawn over the escalator icon in the center atrium.",
     "is_distributable_in_containers": true,
@@ -3280,7 +3309,7 @@
   },
   "bloodstained_punch_card": {
     "name": "Bloodstained Punch Card",
-    "type": "item",
+    "type": "document",
     "examine_details": "The punch card is made of thick cardstock, with nine punched holes and one remaining. The last hole is stained with a dark red substance that looks like dried blood.",
     "description": "A 'Daily Grind' loyalty card. Nine out of ten coffees are punched. The last punch looks suspiciously like a drop of dried blood.",
     "is_distributable_in_containers": true,
@@ -3288,7 +3317,7 @@
   },
   "true_companions_transfer_form": {
     "name": "True Companions Transfer Form",
-    "type": "item",
+    "type": "document",
     "examine_details": "The form is filled out in a rushed, messy handwriting. It details the transfer of a pet from the True Companions adoption center to a new owner. The receiving veterinarian's signature is hastily scribbled at the bottom, stained with a few drops of dark liquid.",
     "description": "A medical transfer sheet from the True Companions adoption center. The receiving veterinarian's signature is scribbled hastily at the bottom, stained with a few drops of dark liquid.",
     "is_distributable_in_containers": true,
@@ -3296,7 +3325,7 @@
   },
   "laminated_pool_pass": {
     "name": "Laminated Pool Pass",
-    "type": "item",
+    "type": "document",
     "examine_details": "The pass is laminated and has a faint smell of chlorine. The name on the pass is smudged but appears to be 'Emily R.' The back of the pass has a stamp for the {city_name} Community Center pool.",
     "description": "A faded membership card for the {city_name} Community Center. It smells faintly of chlorine and cheap plastic.",
     "is_distributable_in_containers": true,
@@ -3304,7 +3333,7 @@
   },
   "union_id_card": {
     "name": "Union ID Card",
-    "type": "item",
+    "type": "document",
     "examine_details": "The card is made of cheap plastic and has a photo of a man with a hard hat and safety goggles. The name on the card is 'John Doe', and it lists his occupation as 'Ironworker'. The back of the card has a stamp for the {city_name} Heights construction site.",
     "description": "A plastic identification card for Local 404 Ironworkers. The portrait is smudged with dried cement, but the {city_name} Heights project site is clearly stamped on the back.",
     "is_distributable_in_containers": true,
@@ -3312,7 +3341,7 @@
   },
   "coastal_survey_clipboard": {
     "name": "Coastal Survey Clipboard",
-    "type": "item",
+    "type": "document",
     "examine_details": "The clipboard is weathered and has a faint salty smell. The top page shows detailed measurements and notes about the coastline near {city_name}, with a focus on the area around the Old Lighthouse.",
     "description": "A weather-resistant clipboard holding architectural schematics for the Old {city_name} Lighthouse. A bright red 'CONDEMNED' stamp is visible on the top page.",
     "is_distributable_in_containers": true,
@@ -5491,12 +5520,12 @@
       "target_workplace_tags": ["medical", "hospital", "clinic"],
       "loot_tier": "evidence",
       "spawn_limit": 1,
-      "paired_with": "industrial_jumper_cables"
+      "paired_with": "jumper_cables"
     },
     "alias": ["pads", "defib pads", "electrode pads"]
   },
  
-  "industrial_jumper_cables": {
+  "jumper_cables": {
     "name": "Industrial Jumper Cables",
     "description": "Heavy-gauge copper jumper cables from a maintenance closet. More than capable of carrying enough current to kill.",
     "examine_details": "The clamps are rated for 800 amps. Spliced into a defibrillator circuit, they'd turn a car battery into a crude but functional cardiac device.",
@@ -5510,23 +5539,6 @@
       "spawn_limit": 1
     },
     "alias": ["cables", "jumper cables", "clamps"]
-  },
- 
-  "bullets": {
-    "name": "Revolver Ammunition",
-    "description": "A speed-loader of .357 Magnum rounds. Found in an evidence bag.",
-    "examine_details": "Six rounds of hollow-point .357. Whoever owned this gun wasn't playing around.",
-    "type": "weapon",
-    "subtype": "finale_component",
-    "takeable": true,
-    "is_distributable_in_containers": true,
-    "spawn_rules": {
-      "target_workplace_tags": ["security", "industrial", "outdoor"],
-      "loot_tier": "rare",
-      "spawn_limit": 1,
-      "paired_with": "empty_heavy_revolver"
-    },
-    "alias": ["ammo", "ammunition", "rounds", ".357", "revolver bullets"]
   },
  
   "police_narcan": {
@@ -5545,7 +5557,6 @@
     },
     "alias": ["narcan", "naloxone", "auto-injector", "overdose kit"]
   },
- 
  
   "hypothermia_survival_kit": {
     "name": "Hypothermia Survival Kit",
@@ -5579,7 +5590,6 @@
     "use_on": ["self", "crossroads_room"],
     "alias": ["fentanyl kit", "overdose kit", "narcan kit", "reversal kit"]
   },
- 
  
   "bludworths_ledger": {
     "name": "Bludworth's Ledger",
@@ -5634,10 +5644,10 @@
     "use_on": ["self", "companion", "crossroads_room"],
     "alias": ["note", "the note", "companion note", "their note"]
   },
-  "empty_heavy_revolver": {
-    "name": "Heavy Revolver (Empty)",
+  "empty_revolver": {
+    "name": "Revolver (Empty)",
     "examine_details": "The cylinder is completely empty. You could probably load it if you had the right ammunition.",
-    "description": "A .357 caliber revolver from the Police Station. The cylinder is completely empty.",
+    "description": "A .357 caliber revolver from the Police Station. The cylinder is completely empty.\n\nIf you can find a speed-loader of .357 rounds, this could actually save your life.",
     "type": "weapon",
     "takeable": true,
     "spawn_rules": {
@@ -5645,26 +5655,43 @@
       "paired_with": "bullets"
     },
     "is_alias": true,
-    "alias": ["heavy revolver", "empty revolver", "revolver", "gun", "empty gun"],
+    "alias": ["heavy revolver", "empty revolver", "revolver", "empty gun"],
     "combine_with": {
       "bullets": {
-        "result_item": "loaded_heavy_revolver",
+        "result_item": "loaded_revolver",
         "success_message": "You slide the heavy .357 rounds into the cylinder and snap it shut with a satisfying click. It's ready."
       }
     }
   },
-  "loaded_heavy_revolver": {
-    "name": "Loaded Heavy Revolver",
+  "loaded_revolver": {
+    "name": "Loaded Revolver",
     "description": "A .357 caliber reminder that there is always a way out.",
     "examine_details": "There's only one way out of this now. Six rounds ready to fire.",
     "type": "weapon",
-    "subtype": "finale_dark_path_trigger",
+    "subtype": "trigger_finale_dark_path",
     "is_metallic": true,
     "takeable": true,
     "weight": "heavy",
     "use_on": ["self", "other_survivor", "crossroads_room", "stranger"],
     "is_alias": true,
-    "alias": ["loaded revolver", "heavy revolver", "revolver", "gun", "loaded gun", "weapon"]
+    "alias": ["loaded revolver", "heavy revolver", "revolver", "loaded gun", "weapon"]
+  },
+
+  "bullets": {
+    "name": "Revolver Ammunition",
+    "description": "A speed-loader of .357 Magnum rounds. Found in an evidence bag.",
+    "examine_details": "Six rounds of hollow-point .357. Whoever owned this gun wasn't playing around.",
+    "type": "ammunition",
+    "subtype": "finale_component",
+    "takeable": true,
+    "is_distributable_in_containers": true,
+    "spawn_rules": {
+      "target_workplace_tags": ["security", "industrial", "outdoor"],
+      "loot_tier": "rare",
+      "spawn_limit": 1,
+      "paired_with": "empty_revolver"
+    },
+    "alias": ["ammo", "ammunition", "rounds", ".357", "revolver bullets"]
   },
 
   "armed_nail_gun": {
@@ -5672,12 +5699,12 @@
     "description": "A pneumatic nail gun pressurized to 120 PSI. It will easily fire a 3-inch framing nail through a human skull.",
     "examine_details": "This isn't a tool anymore. It's a weapon. The air tank is full, and the nails are loaded. There's no safety on this thing.",
     "type": "weapon",
-    "subtype": "finale_dark_path_trigger",
+    "subtype": "trigger_finale_dark_path",
     "is_metallic": true,
     "takeable": true,
     "use_on": ["self", "other_survivor", "crossroads_room", "stranger"],
     "is_alias": true,
-    "alias": ["nail gun", "armed nail gun", "pneumatic nail gun", "gun", "nailgun"]
+    "alias": ["nail gun", "armed nail gun", "pneumatic nail gun", "nailgun"]
   },
 
   "charged_defibrillator_rig": {
@@ -5700,9 +5727,9 @@
     "is_distributable_in_containers": true,
     "is_critical": true,
     "spawn_rules": {
-        "target_workplace_tags": ["veterinary", "medical", "clinic", "laboratory"],
-        "loot_tier": "evidence",
-        "spawn_limit": 1
+      "target_workplace_tags": ["veterinary", "medical", "clinic", "laboratory"],
+      "loot_tier": "evidence",
+      "spawn_limit": 1
     },
     "examine_details": "A sealed syringe of veterinary-grade pentobarbital. Enough to stop a heart. Temporarily, if you're lucky.",
     "takeable": true,
@@ -5753,18 +5780,6 @@
     "alias": ["adrenaline", "adrenaline syringe", "epinephrine", "epipen", "syringe", "needle"]
   },
 
-  "loaded_flare_gun": {
-    "name": "Loaded Flare Gun",
-    "examine_details": "The flare gun is made of bright orange plastic with a thick red barrel. It feels heavy and solid in your hands.",
-    "description": "A desperate weapon. Fired into a human chest, it will burn straight through to the spine.",
-    "type": "weapon",
-    "subtype": "trigger_finale_dark_path",
-    "takeable": true,
-    "use_on": ["self", "other_survivor", "crossroads_room", "stranger"],
-    "is_alias": true,
-    "alias": ["flare gun", "loaded flare gun", "flare", "gun", "weapon"]
-  },
-
   "coroners_report": {
     "name": "Classified Coroner's Report",
     "type": "document",
@@ -5794,6 +5809,7 @@
     "description": "A heavy-duty EMT breathing mask with a pressurized pure oxygen tank. Capable of forcing oxygen back into dead lungs.",
     "type": "medical_supply",
     "subtype": "finale_asphyxiation_start",
+    "alias": ["oxygen resuscitator", "resuscitator", "emergency o2", "breathing mask"],
     "takeable": true
   },
 
@@ -5835,12 +5851,27 @@
       }
     }
   },
+    "loaded_flare_gun": {
+    "name": "Loaded Flare Gun",
+    "examine_details": "The flare gun is made of bright orange plastic with a thick red barrel. It feels heavy and solid in your hands.",
+    "description": "A desperate weapon. Fired into a human chest, it will burn straight through to the spine.",
+    "type": "weapon",
+    "subtype": "trigger_finale_dark_path",
+    "takeable": true,
+    "use_on": ["self", "other_survivor", "crossroads_room", "stranger"],
+    "is_alias": true,
+    "alias": ["flare gun", "loaded flare gun"]
+  },
   "phosphorus_flare": {
     "name": "Phosphorus Distress Flare",
     "description": "Burns at 2,900 degrees Fahrenheit.",
     "examine_details": "The flare is cylindrical, with a bright red body and a white tip. It feels heavy for its size.",
-    "type": "tool",
-    "takeable": true
+    "type": "ammunition",
+    "takeable": true,
+    "spawn_rules": {
+      "target_workplace_tags": ["maritime", "water", "public"]
+    },
+    "alias": ["distress flare", "phosphorus flare", "flare"]
   },
 
 
@@ -5861,7 +5892,7 @@
 
 
 
-  
+
   "fairgrounds_ticket": {
     "name": "Fairgrounds Wristband",
     "description": "A neon green paper wristband granting all-access to the county fair.",

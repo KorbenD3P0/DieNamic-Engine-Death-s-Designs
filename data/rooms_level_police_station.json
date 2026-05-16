@@ -181,7 +181,24 @@
                 "locked": false,
                 "items": ["bludworths_house_key"],
                 "search_description": "Inside the open locker: a tagged evidence bag containing personal effects from a John Doe case from three years ago. Most of it is junk. But at the bottom of the bag is a [color=ffff00]worn house key[/color] with a faded tag. Someone wrote [color=ffff00]BLUDWORTH[/color] on it in permanent marker."
-            }
+            },
+        {
+            "name": "Evidence Locker",
+            "description": "A tall standing locker that you probably shouldn't be breaking into.",
+            "is_container": true,
+            "locked": true,
+            "capacity": 3,
+            "items": [
+            "police_narcan",
+            "confiscated_fentanyl"
+            ],
+            "is_metallic": false,
+            "is_breakable": true,
+            "unlocks_with": "desk_drawer_key",
+            "forceable": true,
+            "force_threshold": 2,
+            "forceable_text": "The desk drawers are sturdy, but with enough effort you could force them open. It will be noisy and might damage the contents."
+        }
         ],
         "items": [],
         "hazards_present": [

@@ -243,6 +243,14 @@
       "description": "Successfully force open a locked door or container.",
       "difficulty": "easy",
       "points": 10
+    },
+    "master_of_fate": {
+      "name": "Master of Fate",
+      "unlocked": false,
+      "description": "Cheat Death using every available method.",
+      "icon": "infinity_symbol",
+      "is_hidden": true,
+      "unlock_message": "You have mapped every escape route. The design is broken forever."
     }
   },
   "evidence_collection": {},

@@ -120,6 +120,9 @@ class InventoryMixin:
             return self._build_response(message=f"You can't take the {entity.get('name', target_str)}.", turn_taken=False)
             
         item_id = entity.get('id_key') or entity_data.get('id_key') or entity.get('name') or target_str
+        # At the end of your take/pickup function, right after adding the item to self.player['inventory']:
+        if hasattr(self, '_check_for_ready_combinations'):
+            self._check_for_ready_combinations()
         return self._finalize_item_take(item_id)
 
     def _take_from_explicit_container(self, item_str: str, container_str: str) -> dict:
@@ -141,7 +144,10 @@ class InventoryMixin:
             aliases.extend([normalize_text(a) for a in item_data.get('alias', [])])
             
             if normalize_text(disp) == target_norm or normalize_text(i_id) == target_norm or target_norm in aliases:
-                return self._finalize_item_take(i_id, container_obj=c_data)
+                result = self._finalize_item_take(i_id, container_obj=c_data)
+                if hasattr(self, '_check_for_ready_combinations'):
+                    self._check_for_ready_combinations()
+                return result
                 
         return self._build_response(message=f"The {container['name']} doesn't contain a '{item_str}'.", turn_taken=False)
 
@@ -184,6 +190,10 @@ class InventoryMixin:
 
         if not taken_display_names:
             return self._build_response(message="There is nothing here to take.", turn_taken=False)
+
+        # At the end of your take/pickup function, right after adding the item to self.player['inventory']:
+        if hasattr(self, '_check_for_ready_combinations'):
+            self._check_for_ready_combinations()
 
         self.logger.info(f"_take_all_items: Items taken: {taken_display_names}")
         self.add_ui_event({"event_type": "refresh_context_actions"})
@@ -361,7 +371,10 @@ class InventoryMixin:
         items_in_container = container_data.get('items', [])
         self.logger.debug(f"_command_search: Items in container: {items_in_container}")
 
-        self.set_interaction_flag(f"searched_{entity['id_key']}")
+        # --- THE FIX: Align Interaction Flags & Force UI Refresh ---
+        # Set BOTH name and id_key to ensure the 'take' command and Contextual UI Widget can see it!
+        self.set_interaction_flag(f"searched_{entity.get('name', '')}")
+        self.set_interaction_flag(f"searched_{entity.get('id_key', '')}")
 
         if not items_in_container:
             message = f"You search the {entity['name']} but find nothing."
@@ -372,7 +385,15 @@ class InventoryMixin:
             colored_item_names = [color_text(name, 'item', self.resource_manager) for name in item_names]
             message = f"You search the {entity['name']} and find: {', '.join(colored_item_names)}."
             self.logger.info(f"_command_search: Found items in '{entity['name']}': {item_names}")
-            return self._build_response(message=message, turn_taken=True, success=True)
+            
+            # CRITICAL: Tell the UI to rebuild the context buttons now that the items are revealed!
+            return self._build_response(
+                message=message, 
+                turn_taken=True, 
+                success=True,
+                ui_events=[{"event_type": "refresh_context_actions"}]
+            )
+        # -----------------------------------------------------------
 
     def _command_inventory(self, target: str) -> dict:
         """
@@ -410,67 +431,115 @@ class InventoryMixin:
             return self._build_response(message="Something went wrong while trying to use that.", turn_taken=False, success=False)
     
     def _command_combine(self, target_str: str) -> dict:
-        """Combines two items in the player's inventory to create a new one."""
-        target_str = target_str.lower().strip()
+        """Combines two items in the inventory, supporting aliases."""
+        import re
+        from fd_terminal.utils import normalize_text
         
-        # 1. Parse the separator
-        if " with " in target_str:
-            parts = target_str.split(" with ", 1)
-        elif " and " in target_str:
-            parts = target_str.split(" and ", 1)
-        else:
-            return self._build_response("Format must be: 'combine [item] with [item]'.", turn_taken=False)
-
-        item_a_name = parts[0].strip()
-        item_b_name = parts[1].strip()
-
-        # 2. Inventory Resolution Helper
-        inv = self.player.get('inventory', [])
+        target_str = (target_str or "").strip()
         
-        def _get_inv_item(search_name):
-            for i_id in inv:
-                data = self.resource_manager.get_data('items', {}).get(i_id, {})
-                if search_name == i_id or search_name in data.get('name', '').lower():
-                    return i_id, data
-            return None, None
+        # Match "item A with item B" OR "item A and item B"
+        match = re.search(r"(.+?)\s+(?:with|and)\s+(.+)", target_str, re.IGNORECASE)
+        if not match:
+            return self._build_response(message="Combine what with what? (e.g., 'combine pads with cables')", turn_taken=False)
+            
+        item1_str = match.group(1).strip()
+        item2_str = match.group(2).strip()
+        
+        # --- THE FIX: Alias-Aware Inventory Lookup ---
+        def _resolve_inv_item(search_str):
+            search_norm = normalize_text(search_str)
+            master_items = getattr(self, 'resource_manager', None).get_data('items', {}) if hasattr(self, 'resource_manager') else {}
+            
+            for inv_id in self.player.get('inventory', []):
+                item_def = master_items.get(inv_id, {})
+                aliases = [normalize_text(a) for a in item_def.get('alias', []) + item_def.get('aliases', [])]
+                
+                if search_norm == normalize_text(inv_id) or search_norm == normalize_text(item_def.get('name', '')) or search_norm in aliases:
+                    return inv_id
+            return None
 
-        id_a, data_a = _get_inv_item(item_a_name)
-        id_b, data_b = _get_inv_item(item_b_name)
+        item1_id = _resolve_inv_item(item1_str)
+        item2_id = _resolve_inv_item(item2_str)
+        
+        if not item1_id:
+            return self._build_response(message=f"You don't have a '{item1_str}'.", turn_taken=False)
+        if not item2_id:
+            return self._build_response(message=f"You don't have a '{item2_str}'.", turn_taken=False)
+            
+        if item1_id == item2_id:
+            return self._build_response(message="You cannot combine an item with itself.", turn_taken=False)
+            
+        # Check recipes
+        recipes_db = getattr(self, 'resource_manager', None).get_data('recipes', {}) if hasattr(self, 'resource_manager') else {}
+        
+        matched_recipe_id = None
+        matched_recipe = None
+        
+        for r_id, r_data in recipes_db.items():
+            ingredients = r_data.get('ingredients', [])
+            if item1_id in ingredients and item2_id in ingredients and len(ingredients) == 2:
+                matched_recipe_id = r_id
+                matched_recipe = r_data
+                break
+                
+        if not matched_recipe:
+            return self._build_response(message="Those two items don't seem to combine into anything useful.", turn_taken=False)
+            
+        result_item = matched_recipe.get('result')
+        message = matched_recipe.get('message', f"You combine the items into {result_item.replace('_', ' ')}.")
+        
+        # Execute swap
+        self.player['inventory'].remove(item1_id)
+        self.player['inventory'].remove(item2_id)
+        self.player.setdefault('inventory', []).append(result_item)
+        
+        # Meta-tracking
+        self.player.setdefault('known_recipes', set()).add(matched_recipe_id)
+        
+        if hasattr(self, '_check_for_ready_combinations'):
+            self._check_for_ready_combinations()
+            
+        # --- THE FIX: Refresh UI so 'use' buttons appear instantly! ---
+        return self._build_response(
+            message=message, 
+            turn_taken=True,
+            ui_events=[{"event_type": "refresh_context_actions"}, {"event_type": "refresh_ui"}]
+        )
 
-        # 3. Validation
-        if not id_a:
-            return self._build_response(f"You don't have a '{item_a_name}' in your inventory.", turn_taken=False)
-        if not id_b:
-            return self._build_response(f"You don't have a '{item_b_name}' in your inventory.", turn_taken=False)
-        if id_a == id_b:
-            return self._build_response("You can't combine an item with itself.", turn_taken=False)
 
-        # 4. Check for Valid Recipes
-        recipe = None
-        if 'combine_with' in data_a and id_b in data_a['combine_with']:
-            recipe = data_a['combine_with'][id_b]
-        elif 'combine_with' in data_b and id_a in data_b['combine_with']:
-            recipe = data_b['combine_with'][id_a]
-
-        if not recipe:
+    def _command_recipes(self, *args) -> dict:
+        """Displays all item combinations the player has discovered."""
+        known_recipes = self.player.get('known_recipes', set())
+        
+        if not known_recipes:
             return self._build_response(
-                f"You can't figure out a way to combine the {data_a.get('name', id_a)} and the {data_b.get('name', id_b)}.", 
+                message="Your crafting journal is empty. You haven't discovered any item combinations yet.",
                 turn_taken=False
             )
 
-        # 5. Execute Combination
-        result_id = recipe['result_item']
-        success_msg = recipe.get('success_message', f"You combine them to make a {result_id.replace('_', ' ').title()}.")
-
-        # Swap the inventory items
-        self.player['inventory'].remove(id_a)
-        self.player['inventory'].remove(id_b)
-        self.player['inventory'].append(result_id)
+        recipes_db = self.resource_manager.get_data('recipes', {})
+        unified_master = self._build_unified_loot_master()
         
-        # Trigger UI refresh so the inventory widget updates immediately
-        self.add_ui_event({"event_type": "refresh_context_actions"})
+        def _get_name(item_key):
+            return unified_master.get(item_key, {}).get('name', item_key.replace('_', ' ').title())
+
+        output = ["[b][color=00ffff]=== DISCOVERED COMBINATIONS ===[/color][/b]\n"]
+        
+        for recipe_id in known_recipes:
+            recipe = recipes_db.get(recipe_id)
+            if not recipe: continue
+            
+            ingredients = " + ".join([f"[color=aaaaaa]{_get_name(i)}[/color]" for i in recipe.get('ingredients', [])])
+            result_name = _get_name(recipe.get('result', ''))
+            lore = recipe.get('lore', '')
+            
+            output.append(f"[b][color=00ff00]{result_name}[/color][/b]")
+            output.append(f"  Requires: {ingredients}")
+            if lore:
+                output.append(f"  [i][color=ffaa00]\"{lore}\"[/color][/i]")
+            output.append("") # spacer
 
         return self._build_response(
-            message=f"[color=00ff00]{success_msg}[/color]", 
-            turn_taken=True
+            message="\n".join(output),
+            turn_taken=False
         )

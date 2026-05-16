@@ -35,25 +35,11 @@
         "player_interaction": {
           "use": [
             {
-              "required_item_name": "vet_sedatives",
+              "required_item_name": "lethal_syringe",
               "required_item_type": "medical_supply",
               "target_state": "finale_triggered_flatline",
               "message_success": "You plunge the syringe into your arm. Your heart rate slows... slows... stops. You are dead. Now it's up to the adrenaline to bring you back.",
               "on_success": { "action_effect": "trigger_finale_flatline" }
-            }
-          ]
-        }
-      },
-      {
-        "name": "heavy revolver",
-        "player_interaction": {
-          "use": [
-            {
-              "required_item_name": "loaded_heavy_revolver",
-              "required_item_type": "weapon",
-              "target_state": "finale_triggered_dark",
-              "message_success": "The steel is cold against your palm. A life for a life. That's the only rule that ever mattered. You find your target and pull the trigger.",
-              "on_success": { "action_effect": "trigger_finale_dark_path" }
             }
           ]
         }

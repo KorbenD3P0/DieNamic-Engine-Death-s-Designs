@@ -110,7 +110,7 @@
       "The garage has industrial equipment — jumper cables rated for more than just cars.",
       "The lockbox under the workbench is worth forcing."
     ],
-    "item_presence": ["industrial_jumper_cables", "empty_heavy_revolver"],
+    "item_presence": ["jumper_cables", "empty_revolver"],
     "conditional_transitions": [
       {
         "condition": "has_flag", 

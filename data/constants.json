@@ -10,7 +10,8 @@
     "LIGHT_GREY": "d3d3d3",
     "BLUE": "3399ff",
     "PURPLE": "b266ff",
-    "CERULEAN": "007ba7"
+    "CERULEAN": "007ba7",
+    "BROWN": "964B00"
   },
   "SEMANTIC_COLOR_MAP": {
     "room": "YELLOW",
@@ -26,7 +27,8 @@
     "special": "PURPLE",
     "turn": "YELLOW",
     "default": "WHITE",
-    "info": "CERULEAN"
+    "info": "CERULEAN",
+    "shit": "BROWN"
   },
   "QTE": {
     "DEFAULT_DURATION": 5.0,

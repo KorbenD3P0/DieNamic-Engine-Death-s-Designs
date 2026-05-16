@@ -85,24 +85,6 @@
       "Penalty: NPCs are initially harder to convince (skeptic threshold +1)"
     ]
   },
-  "Medium": {
-    "description": "Not quite a visionary, but they see the most warnings and omens (at a cost of fear and paranoia). Think Clear Rivers near the end of FD1 or all of FD2.",
-    "max_hp": 40,
-    "observations": {
-      "inter_level_thought": "They don't see the signs like I do. The way the air shifts, the little hints that something's wrong.. I just hope I can stay one step ahead of it."
-    },
-    "stats": {
-      "D": 3,
-      "E": 4,
-      "A": 6,
-      "T": 2,
-      "H": 8
-    },
-    "affinities": {
-      "hazard_tags": ["paranormal", "deaths_breath"],
-      "item_types": ["cursed", "occult"]
-    }
-  },
   "Mechanic": {
     "description": "Can use tools in ways others can't.\n(Bonus to mechanical/electrical hazards, tools & fixes).",
     "max_hp": 50,

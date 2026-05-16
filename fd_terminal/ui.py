@@ -47,6 +47,7 @@ from kivy.uix.textinput import TextInput
 from .utils import color_text, get_save_slot_info, normalize_text
 from .game_logic import GameLogic
 from .achievements import AchievementsSystem
+from .vfx_manager import VFXManager
 from .widgets import (
     StatusDisplayWidget, OutputPanelWidget, MapDisplayWidget,
     ActionInputWidget, QTEPopup, InventoryDisplayWidget,
@@ -1158,7 +1159,7 @@ class IntroScreen(BaseScreen):
 
             # ── Disaster details ─────────────────────────────────────────────────
             # Capitalise first letter; the raw key is lowercase ("a luxury ferry...")
-            disaster_display = disaster_name[0].upper() + disaster_name[1:]
+            disaster_display = disaster_name[0] + disaster_name[1:]
             disaster_str     = c(disaster_display, 'error')
 
             # --- THE FIX: Safe fallback for empty explanation arrays ---
@@ -1181,31 +1182,42 @@ class IntroScreen(BaseScreen):
                 tags = disaster.get('tags', [])
                 d_name = disaster_name.lower()
                 if 'fire_related' in tags or 'explosion' in d_name or 'gas' in d_name:
-                    fate_pool = ['incinerated by the blast wave', 'crushed by flaming debris', 'engulfed in the fireball']
+                    fate_pool = ['incinerated by a blast wave', 'crushed by flaming debris', 'engulfed in a fireball']
                 elif 'transportation_road' in tags or 'highway' in d_name or 'pile-up' in d_name or 'crash' in d_name:
-                    fate_pool = ['crushed between two colliding vehicles', 'impaled by shattered windshield glass', 'thrown violently into the concrete barrier']
+                    fate_pool = ['crushed between two colliding vehicles', 'impaled by shattered windshield glass', 'thrown violently into a concrete barrier']
                 elif 'transportation_water' in tags or 'ferry' in d_name or 'ship' in d_name:
                     fate_pool = ['dragged under the freezing water', 'crushed by the collapsing hull', 'drowned in the lower decks']
                 elif 'transportation_air' in tags or 'plane' in d_name or 'flight' in d_name:
-                    fate_pool = ['sucked out of the breached fuselage', 'crushed as the cabin crumpled', 'incinerated in the jet fuel explosion']
+                    fate_pool = ['sucked out of the breached fuselage', 'crushed as the cabin crumpled', 'incinerated in a jet fuel explosion']
                 elif 'heights' in tags or 'falling' in d_name or 'collapse' in d_name or 'escalator' in d_name:
-                    fate_pool = ['crushed by falling structural steel', 'swept off the ledge to the pavement below', 'dragged into the grinding machinery']
+                    fate_pool = ['crushed by falling structural steel', 'swept off a ledge to the pavement below', 'dragged into grinding machinery']
                 elif 'flood_related' in tags or 'water' in d_name or 'storm' in d_name:
-                    fate_pool = ['swept away by the churning floodwaters', 'drowned when the underpass submerged', 'battered against a concrete pillar']
+                    fate_pool = ['swept away by churning floodwaters', 'drowned when an underpass submerged', 'battered against a concrete pillar']
                 else:
                     fate_pool = ['crushed beyond recognition', 'torn apart in the initial impact', 'impaled by flying shrapnel']
             # ----------------------------------------
-
             # Build a short list of NPCs the player will recognise by face
             # (they know how each person died — that's the horror)
             face_lines = []
             ROLES_WITH_APPEARANCES = ['skeptic', 'bystander_1', 'bystander_2']
+            
+            # --- THE FIX: Randomize the grammatical structure of the visions ---
+            sentence_structures = [
+                "You recognize {appearance} — their name is {name}. You've never spoken to them, but you watched them {death_desc}.",
+                "Over there, {appearance}. That's {name}. The image of them {death_desc} is burned into your retinas.",
+                "{name} is the {appearance} standing nearby. You don't know them, but you know exactly what they look like when they {death_desc}.",
+                "Your eyes lock onto {appearance}. {name}. That's what people will be screaming when they {death_desc}.",
+                "You see {appearance} and your stomach drops. You've already witnessed {name} {death_desc}."
+            ]
+            
             for role in ROLES_WITH_APPEARANCES:
                 npc_name   = role_map.get(role)
                 appearance = _get_appearance(role)
+                
                 if not (npc_name and appearance):
                     continue
 
+                appearance_lower = appearance[0].lower() + appearance[1:]
                 fate = random.choice(fate_pool) if fate_pool else None
 
                 if fate:
@@ -1215,25 +1227,36 @@ class IntroScreen(BaseScreen):
                     else:
                         death_desc = fate
 
-                    face_lines.append(
-                        c(appearance, 'npc') +
-                        f" — you know their name is {c(npc_name, 'special')},"
-                        f" even though you've never met. You watched them"
-                        f" {death_desc}."
+                    # Pick a random sentence structure and fill in the colored variables
+                    structure = random.choice(sentence_structures)
+                    
+                    # Ensure "A middle-aged person" vs "a middle-aged person" matches the structure
+                    if structure.startswith("{appearance}") or structure.startswith("Over there, {appearance}"):
+                        app_str = c(appearance_lower, 'npc')
+                    else:
+                        app_str = c("a " + appearance_lower if not appearance_lower.startswith("a ") else appearance_lower, 'npc')
+                        
+                    formatted_line = structure.format(
+                        appearance=app_str,
+                        name=c(npc_name, 'special'),
+                        death_desc=death_desc
                     )
+                    
+                    # Capitalize the very first letter of the fully assembled line
+                    formatted_line = formatted_line[0].upper() + formatted_line[1:]
+                    face_lines.append(formatted_line)
                 else:
                     face_lines.append(
-                        c(appearance, 'npc') +
-                        f" — you don't know them. You know their name is"
-                        f" {c(npc_name, 'special')}. You know what happens to them."
+                        f"You recognize {c(appearance_lower, 'npc')} — you don't know them, but you know their name is {c(npc_name, 'special')}. "
+                        f"{c('You do know what happens to them.', 'warning')}"
                     )
 
             # ── Authority figure mention (optional) ──────────────────────────────
             authority_name = role_map.get('authority_figure')
             if authority_name:
                 authority_line = (
-                    f"There's a {c(authority_name, 'npc')} in your peripheral vision."
-                    " You know they won't believe you."
+                    f"There's that {c(authority_name, 'npc')} in your peripheral vision;"
+                    " you know they might not believe you."
                     " You know exactly what their face looks like when they don't."
                 )
             else:
@@ -1256,11 +1279,15 @@ class IntroScreen(BaseScreen):
                 companion_line = ""
 
             # ── Warning fragment (what you screamed in the vision) ───────────────
-            # --- THE FIX: Safe fallback for empty warning arrays ---
-            warnings_list = disaster.get('warnings')
-            raw_warning = random.choice(warnings_list) if warnings_list else 'RUN! GET OUT NOW!'
-            # -------------------------------------------------------
-            # Strip any leading quote marks the data includes
+            warning_data = disaster.get('warning') or disaster.get('warnings')
+            
+            if isinstance(warning_data, list) and warning_data:
+                raw_warning = random.choice(warning_data)
+            elif isinstance(warning_data, str):
+                raw_warning = warning_data
+            else:
+                raw_warning = 'RUN! GET OUT NOW!'
+                
             warning_clean = raw_warning.strip().strip("'\"")
             warning_str   = c(warning_clean, 'warning')
 
@@ -1271,20 +1298,17 @@ class IntroScreen(BaseScreen):
                 f"It's a {time_of_day}. {weather} "
                 f"The air smells of {smell}.\n\n"
                 f"You've just arrived at the {location_str}.\n"
-                f"The crowd is {crowd}.\n\n"
+                f"The crowd is {crowd}.\n"
             )
 
             premonition_core = (
-                f"Everything was normal. {c('Everything was fine.', 'npc')}\n\n"
-                f"Except you've just had the weirdest daydream. No-\n\n"
-                f"Not a dream. Not a metaphor. A vision. "
-                f"{c('Actual footage', 'warning')} - running behind your eyes, playing out like a movie.. "
-                f"{c(disaster_display + '.', 'error')}\n\n"
-                f"""In it, you heard yourself screaming, "\n"""
-                f"""{c(warning_clean, 'warning')}" Then you literally felt what it was like to die.\n"""
-                f"Until you just snapped back to reality, gasping for air like life was being breathed back into you. "
-                f"That's what you know about what's coming. "
-                f"This is what you possibly know about the next few minutes:\n\n"
+                f"A minute ago, everything was normal. {c('Everything was fine.', 'npc')}\n\n"
+                f"Then the world tilted. You were suddenly trapped in a waking nightmare, living out a horrific future that hasn't happened yet.\n\n"
+                f"{c('A vision.', 'warning')}\n\n"
+                f"You saw a catastrophe unfold firsthand: {c(disaster_display, 'error')}. You watched the people around you get gruesomely torn apart, and then you literally felt what it was like to die yourself.\n\n"
+                f"You snapped back to reality a second ago, gasping for air like life was being breathed back into you, which you use to yell, \n\n"
+                f"\"{warning_str}\" You don't have to imagine how bad people are taking it; they're looking at you now like you lost your fucking mind, which.. you can't blame them.\n\n"
+                f"You don't have long before it (might) happen. You quickly take stock of what, and who, you already know:\n\n"
             )
 
             # Face paragraph — who the player recognises
@@ -1305,17 +1329,15 @@ class IntroScreen(BaseScreen):
             context_block = "\n\n".join(context_lines) + ("\n\n" if context_lines else "")
 
             middle = (
-                f"You know how {c(disaster_explain_fragment(chosen_explain), 'special')}.\n\n"
-                f"You know the exact sequence. You've replayed it enough times.\n\n"
-                f"What you don't know is how long you have.\n\n"
+                f"You know how {c(disaster_explain_fragment(chosen_explain), 'special')}. "
+                f"You know the exact way.. the exact order that everybody died. Your mind won't stop reminding you.\n\n"
+                f"What you don't know are two things:\n"
             )
 
             closing = (
-                f"The question is not whether you're right.\n"
-                f"The question is whether anyone here will believe"
-                f" a stranger who knows their name"
-                f" and is already shaking.\n\n"
-                f"Get them out. Now. {c('Before you prove yourself right.', 'warning')}"
+                f"how long you even have to act.."
+                f"..and whether anyone here will believe a stranger who knows their name and is already {c('shitting their pants', 'shit')} at something that hasn't happened yet.\n\n"
+                f"Try to get them out? Or leave the area, spare yourself the padded room and let the chips fall where they may?\nDecide.\n\n{c('Before everybody finds out just how right you are.', 'warning')}"
             )
 
             return opening + premonition_core + faces_block + context_block + middle + closing
@@ -4793,7 +4815,8 @@ class InterLevelScreen(BaseScreen):
             
 class WinScreen(BaseScreen):
     score_display = ObjectProperty(None)
-    narrative_display = ObjectProperty(None)  # You need to add this Label to your KV file
+    narrative_display = ObjectProperty(None)
+    title_display = ObjectProperty(None)  # <-- Add this property!
 
     def on_enter(self, *args):
         app = App.get_running_app()
@@ -4803,11 +4826,19 @@ class WinScreen(BaseScreen):
         final_score = getattr(app, 'last_game_score', 0)
         self.score_display.text = f"Final Score: {final_score}"
 
-        # --- NEW: Pull the epic narrative from game_logic ---
         game_screen = self.manager.get_screen('game')
         if game_screen and game_screen.game_logic:
             epic_ending = game_screen.game_logic.calculate_ending()
             self.narrative_display.text = epic_ending
+            
+            # --- NEW: Dynamic Title Logic ---
+            # If the narrative contains the solo death text, turn the title ominous and red!
+            if "aren't going to wake up" in epic_ending or "death has claimed" in epic_ending.lower():
+                self.title_display.text = "[b][color=ff0000]THE DESIGN IS COMPLETE.\nThere is no escape.[/color][/b]"
+            else:
+                self.title_display.text = "[b][color=00ff00]You have SURVIVED.\n..but at what cost?[/color][/b]"
+            # --------------------------------
+
         else:
             self.narrative_display.text = "Your friendly neighborhood developer, KorbenD3P0, is hard at work bringing you the complete game! Stay tuned for upcoming features, including:\nPlayable intro disasters!(actually I did that)\nMore hazards!(did that too)\nAn ending!(nope just started those, too)\n\nThank you for playing this demo version of 'DieNamic Engine: Death's Designs'!"
 
@@ -4907,6 +4938,7 @@ class GameScreen(BaseScreen):
         try:
             # Always rebind GameLogic from App (prevents stale/stuck sessions)
             self.game_logic = getattr(app, 'game_logic', None)
+            self.vfx_manager = VFXManager(game_screen=self, audio_manager=getattr(app, 'audio_manager', None))
 
             # Also refresh engine cross-links every time
             if self.game_logic:
@@ -4972,15 +5004,7 @@ class GameScreen(BaseScreen):
 
                 # Start the premonition timer only when arriving at level 0
                 if str(self.game_logic.player.get('current_level', '')) in ["0", "level_0"]:
-                    is_visionary = self.game_logic.player.get('is_visionary', False)
-                    already_died = self.game_logic.player.get('premonition_already_died', False)
-                    # Visionary: timer only starts after intercept (via reset_premonition_state)
-                    # Non-Visionary: timer starts normally on GameScreen entry
-                    if not is_visionary and (
-                        not hasattr(self.game_logic, '_premonition_event_trigger')
-                        and hasattr(self.game_logic, '_start_premonition_timer')
-                    ):
-                        self.game_logic._start_premonition_timer()
+                    self.game_logic._start_premonition_timer()
 
                 self.logger.info("GameScreen: Engine references attached.")
 
@@ -5080,8 +5104,6 @@ class GameScreen(BaseScreen):
 
         except Exception as e:
             self.logger.error(f"on_enter error: {e}", exc_info=True)
-            
-
 
     # Add this helper to GameScreen to make wrapping 24 lines easier
     def _schedule_safe(self, callback, delay):
@@ -5438,23 +5460,27 @@ class GameScreen(BaseScreen):
 
     def _process_all_events(self, sorted_events: list) -> bool:
         """
-        Process all events in priority order. 
+        Process all events in priority order.
         Ensures Narrative Popups -> QTEs -> Terminal Events are handled in correct sequence.
         """
         inventory_affecting_types = {
-            "take", "use", "drop", "give", "talk", "talk_to", "talkto", "respond 1", "respond 2", "respond 3",
-            "equip", "unequip", "consume", "pickup", "pick_up", "steal", "loot", "combine", "craft", "respond 4"
+            "take", "use", "drop", "give", "talk", "talk_to", "talkto", "respond 1", 
+            "respond 2", "respond 3", "equip", "unequip", "consume", "pickup", "pick_up", 
+            "steal", "loot", "combine", "craft", "respond 4"
         }
         inventory_changed = False
         batch_tail = []
-
-        # 1. THE TERMINAL PRE-CHECK
-        # We find all game_over events and pick the 'best' one based on priority.
-        terminal_events = [e for e in sorted_events if e.get('event_type') == 'game_over']
+        
+        # --- THE FIX: Catch BOTH game_over and game_won in the terminal pre-check! ---
+        terminal_events = [e for e in sorted_events if e.get('event_type') in ('game_over', 'game_won')]
         if terminal_events:
             self.logger.info(f"Terminal events detected. Selecting highest priority from {len(terminal_events)} events.")
             best = max(terminal_events, key=lambda e: e.get('priority', 0))
-            self._handle_game_over(best)
+            
+            if best.get('event_type') == 'game_won':
+                self._handle_game_won(best)
+            else:
+                self._handle_game_over(best)
             return inventory_changed
 
         # 2. BLOCKING UI GUARD
@@ -5468,6 +5494,7 @@ class GameScreen(BaseScreen):
         def _priority_key(e):
             t = e.get('event_type') or e.get('type', '')
             if t == 'game_over':  return 99   # Handled by pre-check; push to end to be safe
+            if t == 'game_won':   return 99   # Handled by pre-check; push to end to be safe
             if t == 'show_popup': return 0    # Info popups before QTEs
             if t == 'trigger_qte': return 1   # Changed to match your trigger key
             if t == 'show_qte':    return 1 
@@ -6354,7 +6381,7 @@ class GameScreen(BaseScreen):
         self.add_ui_event({"event_type": "go_to_epilogue"})
 
     def _handle_game_over(self, event: dict):
-        self.logger.info("_handle_game_over: Player has died. Transitioning to LoseScreen.")
+        self.logger.info("_handle_game_over: Player has died. Evaluating transition.")
         
         player_state = self.game_logic.player if self.game_logic else {}
         
@@ -6362,29 +6389,37 @@ class GameScreen(BaseScreen):
         final_narrative = event.get('final_narrative') or player_state.get('final_narrative', '')
         flavor_text     = event.get('flavor_text') or ''
         hide_stats      = event.get('hide_stats', False)
+        
+        # Look for the VFX tag (Defaults to None if it isn't there)
+        vfx_tag         = event.get('vfx_tag', None)
 
-        # Resolve {city_name} dynamically
         current_city = player_state.get('current_city', 'the city')
         death_reason    = death_reason.replace('{city_name}', current_city)
         final_narrative = final_narrative.replace('{city_name}', current_city)
         flavor_text     = flavor_text.replace('{city_name}', current_city)
 
-        import kivy.app
-        app = kivy.app.App.get_running_app()
-        if app and app.root and 'lose' in app.root.screen_names:
-            lose_screen = app.root.get_screen('lose')
-            lose_screen.set_death_info(
-                death_reason=death_reason,
-                final_narrative=final_narrative,
-                flavor_text=flavor_text,
-                hide_stats=hide_stats,
-                player_state=player_state
-            )
-            # --- THE FIX: Schedule the transition so Kivy doesn't deadlock ---
-            Clock.schedule_once(lambda dt: self._execute_screen_transition('lose'), 0.5)
-            # -----------------------------------------------------------------
-        elif app and app.root:
-            Clock.schedule_once(lambda dt: self._execute_screen_transition('title'), 0.5)
+        # 1. Define the final transition that happens AFTER the VFX
+        def execute_death_transition(*args):
+            import kivy.app
+            app = kivy.app.App.get_running_app()
+            if app and app.root and 'lose' in app.root.screen_names:
+                lose_screen = app.root.get_screen('lose')
+                lose_screen.set_death_info(
+                    death_reason=death_reason,
+                    final_narrative=final_narrative,
+                    flavor_text=flavor_text,
+                    hide_stats=hide_stats,
+                    player_state=player_state
+                )
+                self._execute_screen_transition('lose')
+            elif app and app.root:
+                self._execute_screen_transition('title')
+
+        # 2. Route to VFXManager if a tag exists, otherwise skip straight to death
+        if vfx_tag and hasattr(self, 'vfx_manager'):
+            self.vfx_manager.play_vfx(vfx_tag, on_complete=execute_death_transition)
+        else:
+            Clock.schedule_once(execute_death_transition, 0.5)
 
     def _check_popup_and_transition(self, target_screen):
         """Polls until the active popup is dismissed, then safely transitions."""

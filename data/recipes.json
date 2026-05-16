@@ -25,15 +25,20 @@
     "result": "alkaline_solution",
     "message": "You mix the soda and water. Good for neutralizing acid burns."
   },
-    "recipe_loaded_revolver": {
-    "ingredients": ["empty_heavy_revolver", "bullets"],
-    "result": "loaded_heavy_revolver",
+
+
+
+
+
+  "recipe_loaded_revolver": {
+    "ingredients": ["empty_revolver", "bullets"],
+    "result": "loaded_revolver",
     "message": "You load the revolver. The cylinder snaps shut with a sound that feels very final.",
     "lore": "Six rounds. That's all you need."
   },
  
   "recipe_charged_defibrillator": {
-    "ingredients": ["defibrillator_pads", "industrial_jumper_cables"],
+    "ingredients": ["defibrillator_pads", "jumper_cables"],
     "result": "charged_defibrillator_rig",
     "message": "You splice the jumper cables into the pad leads and clamp them to the battery array terminals. The capacitors whine as they charge. This will either save you or cook you alive.",
     "lore": "300 joules. More than enough to stop a heart. Hopefully enough to restart one."
@@ -63,7 +68,21 @@
   "recipe_loaded_flare_gun": {
     "ingredients": ["empty_flare_gun", "phosphorus_flare"],
     "result": "loaded_flare_gun",
-    "message": "You crack the breech and seat the phosphorus flare. It snaps shut. 2,700 degrees Fahrenheit at the point of impact.",
+    "message": "You slide the thick red flare into the bright orange plastic barrel and snap it shut.\n2,700 degrees Fahrenheit at the point of impact.",
     "lore": "Not subtle. Not precise. Absolutely final."
-  }
+  },
+
+  "recipe_defibrillator_rig": {
+    "ingredients": ["defibrillator_pads", "jumper_cables"],
+    "result": "charged_defibrillator_rig",
+    "message": "You splice the heavy jumper cables into the defibrillator pad circuits. It's a crude hack, but it will deliver a massive jolt.",
+    "lore": "You are turning a medical device into an industrial hazard, or vice-versa."
+  },
+
+  "recipe_lethal_syringe": {
+    "ingredients": ["veterinary_sedatives", "syringe"],
+    "result": "lethal_syringe",
+    "message": "You draw the sedatives into the syringe. The label says 'Not for human use.' You hope that's just legalese.",
+    "lore": "The dose will stop your heart in under a minute. The adrenaline in your system might restart it, but it's not guaranteed."
+   }
 }

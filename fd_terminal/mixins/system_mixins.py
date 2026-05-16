@@ -698,9 +698,11 @@ class SystemMixin:
 
         # 1. Aggregate all items from the Resource Manager
         items_db = {}
-        for key, data in getattr(self, 'resource_manager', None).master_data.items():
-            if key.startswith('items') and isinstance(data, dict):
-                items_db.update(data)
+        resource_manager = getattr(self, 'resource_manager', None)
+        if resource_manager:
+            for key, data in resource_manager.master_data.items():
+                if key.startswith('items') and isinstance(data, dict):
+                    items_db.update(data)
 
         if not items_db:
             return self._build_response(
@@ -713,7 +715,7 @@ class SystemMixin:
             for item_id, item_data in items_db.items():
                 self.player.setdefault('inventory', []).append(item_id)
                 
-                # --- THE FIX: Record Evidence in Journal ---
+                # Record Evidence in Journal
                 if getattr(self, 'achievements_system', None) and item_data.get('is_evidence'):
                     self.achievements_system.record_evidence(
                         evidence_id=item_id,
@@ -721,7 +723,11 @@ class SystemMixin:
                         description=item_data.get('description', ''),
                         char_connection=item_data.get('character_connection')
                     )
-                # -------------------------------------------
+            
+            # --- THE FIX: Trigger Combination Checker for God Mode ---
+            if hasattr(self, '_check_for_ready_combinations'):
+                self._check_for_ready_combinations()
+            # ---------------------------------------------------------
                 
             return self._build_response(
                 message=f"[color=00ff00]DEBUG:[/color] Added ALL {len(items_db)} items to your inventory.", 
@@ -736,23 +742,17 @@ class SystemMixin:
             quantity = int(match.group(1))
             target_name_str = match.group(2).strip()
 
-        # 4. Omni-Lookup / Fuzzy Search
+        # 4. Omni-Lookup / Fuzzy Search (Now with Aliases!)
         search_query = target_name_str.lower()
         found_item_id = None
         
-        if search_query in items_db:
-            found_item_id = search_query
-        elif search_query.replace(' ', '_') in items_db:
-            found_item_id = search_query.replace(' ', '_')
-        else:
-            for item_id, item_data in items_db.items():
-                item_name = item_data.get('name', '').lower()
-                if search_query == item_name:
-                    found_item_id = item_id
-                    break
-                elif search_query in item_name:
-                    found_item_id = item_id
-                    break
+        for item_id, item_data in items_db.items():
+            item_name = item_data.get('name', '').lower()
+            aliases = [a.lower() for a in item_data.get('alias', []) + item_data.get('aliases', [])]
+            
+            if search_query == item_name or search_query == item_id.lower() or search_query in aliases:
+                found_item_id = item_id
+                break
 
         # 5. Injection & Feedback
         if not found_item_id:
@@ -767,7 +767,7 @@ class SystemMixin:
         item_data = items_db[found_item_id]
         display_name = item_data.get('name', found_item_id)
         
-        # --- THE FIX: Record Single Evidence in Journal ---
+        # Record Single Evidence in Journal
         if getattr(self, 'achievements_system', None) and item_data.get('is_evidence'):
             self.achievements_system.record_evidence(
                 evidence_id=found_item_id,
@@ -775,7 +775,11 @@ class SystemMixin:
                 description=item_data.get('description', ''),
                 char_connection=item_data.get('character_connection')
             )
-        # --------------------------------------------------
+        
+        # --- THE FIX: Trigger Combination Checker for Specific Items ---
+        if hasattr(self, '_check_for_ready_combinations'):
+            self._check_for_ready_combinations()
+        # ---------------------------------------------------------------
         
         return self._build_response(
             message=f"[color=00ff00]DEBUG:[/color] Injected {quantity}x [{display_name}] into inventory.", 

@@ -1,5 +1,5 @@
 {
-  "a plane's wing breaking off off mid-takeoff": {
+  "a plane's wing breaking off mid-takeoff": {
     "description": "You were seconds from boarding the flight when {visionary}, their face slick with sweat, seized your arm, their grip like a vice, and rasped, \n'{warning}'\n\n You listen, for some reason, and later watch the plane's wing detach during takeoff, shearing the plane's back half in two. \n\nReports indicate there were {killed_count} people killed in this disaster. Then, even weirder news began to make the headlines.\n\nThose who initially survived were killed in increasingly bizarre ways, like {survivor_fates}.",
     "killed_count": {
       "min": 50,
@@ -890,13 +890,13 @@
       "children_youths"
     ],
     "warnings": [
-      "HEAD FOR THE HILLS! UPHILL! NOW! Or be swept away!",
-      "A WALL OF WATER IS COMING! The dam has burst! RUN!",
-      "DON'T STOP! Keep running until you can't see the valley!",
-      "THE DAM BROKE! IT'S COMING! A TSUNAMI OF FRESHWATER DEATH!",
-      "They said that dam would last a thousand years. It didn't last fifty!",
-      "I CAN'T OUTRUN IT! It's too fast! We're all going to be washed away!",
-      "My prize-winning petunias! Drowned! Oh, the humanity... and the hydrology!"
+      "The concrete... it's cracking! We have to get to high ground NOW!",
+      "IT'S COMING DOWN! The whole structure is giving way! RUN UPHILL!",
+      "Don't look back, just run! The water is going to take everything!",
+      "The wall is breaking! If we stay here we're going to drown! MOVE!",
+      "I saw it! The dam is bursting! We only have seconds! RUN!",
+      "GET AWAY FROM THE RIVER! It's going to wipe this whole valley off the map!",
+      "It's going to flood! The dam failed, I swear to God it failed! GET UP!"
     ],
     "tags": [
       "infrastructure_failure",

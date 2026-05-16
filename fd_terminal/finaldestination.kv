@@ -912,56 +912,75 @@
 <WinScreen>:
     score_display: score_label
     narrative_display: narrative_label
+    title_display: title_label
 
     BoxLayout:
         orientation: 'vertical'
-        padding: app.safe_left + dp(20), app.safe_top + dp(20), app.safe_right + dp(20), app.safe_bottom + dp(20)
-        spacing: dp(20)
+        padding: app.safe_left + dp(10), app.safe_top + dp(10), app.safe_right + dp(10), app.safe_bottom + dp(10)
+        spacing: dp(10)
 
         # Top Spacer
         Widget:
-            size_hint_y: 0.2
+            size_hint_y: None
+            height: dp(10)
 
+        # Title stays outside ScrollView so it's always visible
         Label:
-            text: "[b][color=00ff00]SURVIVED[/color][/b]"
+            id: title_label  
+            text: "[b][color=00ff00]You have SURVIVED.\n..but at what cost?[/color][/b]"
             markup: True
             font_name: app.thematic_font_name
-            font_size: sp(40)
+            font_size: sp(30)
             size_hint_y: None
-            height: dp(60)
-
-        Label:
-            id: narrative_label
-            text: ""
-            text_size: self.width * 0.9, None
+            height: dp(70)
             halign: 'center'
-            valign: 'middle'
-            markup: True
-            font_name: 'RobotoMono'
-            font_size: sp(16)
-            size_hint_y: None
-            height: self.texture_size[1]
+            text_size: self.width, None
 
-        Label:
-            id: score_label
-            text: "Score: 0"
-            font_name: 'RobotoMonoBold'
-            font_size: dp(22)
-            size_hint_y: None
-            height: dp(40)
+        # ScrollView gets all the middle space
+        ScrollView:
+            bar_width: dp(4)
+            bar_color: 0, 1, 0, 0.5  # Green scrollbar for the Win screen!
 
-        Widget:
-            size_hint_y: 0.1
+            GridLayout:
+                cols: 1
+                spacing: dp(20)
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(15), dp(10)
 
+                Label:
+                    id: narrative_label
+                    text: ""
+                    text_size: self.width - dp(10), None
+                    halign: 'center'
+                    valign: 'top'
+                    markup: True
+                    font_name: 'RobotoMono'
+                    font_size: sp(16)
+                    size_hint_y: None
+                    # This line is the secret sauce. It forces the label to grow
+                    # as the text gets longer, which activates the ScrollView.
+                    height: self.texture_size[1]
+
+                Label:
+                    id: score_label
+                    text: "Score: 0"
+                    font_name: 'RobotoMonoBold'
+                    font_size: dp(22)
+                    size_hint_y: None
+                    height: dp(40)
+
+        # Button OUTSIDE ScrollView — always visible at bottom
         MenuButton:
             text: "Main Menu"
             size_hint_x: 0.8
             pos_hint: {'center_x': 0.5}
             on_release: root.go_to_screen('title')
 
-        # Bottom Spacer
+        # Minimal bottom spacer
         Widget:
-            size_hint_y: 0.2
+            size_hint_y: None
+            height: dp(10)
 
 <LoseScreen>:
     death_reason_label: death_reason_id

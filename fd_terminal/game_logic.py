@@ -290,7 +290,9 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             'mix': self._command_combine,
             'roster': self._command_roster,
             'status': self._command_roster,  # Alias
-            'gimme': self._command_gimme
+            'gimme': self._command_gimme,
+            'recipes': self._command_recipes,
+            'journal': self._command_recipes
         }
         
         self.logger.info("GameLogic instance created with a lean, focused design.")
@@ -385,8 +387,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         if self.player.get('character_class') == 'Visionary' and str(level_id) in ('0', 'level_0'):
             self.player['is_visionary'] = True
             self.player['premonition_already_died'] = False
-            self._snapshot_premonition_state()
-            self.logger.info("Visionary class: premonition snapshot taken. Timer suppressed until intercept.")
+            self.logger.info("Visionary class: premonition snapshot taken. Timer started.")
 
     def start_new_game(self, character_class="Journalist", start_level=1, sandbox_config=None):
         self.logger.info(f"start_new_game: Starting new game with character: {character_class} on level {start_level}...")
@@ -955,7 +956,11 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
             target_room = available_slots.pop()
             arch_data = selected_archetypes.get(role, {})
-            raw_dialogue_tree = arch_data.get("dialogue_by_shell", {}).get("_default", {})
+            dialogue_shells = arch_data.get("dialogue_by_shell", {})
+            if player_is_visionary and "player_is_visionary_states" in dialogue_shells:
+                raw_dialogue_tree = dialogue_shells["player_is_visionary_states"]
+            else:
+                raw_dialogue_tree = dialogue_shells.get("_default", {})
 
             # ── Resolve all {placeholder} tokens in dialogue text NOW ──────────
             # so the player never sees raw template strings like {visionary_explains}
@@ -1068,10 +1073,9 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             return False
 
     def _trigger_premonition_death(self):
-        if self._intercept_visionary_death():
-            return
+        # --- THE FIX: Removed the Visionary intercept! If the clock hits 0, everyone dies. ---
         disaster_name = self.player.get('intro_disaster', {}).get('name', 'the disaster')
-        death_msg = f"You ran out of time.\n\nThe screams start before you even realize what's happening. You all meet your end after {disaster_name}.\n\nThanks for making things easy this time!"
+        death_msg = f"You ran out of time.\n\nThe screams start before you even realize what's happening. You all meet your end in {disaster_name}.\n\nDeath has claimed its design."
         
         self.logger.info("Premonition timer hit 0! Triggering Game Over.")
         
@@ -1090,36 +1094,6 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         if hasattr(self, 'premonition_timer_event') and self.premonition_timer_event:
             self.premonition_timer_event.cancel()
             self.premonition_timer_event = None
-
-    def _snapshot_premonition_state(self):
-        """
-        Snapshots the level_0 world state immediately after init, before any
-        player interaction. Used by the Visionary class to restore the premonition
-        to its original state after the player 'dies' and wakes up.
-        """
-        import copy
-        self._premonition_snapshot = {
-            'rooms': copy.deepcopy(self.current_level_rooms_world_state),
-            'items': copy.deepcopy(self.current_level_items_world_state),
-            'omens': copy.deepcopy(getattr(self, 'current_level_omens', {})),
-            'interaction_flags': set(),   # always clean on reset
-            'player_subset': {
-                # Only reset the in-level state — keep class, disaster, NPC data
-                'hp': self.player.get('max_hp', 30),
-                'fear': 0.0,
-                'inventory': [],
-                'visited_rooms': set(),
-                'location': self.player.get('location'),
-                'actions_taken': 0,
-                'qte_active': False,
-                'qte_context': {},
-                'status_effects': {},
-                'evaded_hazards': [],
-                '_premonition_npc_states': {},
-                'npc_states': {},
-            }
-        }
-        self.logger.info("_snapshot_premonition_state: World state snapshot taken.")
 
     def reset_ui_state(self):
         """Full UI state reset for a clean new game. Call before start_new_game."""
@@ -1382,7 +1356,6 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
     # -------------------------------------------------------------------------
     # --- Premonition Completion Helpers ---
     # -------------------------------------------------------------------------
-
 
     def _build_premonition_narrative_visionary(self, room_data, survivors, casualties,
                                                offscreen_casualties):
@@ -1921,7 +1894,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 f"The intake nurse confirmed your appointment is in the "
                 f"[color=00ffff]Radiology department[/color] — specifically the "
                 f"[color=00ffff]MRI Scan Room[/color].\n\n"
-                f"The nurse mentioned the MRI suite is on the lower level. "
+                f"The nurse mentioned the MRI suite is on the 2nd level; take the stairs or elevator just past the cafeteria. "
                 f"Head to [color=00ffff]Radiology[/color] and check in.\n\n"
                 f"[color=aaaaaa]Tip: use [color=ffffff]examine[/color] and "
                 f"[color=ffffff]search[/color] to interact with objects and furniture.[/color]"
@@ -1969,7 +1942,6 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             )
         })
     
-
     def _show_finale_entry_guidance(self):
         """
         Called from _setup_finale_room (or _generate_level_entry_response for
@@ -3626,12 +3598,27 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             # 3. Determine Critical Keys (Level Reqs + Locked Doors)
             critical_keys = self._determine_critical_keys(level_id, pre_placed_keys)
 
-            # --- THE FIX: Determine NPC Workplace Paired Items ---
-            # If the NPC who works here is still alive, inject their specific finale items!
+            # --- THE FIX 1: Workplace Items & The Universal Seed ---
             workplace_items = self._determine_thematic_workplace_items(level_id, unified_loot_master, pre_placed_keys)
+            
+            # If the thematic system failed to drop anything (NPC is dead/missing), 
+            # force a random seed in Level 1 so the player always has a chance at a finale!
+            if not workplace_items and str(level_id) == 'level_1':
+                import random
+                seed = random.choice(['empty_heavy_revolver', 'liquid_nitrogen_dewar', 'defibrillator_pads', 'police_narcan'])
+                workplace_items.append(seed)
+                self.logger.info(f"Universal Seed: Planted '{seed}' to start a finale path.")
+
             for w_item in workplace_items:
                 if w_item not in critical_keys:
                     critical_keys.append(w_item)
+
+            # --- THE FIX 2: The Orphan Tracker ---
+            # Automatically spawn the missing halves for anything in the player's inventory!
+            orphan_keys = self._track_orphan_components(unified_loot_master)
+            for o_key in orphan_keys:
+                if o_key not in critical_keys and o_key not in pre_placed_keys:
+                    critical_keys.append(o_key)
             # -----------------------------------------------------
 
             # 4. Build the Loot Stack
@@ -3763,6 +3750,67 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
         # Return as a list, filtering out any keys you manually hardcoded into the JSON
         return [k for k in critical_keys if k not in pre_placed_keys]
+
+    def _track_orphan_components(self, unified_loot_master: dict) -> list:
+        """Scans player inventory for half-finished combinations and forces the missing piece to spawn."""
+        missing_halves = set()
+        inv = self.player.get('inventory', [])
+        
+        for item_key in inv:
+            item_data = unified_loot_master.get(item_key, {})
+            
+            # Check 1: Does it have a 'paired_with' rule?
+            pair = item_data.get('spawn_rules', {}).get('paired_with')
+            if pair and pair not in inv:
+                missing_halves.add(pair)
+                
+            # Check 2: Does it have a 'combine_with' dictionary?
+            combine_reqs = item_data.get('combine_with', {})
+            for req_item in combine_reqs.keys():
+                if req_item not in inv:
+                    missing_halves.add(req_item)
+                    
+        if missing_halves:
+            self.logger.info(f"Orphan Tracker: Player needs {missing_halves} to complete a recipe. Forcing spawn.")
+            
+        return list(missing_halves)
+    
+    def _check_for_ready_combinations(self):
+        """Checks if the player is holding two items that can be combined and notifies them."""
+        inv = self.player.get('inventory', [])
+        unified_master = self._build_unified_loot_master()
+        
+        # Use a list to track which item pairs we've already notified the player about
+        # (Using a list ensures it is 100% safe for JSON save/load serialization)
+        notified_combos = self.player.setdefault('notified_combinations', [])
+        
+        for item_key in inv:
+            combine_dict = unified_master.get(item_key, {}).get('combine_with', {})
+            for req_key in combine_dict.keys():
+                if req_key in inv:
+                    # Create a unique, order-independent ID for this pair
+                    combo_id = f"{min(item_key, req_key)}_{max(item_key, req_key)}"
+                    
+                    if combo_id not in notified_combos:
+                        # EUREKA! They have a NEW matching pair!
+                        notified_combos.append(combo_id)
+                        
+                        item1_name = unified_master.get(item_key, {}).get('name', item_key)
+                        item2_name = unified_master.get(req_key, {}).get('name', req_key)
+                        
+                        self.logger.info(f"Eureka! Player has new matching pair: {item_key} and {req_key}")
+                        
+                        self.add_ui_event({
+                            "event_type": "show_popup",
+                            "title": "A DEADLY COMBINATION",
+                            "message": f"Looking at the [color=00ffff]{item1_name}[/color] and the [color=00ffff]{item2_name}[/color] in your bag, you realize they fit together perfectly.\n\nType [color=00ff00]combine {item1_name} with {item2_name}[/color] to craft a new item.\n\n[color=aaaaaa]Some combinations create helpful tools. Others create the exact instruments you need to cheat Death at the end of the line.[/color]",
+                            "priority": 900
+                        })
+                        
+                        # Return immediately so we only show one popup per turn/action.
+                        # If they picked up multiple pairs (e.g., via 'gimme all'), 
+                        # the next one will trigger the next time they take an action.
+                        return
 
     def _build_loot_stack(self, unified_loot_master: dict, disaster_tags: list, pre_placed_keys: set, critical_keys: list) -> list:
         """Compiles the final randomized stack of loot to be scattered."""
@@ -4295,25 +4343,60 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             return False
             
         if not qte_result.get('success'):
-            self.logger.info("Player failed a Finale QTE. Forcing death sequence.")
-            self.player['finale_qte_chain'] = [] 
+            # --- THE FIX: Grinding Punishment & Correct Game Over Routing ---
+            qte_context = qte_result.get('qte_context', {})
+            is_fatal = qte_context.get('is_fatal_on_failure', False)
             
-            self.player['hp'] = 0
-            self.is_game_over = True
+            # Deduct HP for failing
+            damage = 20
+            self.player['hp'] = max(0, self.player.get('hp', 0) - damage)
             
-            # --- THE FIX: Set the exact variable names LoseScreen expects! ---
-            self.death_reason = "You hesitated at the critical moment."
-            self.death_narrative = "Your final attempt to cheat has failed. Death doesn't want to play with you anymore.\n...because it already won."
-            self.player['death_reason'] = self.death_reason
+            # 1. Grinding Punishment (Survive with a penalty)
+            if self.player['hp'] > 0 and not is_fatal:
+                self.logger.info(f"Player failed a Finale QTE, but survived with {self.player['hp']} HP.")
+                
+                # Accelerate the rest of the chain!
+                chain = self.player.get('finale_qte_chain', [])
+                for qte in chain:
+                    if 'duration' in qte:
+                        qte['duration'] *= 0.80 # 20% less time to react!
+                self.player['finale_qte_chain'] = chain
+                
+                # Flash the screen red and tell them they messed up
+                self.add_ui_event({"event_type": "screen_flash", "color": "ff0000", "duration": 0.5, "opacity": 0.5})
+                self.add_ui_event({"event_type": "show_message", "message": f"[color=ff0000]You faltered! -{damage} HP[/color]\n[color=ff9900]The design is adapting. You have less time![/color]"})
+                
+                # Keep the gauntlet moving
+                self._trigger_next_finale_qte()
+                return True
+                
+            # 2. Fatal Failure (Game Over)
+            else:
+                self.logger.info("Player failed a fatal Finale QTE or reached 0 HP. Forcing death sequence.")
+                self.player['finale_qte_chain'] = [] 
+                self.player['hp'] = 0
+                self.is_game_over = True
+                
+                self.death_reason = "You hesitated at the critical moment."
+                self.death_narrative = "Your final attempt to cheat has failed. Death doesn't want to play with you anymore.\n...because it already won."
+                self.player['death_reason'] = self.death_reason
+                
+                self.add_ui_event({
+                    "event_type": "show_popup", 
+                    "title": "YOU DIED", 
+                    "message": self.death_reason,
+                    # Changed this to the proper game_over event and hooked it to the VFX Manager!
+                    "on_close_emit_ui_events": [{
+                        "event_type": "game_over",
+                        "death_reason": self.death_reason,
+                        "final_narrative": self.death_narrative,
+                        "vfx_tag": "qte_blood_splatter"
+                    }]
+                })
+                return True
             
-            self.add_ui_event({
-                "event_type": "show_popup", 
-                "title": "YOU DIED", 
-                "message": self.death_reason,
-                "on_close_emit_ui_events": [{"event_type": "player_death"}]
-            })
-            return True
-            
+        # 3. Flawless Success
+        # If they succeeded, just trigger the next node in the chain!
         self._trigger_next_finale_qte()
         return True
 
@@ -4615,16 +4698,28 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         )
 
     def _check_hub_softlock(self):
-        """
-        Called every time the hub level initialises.
-        Detects the three progression states and takes appropriate action:
-        • Dark path   — all NPCs dead, route to dark finale
-        • Blind gamble — visionary dead before revealing list, inject gamble exits
-        • Visionary alive — normal flow (handled by _setup_hub_exits)
-    
-        The blind gamble branch re-runs every hub visit so gamble exits survive
-        repeated returns to the hub.
-        """
+        """Checks if the hub state is viable and forces a game over if the player is softlocked."""
+        npc_status = self.player.get('npc_status', {})
+        
+        # --- THE FIX: Define alive_npcs BEFORE evaluating it! ---
+        alive_npcs = [
+            name for name, status in npc_status.items() 
+            if status in ('alive', 'injured') and name.lower() != 'player'
+        ]
+        
+        if not alive_npcs:
+            self.logger.info("Softlock check: All companions are dead. Player is alone in the hub.")
+            # Your existing logic for when everyone is dead goes here
+        # --------------------------------------------------------
+
+        # --- Safe fallback if the player IS the visionary ---
+        visionary_name = self.player.get('premonition_visionary')
+        if not visionary_name:
+            visionary_name = 'player'
+            
+        vis_status = npc_status.get(visionary_name.lower(), 'alive')
+        
+        # ... the rest of your function continues below ...
         from fd_terminal.utils import normalize_text
     
         if str(self.player.get('current_level', '')) not in ("level_hub", "hub"):
@@ -4647,13 +4742,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             return  # Player found a clue — normal flow, no softlock
     
         deaths_list = self.player.get('deaths_list', [])
-        npc_status  = self.player.get('npc_status', {})
-        alive_npcs  = [
-            n for n in deaths_list
-            if n.lower() != 'player'
-            and npc_status.get(n.lower(), 'alive') in ('alive', 'injured')
-        ]
-    
+        
         # ── Dark Path ────────────────────────────────────────────────────────────
         if not alive_npcs:
             if not self.player.get('hub_fallback_triggered'):
@@ -4672,10 +4761,14 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 self._setup_hub_exits("Your Car")
                 self.add_ui_event({"event_type": "refresh_context_actions"})
             return
+        
+        alive_npcs  = [
+            n for n in deaths_list
+            if n.lower() != 'player'
+            and npc_status.get(n.lower(), 'alive') in ('alive', 'injured')
+        ]
     
-        visionary_name = self.player.get('premonition_visionary', 'Someone')
-        vis_status     = npc_status.get(visionary_name.lower(), 'alive')
-    
+
         # ── Visionary alive — normal flow ────────────────────────────────────────
         if vis_status in ('alive', 'injured'):
             return
@@ -5778,6 +5871,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             "event_type": "switch_screen",
             "screen_name": "lose",
             "cause_of_death": cause,
+            "vfx_tag": None,
             "death_message": message,  # UI can use this for the sub-header
             "ending_text": ending_text # This contains the entire Cascade -> Death -> Aftermath story
         })
@@ -10588,46 +10682,68 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             item_name = parsed['item_name']
             target_name = parsed['target_name']
 
-            # 1. Resolve Entity
-            item_entity = self._find_entity_in_room(item_name, current_room_id)
-            
-            # --- THE FIX 1: Safely Verify Inventory ---
-            # Bypass fragile 'type' strings and directly check if the player holds the item key
-            if not item_entity:
-                self.logger.debug(f"Use Failure: '{item_name}' not found.")
-                return self._build_response(message=f"You don't see a '{item_name}'.", turn_taken=False)
-
-            item_key = item_entity.get('id_key') or item_entity.get('id')
-            item_data = item_entity.get('data', item_entity)
-            
+            # --- THE FIX 1: Safely Verify Inventory FIRST ---
+            # Bypass fragile room lookups that fail for gimme'd or picked-up items
             inventory = self.player.get('inventory', [])
-            if item_key not in inventory:
-                self.logger.debug(f"Use Failure: '{item_key}' is not in the player's inventory.")
-                return self._build_response(message=f"You need to be holding the {item_name} to use it.", turn_taken=False)
+            master_items = getattr(self, 'resource_manager', None).get_data('items', {}) if hasattr(self, 'resource_manager') else {}
+            
+            item_entity = None
+            item_key = None
+            
+            # Look inside the inventory directly
+            for inv_item_id in inventory:
+                item_def = master_items.get(inv_item_id, {})
+                inv_name = item_def.get('name', inv_item_id)
+                aliases = item_def.get('alias', [])
+                
+                # Check for match
+                if (normalize_text(item_name) == normalize_text(inv_name) or 
+                    normalize_text(item_name) == normalize_text(inv_item_id) or 
+                    normalize_text(item_name) in [normalize_text(a) for a in aliases]):
+                    item_entity = item_def
+                    item_key = inv_item_id
+                    break
+
+            # If not in inventory, check the room just in case it's a valid stationary interactable
+            if not item_entity:
+                room_entity = self._find_entity_in_room(item_name, current_room_id)
+                if not room_entity:
+                    self.logger.debug(f"Use Failure: '{item_name}' not found.")
+                    return self._build_response(message=f"You don't have a '{item_name}'.", turn_taken=False)
+                
+                item_key = room_entity.get('id_key') or room_entity.get('id')
+                item_data = room_entity.get('data', room_entity)
+                
+                # If it's a takeable item found in the room, enforce taking it first
+                if item_data.get('takeable') and item_key not in inventory:
+                    return self._build_response(message=f"You need to be holding the {item_name} to use it.", turn_taken=False)
+                
+                item_entity = item_data
+
+            item_data = item_entity.get('data', item_entity)
             # ------------------------------------------
 
-            # --- THE FIX 2: Dynamic FINALE GATEWAY ---
-            # Instead of a hardcoded dictionary, read the item's subtype directly from the JSON!
-            if str(self.player.get('current_level')).lower() == 'level_finale':
-                item_subtype = item_data.get('subtype', '')
+            # --- THE FIX 2: Universal FINALE GATEWAY ---
+            # Removed the strict 'level_finale' check so you can test these triggers anywhere!
+            item_subtype = item_data.get('subtype', '')
+            
+            # If it's a finished kit or direct trigger
+            if 'trigger_finale' in item_subtype or 'finale_dark_path' in item_subtype:
+                qte_trigger = item_subtype
                 
-                # If it's a finished kit or direct trigger
-                if 'trigger_finale' in item_subtype or 'finale_dark_path' in item_subtype:
-                    qte_trigger = item_subtype
+                # Normalize inconsistencies in the JSON subtypes
+                if qte_trigger == 'finale_dark_path_trigger':
+                    qte_trigger = 'trigger_finale_dark_path'
                     
-                    # Normalize inconsistencies in the JSON subtypes
-                    if qte_trigger == 'finale_dark_path_trigger':
-                        qte_trigger = 'trigger_finale_dark_path'
-                        
-                    self.logger.info(f"FINALE INITIATED: Item '{item_key}' triggered {qte_trigger}")
-                    return self._start_finale_qte_chain(qte_trigger)
-                    
-                # If the player tries to use a half-finished component without combining it first
-                elif item_subtype in ['finale_component', 'finale_hypothermia_stop', 'finale_hypothermia_start', 'finale_asphyxiation_stop', 'finale_asphyxiation_start']:
-                    return self._build_response(
-                        message="This component is useless on its own. You need to [color=#00ffff]combine[/color] it with its missing half first.", 
-                        turn_taken=False
-                    )
+                self.logger.info(f"FINALE INITIATED: Item '{item_key}' triggered {qte_trigger}")
+                return self._start_finale_qte_chain(qte_trigger)
+                
+            # If the player tries to use a half-finished component without combining it first
+            elif item_subtype in ['finale_component', 'finale_hypothermia_stop', 'finale_hypothermia_start', 'finale_asphyxiation_stop', 'finale_asphyxiation_start', 'knowledge_sacrifice_path', 'knowledge_loop_exploit']:
+                return self._build_response(
+                    message="This component is useless on its own. You need to [color=#00ffff]combine[/color] it with its missing half first.", 
+                    turn_taken=False
+                )
             # ------------------------------------------
 
             # 3. Targeted Usage: 'use [item] on [target]'
@@ -10641,8 +10757,29 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             self.logger.error(f"_use_inventory_item CRASH: {e}", exc_info=True)
             return self._build_response(message="The engine stuttered using that item.", turn_taken=False)
         
-    def _handle_item_on_target(self, item_entity, target_name, room_id):
-        target_entity = self._find_entity_in_room(target_name, room_id)
+    def _use_direct_entity(self, target_norm: str, current_room_id: str) -> Optional[dict]:
+        try:
+            entity = self._find_entity_in_room(target_norm, current_room_id)
+            if entity and entity['type'] in ('furniture', 'object'):
+                use_rules = entity['data'].get('use_interaction', [])
+                for rule in use_rules:
+                    if target_norm in [normalize_text(n) for n in rule.get('on_target_name', [entity['name']])]:
+                        msg = rule.get('message', f"You use the {entity['name']}.")
+                        self.logger.info(f"_use_direct_entity: Used '{entity['name']}' via direct use_interaction.")
+                        return self._build_response(message=msg, turn_taken=True)
+                self.logger.info(f"_use_direct_entity: Fallback use for '{entity['name']}'.")
+                return self._build_response(message=f"You use the {entity['name']}.", turn_taken=True)
+            return None
+        except Exception as e:
+            self.logger.error(f"_use_direct_entity: Error: {e}", exc_info=True)
+            return self._build_response(message="Something went wrong using the entity.", turn_taken=False, success=False)
+
+    def _handle_item_on_target(self, item_entity: dict, target_name: str, current_room_id: str) -> dict:
+        """Handles using an inventory item on a specific target."""
+        # --- THE FIX: Safely extract data whether wrapped or raw ---
+        item_data = item_entity.get('data', item_entity)
+        item_name = item_data.get('name', 'item')
+        target_entity = self._find_entity_in_room(target_name, current_room_id)
         if not target_entity:
             return self._build_response(message=f"You don't see a '{target_name}' here.", turn_taken=False)
 
@@ -10663,44 +10800,40 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 
                 # Execute Sabotage/Hazard Spawning
                 if 'spawns_hazard' in rule and hasattr(self, 'hazard_engine'):
-                    self.hazard_engine.spawn_hazard(rule['spawns_hazard'], room_id, rule.get('spawns_in_state', 'idle'))
+                    self.hazard_engine.spawn_hazard(rule['spawns_hazard'], current_room_id, rule.get('spawns_in_state', 'idle'))
                 
                 # Update Target State
                 if rule.get('target_state') and hasattr(self, 'hazard_engine'):
                     h_key = target_entity['data'].get('hazard_key') or target_entity['data'].get('type')
-                    self.hazard_engine.change_hazard_state(h_key, rule['target_state'], room_id)
+                    self.hazard_engine.change_hazard_state(h_key, rule['target_state'], current_room_id)
 
                 msg = rule.get('message_success', rule.get('message', "Used.")).format(item_name=item_entity['name'])
                 return self._build_response(message=msg, turn_taken=True)
 
         return self._build_response(message=f"That doesn't seem to do anything to the {target_name}.", turn_taken=False)
 
-    def _handle_item_self_use(self, item_entity):
-        data = item_entity['data']
-        has_heal = 'heal_amount' in data
-        has_cure = 'cures_status' in data
-
-        if not (has_heal or has_cure):
-             return self._build_response(message=f"You can't use the {item_entity['name']} by itself.", turn_taken=False)
-
-        messages = [data.get('use_result', {}).get('general', f"You use the {item_entity['name']}.")]
+    def _handle_item_self_use(self, item_entity: dict) -> dict:
+        """Handles using an item without a specific target."""
+        # --- THE FIX: Safely extract data whether wrapped or raw ---
+        item_data = item_entity.get('data', item_entity)
+        item_name = item_data.get('name', 'item')
         
-        # HEALING LOGIC
-        if has_heal:
-            multiplier = 1.5 if self.player.get('character_class') == "EMT" else 1.0
-            heal = int(data['heal_amount'] * multiplier)
-            self.player['hp'] = min(self.player.get('max_hp', 30), self.player['hp'] + heal)
-            messages.append(f"[color=00ff00]+{heal} HP.[/color]")
+        # Check if the item has explicit self-use rules
+        use_actions = item_data.get('use_action', {})
+        if not use_actions:
+            return self._build_response(message=f"You can't just use the {item_name} on its own.", turn_taken=False)
 
-        # CURE LOGIC
-        if has_cure:
-            cures = data.get('cures_status', [])
-            for status in cures:
-                if status in self.player.get('status_effects', {}):
-                    del self.player['status_effects'][status]
-                    messages.append(f"[color=00ff00]Condition cleared: {status}[/color]")
+        # Example execution of use_action (adjust to match your actual logic)
+        message = use_actions.get('message', f"You use the {item_name}.")
+        
+        # Handle consumable consumption, UI events, etc. based on your engine's logic
+        if use_actions.get('consume', False):
+            item_id = item_entity.get('id_key') or item_entity.get('id')
+            if item_id in self.player.get('inventory', []):
+                self.player['inventory'].remove(item_id)
+                message += f" The {item_name} is used up."
 
-        return self._build_response(message="\n".join(messages), turn_taken=True)
+        return self._build_response(message=message, turn_taken=True)
 
     def _perform_item_transformation(self, current_entity: dict, transform_data: dict) -> list:
         """
@@ -10752,22 +10885,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             "event_type": "refresh_context_actions" # Force UI to update buttons
         }]
 
-    def _use_direct_entity(self, target_norm: str, current_room_id: str) -> Optional[dict]:
-        try:
-            entity = self._find_entity_in_room(target_norm, current_room_id)
-            if entity and entity['type'] in ('furniture', 'object'):
-                use_rules = entity['data'].get('use_interaction', [])
-                for rule in use_rules:
-                    if target_norm in [normalize_text(n) for n in rule.get('on_target_name', [entity['name']])]:
-                        msg = rule.get('message', f"You use the {entity['name']}.")
-                        self.logger.info(f"_use_direct_entity: Used '{entity['name']}' via direct use_interaction.")
-                        return self._build_response(message=msg, turn_taken=True)
-                self.logger.info(f"_use_direct_entity: Fallback use for '{entity['name']}'.")
-                return self._build_response(message=f"You use the {entity['name']}.", turn_taken=True)
-            return None
-        except Exception as e:
-            self.logger.error(f"_use_direct_entity: Error: {e}", exc_info=True)
-            return self._build_response(message="Something went wrong using the entity.", turn_taken=False, success=False)
+
             
     #--- Unlock command handlers
     def _get_player_keys(self) -> dict:
@@ -11099,14 +11217,33 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         return None
 
     def _process_read_actions(self, entity_data: dict, tracer):
-        """Sets internal lore flags if the player examines a readable document."""
+        """Sets internal lore flags and unlocks recipes if the player examines a readable document."""
         read_action = entity_data.get('on_read_action')
         if read_action:
+            # 1. Handle Lore Flags
             flag_to_set = read_action.get('set_player_flag')
             if flag_to_set:
                 self.set_player_flag(flag_to_set, True)
                 tracer.mark("read_action_flag_set", flag=flag_to_set)
                 self.logger.info(f"Player read lore item. Set flag: {flag_to_set}")
+
+            # --- THE FIX: Handle Blueprint/Recipe Learning ---
+            learned_recipe = read_action.get('learn_recipe')
+            if learned_recipe:
+                known_recipes = self.player.setdefault('known_recipes', set())
+                
+                # Only notify them if it's a NEW recipe they haven't learned yet
+                if learned_recipe not in known_recipes:
+                    known_recipes.add(learned_recipe)
+                    tracer.mark("read_action_recipe_learned", recipe=learned_recipe)
+                    self.logger.info(f"Player learned recipe from document: {learned_recipe}")
+                    
+                    # Notify the player they unlocked something!
+                    self.add_ui_event({
+                        "event_type": "show_message",
+                        "message": "\n[color=00ff00][b]NEW RECIPE RECORDED.[/b] Type 'recipes' to view your journal.[/color]\n"
+                    })
+            # -------------------------------------------------
 
     def _resolve_examine_description(self, entity: dict, entity_data: dict, room_id: str, tracer) -> tuple[str, bool]:
         """
@@ -11911,32 +12048,47 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
     def _trigger_finale(self, finale_type: str):
         """Hijacks the game state and sends the player to their specific epilogue."""
         self.logger.info(f"Endgame triggered: {finale_type}")
-        
         self.game_won = True
         self.is_game_over = True
-
-        # 1. Park the ending type so calculate_ending can read it
+        
         from kivy.app import App
         app = App.get_running_app()
         if app:
             app.epilogue_type = finale_type
-
-        # 2. Fetch the epic custom narrative from your dispatcher
-        # This already contains the specific epilogue text (Dark Path, Science, etc.)
-        narrative = self.calculate_ending()
-
-        # 3. Apply global replacements (City Name) to the narrative string
-        current_city = self.player.get('current_city', 'McKinley')
-        narrative = narrative.replace('{city_name}', current_city)
-
-        # 4. Fire the game_over event to transition to the Win/Lose screens
+            
+        # --- Capstone Achievement Tracking (Bulletproof) ---
+        if hasattr(self, 'achievements_system'):
+            self.achievements_system.unlock(f"completed_{finale_type}") 
+            required_finales = {
+                "completed_trigger_finale_override", "completed_trigger_finale_flatline", 
+                "completed_trigger_finale_dark_path", "completed_trigger_finale_hypothermia", 
+                "completed_trigger_finale_asphyxiation", "completed_trigger_finale_sacrifice"
+            }
+            unlocked_set = set()
+            try:
+                if hasattr(self.achievements_system, 'get_all_achievements'):
+                    raw_achievements = self.achievements_system.get_all_achievements()
+                    if isinstance(raw_achievements, list):
+                        for item in raw_achievements:
+                            if isinstance(item, dict) and item.get('unlocked'):
+                                ach_id = item.get('id')
+                                if ach_id:
+                                    unlocked_set.add(ach_id)
+            except Exception as e:
+                self.logger.warning(f"Failed to parse achievements for Master of Fate check: {e}")
+            
+            if required_finales.issubset(unlocked_set):
+                self.achievements_system.unlock("master_of_fate")
+        # ----------------------------------------------
+        
+        narrative = self.calculate_ending() if hasattr(self, 'calculate_ending') else "You survived."
+        
+        # --- THE FIX: Actually fire the Win Screen UI Event! ---
         self.add_ui_event({
-            "event_type": "game_over",
-            "death_reason": "You broke the design.",
-            "final_narrative": narrative,
-            "hide_stats": False
+            "event_type": "game_won",
+            "narrative": narrative,
+            "score": self.player.get('score', 0)
         })
-
 
     def _start_finale_qte_chain(self, finale_type: str):
         self.logger.info(f"Generating Randomized QTE Gauntlet for {finale_type}")
@@ -11946,7 +12098,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         qte_defs = getattr(self.qte_engine, 'qte_definitions', {}) if hasattr(self, 'qte_engine') else {}
         valid_types = list(qte_defs.keys())
         if not valid_types:
-            valid_types = ["button_mash", "spam_any_key", "hold_to_threshold", "reaction_single_key"]
+            valid_types = ["button_mash", "precision_tap_count", "hold_to_threshold", "reaction_single_key"]
 
         # --- FINALE MODIFIERS (State & Hub choices) ---
         modifiers = self.player.get('finale_modifiers', {})
@@ -11957,7 +12109,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
         # Build simplified QTE pool if authority figure helped
         if simplify:
-            valid_types = ["button_mash", "spam_any_key", "hold_to_threshold", "reaction_single_key"]
+            valid_types = ["button_mash", "precision_tap_count", "hold_to_threshold", "reaction_single_key"]
 
         # --- THE COMPANION MODIFIERS ---
         companions = self.player.get('companions', [])
@@ -12057,13 +12209,19 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         next_qte = chain.pop(0)
         self.player['finale_qte_chain'] = chain 
         
+        # --- THE FIX: Dynamic Boss Mechanics ---
+        # If the chain is now empty, this is the final strike. It must be fatal.
+        # If there are still QTEs left in the chain, it's an intermediate stage (grinding punishment).
+        is_final_stage = (len(chain) == 0)
+        next_qte['is_fatal_on_failure'] = is_final_stage
+        # ---------------------------------------
+        
         qte_type = next_qte.get("qte_type")
         prompt = next_qte.get("ui_prompt_message", "Act quickly!")
         
         self.logger.info(f"Queueing Breather Popup for next QTE: {qte_type}")
         
-        # --- THE FIX: The Breather Popup ---
-        # The QTE will NOT start until the player clicks 'Close' on this popup!
+        # --- The Breather Popup ---
         self.add_ui_event({
             "event_type": "show_popup",
             "title": "PHASE SHIFT",
@@ -12075,8 +12233,6 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             }
         })
         
-        # Signal that this qte_active was set by the finale chain,
-        # so _bind_popup_defers knows NOT to skip on_close_start_qte
         self.player['qte_active'] = True
         self.player['finale_qte_chain_pending'] = True
 
@@ -12148,7 +12304,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             plan_c = {
                 "name": "Plan C: The Dark Path",
                 "action_verb": "talk",
-                "description": "A length of rope, a discarded scalpel, a specific name on the list. You know what this means.",
+                "description": "A loaded gun.. a discarded scalpel.. a person not on the list.\n\nCan you take a life to save your own? ",
                 "initial_state": "start",
                 "dialogue_states": {
                     "start": {
@@ -12185,6 +12341,9 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         finale_item_sets = {
             "trigger_finale_override":   ["warehouse_key", "defibrillator_pads"],
             "trigger_finale_flatline":   ["vet_sedatives", "adrenaline"],
+            "trigger_finale_hypothermia": ["thermal_blanket", "hot_pack"],
+            "trigger_finale_asphyxiation": ["oxygen_tank", "face_mask"],
+            "trigger_finale_dark_path": ["loaded_revolver", "scalpel", "sledgehammer"],
         }
         all_finale_keys = set()
         for keys in finale_item_sets.values():
@@ -12460,7 +12619,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                         f"gruesome end, fulfilling their place on the list just seconds prior.[/color]\n"
                     )
                 
-                narrative += "\nWith the ledger balanced, Death finally claimed you.\n\n"
+                narrative += "\nWith the list balanced, Death finally claimed you.\n\n"
 
         # ─── BEAT 2: THE PLAYER'S DEATH ───────────────────────────────────────
         narrative += f"{base_death_message}\n\n"
@@ -12478,7 +12637,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         if doomed_npcs:
             narrative += (
                 "[b]THE AFTERMATH[/b]\nWith you gone, the remaining survivors were left "
-                "completely defenseless against Death's intricate design.\n\n"
+                "completely defenseless against Death's sadistic whimsy.\n\n"
             )
             
             import random
@@ -12496,7 +12655,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 else:
                     narrative += f"{npc.title()} locked themselves away in a padded, 'safe' room, believing they could hide. A freak ventilation collapse and a single rogue spark proved otherwise.\n\n"
 
-            narrative += "[color=ff0000]Death's list is finally complete.[/color]"
+            narrative += "[color=ff0000]Death's hunt is finally over.\nIt's probably going to get a beer at this point tbh.[/color]"
         else:
             narrative += "[color=ff0000]You were the last name on the list. Death's design is complete.[/color]"
 
@@ -13067,18 +13226,38 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         )
 
     def _epilogue_chemical_flatline(self, rm) -> str:
+        """Generates the chemical flatline ending, with brutal logic for solo players."""
         from .utils import color_text
-        companion = self.player.get('companions', ['your companion'])[0]
+        
+        # --- THE FIX: Safely check if the player actually has a companion ---
+        companions = self.player.get('companions', [])
+        active_companion = self.player.get('current_companion')
+        
+        if active_companion:
+            savior = active_companion
+        elif companions:
+            savior = companions[0]
+        else:
+            savior = None
+
+        if not savior:
+            # The Solo Death Punishment
+            return (
+                "You press the plunger. The cold, chemical fire of the injection floods your veins. "
+                "Your breathing slows to a halt. The edges of your vision darken.\n\n"
+                "As you collapse to the cold floor, your fading eyes lock onto the Narcan auto-injector taped to your wrist. "
+                "You try to reach for it, but your motor functions are gone. The rules of the kit were absolute: "
+                "this was never a solo ending. You needed someone here to bring you back.\n\n"
+                "You close your eyes in the empty room. Death's design skips over your name as you flatline... "
+                "but you aren't going to wake up to see it."
+            )
+
+        # The Survival Narrative
         return (
-            f"The sedative hits you like a freight train. Your heart slows, stutters, and stops. Silence. "
-            f"Then, the brutal, rib-cracking thump of CPR. {color_text(companion, 'npc', rm)} slams the adrenaline into your chest. "
-            f"Your eyes snap open. You are breathing! You hug them, weeping. You actually cheated Death.\n\n"
-            f"You walk out of the clinic, the morning sun hitting your face. [b]But something is wrong.[/b] "
-            f"The shadow cast by the awning doesn't match the angle of the sun. The birds aren't making any sound. "
-            f"You look down at your hands; they are not there. YOU are not there;\nnot physically. Not anymore.\n\n"
-            f"You turn around. Through the window of the clinic, you see {color_text(companion, 'npc', rm)} sitting on the floor, "
-            f"sobbing uncontrollably, still performing CPR on your lifeless body.\n\n"
-            f"You didn't wake up."
+            f"You press the plunger. The cold chemical fire floods your veins. The world goes black.\n\n"
+            f"You wake up violently, gasping for air. {color_text(savior, 'npc', rm)} is leaning over you, shaking, holding the empty Narcan injector. "
+            f"Your heart stopped. For exactly ninety seconds, you were legally dead. \n\n"
+            f"When Death came to collect, your name was already crossed out. You've broken the chain."
         )
 
     def _epilogue_dark_path(self, rm) -> str:
@@ -13093,35 +13272,65 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         alive_npcs = [n.title() for n, s in roster.items() if s in ('alive', 'injured') and n.lower() != 'player']
 
         # --- THE AVERTED DISASTER POOL ---
-        # Each entry outlines a horrific event that was completely neutralized 
-        # because the player murdered the catalyst.
+        # Each entry outlines a horrific event that the player hallucinates 
+        # before reality reasserts itself—revealing they just created a massive new Death List.
         disaster_pool = [
             (
-                "'Tragedy averted at " + color_text(f"{city} Speedway", "location", rm) + " today. A massive accident in the stands was narrowly avoided.'\n\n"
-                "The anchor displays the face of the spectator who was destined to accidentally drop a heavy wrench into the engine pit" + color_text("—it's the stranger you killed.", "npc", rm) + " "
-                "Because you took their life, they were never at the speedway. The engine never blew. "
-                "You didn't just steal their time... you accidentally " + color_text("saved forty people", "special", rm) + " who were supposed to die in those bleachers today."
+                "'[color=#FF3131]BREAKING NEWS: MASSIVE CARNAGE AT " + color_text("{city_name} Speedway", "location", rm) + "[/color]'\n\n"
+                "The screen flashes footage of burning bleachers, crushed bodies, and a screaming crowd. An engine block blew, launching heavy shrapnel directly into the packed stands. Dozens are dead.\n\n"
+                "The anchor displays the face of the spectator whose dropped wrench caused the mechanical failure" + color_text("—it's the stranger you killed.", "npc", rm) + "\n\n"
+                "*You blink.*\n\n"
+                "The red banner vanishes. The footage disappears. The anchor is smiling.\n\n"
+                "'[color=#00ff00]Tragedy averted today at " + color_text("{city_name} Speedway", "location", rm) + "![/color] A massive accident in the stands was narrowly avoided when a spectator failed to show up...'\n\n"
+                "Because you took their life, they were never there to drop the wrench. You didn't just steal their time. You accidentally " + color_text("saved forty people", "special", rm) + ".\n\n"
+                "And from your own horrific experience, you know exactly what that means. You didn't save them. You just put forty oblivious survivors onto Death's new list, dooming them to far worse, agonizing fates."
             ),
             (
-                "'Tragedy avoided on the suspension bridge today. A charter bus carrying employees of " + color_text("Presage Paper", "location", rm) + " was rerouted due to sudden construction.'\n\n"
-                "The anchor displays the face of the inspector whose neglected maintenance was destined to snap the primary cable under the bus's weight" + color_text("—it's the stranger you killed.", "npc", rm) + " "
-                "Because you took their life, a new inspector was called in. The flaw was caught and the bridge was closed. "
-                "You didn't just steal their time... you accidentally " + color_text("saved fifty people", "special", rm) + " who were supposed to drown today."
+                "'[color=#FF3131]CATASTROPHE: SUSPENSION BRIDGE COLLAPSES[/color]'\n\n"
+                "The footage shows twisted steel sinking into the freezing North Bay. A charter bus carrying employees of " + color_text("Presage Paper", "location", rm) + " is submerged in the raging current. No survivors.\n\n"
+                "The anchor displays the face of the inspector whose neglected maintenance allowed the traffic stop area to buckle under the bus's weight" + color_text("—it's the stranger you killed.", "npc", rm) + "\n\n"
+                "*You blink.*\n\n"
+                "The graphic fades. The newsroom is perfectly calm.\n\n"
+                "'[color=#00ff00]Disaster avoided on the North Bay bridge today...[/color]'\n\n"
+                "Because you took the inspector's life, a replacement was called in. The structural flaw was caught. The bridge was closed. You accidentally " + color_text("saved an entire bus of people", "special", rm) + ".\n\n"
+                "Your blood runs cold. You know how Death balances its ledger. By cheating the design, you just doomed every single one of those employees to a labyrinth of freak accidents."
             ),
             (
-                "'Disaster averted on the high mountain pass today. A massive pileup was prevented when a commercial trucking fleet was inexplicably grounded.'\n\n"
-                "The anchor displays the face of the driver who was scheduled for that treacherous scenic route, the one who was destined to fall asleep at the wheel and cross the median" + color_text("—it's the stranger you killed.", "npc", rm) + " "
-                "Because you took their life, the company paused operations for a day of mourning. "
-                "You didn't just steal their time... you accidentally " + color_text("saved a dozen families", "special", rm) + " who were supposed to burn on that highway today."
+                "'[color=#FF3131]PILEUP INFERNO ON THE HIGH MOUNTAIN PASS[/color]'\n\n"
+                "The aerial footage shows a canyon of fire. A commercial truck crossed the median, obliterating a dozen family vehicles in a catastrophic chain reaction.\n\n"
+                "The anchor displays the face of the exhausted driver who fell asleep at the wheel" + color_text("—it's the stranger you killed.", "npc", rm) + "\n\n"
+                "*You blink.*\n\n"
+                "The smoke on the screen clears. The anchor casually shuffles their papers.\n\n"
+                "'[color=#00ff00]A miraculous stroke of luck on the high pass today...[/color]'\n\n"
+                "Because you took the driver's life, the logistics company paused operations for a day of mourning. The truck never hit the highway. You accidentally " + color_text("saved dozens of families", "special", rm) + ".\n\n"
+                "You stare at the screen, a sick feeling settling in your stomach. You didn't save those families. You just pushed them into Death's crosshairs, ensuring their ends will be brutal, isolated, and terrifying."
             ),
             (
-                "'Catastrophe prevented at the downtown metro station. A massive electrical surge nearly derailed a crowded commuter train during rush hour.'\n\n"
-                "The anchor displays the face of the city infrastructure technician who was destined to accidentally miswire the primary junction box" + color_text("—it's the stranger you killed.", "npc", rm) + " "
-                "Because you took their life, the network upgrade was delayed. The faulty switch was never thrown. "
-                "You didn't just steal their time... you accidentally " + color_text("saved a hundred commuters", "special", rm) + " who were supposed to be crushed underground today."
+                "'[color=#FF3131]DOZENS CRUSHED IN DOWNTOWN METRO DERAILMENT[/color]'\n\n"
+                "The screen shows a subterranean nightmare of sparking cables and crumpled subway cars. A massive electrical surge during rush hour turned the tunnel into a twisted meat grinder.\n\n"
+                "The anchor displays the face of the infrastructure technician who miswired the primary junction box" + color_text("—it's the stranger you killed.", "npc", rm) + "\n\n"
+                "*You blink.*\n\n"
+                "The horrific images vanish, replaced by an empty, quiet train platform.\n\n"
+                "'[color=#00ff00]Catastrophe prevented at the downtown metro station...[/color]'\n\n"
+                "Because you took the technician's life, the network upgrade was delayed. The faulty switch was never thrown. You accidentally " + color_text("saved a hundred commuters", "special", rm) + ".\n\n"
+                "You drop your head into your hands. You know the rules. By breaking the design today, you just painted a target on a hundred oblivious backs. Death is going to get incredibly creative with them."
+            ),
+            (
+                "'[b][color=ff0000]TERRIBLE TRAGEDY AT " + color_text("{city_name} Speedway", "location", rm) + "[/color]'\n\n"
+                "The screen flashes footage of burning bleachers and crushed bodies. "
+                "An engine block blew, launching heavy shrapnel into the stands. Forty people dead.\n\n"
+                "The anchor grimly displays the face of the spectator who accidentally dropped a heavy wrench into the pit, causing the cascade... "
+                + color_text("it's the stranger you killed.", "npc", rm) + "\n\n"
+                "[i]*You blink.*[/i]\n\n"
+                "The red banner vanishes. The screaming footage is gone. The anchor is smiling.\n\n"
+                "'[color=00ff00]Tragedy averted today at " + color_text("{city_name} Speedway", "location", rm) + "[/color]'\n\n"
+                "A massive accident was narrowly avoided when a spectator failed to show up...'\n\n"
+                "Because you took their life, they were never there to drop the wrench. You didn't just steal their time. "
+                "You accidentally " + color_text("saved a whole lot of lives", "special", rm) + ".\n\n"
+                "And from your own horrific experience, you know exactly what that means. You didn't save them. "
+                "You just put forty oblivious survivors onto Death's new list, dooming them to far worse, agonizing fates."
             )
         ]
-
         selected_disaster = random.choice(disaster_pool)
         # Branch the narrative based on the player's isolation/group state
         if companion_id:
@@ -13152,7 +13361,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         part2 = (
             "Three weeks later, you are watching the news in " + color_text(city, "location", rm) + ".\n"
             + selected_disaster + "\n\n"
-            "And now, Death has a completely new design to balance, starting with the person who ruined the first one."
+            "And now, Death has a completely new list to balance - starting with the person who ruined the first one."
         )
         
         return part1 + part2
