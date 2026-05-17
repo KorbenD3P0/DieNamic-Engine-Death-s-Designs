@@ -41,13 +41,18 @@
         },
         "furniture": [],
         "hazards_present": [
-            {
-                "chance": 0.25,
+        {
+                "type": "precarious_object",
+                "chance": 1.0,
                 "object_name_options": [
                     "precariously_stacked_container"
                 ],
                 "support_object_override": "container_stack",
-                "type": "precarious_object"
+                "skin": {
+                "hazard_name": "Overloaded Shelf",
+                "dynamic_target": "rogue_machinery",
+                "dynamic_state": "creeping_forward"
+                }
             }
         ],
         "items": [],
@@ -75,19 +80,31 @@
         "furniture": [],
         "hazards_present": [
             {
-                "type": "faulty_wiring",
+                "type": "exposed_wiring",
+                "chance": 1.0,
                 "object_name_override": "exposed_power_conduit",
-                "support_object_override": "ceiling"
+                "skin": {
+                    "hazard_name": "exposed power conduit",
+                    "description": "A section of electrical conduit with wires exposed and sparking. The smell of ozone is strong.",
+                    "dynamic_target": ["gas_source", "gas_leak"],
+                    "dynamic_state": "ignited"
+                }
             },
             {
-                "chance": 0.2,
+                "type": "precarious_object",
+                "chance": 1.0,
                 "object_name_options": [
                     "crane_hook_assembly"
-                ],
-                "support_object_override": "overhead_crane",
-                "type": "precarious_object"
-            }
-        ],
+                    ],
+                "support_object_override": "overhead_crane",    
+                "skin": {
+                    "description": "The overhead crane's hook assembly hangs at a dangerous angle, the cables frayed and rusted. It looks like it could come loose at any moment.",
+                    "hazard_name": "crane hook assembly",
+                    "dynamic_target": "rogue_machinery",
+                    "dynamic_state": "creeping_forward"
+                    }
+                }
+            ],
         "items": [],
         "name": "Loading Dock",
         "objects": [

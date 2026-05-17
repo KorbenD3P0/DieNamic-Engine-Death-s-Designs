@@ -14,9 +14,18 @@ def analyze_hazard_chains(resource_manager) -> Dict[str, Set[str]]:
     """
     hazards_data = resource_manager.get_data('hazards', {})
     dependencies = {}
+
+    def _normalize_target_types(target_type) -> List[str]:
+        """Normalize trigger target type to a list for safe iteration."""
+        if isinstance(target_type, str):
+            return [target_type]
+        if isinstance(target_type, list):
+            return [t for t in target_type if isinstance(t, str) and t]
+        return []
     
     for hazard_id, hazard_def in hazards_data.items():
         triggered_hazards = set()
+        hazard_skin = hazard_def.get('skin', {})
         
         # Check all states for hazard triggers
         states = hazard_def.get('states', {})
@@ -26,8 +35,11 @@ def analyze_hazard_chains(resource_manager) -> Dict[str, Set[str]]:
             for trigger in triggers:
                 if isinstance(trigger, dict):
                     hazard_type = trigger.get('type')
-                    if hazard_type:
-                        triggered_hazards.add(hazard_type)
+                    if hazard_type == 'dynamic_target':
+                        hazard_type = hazard_skin.get('dynamic_target')
+
+                    for target in _normalize_target_types(hazard_type):
+                        triggered_hazards.add(target)
         
         if triggered_hazards:
             dependencies[hazard_id] = triggered_hazards

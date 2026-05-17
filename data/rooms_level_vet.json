@@ -24,7 +24,15 @@
       }
     ],
     "hazards_present": [
-      "precarious_water_cup",
+      {
+        "type": "liquid_spill",
+        "chance": 1.0,
+        "skin": {
+          "hazard_name": "Water Cup",
+          "dynamic_target": "exposed_wiring",
+          "dynamic_state": "short_circuiting"
+        }
+      },
       "deaths_breath"
     ],
     "objects": [

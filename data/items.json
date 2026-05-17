@@ -5655,13 +5655,7 @@
       "paired_with": "bullets"
     },
     "is_alias": true,
-    "alias": ["heavy revolver", "empty revolver", "revolver", "empty gun"],
-    "combine_with": {
-      "bullets": {
-        "result_item": "loaded_revolver",
-        "success_message": "You slide the heavy .357 rounds into the cylinder and snap it shut with a satisfying click. It's ready."
-      }
-    }
+    "alias": ["heavy revolver", "empty revolver", "revolver", "empty gun"]
   },
   "loaded_revolver": {
     "name": "Loaded Revolver",
@@ -5707,7 +5701,7 @@
     "alias": ["nail gun", "armed nail gun", "pneumatic nail gun", "nailgun"]
   },
 
-  "charged_defibrillator_rig": {
+  "charged_defib": {
     "name": "Charged Defibrillator Rig",
     "description": "A terrifying, makeshift defibrillator rigged to output raw industrial voltage.",
     "examine_details": "It can output enough raw voltage to instantly stop a human heart... or jumpstart one.",
@@ -5716,7 +5710,7 @@
     "takeable": true,
     "use_on": ["self", "other_survivor", "crossroads_room"],
     "is_alias": true,
-    "alias": ["defibrillator", "defib", "rig", "capacitor rig", "charged rig", "finale_defibrillator"]
+    "alias": ["defibrillator", "charged defib", "defib", "rig", "capacitor rig", "charged rig", "finale_defibrillator"]
   },
 
   "vet_sedatives": {
@@ -5734,7 +5728,7 @@
     "examine_details": "A sealed syringe of veterinary-grade pentobarbital. Enough to stop a heart. Temporarily, if you're lucky.",
     "takeable": true,
     "is_alias": true,
-    "alias": ["sedatives", "vet sedatives", "vial", "sedative vial"]
+    "alias": ["sedatives", "sedative", "vet sedatives", "vial", "sedative vial"]
   },
 
   "lethal_syringe": {
@@ -5746,7 +5740,7 @@
     "takeable": true,
     "use_on": ["self", "other_survivor", "crossroads_room"],
     "is_alias": true,
-    "alias": ["syringe", "lethal syringe", "pentobarbital", "needle", "finale_chemical", "chemical"]
+    "alias": ["lethal syringe", "phentobarbital", "finale_chemical", "chemical"]
   },
   
   "confiscated_fentanyl": {
@@ -5843,12 +5837,6 @@
     "spawn_rules": {
       "target_workplace_tags": ["maritime", "water", "public"],
       "paired_with": "phosphorus_flare"
-    },
-    "combine_with": {
-      "phosphorus_flare": {
-        "result_item": "loaded_flare_gun",
-        "success_message": "You slide the thick red flare into the bright orange plastic barrel and snap it shut."
-      }
     }
   },
     "loaded_flare_gun": {

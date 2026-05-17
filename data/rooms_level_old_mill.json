@@ -60,13 +60,18 @@
                 "support_object_override": "floor"
             },
             {
-                "chance": 0.2,
+                "type": "precarious_object",
+                "chance": 1.0,
                 "object_name_options": [
                     "tilted_millstone"
                 ],
                 "support_object_override": "stone_mount",
-                "type": "precarious_object"
+                "skin": {
+                "hazard_name": "tilted millstone",
+                "dynamic_target": "rogue_machinery",
+                "dynamic_state": "creeping_forward"
             }
+        }
         ],
         "items": [],
         "name": "Mill Ground Floor",

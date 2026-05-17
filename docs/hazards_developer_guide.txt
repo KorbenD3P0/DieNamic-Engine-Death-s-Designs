@@ -27,6 +27,7 @@
 16. [Hazard Chain Analysis (Developer Tool)](#hazard-chain-analysis)
 17. [Debugging & Common Mistakes](#debugging--common-mistakes)
 18. [Complete Examples](#complete-examples)
+19. [Hazard Archetypes & Skinning] (The DRY Principle)
 
 ---
 
@@ -889,7 +890,7 @@ A mobile hazard that wanders rooms and catalyzes other hazards when startled.
             "chance_to_progress": 1.0,
             "next_state": "fled",
             "hazard_interaction": {
-                "precarious_water_cup": {
+                "precarious_object": {
                     "chance": 1.0,
                     "effect": "instant_progression",
                     "message": "The cat's tail whips the cup off the edge!"
@@ -1028,5 +1029,32 @@ A hazard that only progresses while the player stays in the room, punishing camp
             }
         }
     }
+}
+
+## 19. Hazard Archetypes & Skinning (The DRY Principle)
+
+To prevent JSON bloat, the engine utilizes **Hazard Archetypes**. Instead of creating a unique master entry for a "Precarious Paint Can" and a "Precarious Coffee Cup", you use the `precarious_object` archetype and "skin" it inside the Room JSON.
+
+### The Three Tiers of Archetypes
+1. **Initiators (Catalysts):** Triggered by `deaths_breath`. They don't kill directly but start the chain. 
+   * *Examples:* `precarious_object`, `liquid_spill`, `frayed_restraint`
+2. **Escalators (Middlemen):** React to Initiators and make the room dangerous.
+   * *Examples:* `rogue_machinery`, `exposed_wiring`, `gas_source`
+3. **Terminators (The Killers):** The end of the line. If these hit their terminal state while an NPC is present, the NPC dies.
+   * *Examples:* `explosive_ignition`, `crushing_impact`, `elevator_freefall`
+
+### How to Skin a Hazard in Room JSON
+When placing an archetype in a room's `hazards_present` array, use a dictionary format instead of a string. Add a `"skin"` block to define its localized text and dynamic targets.
+
+```json
+{
+  "type": "liquid_spill",
+  "chance": 0.8,
+  "skin": {
+    "name": "IV Bag Drip",
+    "description": "An overfull IV bag dripping steadily onto the floor.",
+    "dynamic_target": "exposed_wiring",
+    "dynamic_state": "short_circuiting"
+  }
 }
 ```

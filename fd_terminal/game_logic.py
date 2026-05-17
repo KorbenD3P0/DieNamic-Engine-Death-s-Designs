@@ -594,6 +594,22 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
  
         self.player["deaths_list"] = ["Player"]
         self.player["npc_status"] = {}
+
+        # ── MASTER NPC SPAWN ROLLS ─────────────────────────────
+        # Roll the dice once per playthrough for any static NPCs
+        master_npcs = self.resource_manager.get_data("npcs", {}).get("master_npcs", {})
+        spawned_masters = {}
+
+        for npc_id, npc_data in master_npcs.items():
+            chance = npc_data.get("spawn_chance", 1.0)
+            # If the random roll is less than or equal to the chance, they exist in this run!
+            if random.random() <= chance:
+                spawned_masters[npc_id] = True
+            else:
+                spawned_masters[npc_id] = False
+
+        self.player["master_npc_spawns"] = spawned_masters
+        # ───────────────────────────────────────────────────────
  
         level_0_data = (
             self.resource_manager.get_data("rooms_level_0", {})
@@ -1071,6 +1087,48 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         if self.premonition_time_left <= 0:
             self._trigger_premonition_death()
             return False
+
+    def _tick_npcs(self):
+        """Allows alive NPCs to wander between connected rooms."""
+        roster = self.player.get('npc_status', {})
+        current_level = self.player.get('current_level')
+        
+        for npc_name, status in roster.items():
+            if status not in ('alive', 'injured') or npc_name == 'player':
+                continue
+                
+            npc_loc = self.get_npc_location(npc_name)
+            if not npc_loc:
+                continue
+
+            # 20% chance they move this turn (adjust for faster/slower pacing)
+            import random
+            if random.random() > 0.20:
+                continue
+
+            # Get connected rooms
+            room_data = self.get_room_data(npc_loc)
+            if not room_data:
+                continue
+                
+            exits = room_data.get('exits', {})
+            valid_destinations = [
+                dest for direction, dest in exits.items() 
+                # Don't let them wander into locked rooms or outside the level
+                if dest and self.get_room_data(dest) and not self.get_room_data(dest).get('locked')
+            ]
+
+            if valid_destinations:
+                new_room = random.choice(valid_destinations)
+                self.set_npc_location(npc_name, new_room)
+                self.logger.info(f"NPC '{npc_name}' wandered from '{npc_loc}' to '{new_room}'.")
+                
+                # If they walk into the room the player is in, notify the player!
+                if new_room == self.player.get('location'):
+                    self.add_ui_event({
+                        "event_type": "show_message",
+                        "message": f"[color=00ff00]{npc_name.capitalize()}[/color] just walked into the room."
+                    })
 
     def _trigger_premonition_death(self):
         # --- THE FIX: Removed the Visionary intercept! If the clock hits 0, everyone dies. ---
@@ -3583,10 +3641,22 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
 
     # --- NEW: Item Placement Logic ---
     def _populate_level_with_items(self, level_id: str):
-        """Places items. Respects 'Canon' placements, forces critical keys, injects contextual disaster evidence, and fills gaps."""
+        """Places items. Respects 'Canon' placements, tracks missing finale items, and fills gaps."""
         try:
             self.logger.debug(f"_populate_level_with_items: Populating items for level {level_id}")
             self.current_level_items_world_state = {}
+
+            # --- NEW: Track Visited Levels (Type-Safe for JSON Saving) ---
+            visited = self.player.get('visited_levels', [])
+            
+            # If a previous save or init made this a set, force it to be a list!
+            if isinstance(visited, set):
+                visited = list(visited)
+                
+            if level_id not in visited:
+                visited.append(level_id)
+                
+            self.player['visited_levels'] = visited
 
             # 1. Setup Master Pools
             unified_loot_master = self._build_unified_loot_master()
@@ -3598,14 +3668,17 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             # 3. Determine Critical Keys (Level Reqs + Locked Doors)
             critical_keys = self._determine_critical_keys(level_id, pre_placed_keys)
 
-            # --- THE FIX 1: Workplace Items & The Universal Seed ---
+            # --- THE FIX 1: Thematic Pacing ---
+            # Instead of dumping all missing items at once, use the thematic builder 
+            # to ONLY spawn items relevant to the CURRENT level's tags.
             workplace_items = self._determine_thematic_workplace_items(level_id, unified_loot_master, pre_placed_keys)
-            
-            # If the thematic system failed to drop anything (NPC is dead/missing), 
-            # force a random seed in Level 1 so the player always has a chance at a finale!
+
+            # If no items dropped (e.g., everyone is dead) AND it's Level 1,
+            # force a random seed so the player always has a chance at a finale!
             if not workplace_items and str(level_id) == 'level_1':
                 import random
-                seed = random.choice(['empty_heavy_revolver', 'liquid_nitrogen_dewar', 'defibrillator_pads', 'police_narcan'])
+                # Fixed a slight typo: your item is 'empty_revolver', not 'empty_heavy_revolver'
+                seed = random.choice(['empty_revolver', 'liquid_nitrogen_dewar', 'defibrillator_pads', 'police_narcan'])
                 workplace_items.append(seed)
                 self.logger.info(f"Universal Seed: Planted '{seed}' to start a finale path.")
 
@@ -3613,7 +3686,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 if w_item not in critical_keys:
                     critical_keys.append(w_item)
 
-            # --- THE FIX 2: The Orphan Tracker ---
+            # --- THE ORPHAN TRACKER ---
             # Automatically spawn the missing halves for anything in the player's inventory!
             orphan_keys = self._track_orphan_components(unified_loot_master)
             for o_key in orphan_keys:
@@ -3626,32 +3699,36 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 unified_loot_master, disaster_tags, pre_placed_keys, critical_keys
             )
 
-            # 5. Scatter the Loot
+            # 5. Scatter the Loot into Containers
             self._scatter_loot_into_containers(master_loot_stack, all_containers, unified_loot_master, critical_keys)
+
+            # --- THE FIX 2: The Floor Drop (Black Hole Preventer) ---
+            # Any items still left in master_loot_stack didn't fit in containers. 
+            # We must drop them directly into the rooms so they aren't deleted!
+            if master_loot_stack:
+                import random
+                valid_rooms = [r for r, d in self.current_level_rooms_world_state.items() if not d.get('is_exit')]
+                if not valid_rooms:
+                    valid_rooms = list(self.current_level_rooms_world_state.keys()) # Fallback just in case
+
+                for leftover_item in master_loot_stack:
+                    target_room = random.choice(valid_rooms)
+                    self.current_level_rooms_world_state[target_room].setdefault('items', []).append(leftover_item)
+                    self.logger.info(f"Loot Placement: Dropped '{leftover_item}' directly on the floor in '{target_room}'.")
+            # ------------------------------------------------------------
 
         except Exception as e:
             self.logger.error(f"_populate_level_with_items: Error: {e}", exc_info=True)
 
-
     def _determine_thematic_workplace_items(self, level_id: str, unified_loot_master: dict, pre_placed_keys: set) -> list:
-        """Finds thematic items meant for this level if the resident NPC is alive, and grabs their pairs."""
+        """Finds thematic items meant for this level, AND triggers 'Catch-Up' spawns for missed items."""
         paired_keys = set()
         roster = self.player.get('npc_status', {})
         npc_wp = self.player.get('npc_workplaces', {})
+        visited_levels = self.player.get('visited_levels', [])
+        inventory = self.player.get('inventory', [])
 
-        # 1. Check if this level belongs to an ALIVE NPC
-        # (We still do this so these powerful items only spawn if the narrative stakes demand it!)
-        alive_owner = None
-        for npc_name, wp_data in npc_wp.items():
-            if wp_data.get('level_id') == level_id and roster.get(npc_name.lower(), 'alive') in ('alive', 'injured'):
-                alive_owner = npc_name.lower()
-                break
-
-        if not alive_owner:
-            return [] # Skip. The NPC is dead, so the finale items don't spawn here.
-
-        # 2. Define Level Thematic Tags
-        # This maps your specific levels to broad concepts.
+        # Thematic map
         level_tags_map = {
             "level_vet": ["medical", "clinic", "animal"],
             "level_hospital": ["medical", "hospital", "clinic"],
@@ -3669,29 +3746,132 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             "level_community": ["public", "recreation"],
             "level_fairgrounds": ["entertainment", "machinery", "public"]
         }
-        
-        current_level_tags = level_tags_map.get(level_id, [])
 
-        # 3. Scan loot master for items tied to these thematic tags
+        current_tags = set()
+        missed_tags = set()
+
+        # 1. Build the Active vs. Missed Tag Pools
+        for npc_name, wp_data in npc_wp.items():
+            if roster.get(npc_name.lower(), 'alive') in ('alive', 'injured'):
+                npc_level = wp_data.get('level_id')
+
+                # If their workplace is the CURRENT level -> Activate Thematic Spawns
+                if npc_level == level_id:
+                    current_tags.update(level_tags_map.get(level_id, []))
+                
+                # If we already passed their workplace -> Activate Catch-Up Spawns
+                elif npc_level in visited_levels and npc_level != level_id:
+                    missed_tags.update(level_tags_map.get(npc_level, []))
+
+        # 2. Check Recipes so we don't spawn ingredients for a rig the player already built!
+        recipes_db = getattr(self, 'resource_manager', None).get_data('recipes', {}) if hasattr(self, 'resource_manager') else {}
+
+        # 3. Scan Loot Master
         for item_key, item_data in unified_loot_master.items():
-            if item_key in pre_placed_keys:
+            if item_key in pre_placed_keys or item_key in inventory:
                 continue
 
             spawn_rules = item_data.get('spawn_rules', {})
             target_tags = spawn_rules.get('target_workplace_tags', [])
-            
-            # If the item has workplace tags, and at least ONE tag matches the current level
-            if target_tags and any(tag in current_level_tags for tag in target_tags):
+            if not target_tags:
+                continue
+
+            pair_key = spawn_rules.get('paired_with')
+
+            # Did they already craft the final item?
+            already_crafted = False
+            for r_data in recipes_db.values():
+                ingredients = r_data.get('ingredients', [])
+                if item_key in ingredients or pair_key in ingredients:
+                    if r_data.get('result') in inventory:
+                        already_crafted = True
+                        break
+            if already_crafted:
+                continue
+
+            # 4. The Placement Decision
+            spawn_reason = None
+            if any(tag in current_tags for tag in target_tags):
+                spawn_reason = "Thematic"
+            elif any(tag in missed_tags for tag in target_tags):
+                spawn_reason = "Catch-Up"
+
+            # 5. Inject into the Level
+            if spawn_reason:
                 paired_keys.add(item_key)
-                self.logger.info(f"Auto-spawning thematic item '{item_key}' (Tags: {target_tags}) because {alive_owner} is alive.")
-                
-                # Check for a paired item (e.g., 'revolver' needs 'ammo')
-                pair_key = spawn_rules.get('paired_with')
-                if pair_key and pair_key in unified_loot_master and pair_key not in pre_placed_keys:
+                self.logger.info(f"Auto-spawning '{item_key}' ({spawn_reason} Drop).")
+
+                if pair_key and pair_key in unified_loot_master and pair_key not in pre_placed_keys and pair_key not in inventory:
                     paired_keys.add(pair_key)
-                    self.logger.info(f"Auto-spawning paired item '{pair_key}' alongside '{item_key}'.")
+                    self.logger.info(f"Auto-spawning paired item '{pair_key}'.")
 
         return list(paired_keys)
+
+    def _get_missing_finale_items(self, unified_loot_master: dict, pre_placed_keys: set) -> list:
+        """
+        Scans alive NPCs, checks the player's inventory and recipes, and returns 
+        a list of finale items that need to be injected into the current level.
+        """
+        missing_items = set()
+        roster = self.player.get('npc_status', {})
+        inventory = self.player.get('inventory', [])
+        npc_workplaces = self.player.get('npc_workplaces', {})
+
+        # 1. Who is still alive? (Exclude the player)
+        alive_npcs = [
+            name.lower() for name, status in roster.items() 
+            if status in ('alive', 'injured') and name.lower() != 'player'
+        ]
+
+        if not alive_npcs:
+            return [] # Everyone is dead, no rescue items needed.
+
+        # 2. Get recipes database to check if they already built the finished item
+        recipes_db = getattr(self, 'resource_manager', None).get_data('recipes', {}) if hasattr(self, 'resource_manager') else {}
+
+        # 3. Scan the loot master for finale items tied to these alive NPCs
+        for item_key, item_data in unified_loot_master.items():
+            spawn_rules = item_data.get('spawn_rules', {})
+            target_npc = spawn_rules.get('target_npc_workplace', '').lower()
+
+            # Ensure we catch it whether the JSON targets the NPC's name directly, 
+            # or the level_id of their workplace.
+            is_match = False
+            if target_npc in alive_npcs:
+                is_match = True
+            else:
+                for npc in alive_npcs:
+                    if npc_workplaces.get(npc, {}).get('level_id') == spawn_rules.get('target_workplace_level'):
+                        is_match = True
+                        break
+
+            if is_match:
+                pair_key = spawn_rules.get('paired_with')
+
+                # Did they already craft the final item?
+                already_crafted = False
+                for r_data in recipes_db.values():
+                    ingredients = r_data.get('ingredients', [])
+                    if item_key in ingredients or pair_key in ingredients:
+                        if r_data.get('result') in inventory:
+                            already_crafted = True
+                            break
+
+                # If they already built the tool, skip spawning the ingredients!
+                if already_crafted:
+                    continue 
+
+                # Check if they are missing the primary item
+                if item_key not in inventory and item_key not in pre_placed_keys:
+                    missing_items.add(item_key)
+                    self.logger.info(f"Auto-spawning missing finale item '{item_key}' because its owner is alive.")
+
+                # Check if they are missing the paired item
+                if pair_key and pair_key not in inventory and pair_key not in pre_placed_keys:
+                    missing_items.add(pair_key)
+                    self.logger.info(f"Auto-spawning missing paired item '{pair_key}'.")
+
+        return list(missing_items)
 
     def _build_unified_loot_master(self) -> dict:
         """Merges items and evidence into a single pool."""
@@ -5863,8 +6043,8 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         self.logger.info(f"Player died. Cause: {cause}")
         self.player['hp'] = 0
         
-        # 1. Generate the fully cohesive Game Over narrative
-        ending_text = self._build_death_epilogue(message)
+        # 1. Generate the fully cohesive Game Over narrative using the clean pipeline
+        ending_text = self.get_death_narrative(base_hazard_message=message)
         
         # 2. Fire the UI event to transition to the Lose Screen
         self.add_ui_event({
@@ -5872,8 +6052,8 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             "screen_name": "lose",
             "cause_of_death": cause,
             "vfx_tag": None,
-            "death_message": message,  # UI can use this for the sub-header
-            "ending_text": ending_text # This contains the entire Cascade -> Death -> Aftermath story
+            "death_message": message,  # UI can use this for a short sub-header if needed
+            "ending_text": ending_text # The complete, stat-free cinematic story
         })
 
     def handle_hazard_consequence(self, consequence: dict, depth: int = 0):
@@ -9919,66 +10099,36 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         except Exception:
             return ""
 
-    def get_death_narrative(self) -> str:
+    def get_death_narrative(self, base_hazard_message: str = None) -> str:
         """
-        Builds the lose-screen narrative, combining the disaster line and
-        any terminal hazard description that caused death. Removes generic taglines.
+        Builds the cinematic lose-screen narrative. 
+        Combines the disaster lore, the terminal hazard description, 
+        and the Cascade/Aftermath epilogue logic. Legacy stats removed.
         """
         narrative_parts = []
 
-        # 1) Terminal hazard death message (prefer death_message)
-        hazard_desc = self._get_terminal_hazard_description()
-        if hazard_desc:
-            narrative_parts.append(hazard_desc)
+        # 1. The Lore: Disaster opening line
+        if hasattr(self, '_compose_disaster_line'):
+            disaster_line = self._compose_disaster_line()
+            if disaster_line:
+                narrative_parts.append(disaster_line)
 
-        # 2) Disaster opening line + disaster-specific death_narrative
-        disaster_line = self._compose_disaster_line()
-        if disaster_line:
-            narrative_parts.append(disaster_line)
+        # 2. The Kill: Terminal hazard description
+        hazard_desc = None
+        if hasattr(self, '_get_terminal_hazard_description'):
+            hazard_desc = self._get_terminal_hazard_description()
+            
+        # Fallback to the message passed in, or a generic death
+        final_cause = hazard_desc or base_hazard_message or "You have succumbed to the horrors."
+        narrative_parts.append(final_cause)
 
-        # 3) Canonical stats block: player's live, cumulative stats
-        score = int(self.player.get('score', 0))
-        turns_taken = int(self.player.get('actions_taken', 0))
-        fear_current = float(self.player.get('fear', 0.0))
+        # Combine them into a single coherent block of text
+        base_message = "\n\n".join(narrative_parts)
 
-        omens_seen = 0
-        try:
-            if self.death_ai and hasattr(self.death_ai, 'omens_seen'):
-                omens_seen = int(self.death_ai.omens_seen)
-        except Exception:
-            pass
+        # 3. The Cinematic Finish: Wrap it in the Cascade & Aftermath logic!
+        final_narrative = self._build_death_epilogue(base_message)
 
-        # QTE stats if available
-        qte_sr_pct = None
-        qte_succ = None
-        qte_att = None
-        try:
-            pbp = getattr(self.death_ai, 'player_behavior_patterns', None) or {}
-            qte_sr = float(pbp.get('qte_success_rate', 0.0))
-            qte_sr_pct = int(round(qte_sr * 100))
-            qte_succ = int(pbp.get('qte_successes', 0))
-            qte_att = int(pbp.get('qte_attempts', 0))
-        except Exception:
-            pass
-
-        evaded = self.player.get('evaded_hazards', []) or []
-
-        stats_lines = []
-        stats_lines.append(f"Final Score: {score}")
-        stats_lines.append(f"Fear Level (final): {fear_current:.2f}")
-        stats_lines.append(f"Omens Witnessed: {omens_seen}")
-        if qte_sr_pct is not None:
-            if qte_succ is not None and qte_att is not None:
-                stats_lines.append(f"QTE Success Rate: {qte_sr_pct}% ({qte_succ}/{qte_att})")
-            else:
-                stats_lines.append(f"QTE Success Rate: {qte_sr_pct}%")
-        stats_lines.append(f"Hazards Evaded: {len(evaded)}")
-        if evaded:
-            stats_lines.append("Hazards Encountered: " + ", ".join(e.get("name", str(e)) for e in evaded))
-        narrative_parts.append("\n".join(stats_lines))
-
-        # Join with blank lines to render as separate paragraphs in UI
-        return "\n\n".join([p for p in narrative_parts if p]).strip()
+        return final_narrative
 
     # --- A Method to Record Memories ---
     def set_interaction_flag(self, flag_name: str):
@@ -10037,14 +10187,12 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         return friend_npc
 
     def on_hazard_state_change(self, hazard_key, new_state):
-        # ...existing logic...
         if hazard_key == "falling_marquee_letters" and new_state == "near_miss":
             self.player['friend_dialogue_state'] = "marquee_near_miss"
         elif hazard_key == "popcorn_oil_flareup" and new_state in ("scattered_sparks", "simmer_down"):
             self.player['friend_dialogue_state'] = "popcorn_flare"
         elif hazard_key == "soda_spill_slip" and new_state in ("hard_fall", "sticky_save"):
             self.player['friend_dialogue_state'] = "soda_fall"
-        # ...add more as needed...
 
     def get_friend_dialogue(self):
         friend_npc = self.resource_manager.get_data('npcs', {}).get('friend', {})
@@ -10723,9 +10871,25 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             item_data = item_entity.get('data', item_entity)
             # ------------------------------------------
 
+            # --- THE FINALE INTERCEPT ---
+            # If the item subtype starts with 'trigger_finale_', bypass normal use logic!
+            item_subtype = item_data.get('subtype', '')
+            
+            if item_subtype.startswith('trigger_finale_'):
+                # Optional: Check if they are actually targeting themselves or the room
+                if target_name not in ['self', 'me', 'room', None]:
+                    return self._build_response(
+                        message=f"You must use the {item_data.get('name', 'item')} on yourself to end this.",
+                        turn_taken=False
+                    )
+                
+                # Fire the specific ending!
+                self.logger.info(f"FINALE INTERCEPT: Triggering {item_subtype}")
+                return self._start_finale_qte_chain(item_subtype)
+            # ----------------------------
+
             # --- THE FIX 2: Universal FINALE GATEWAY ---
             # Removed the strict 'level_finale' check so you can test these triggers anywhere!
-            item_subtype = item_data.get('subtype', '')
             
             # If it's a finished kit or direct trigger
             if 'trigger_finale' in item_subtype or 'finale_dark_path' in item_subtype:
@@ -13056,7 +13220,7 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 f"You sit there for a long time before you stand up."
             )
     
-        return (
+        narrative = (
             f"The cold comes fast. Faster than you expected. "
             f"Your fingers go first, then your feet, then the sensation crawls inward "
             f"until your chest is a block of ice and your heartbeat slows to something "
@@ -13068,6 +13232,10 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
             f"Somewhere, something shifts in the design. "
             f"You can't explain how you know this. You just know."
         )
+
+        narrative += self._roll_for_dark_twist(rm)
+
+        return narrative
     
     
     def _epilogue_asphyxiation(self, rm) -> str:
@@ -13248,8 +13416,8 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
                 "As you collapse to the cold floor, your fading eyes lock onto the Narcan auto-injector taped to your wrist. "
                 "You try to reach for it, but your motor functions are gone. The rules of the kit were absolute: "
                 "this was never a solo ending. You needed someone here to bring you back.\n\n"
-                "You close your eyes in the empty room. Death's design skips over your name as you flatline... "
-                "but you aren't going to wake up to see it."
+                "You close your eyes for the last time ever in the empty room as you slip out of consciousness and out of this life... "
+                "\n\nSometimes in life, you are a helping hand; other times, you need one.\nKeep at least one other person alive to better your odds of survival." 
             )
 
         # The Survival Narrative
@@ -13366,6 +13534,26 @@ class GameLogic(CombatMixin, MovementMixin, InventoryMixin, InteractionMixin, Sy
         
         return part1 + part2
     
+    def _roll_for_dark_twist(self, rm) -> str:
+        """Rolls a chance to bolt a horrific 'Agent of Death' twist onto a survival ending."""
+        import random
+        from .utils import color_text
+
+        # 30% chance to trigger the dark twist (adjust this decimal to make it more/less common!)
+        if random.random() > 0.30:
+            return ""
+
+        return (
+            f"\n\nMonths pass. The cold dread fades. You actually did it. You survived.\n\n"
+            f"But then the pattern emerges. The barista who hands you your morning coffee slips on a wet tile and shatters their skull. "
+            f"The driver who yields to you at a crosswalk is instantly crushed by a runaway cement truck. "
+            f"A stranger who bumps your shoulder on the subway trips and falls onto the third rail.\n\n"
+            f"You read the news reports with a sickening realization. By forcing Death to skip you, you didn't just break the chain. "
+            f"You became a walking blind spot in the design. A localized anomaly.\n\n"
+            f"You don't have to worry about {color_text('freak accidents', 'error', rm)} happening to you anymore. "
+            f"{color_text('You are one.', 'warning', rm)}"
+        )
+
     def wipe_active_state(self):
         """Scorched-earth reset for consecutive playthroughs."""
         self.player = {}

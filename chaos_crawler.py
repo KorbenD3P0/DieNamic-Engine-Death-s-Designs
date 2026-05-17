@@ -2,17 +2,29 @@
 """
 Chaos Crawler — Automated QA playtester for DieNamic Engine.
 
-Usage (in-game):
-    crawl 500           — run 500 turns at default speed
-    crawl 1000 fast     — run 1000 turns at maximum speed (0.05s interval)
-    crawl stop          — halt a running crawl
+MODES:
+    pathfinder  — Follows the golden path: level_0 exit → hospital → police →
+                  Bludworth → workplaces → finale. Searches containers, reads
+                  player_interaction, handles hub transitions. Use this to
+                  verify that a full playthrough completes without softlocks.
 
-The crawler routes all actions through on_submit_command exactly as a human
-would, so deferred popup chains, hazard state transitions, and QTE resolution
-all fire correctly. It does NOT call engine methods directly.
+    chaos       — Spams random legal actions every tick. Ignores progression.
+                  Use this to stress-test hazard chains, NPC reactions, and
+                  engine stability under random input.
 
-On halt (crash, turn limit, or manual stop), it writes a full report to:
-    logs/crawler_report_<timestamp>.txt
+    adversarial — Deliberately makes bad choices: picks aggressive dialogue,
+                  ignores priority items, triggers hazards on purpose, tries
+                  to force every door. Use this to test failure states,
+                  death narratives, and game-over screens.
+
+USAGE (in-game):
+    crawl 500                       — 500 turns, pathfinder mode, normal speed
+    crawl 1000 chaos                — 1000 turns, chaos mode
+    crawl 500 adversarial fast      — adversarial, fast tick
+    crawl 5 runs pathfinder         — 5 full runs in pathfinder mode
+    crawl stop                      — halt immediately
+
+Reports are written to logs/crawler_report_<timestamp>.txt on halt.
 """
 
 import os
@@ -28,39 +40,59 @@ from kivy.clock import Clock
 # Tuning constants
 # ---------------------------------------------------------------------------
 
-# How many consecutive turns in the same room before the crawler declares
-# itself stuck and forces a random move or wait.
-STUCK_THRESHOLD = 12
+STUCK_THRESHOLD       = 12
+POPUP_COOLDOWN_TURNS  = 2
 
-# How many turns to wait after dismissing a popup before acting again.
-# Gives the engine time to process deferred chains.
-POPUP_COOLDOWN_TURNS = 2
-
-# Verb weights: higher = chosen more often when available.
-# Take > Talk > Search >>> Force > Use > Wait
-VERB_WEIGHTS = {
-    "take":   10,
-    "talk":    8,
-    "search":  7,
-    "use":     5,
-    "force":   3,
-    "move":    6,
-    "wait":    1,
+# Per-mode verb weights
+VERB_WEIGHTS_PATHFINDER = {
+    "take": 10, "search": 9, "talk": 8, "use": 7,
+    "examine": 4, "move": 6, "force": 2, "wait": 1,
+}
+VERB_WEIGHTS_CHAOS = {
+    "take": 5, "search": 5, "talk": 5, "use": 5,
+    "examine": 5, "move": 5, "force": 5, "wait": 5,
+}
+VERB_WEIGHTS_ADVERSARIAL = {
+    "force": 10, "use": 8, "take": 3, "move": 6,
+    "talk": 4, "search": 2, "examine": 2, "wait": 1,
 }
 
-# Items the crawler should prioritize taking immediately if available.
 PRIORITY_ITEMS = {
     "flashlight", "camera", "bludworths_house_key", "bludworths_house_address",
     "vet_sedatives", "adrenaline", "defibrillator_pads", "warehouse_key",
     "survivor_contact_sheet", "bludworths_ledger", "gammy_death_book",
-    "visionary_notes", "loaded_revolver", "first_aid_kit",
+    "visionary_notes", "loaded_revolver", "loaded_heavy_revolver",
+    "first_aid_kit", "coroners_office_key", "coroners_report",
+    "bullets", "empty_heavy_revolver", "defibrillator_pads",
+    "industrial_jumper_cables", "liquid_nitrogen_dewar",
+    "thermal_rewarming_blanket", "industrial_helium_tank",
+    "pure_oxygen_resuscitator", "hypothermia_survival_kit",
+    "asphyxiation_survival_kit",
 }
 
-# Dialogue option weights by keyword in option text.
-# Options containing these words are deprioritized (we want to keep NPCs alive).
 DIALOGUE_AVOID_KEYWORDS = {
-    "punch", "threaten", "attack", "leave them", "ignore", "walk away"
+    "punch", "threaten", "attack", "leave them", "ignore", "walk away",
 }
+DIALOGUE_ADVERSARIAL_PREFER = {
+    "refuse", "threaten", "attack", "walk away", "ignore", "no",
+    "not going to", "leave", "disagree",
+}
+
+# Golden path: ordered list of (level_id_fragment, objective_description)
+# Pathfinder uses this to bias its exit choices.
+GOLDEN_PATH = [
+    ("level_0",            "Reach the exit room during the premonition"),
+    ("level_1",            "Find coroner key → Coroner's Office → Bludworth key"),
+    ("level_police",       "Police station → evidence locker → hub"),
+    ("level_house",        "Bludworth's house → notes → hub"),
+    ("level_hub",          "Drive to next NPC workplace"),
+    ("level_hotel",        "Warn the hunt target"),
+    ("level_vet",          "Warn the hunt target"),
+    ("level_auto",         "Warn the hunt target"),
+    ("level_fair",         "Warn the hunt target"),
+    ("level_bowl",         "Warn the hunt target"),
+    ("level_finale",       "Use assembled items at the crossroads"),
+]
 
 
 # ---------------------------------------------------------------------------
@@ -73,33 +105,44 @@ class ChaosCrawler:
     through on_submit_command, exactly replicating human input.
     """
 
+    VALID_MODES = ("pathfinder", "chaos", "adversarial")
+
     def __init__(self, game_screen):
         self.game_screen = game_screen
-        self.gl = game_screen.game_logic
-        self.is_running = False
-        self.turn_count = 0
+        self.gl          = game_screen.game_logic
+        self.is_running  = False
+        self.mode        = "pathfinder"
+        self.turn_count  = 0
         self.turns_limit = 0
-        self.tick_interval = 0.2          # seconds between actions
-        self._event = None                # Kivy Clock event handle
+        self.fast_mode   = False
+        self.runs_total  = 1
+        self.runs_done   = 0
+        self.tick_interval = 0.2
+        self._event = None
 
         # Stuck detection
-        self._location_history = deque(maxlen=STUCK_THRESHOLD)
-        self._popup_cooldown = 0          # turns to skip after a dismiss
-        # Repeat-command loop detection
-        self._last_command = ""
+        self._location_history     = deque(maxlen=STUCK_THRESHOLD)
+        self._popup_cooldown       = 0
+        self._last_command         = ""
         self._repeat_command_count = 0
-        self._MAX_REPEAT_COMMANDS = 5
-        # Coverage tracking
-        self._rooms_visited = set()
-        self._items_collected = []
-        self._npcs_talked = set()
-        self._levels_reached = set()
-        self._hazards_triggered = []
-        self._qte_results = {"pass": 0, "fail": 0}
-        self._commands_issued = []        # rolling last-200 log
-        self._errors = []                 # (turn, traceback) pairs
+        self._MAX_REPEAT_COMMANDS  = 5
 
-        # Setup dedicated log file
+        # Coverage tracking
+        self._rooms_visited    = set()
+        self._items_collected  = []
+        self._npcs_talked      = set()
+        self._levels_reached   = set()
+        self._hazards_triggered = []
+        self._qte_results      = {"pass": 0, "fail": 0}
+        self._commands_issued  = []
+        self._errors           = []
+
+        # Pathfinder-specific state
+        self._containers_searched = set()
+        self._exits_used          = set()
+        self._hub_drives_done     = 0
+
+        # Logging
         log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'logs')
         os.makedirs(log_dir, exist_ok=True)
         stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -116,16 +159,16 @@ class ChaosCrawler:
     # Public API
     # ------------------------------------------------------------------
 
-    def start(self, turns: int = 500, fast: bool = False, runs: int = 1):
-        """
-        Start the crawler.
-        turns: max actions per run
-        fast:  0.05s tick interval
-        runs:  total runs to complete before stopping
-        """
+    def start(self, turns: int = 500, mode: str = "pathfinder",
+              fast: bool = False, runs: int = 1):
         if self.is_running:
             return
+        if mode not in self.VALID_MODES:
+            print(f"[ChaosCrawler] Unknown mode '{mode}'. Valid: {self.VALID_MODES}")
+            mode = "pathfinder"
+
         self.is_running    = True
+        self.mode          = mode
         self.turns_limit   = turns
         self.fast_mode     = fast
         self.runs_total    = runs
@@ -134,63 +177,67 @@ class ChaosCrawler:
         self._start_run()
 
     def _start_run(self):
-        """Initialize state for a fresh run and start the clock."""
-        self.turn_count = 0
+        self.turn_count            = 0
         self._location_history.clear()
-        self._popup_cooldown   = 0
-        self._last_command     = ""
+        self._popup_cooldown       = 0
+        self._last_command         = ""
         self._repeat_command_count = 0
         self._commands_issued.clear()
+        self._containers_searched.clear()
+        self._exits_used.clear()
+        self._hub_drives_done = 0
 
-        # Trigger a clean new game through the UI
         self._auto_start_new_game()
 
-        self.logger.info(f"{'='*60}")
-        self.logger.info(f"RUN {self.runs_done + 1}/{self.runs_total} STARTING — "
-                        f"{self.turns_limit} turns  ({'fast' if self.fast_mode else 'normal'})")
-        self.logger.info(f"{'='*60}")
+        self.logger.info("=" * 60)
+        self.logger.info(
+            f"RUN {self.runs_done + 1}/{self.runs_total} STARTING — "
+            f"{self.turns_limit} turns  "
+            f"mode={self.mode}  "
+            f"({'fast' if self.fast_mode else 'normal'})"
+        )
+        self.logger.info("=" * 60)
 
         if self._event:
             self._event.cancel()
         self._event = Clock.schedule_interval(self._tick, self.tick_interval)
 
     def _auto_start_new_game(self):
-        """Drive the UI through new-game setup without human input."""
         from kivy.app import App
-        import random
         app = App.get_running_app()
-        game_screen = self.game_screen
+        gs  = self.game_screen
 
-        # 1. Reset UI state
-        if hasattr(game_screen, 'reset_ui_state'):
-            game_screen.reset_ui_state()
+        if hasattr(gs, 'reset_ui_state'):
+            gs.reset_ui_state()
 
-        # 2. Pick a random character and start
-        characters = ['Citizen Detective', 'EMT', 'Journalist', 'Off-Duty Cop']
-        char = random.choice(characters)
-        gl = game_screen.game_logic
+        # Pathfinder always picks a non-Visionary class to test the standard flow.
+        # Chaos picks any. Adversarial picks whoever has the most HP (more time to die badly).
+        if self.mode == "pathfinder":
+            chars = ['Citizen Detective', 'Journalist', 'EMT']
+        elif self.mode == "adversarial":
+            chars = ['Athlete', 'EMT']
+        else:
+            chars = ['Citizen Detective', 'EMT', 'Journalist',
+                     'Mechanic', 'Athlete', 'Medium']
+
+        char = random.choice(chars)
+        gl   = gs.game_logic
         gl.start_new_game(character_class=char, start_level=0)
-
-        # 3. Update the crawler's gl reference (game_logic is the same object, player is reset)
         self.gl = gl
 
-        # 4. Navigate to game screen
         if app and app.root:
-            # Dismiss any lingering screens
             for screen_name in ('lose', 'win', 'inter_level', 'intro'):
                 if app.root.current == screen_name:
                     try:
-                        s = app.root.get_screen('game')
                         app.root.current = 'game'
                         break
                     except Exception:
                         pass
-            # Fire the intro bypass — IntroScreen auto-forwards for level_0
             if app.root.current == 'intro':
                 intro = app.root.get_screen('intro')
                 Clock.schedule_once(lambda dt: intro.proceed_to_game(), 0.1)
 
-        self.logger.info(f"[AUTO] New game started — character: {char}")
+        self.logger.info(f"[AUTO] New game started — char={char}  mode={self.mode}")
 
     def stop(self, reason: str = "Manual stop"):
         if not self.is_running:
@@ -199,13 +246,12 @@ class ChaosCrawler:
         if self._event:
             self._event.cancel()
             self._event = None
-
         self.logger.info("")
         self.logger.info("=" * 60)
         self.logger.info(f"CRAWLER HALTED — {reason}")
         self.logger.info("=" * 60)
         self._write_summary(reason)
-        print(f"[ChaosCrawler] Stopped. Report written to: {self.log_path}")
+        print(f"[ChaosCrawler] Stopped. Report: {self.log_path}")
 
     # ------------------------------------------------------------------
     # Core tick
@@ -213,17 +259,15 @@ class ChaosCrawler:
 
     def _tick(self, dt):
         try:
-            # ── Terminal checks ──────────────────────────────────────────
             if self.turns_limit > 0 and self.turn_count >= self.turns_limit:
                 self._end_run("Turn limit reached.")
-                return True  # Keep clock running — will start next run
+                return True
 
             if self.gl.is_game_over or self.gl.game_won:
                 reason = self.gl.player.get('death_reason', 'Game over')
                 self._end_run(reason)
                 return True
 
-            # ── Screen guard ─────────────────────────────────────────────
             from kivy.app import App
             app = App.get_running_app()
             if app and hasattr(app, 'root') and hasattr(app.root, 'current'):
@@ -236,42 +280,32 @@ class ChaosCrawler:
                     return True
 
                 elif curr in ('lose', 'win'):
-                    # Terminal screen — count this as a completed run
                     self._end_run(f"Reached {curr} screen")
                     return True
 
                 elif curr == 'intro':
-                    # Auto-advance intro screen
                     intro = app.root.get_screen('intro')
                     if hasattr(intro, 'proceed_to_game'):
                         Clock.schedule_once(lambda dt: intro.proceed_to_game(), 0.2)
                     return True
 
                 elif curr != 'game':
-                    return True  # Wait for any other screen
+                    return True
 
-            # ── Popup cooldown ──────────────────────────────────────────
             if self._popup_cooldown > 0:
                 self._popup_cooldown -= 1
                 return True
 
-            # ── Active QTE ──────────────────────────────────────────────
             if self._handle_qte():
                 return True
 
-            # ── Active popup ────────────────────────────────────────────
             if self._handle_popup():
                 return True
 
-            # ── Elevator transit guard ───────────────────────────────────
-            # If the elevator timer is running, do nothing. Let Clock fire
-            # _on_elevator_timer_complete naturally. Sending commands during
-            # transit resets the 4-second arrival timer and traps the player.
             if self.gl.player.get('elevator_transit_active'):
-                self.logger.info("[ELEVATOR] Transit active — waiting for arrival.")
+                self.logger.info("[ELEVATOR] Transit active — waiting.")
                 return True
 
-            # ── Normal command ──────────────────────────────────────────
             self._execute_turn()
             return True
 
@@ -283,7 +317,6 @@ class ChaosCrawler:
             return False
 
     def _end_run(self, reason: str):
-        """Finish a run, write summary, and either start the next or stop."""
         self.runs_done += 1
         self.logger.info(f"RUN {self.runs_done}/{self.runs_total} ENDED — {reason}")
         self._write_summary(reason)
@@ -294,10 +327,9 @@ class ChaosCrawler:
                 self._event.cancel()
                 self._event = None
             self.logger.info(f"ALL {self.runs_total} RUNS COMPLETE.")
-            print(f"[ChaosCrawler] All {self.runs_total} runs complete. Final report: {self.log_path}")
+            print(f"[ChaosCrawler] All {self.runs_total} runs complete. Report: {self.log_path}")
             return
 
-        # Brief pause before next run so the UI can settle
         Clock.schedule_once(lambda dt: self._start_run(), 1.0)
 
     # ------------------------------------------------------------------
@@ -313,32 +345,40 @@ class ChaosCrawler:
 
         qte_type = qte.active_qte.get('qte_type', '')
         qte_ctx  = qte.active_qte.get('qte_context', {})
-        self.logger.info(f"[QTE] Active: '{qte_type}'")
+        self.logger.info(f"[QTE] Active: '{qte_type}'  mode={self.mode}")
 
-        if 'pattern' in qte_type.lower() or 'memory' in qte_type.lower() or 'sequence' in qte_type.lower():
-            # pattern_memory: must send the correct sequence keys one at a time.
-            # Read required_sequence from the active QTE context if available.
+        if 'pattern' in qte_type.lower() or 'sequence' in qte_type.lower() or 'memory' in qte_type.lower():
             sequence = (
                 qte_ctx.get('required_sequence') or
                 qte_ctx.get('required_pattern') or
                 qte_ctx.get('pattern') or
-                ['down', 'right', 'left', 'up']  # fallback guess
+                ['down', 'right', 'left', 'up']
             )
-            # Send all keys in sequence with a tiny delay between them.
-            # We schedule each key 0.05s apart so the QTE engine registers them individually.
+            if self.mode == 'adversarial':
+                # Deliberately send the wrong sequence
+                wrong = [k for k in ['up', 'down', 'left', 'right'] if k not in sequence[:1]]
+                sequence = wrong[:len(sequence)] or sequence
             for i, key in enumerate(sequence):
-                delay = i * 0.05
-                Clock.schedule_once(
-                    lambda dt, k=key.lower(): self._submit(k),
-                    delay
-                )
-            self.logger.info(f"[QTE] Sending pattern sequence: {sequence}")
-        else:
-            # button_mash / spam_any_key / reaction: spacebar works
-            expected_key = qte_ctx.get('expected_key', 'space')
-            self._submit(expected_key)
+                Clock.schedule_once(lambda dt, k=key.lower(): self._submit(k), i * 0.05)
+            self.logger.info(f"[QTE] Sending sequence: {sequence}")
 
-        self._qte_results['pass'] += 1
+        elif 'word' in qte_type.lower() or 'input' in qte_type.lower():
+            expected = qte_ctx.get('expected_input_word', 'brace')
+            if self.mode == 'adversarial':
+                word = 'wrong'
+            else:
+                word = expected
+            self._submit(word)
+
+        else:
+            expected_key = qte_ctx.get('expected_key', 'space')
+            if self.mode == 'adversarial':
+                self._submit('x')  # wrong key
+            else:
+                self._submit(expected_key)
+
+        result = 'fail' if self.mode == 'adversarial' else 'pass'
+        self._qte_results[result] += 1
         return True
 
     # ------------------------------------------------------------------
@@ -347,54 +387,49 @@ class ChaosCrawler:
 
     def _handle_popup(self) -> bool:
         handled_any = False
-        
-        # 1. Wait for pending popups
+
         if getattr(self.game_screen, '_popup_pending', False):
             return True
 
-        # 2. Clear resolved QTE popups safely
         if not self.gl.player.get('qte_active'):
             qte_popup = getattr(self.game_screen, 'active_qte_popup', None)
             if qte_popup and getattr(qte_popup, 'parent', None):
-                self.logger.info("[AUTO] Smashing resolved QTE popup!")
+                self.logger.info("[AUTO] Dismissing resolved QTE popup.")
                 try:
                     qte_popup.dismiss()
                     handled_any = True
-                except: pass
-                
-        # 3. Clear standard Info popups
+                except Exception:
+                    pass
+
         info_popup = getattr(self.game_screen, 'active_info_popup', None)
         if info_popup and getattr(info_popup, 'parent', None):
-            # Guard: DON'T dismiss if it's a dialogue with options!
             opts = (self.gl.last_dialogue_context or {}).get('options', [])
             if not opts:
-                self.logger.info("[AUTO] Smashing Info popup!")
+                self.logger.info("[AUTO] Dismissing info popup.")
                 try:
                     info_popup.dismiss()
                     handled_any = True
-                except: pass
+                except Exception:
+                    pass
 
-        # 4. Clear Map popups
         map_popup = getattr(self.game_screen, 'active_map_popup', None)
         if map_popup and getattr(map_popup, 'parent', None):
-            self.logger.info("[AUTO] Smashing Map popup!")
+            self.logger.info("[AUTO] Dismissing map popup.")
             try:
                 map_popup.dismiss()
                 handled_any = True
-            except: pass
+            except Exception:
+                pass
 
         if handled_any:
             self._popup_cooldown = POPUP_COOLDOWN_TURNS
-            return True
-            
-        return False
+        return handled_any
 
     # ------------------------------------------------------------------
-    # Normal turn execution
+    # Turn execution
     # ------------------------------------------------------------------
 
     def _execute_turn(self):
-        """Build and send one command, track coverage."""
         loc = self.gl.player.get('location', '')
         lvl = str(self.gl.player.get('current_level', ''))
 
@@ -402,211 +437,431 @@ class ChaosCrawler:
         self._levels_reached.add(lvl)
         self._location_history.append(loc)
 
-        cmd = self._generate_command()
+        if self.mode == 'pathfinder':
+            cmd = self._generate_pathfinder()
+        elif self.mode == 'chaos':
+            cmd = self._generate_chaos()
+        else:
+            cmd = self._generate_adversarial()
 
-        # Rolling command history for the summary
         self._commands_issued.append(cmd)
         if len(self._commands_issued) > 200:
             self._commands_issued.pop(0)
 
-        # --- REPEAT COMMAND GUARD ---
+        # Repeat guard
         if cmd == self._last_command:
             self._repeat_command_count += 1
             if self._repeat_command_count >= self._MAX_REPEAT_COMMANDS:
                 self.logger.warning(
-                    f"[LOOP DETECTED] Command '{cmd}' repeated "
-                    f"{self._repeat_command_count}x. Forcing context wipe and wait."
+                    f"[LOOP] '{cmd}' repeated {self._repeat_command_count}x. Forcing wait."
                 )
                 self.gl.last_dialogue_context = {}
                 self._repeat_command_count = 0
                 cmd = "wait"
         else:
-            self._last_command = cmd
+            self._last_command         = cmd
             self._repeat_command_count = 1
-        # ----------------------------
 
-        self.logger.info(f"T{self.turn_count:04d}  [{lvl}]  {loc}  >  {cmd}")
-
+        self.logger.info(f"T{self.turn_count:04d}  [{lvl}]  {loc}  [{self.mode}]  >  {cmd}")
         self._submit(cmd)
         self.turn_count += 1
 
-        # Track HP drops as QTE failures (crude but effective)
-        hp = self.gl.player.get('hp', 30)
+        hp     = self.gl.player.get('hp', 30)
         max_hp = self.gl.player.get('max_hp', 30)
-        if hp < max_hp * 0.5 and self.gl.player.get('qte_active') is False:
+        if hp < max_hp * 0.5 and not self.gl.player.get('qte_active'):
             self._qte_results['fail'] += 1
 
     def _submit(self, command: str):
-        """Route a command through the UI's normal submit path."""
         try:
             self.game_screen.on_submit_command(command_override=command)
         except Exception as e:
-            self.logger.error(f"[SUBMIT] Exception submitting '{command}': {e}")
+            self.logger.error(f"[SUBMIT] Exception on '{command}': {e}")
 
     # ------------------------------------------------------------------
-    # Command generation
+    # MODE: pathfinder
     # ------------------------------------------------------------------
 
-    def _generate_command(self) -> str:
-        # --- STALE CONTEXT GUARD ---
-        # If we've been issuing the exact same respond command repeatedly,
-        # the dialogue context is stale (NPC gone, no valid target).
-        # Wipe it and fall through to normal command generation.
-        options = (self.gl.last_dialogue_context or {}).get('options', [])
-        npc_name = (self.gl.last_dialogue_context or {}).get('npc_name', '')
-        
-        if options and npc_name:
-            # Check if this NPC actually exists in the current room
-            room_id = self.gl.player.get('location', '')
-            npc = self.gl._find_npc_in_room(npc_name, room_id)
-            if not npc:
-                self.logger.warning(
-                    f"[STALE CONTEXT] NPC '{npc_name}' not in room '{room_id}'. "
-                    f"Clearing dialogue context."
-                )
-                self.gl.last_dialogue_context = {}
-                # Fall through to normal command generation below
-        # ---------------------------
-        
-        # Existing dialogue check (now only fires if NPC is actually present)
-        options = (self.gl.last_dialogue_context or {}).get('options', [])
-        if options:
-            return self._pick_dialogue_option(options)
+    def _generate_pathfinder(self) -> str:
+        """
+        Knows the golden path. Priorities (in order):
+        1. Clear active dialogue
+        2. Pick up priority items
+        3. Search unsearched containers (finds keys)
+        4. Examine objects with player_interaction (finds hazard interactions)
+        5. Talk to any unmet NPCs
+        6. Identify and use the exit room path
+        7. Use items on objects when possible (finale items, keys)
+        8. Hub: drive to next workplace or Bludworth
+        9. Fall back to weighted random if stuck
+        """
+        # 1. Active dialogue
+        cmd = self._pathfinder_dialogue()
+        if cmd:
+            return cmd
 
-        # 2. Gather all available targets from engine
-        loc = self.gl.player.get('location', '')
+        loc       = self.gl.player.get('location', '')
+        lvl       = str(self.gl.player.get('current_level', ''))
         room_data = self.gl.get_room_data(loc) or {}
-        
-        moves   = self.gl.get_available_targets('move')
-        takes   = self.gl.get_available_targets('take')
-        talks   = self.gl.get_available_targets('talk')
-        searches = self.gl.get_available_targets('search')
-        uses    = self.gl.get_available_targets('use')
-        
-        # --- THE FIX: MANUALLY HARVEST LOCKED TARGETS FOR FORCE ---
-        forces = self.gl.get_available_targets('force')
-        if not forces:
-            forces = []
-            
-        # Add locked exits (e.g. 'force east', 'force stairwell door')
-        for direction, dest in room_data.get('exits', {}).items():
-            if isinstance(dest, dict) and dest.get('locked'):
-                forces.append(direction)
-                
-        # Add locked furniture (e.g. 'force emergency case')
-        for furn in room_data.get('furniture', []):
-            if isinstance(furn, dict):
-                # Check for direct lock or nested locking dict
-                is_locked = furn.get('locked') or (isinstance(furn.get('locking'), dict) and furn.get('locking', {}).get('locked'))
-                if is_locked:
-                    forces.append(furn.get('name'))
-                
-        forces = list(set(forces)) # Ensure unique targets
-        # -----------------------------------------------------------
 
-        # 3. Priority item pickup — always grab key items first
+        # 2. Priority item pickup
+        takes = self.gl.get_available_targets('take')
         for item in takes:
-            if item.lower().replace(' ', '_') in PRIORITY_ITEMS or item.lower() in PRIORITY_ITEMS:
+            norm = item.lower().replace(' ', '_')
+            if norm in PRIORITY_ITEMS or item.lower() in PRIORITY_ITEMS:
                 self._items_collected.append(item)
-                self.logger.info(f"[PRIORITY] Taking '{item}'")
+                self.logger.info(f"[PATH] Priority take: '{item}'")
                 return f"take {item}"
 
-        # 4. Track NPC conversations
+        # 3. Search unsearched containers
+        cmd = self._pathfinder_search_containers(room_data, loc)
+        if cmd:
+            return cmd
+
+        # 4. Use items on objects (keys on doors, finale items on crossroads objects)
+        cmd = self._pathfinder_use_items(room_data, loc)
+        if cmd:
+            return cmd
+
+        # 5. Talk to unmet NPCs
+        talks = self.gl.get_available_targets('talk')
         for npc in talks:
-            npc_key = f"{loc}::{npc}"
-            if npc_key not in self._npcs_talked:
-                self._npcs_talked.add(npc_key)
-                self.logger.info(f"[NPC] First conversation with '{npc}'")
+            key = f"{loc}::{npc}"
+            if key not in self._npcs_talked:
+                self._npcs_talked.add(key)
+                self.logger.info(f"[PATH] First talk: '{npc}'")
                 return f"talk {npc}"
 
-        # 5. Build weighted command pool
-        pool = []
+        # 6. Exit room: if we're in the exit room, use its exit immediately
+        cmd = self._pathfinder_handle_exit_room(room_data, loc, lvl)
+        if cmd:
+            return cmd
 
-        def _add(verb, targets, weight):
+        # 7. Hub-specific: choose the right drive target
+        if 'hub' in lvl.lower():
+            cmd = self._pathfinder_hub_drive()
+            if cmd:
+                return cmd
+
+        # 8. Finale room: try to use assembled items
+        if 'finale' in lvl.lower():
+            cmd = self._pathfinder_finale(room_data, loc)
+            if cmd:
+                return cmd
+
+        # 9. Move toward unexplored rooms; stuck fallback
+        return self._pathfinder_move(room_data, loc)
+
+    def _pathfinder_dialogue(self) -> str:
+        options  = (self.gl.last_dialogue_context or {}).get('options', [])
+        npc_name = (self.gl.last_dialogue_context or {}).get('npc_name', '')
+        if not options:
+            return ''
+        if npc_name:
+            loc = self.gl.player.get('location', '')
+            npc = self.gl._find_npc_in_room(npc_name, loc)
+            if not npc:
+                self.logger.warning(f"[PATH] Stale dialogue context for '{npc_name}'. Clearing.")
+                self.gl.last_dialogue_context = {}
+                return ''
+        return self._pick_dialogue_option(options, mode='pathfinder')
+
+    def _pathfinder_search_containers(self, room_data: dict, loc: str) -> str:
+        for furn in room_data.get('furniture', []):
+            if not isinstance(furn, dict):
+                continue
+            name = furn.get('name', '')
+            key  = f"{loc}::{name}"
+            if key in self._containers_searched:
+                continue
+            if furn.get('is_container') or furn.get('items'):
+                self._containers_searched.add(key)
+                self.logger.info(f"[PATH] Searching container: '{name}'")
+                return f"search {name}"
+        searches = self.gl.get_available_targets('search')
+        for s in searches:
+            key = f"{loc}::{s}"
+            if key not in self._containers_searched:
+                self._containers_searched.add(key)
+                self.logger.info(f"[PATH] Searching: '{s}'")
+                return f"search {s}"
+        return ''
+
+    def _pathfinder_use_items(self, room_data: dict, loc: str) -> str:
+        inventory = self.gl.player.get('inventory', [])
+        inv_ids   = {
+            (i.get('id', '') if isinstance(i, dict) else str(i)).lower()
+            for i in inventory
+        }
+        # Try every object in the room's player_interaction.use entries
+        for obj in room_data.get('objects', []):
+            if not isinstance(obj, dict):
+                continue
+            interactions = obj.get('player_interaction', {}).get('use', [])
+            for rule in interactions:
+                req_item = rule.get('required_item_name', '')
+                if req_item and req_item.lower() in inv_ids:
+                    obj_name = obj.get('name', '')
+                    self.logger.info(f"[PATH] Using '{req_item}' on '{obj_name}'")
+                    return f"use {req_item} on {obj_name}"
+        # Try key-on-door for locked exits
+        for direction, dest in room_data.get('exits', {}).items():
+            if isinstance(dest, dict) and dest.get('locked'):
+                key_id = dest.get('unlocks_with', '')
+                if key_id and key_id.lower() in inv_ids:
+                    self.logger.info(f"[PATH] Unlocking exit '{direction}' with '{key_id}'")
+                    return f"unlock {direction}"
+        return ''
+
+    def _pathfinder_handle_exit_room(self, room_data: dict, loc: str, lvl: str) -> str:
+        if not (room_data.get('is_exit') or room_data.get('exit_room')):
+            return ''
+        exits = room_data.get('exits', {})
+        if not exits:
+            return ''
+        # Prefer exits that aren't back toward the entry room
+        exit_key = next(iter(exits))
+        dest = exits[exit_key]
+        if isinstance(dest, dict):
+            dest = dest.get('target', exit_key)
+        exit_key_str = f"{loc}->{exit_key}"
+        if exit_key_str not in self._exits_used:
+            self._exits_used.add(exit_key_str)
+            self.logger.info(f"[PATH] Exit room — using exit '{exit_key}' -> '{dest}'")
+            return f"move {exit_key}"
+        # Try all exits
+        for k, v in exits.items():
+            eks = f"{loc}->{k}"
+            if eks not in self._exits_used:
+                self._exits_used.add(eks)
+                return f"move {k}"
+        return ''
+
+    def _pathfinder_hub_drive(self) -> str:
+        moves = self.gl.get_available_targets('move')
+        # Priority: workplaces > Bludworth > police > surrender last
+        ORDER = ['drive to', 'find next', 'prepare', 'bludworth', 'surrender', 'fight']
+        for keyword in ORDER:
+            for m in moves:
+                if keyword in m.lower():
+                    self.logger.info(f"[PATH] Hub drive: '{m}'")
+                    self._hub_drives_done += 1
+                    return f"move {m}"
+        if moves:
+            return f"move {random.choice(moves)}"
+        return ''
+
+    def _pathfinder_finale(self, room_data: dict, loc: str) -> str:
+        inventory = self.gl.player.get('inventory', [])
+        inv_ids   = {
+            (i.get('id', '') if isinstance(i, dict) else str(i)).lower()
+            for i in inventory
+        }
+        finale_items = [
+            ('defibrillator_pads',       'industrial battery array'),
+            ('charged_defibrillator_rig','industrial battery array'),
+            ('vet_sedatives',            'veterinary medical kit'),
+            ('fentanyl_reversal_kit',    'veterinary medical kit'),
+            ('loaded_heavy_revolver',    'heavy revolver'),
+            ('hypothermia_survival_kit', 'cooling chamber'),
+            ('asphyxiation_survival_kit','breathing apparatus'),
+            ('willing_companion_token',  'companion'),
+        ]
+        for item_id, obj_name in finale_items:
+            if item_id in inv_ids:
+                self.logger.info(f"[PATH] Finale: using '{item_id}' on '{obj_name}'")
+                return f"use {item_id} on {obj_name}"
+        # Examine everything to trigger examine_details hints
+        for obj in room_data.get('objects', []):
+            if isinstance(obj, dict):
+                return f"examine {obj.get('name', '')}"
+        return ''
+
+    def _pathfinder_move(self, room_data: dict, loc: str) -> str:
+        moves = self.gl.get_available_targets('move')
+        if self._is_stuck():
+            self.logger.warning(f"[PATH] Stuck in '{loc}'. Forcing move.")
+            if moves:
+                return f"move {random.choice(moves)}"
+            return "wait"
+        # Prefer moves toward unvisited rooms
+        for m in moves:
+            dest = room_data.get('exits', {}).get(m)
+            if isinstance(dest, dict):
+                dest = dest.get('target', '')
+            if dest and dest not in self._rooms_visited:
+                return f"move {m}"
+        if moves:
+            return f"move {random.choice(moves)}"
+        return "wait"
+
+    # ------------------------------------------------------------------
+    # MODE: chaos
+    # ------------------------------------------------------------------
+
+    def _generate_chaos(self) -> str:
+        """Completely random legal actions. No strategy."""
+        options = (self.gl.last_dialogue_context or {}).get('options', [])
+        if options:
+            return f"respond {random.randint(1, max(1, len(options)))}"
+
+        loc  = self.gl.player.get('location', '')
+        room = self.gl.get_room_data(loc) or {}
+
+        # Build the full pool of everything legal
+        pool = []
+        for verb, weight in VERB_WEIGHTS_CHAOS.items():
+            targets = self.gl.get_available_targets(verb)
             for t in targets:
                 pool.extend([f"{verb} {t}"] * weight)
 
-        _add("take",   takes,    VERB_WEIGHTS["take"])
-        _add("talk",   talks,    VERB_WEIGHTS["talk"])
-        _add("search", searches, VERB_WEIGHTS["search"])
-        _add("use",    uses,     VERB_WEIGHTS["use"])
-        _add("force",  forces,   VERB_WEIGHTS["force"])
+        # Add raw examine for objects/furniture
+        for obj in room.get('objects', []) + room.get('furniture', []):
+            if isinstance(obj, dict):
+                pool.append(f"examine {obj.get('name', '')}")
 
-        # 6. Stuck detection — if we've been in the same room too many turns
+        # Add completely random nonsense commands occasionally
+        if random.random() < 0.05:
+            nonsense = ["use nothing on nothing", "take air", "examine self",
+                        "force reality", "talk nobody", "move up"]
+            pool.extend(nonsense)
+
         if self._is_stuck():
-            self.logger.warning(f"[STUCK] Detected in '{loc}' — forcing move.")
+            moves = self.gl.get_available_targets('move')
             if moves:
                 return f"move {random.choice(moves)}"
             return "wait"
 
-        # Add moves at normal weight only if not stuck
-        _add("move", moves, VERB_WEIGHTS["move"])
+        if pool:
+            return random.choice(pool)
+        return "wait"
+
+    # ------------------------------------------------------------------
+    # MODE: adversarial
+    # ------------------------------------------------------------------
+
+    def _generate_adversarial(self) -> str:
+        """
+        Deliberately makes bad choices:
+        - Picks aggressive dialogue options
+        - Ignores priority items
+        - Forces every door it sees
+        - Tries to trigger hazards with use commands
+        - Occasionally idles to let hazards escalate
+        """
+        options  = (self.gl.last_dialogue_context or {}).get('options', [])
+        npc_name = (self.gl.last_dialogue_context or {}).get('npc_name', '')
+        if options:
+            if npc_name:
+                loc = self.gl.player.get('location', '')
+                if not self.gl._find_npc_in_room(npc_name, loc):
+                    self.gl.last_dialogue_context = {}
+                    options = []
+            if options:
+                return self._pick_dialogue_option(options, mode='adversarial')
+
+        loc       = self.gl.player.get('location', '')
+        room_data = self.gl.get_room_data(loc) or {}
+
+        # 10% chance to just wait and let hazards escalate
+        if random.random() < 0.10:
+            self.logger.info("[ADV] Waiting deliberately.")
+            return "wait"
+
+        forces = self.gl.get_available_targets('force')
+        for direction, dest in room_data.get('exits', {}).items():
+            if isinstance(dest, dict) and dest.get('locked'):
+                forces.append(direction)
+        for furn in room_data.get('furniture', []):
+            if isinstance(furn, dict) and furn.get('locked'):
+                forces.append(furn.get('name', ''))
+        forces = list(set(f for f in forces if f))
+
+        pool = []
+        for verb, weight in VERB_WEIGHTS_ADVERSARIAL.items():
+            targets = self.gl.get_available_targets(verb)
+            for t in targets:
+                pool.extend([f"{verb} {t}"] * weight)
+
+        # Extra weight on forcing things
+        for f in forces:
+            pool.extend([f"force {f}"] * 5)
+
+        # Try to use items on hazard-related objects (may trigger bad QTEs)
+        uses = self.gl.get_available_targets('use')
+        for u in uses:
+            pool.extend([f"use {u}"] * 3)
+
+        if self._is_stuck():
+            moves = self.gl.get_available_targets('move')
+            if moves:
+                return f"move {random.choice(moves)}"
+            return "wait"
+
+        moves = self.gl.get_available_targets('move')
+        for m in moves:
+            pool.extend([f"move {m}"] * VERB_WEIGHTS_ADVERSARIAL['move'])
 
         if pool:
             return random.choice(pool)
-
-        # 7. Absolute fallback
         return "wait"
 
-    def _pick_dialogue_option(self, options: list) -> str:
-        """
-        Pick a dialogue option. Prefers options that sound cooperative/
-        helpful. Avoids options with aggressive or 'leave' keywords.
-        Picks the pro-survival option when the NPC's life might be at stake.
-        """
+    # ------------------------------------------------------------------
+    # Shared helpers
+    # ------------------------------------------------------------------
+
+    def _pick_dialogue_option(self, options: list, mode: str = 'pathfinder') -> str:
         scored = []
         for i, opt in enumerate(options, 1):
-            text = opt.get('text', '').lower()
-            score = 10  # default
+            text  = opt.get('text', '').lower()
+            score = 10
 
-            # Prefer cooperative language
-            if any(w in text for w in ('help', 'together', 'leave', 'go', 'believe', 'trust', 'stay')):
-                score += 5
-            if any(w in text for w in ('warn', 'safe', 'danger', 'careful')):
-                score += 4
-
-            # Penalize aggressive language
-            if any(w in text for w in DIALOGUE_AVOID_KEYWORDS):
-                score = max(1, score - 8)
-
-            # Always take the "walk away" option last
-            if 'walk away' in text:
-                score = 1
+            if mode == 'adversarial':
+                if any(w in text for w in DIALOGUE_ADVERSARIAL_PREFER):
+                    score += 8
+                if any(w in text for w in ('help', 'safe', 'trust', 'together')):
+                    score = max(1, score - 6)
+            else:
+                if any(w in text for w in ('help', 'together', 'believe', 'trust', 'safe', 'warn')):
+                    score += 5
+                if any(w in text for w in ('danger', 'careful', 'leave', 'go')):
+                    score += 3
+                if any(w in text for w in DIALOGUE_AVOID_KEYWORDS):
+                    score = max(1, score - 8)
+                if 'walk away' in text:
+                    score = 1
 
             scored.append((score, i))
 
-        # Weighted random selection
         total = sum(s for s, _ in scored)
-        r = random.uniform(0, total)
-        cumulative = 0
+        if total == 0:
+            return f"respond {scored[-1][1]}"
+        r, cumulative = random.uniform(0, total), 0
         for score, idx in scored:
             cumulative += score
             if r <= cumulative:
-                self.logger.info(f"[DIALOGUE] Choosing option {idx}")
+                self.logger.info(f"[DIALOGUE] Option {idx}  (mode={mode})")
                 return f"respond {idx}"
-
-        return f"respond {scored[-1][1]}"  # fallback: last option
+        return f"respond {scored[-1][1]}"
 
     def _is_stuck(self) -> bool:
-        """Returns True if the crawler has been in the same room for too long."""
         if len(self._location_history) < STUCK_THRESHOLD:
             return False
         return len(set(self._location_history)) == 1
 
     # ------------------------------------------------------------------
-    # Summary report
+    # Report
     # ------------------------------------------------------------------
 
     def _write_summary(self, stop_reason: str):
-        """Append a structured summary to the log file."""
         gl = self.gl
-        p = gl.player
+        p  = gl.player
 
         lines = [
             "",
             "=" * 60,
             "CRAWL SUMMARY",
             "=" * 60,
+            f"Mode             : {self.mode}",
             f"Stop reason      : {stop_reason}",
             f"Total turns      : {self.turn_count} / {self.turns_limit}",
             f"Final level      : {p.get('current_level', 'UNKNOWN')}",
@@ -614,39 +869,35 @@ class ChaosCrawler:
             f"Final HP         : {p.get('hp', '?')} / {p.get('max_hp', '?')}",
             f"Final fear       : {p.get('fear', 0.0):.2f}",
             f"Final score      : {p.get('score', 0)}",
+            f"Hub drives done  : {self._hub_drives_done}",
             "",
             "── COVERAGE ──────────────────────────────────────────────",
             f"Levels reached   : {sorted(self._levels_reached)}",
             f"Unique rooms     : {len(self._rooms_visited)}",
         ]
-
         for room in sorted(self._rooms_visited):
             lines.append(f"    {room}")
 
-        lines += [
-            "",
-            f"NPCs talked to   : {len(self._npcs_talked)}",
-        ]
+        lines += ["", f"NPCs talked to   : {len(self._npcs_talked)}"]
         for npc in sorted(self._npcs_talked):
             lines.append(f"    {npc}")
 
-        lines += [
-            "",
-            f"Items collected  : {len(self._items_collected)}",
-        ]
+        lines += ["", f"Items collected  : {len(self._items_collected)}"]
         for item in self._items_collected:
             lines.append(f"    {item}")
 
-        # Survivor roster
+        lines += ["", f"Containers searched: {len(self._containers_searched)}"]
+        for c in sorted(self._containers_searched):
+            lines.append(f"    {c}")
+
         npc_status = p.get('npc_status', {})
         if npc_status:
             lines += ["", "── SURVIVOR ROSTER ───────────────────────────────────────"]
             for name, status in npc_status.items():
                 lines.append(f"    {name:<20} {status}")
 
-        # Deaths list state
         deaths_list = p.get('deaths_list', [])
-        deaths_idx = p.get('deaths_list_index', 0)
+        deaths_idx  = p.get('deaths_list_index', 0)
         if deaths_list:
             lines += ["", "── DEATH'S DESIGN ────────────────────────────────────────"]
             for i, name in enumerate(deaths_list):
@@ -654,61 +905,49 @@ class ChaosCrawler:
                 struck = "[DEAD] " if npc_status.get(name.lower(), 'alive') == 'dead' else ""
                 lines.append(f"    {i+1}. {struck}{name}{marker}")
 
-        # Inventory
         inventory = p.get('inventory', [])
         if inventory:
             lines += ["", "── INVENTORY ─────────────────────────────────────────────"]
             for item in inventory:
                 lines.append(f"    {item}")
 
-        # Flags / progression
-        companions = p.get('companions', [])
-        if companions:
-            lines += ["", f"── COMPANIONS ({'alive' if companions else 'none'}) ───────"]
-            for c in companions:
-                lines.append(f"    {c}")
-
         interaction_flags = getattr(gl, 'interaction_flags', set())
         key_flags = {f for f in interaction_flags if any(k in f for k in
-            ('learned_deaths_list', 'bludworth', 'social_worker', 'finale', 'police'))}
+            ('learned_deaths_list', 'bludworth', 'social_worker', 'finale', 'police',
+             'knows_cycle', 'knows_resurrection', 'knows_blood'))}
         if key_flags:
             lines += ["", "── KEY FLAGS ─────────────────────────────────────────────"]
             for f in sorted(key_flags):
                 lines.append(f"    {f}")
 
-        # QTE results
+        player_flags = p.get('flags', {})
+        if isinstance(player_flags, dict) and player_flags:
+            lines += ["", "── PLAYER FLAGS ──────────────────────────────────────────"]
+            for k, v in player_flags.items():
+                if v:
+                    lines.append(f"    {k}: {v}")
+
         lines += [
             "",
             "── QTE RESULTS ───────────────────────────────────────────",
             f"    Pass: {self._qte_results['pass']}   Fail: {self._qte_results['fail']}",
         ]
 
-        # Error log
         if self._errors:
-            lines += [
-                "",
-                f"── ERRORS ({len(self._errors)}) ──────────────────────────────────",
-            ]
+            lines += ["", f"── ERRORS ({len(self._errors)}) ──────────────────────────────────"]
             for turn_num, tb in self._errors:
                 lines.append(f"    Turn {turn_num}:")
                 for tb_line in tb.strip().split('\n'):
                     lines.append(f"        {tb_line}")
-
         else:
             lines += ["", "── ERRORS ────────────────────────────────────────────────",
                       "    None. Clean run."]
 
-        # Last 20 commands (breadcrumb trail to the crash/stop)
         lines += ["", "── LAST 20 COMMANDS ──────────────────────────────────────"]
         for cmd in self._commands_issued[-20:]:
             lines.append(f"    {cmd}")
 
-        lines.append("")
-        lines.append("=" * 60)
-        lines.append("END OF REPORT")
-        lines.append("=" * 60)
+        lines += ["", "=" * 60, "END OF REPORT", "=" * 60]
 
         with open(self.log_path, 'a', encoding='utf-8') as f:
             f.write('\n'.join(lines))
-
-        self.logger.info("Summary written.")

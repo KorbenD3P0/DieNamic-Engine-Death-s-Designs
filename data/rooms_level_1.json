@@ -801,7 +801,25 @@
       }
     ],
     "hazards_present": [
-      "malfunctioning_ventilator"
+      "malfunctioning_ventilator",
+      {
+        "type": "liquid_spill",
+        "chance": 0.6,
+        "skin": {
+          "name": "IV Bag Drip",
+          "description": "An IV bag with a slight puncture, dripping onto the floor.",
+          "dynamic_target": "exposed_wiring",
+          "dynamic_state": "short_circuiting"
+        }
+      },
+      {
+        "type": "exposed_wiring",
+        "chance": 0.7,
+        "skin": {
+          "name": "Frayed Monitor Cable",
+          "description": "A hospital monitor cable with cracked insulation near the floor."
+        }
+      }
     ],
     "connections": {
       "hvac": ["Patient Room 101", "MRI Control Room", "Upper Floor Hallway"]

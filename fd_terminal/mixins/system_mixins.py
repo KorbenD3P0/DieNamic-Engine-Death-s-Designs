@@ -294,36 +294,37 @@ class SystemMixin:
             )
 
         import random
-        
-        # 1. Generate Mock Cast
-        mock_names = ["Taylor", "Morgan", "Alex", "Sam", "Jordan", "Casey"]
-        random.shuffle(mock_names)
-        survivors = mock_names[:3]
-        casualties = mock_names[3:]
-        
-        # 2. Build Death's List
-        deaths_list = list(survivors)
-        deaths_list.append('player')
-        random.shuffle(deaths_list)
-        
-        # 3. Assign Roles & Status
-        roles = ["friend", "skeptic", "visionary", "fatalist", "bystander", "authority"]
-        npc_roles = {name.lower(): roles[i] if i < len(roles) else "bystander" for i, name in enumerate(mock_names)}
-        npc_status = {name.lower(): "alive" if name in survivors else "dead" for name in mock_names}
-            
-        # 4. Inject Mock Data
-        self.player['premonition_survivors'] = survivors
-        self.player['premonition_casualties'] = casualties
-        self.player['deaths_list'] = deaths_list
-        self.player['deaths_list_index'] = 0
-        self.player['npc_roles'] = npc_roles
-        self.player['npc_status'] = npc_status
-        self.player['companions'] = [random.choice(survivors)]
-        self.player['intro_disaster'] = {
-            "name": "a catastrophic debug testing event",
-            "tags": ["explosive", "collapse"],
-            "killed_count": 99
-        }
+
+        # --- THE FIX: Only inject mock data if the roster is empty! ---
+        if len(self.player.get('deaths_list', [])) <= 1:
+            self.logger.info("Warp Whistle: Injecting Mock Cast.")
+            self.player['deaths_list'] = ['Alex', 'Player', 'Sam', 'Taylor']
+            self.player['npc_roles'] = {'Alex': 'visionary', 'Sam': 'skeptic', 'Taylor': 'friend'}
+
+            # You MUST sync the premonition map so the text formatter knows who is who!
+            self.player['_premonition_role_map'] = {'visionary': 'Alex', 'skeptic': 'Sam', 'friend': 'Taylor'}
+
+            # Build supporting mock data from the injected cast
+            mock_names = ["Taylor", "Alex", "Sam", "Morgan", "Jordan", "Casey"]
+            survivors = ["Alex", "Sam", "Taylor"]
+            casualties = ["Morgan", "Jordan", "Casey"]
+            self.player['premonition_survivors'] = survivors
+            self.player['premonition_casualties'] = casualties
+            self.player['deaths_list_index'] = 0
+            npc_status = {name.lower(): "alive" if name in survivors else "dead" for name in mock_names}
+            self.player['npc_status'] = npc_status
+            self.player['companions'] = [random.choice(survivors)]
+            self.player['intro_disaster'] = {
+                "name": "a catastrophic debug testing event",
+                "tags": ["explosive", "collapse"],
+                "killed_count": 99
+            }
+        else:
+            self.logger.info("Warp Whistle: Legitimate cast detected. Preserving Level 0 data.")
+            survivors = self.player.get('premonition_survivors', [])
+            casualties = self.player.get('premonition_casualties', [])
+            mock_names = survivors + casualties
+        # --------------------------------------------------------------
 
         # --- AUTO-GRANT ALL REQUIRED ITEMS ---
         granted_items = set()
@@ -384,6 +385,7 @@ class SystemMixin:
         # Merge into player inventory
         current_inv = set(self.player.get('inventory', []))
         self.player['inventory'] = list(current_inv.union(granted_items))
+        deaths_list = self.player.get('deaths_list', [])
         
         self.logger.info(f"Warp Whistle: Auto-granted items: {granted_items}")
 
@@ -395,9 +397,9 @@ class SystemMixin:
             look_response = self._command_examine(target="")
             
             warp_message = (
-                f"[b][color=00ff00]USED WARP WHISTLE[/color][/b]\n"
+                f"[b][color=00ff00]WARP WHISTLE USED[/color][/b]\n"
                 f"Transporting to: {level_id}\n\n"
-                f"[color=ffff00]Mock Data Injected:[/color]\n"
+                f"[color=ffff00]Data Injected:[/color]\n"
                 f"Death's List: {', '.join(deaths_list)}\n"
                 f"Active Companion: {self.player['companions'][0]}\n\n"
                 f"[color=00ffff]Auto-Granted Items:[/color] {', '.join(granted_items) if granted_items else 'None'}\n"
@@ -408,7 +410,7 @@ class SystemMixin:
             
             self.add_ui_event({
                 "event_type": "show_popup",
-                "title": "Used Warp Whistle",
+                "title": "Warp Whistle Used",
                 "message": warp_message
             })
             

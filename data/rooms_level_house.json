@@ -42,18 +42,13 @@
     ],
     "hazards_present": [
       {
-        "chance": 0.15,
-        "object_name_options": [
-          "unstable_stack_of_boxes"
-        ],
-        "support_object_override": "stack_of_old_boxes",
-        "type": "precarious_object"
-      },
-      {
-        "chance": 0.1,
-        "object_name_override": "rotting_beam",
-        "support_object_override": "ceiling",
-        "type": "unstable_shelf"
+        "type": "precarious_object",
+        "chance": 1.0,
+        "skin": {
+          "hazard_name": "Overloaded Shelf",
+          "dynamic_target": "rogue_machinery",
+          "dynamic_state": "creeping_forward"
+        }
       },
       {
         "chance": 0.2,
@@ -564,12 +559,13 @@
         "type": "weak_floorboards"
       },
       {
-        "chance": 0.1,
-        "object_name_options": [
-          "loose pipe fitting"
-        ],
-        "support_object_override": "dripping pipes",
-        "type": "precarious_object"
+        "type": "precarious_object",
+        "chance": 1.0,
+        "skin": {
+          "hazard_name": "shelves",
+          "dynamic_target": "rogue_machinery",
+          "dynamic_state": "creeping_forward"
+        }
       },
       {
         "chance": 0.1,
@@ -665,16 +661,13 @@
     ],
     "hazards_present": [
       {
-        "chance": 0.2,
-        "type": "unstable_shelf"
-      },
-      {
-        "chance": 0.15,
-        "object_name_options": [
-          "box_of_old_chemicals"
-        ],
-        "support_object_override": "shelves",
-        "type": "precarious_object"
+        "type": "precarious_object",
+        "chance": 1.0,
+        "skin": {
+          "hazard_name": "shelves",
+          "dynamic_target": "rogue_machinery",
+          "dynamic_state": "creeping_forward"
+        }
       },
       {
         "chance": 0.1,

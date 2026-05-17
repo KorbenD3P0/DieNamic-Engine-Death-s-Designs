@@ -25,7 +25,15 @@
     ],
     "hazards_present": [
       "faulty_wiring",
-      "precarious_object"
+      {
+        "type": "precarious_object",
+        "chance": 1.0,
+        "skin": {
+          "hazard_name": "Overloaded Shelf",
+          "dynamic_target": "rogue_machinery",
+          "dynamic_state": "creeping_forward"
+        }
+      }
     ],
     "npc_slots": 1
   },
@@ -58,7 +66,15 @@
     },
     "hazards_present": [
       "collapsing_stairs",
-      "precarious_object"
+      {
+        "type": "precarious_object",
+        "chance": 1.0,
+        "skin": {
+          "hazard_name": "Overloaded Shelf",
+          "dynamic_target": "rogue_machinery",
+          "dynamic_state": "creeping_forward"
+        }
+      }
     ],
     "npc_slots": 1
   },

@@ -43,19 +43,22 @@ class HazardEngine:
         """
         self.active_hazards.clear()
         self.logger.info(f"Hazard Engine (re)initialized for Level {level_id}.")
-        
+ 
         if not getattr(self, 'game_logic', None): return
 
         rooms = self.game_logic.current_level_rooms_world_state or {}
-        
+ 
         for room_name, room in rooms.items():
             hazard_entries = room.get('hazards_present') or room.get('hazards') or []
-            
+ 
             for h in hazard_entries:
+                skin = {}
                 if isinstance(h, str):
                     hazard_type = h; chance = 1.0
                 elif isinstance(h, dict):
-                    hazard_type = h.get('type') or h.get('hazard_type'); chance = h.get('chance', 1.0)
+                    hazard_type = h.get('type') or h.get('hazard_type')
+                    chance = h.get('chance', 1.0)
+                    skin = h.get('skin', {})  # --- THE FIX: Extract the skin data! ---
                 else: continue
 
                 if not hazard_type or hazard_type not in self.hazards_master_data: continue
@@ -64,12 +67,13 @@ class HazardEngine:
                 initial_state = None
                 if random.random() > float(chance):
                     initial_state = "dormant" # The seed is planted, but sleeping.
-                
+ 
                 self._add_active_hazard(
                     hazard_type=hazard_type,
                     location=room_name,
                     source_trigger_id="level_seed",
-                    initial_state_override=initial_state
+                    initial_state_override=initial_state,
+                    skin=skin  # --- THE FIX: Pass the skin to the spawner! ---
                 )
 
     def _add_active_hazard(
@@ -79,7 +83,8 @@ class HazardEngine:
         initial_state_override: str | None = None,
         target_object_override: str | None = None,
         support_object_override: str | None = None,
-        source_trigger_id: str | None = None
+        source_trigger_id: str | None = None,
+        skin: dict = None
     ) -> str | None:
         # >>> PATCH START: Enforce Physical Validation <<<
         # We skip validation ONLY for 'level_seed' (initial load) to trust the level designer,
@@ -103,7 +108,9 @@ class HazardEngine:
             "type": hazard_type,
             "location": location,
             "state": initial_state,
-            "master_data": h_def,
+            'master_data': h_def,  # Keep a reference to the rules
+            'skin': skin,          # Store the custom text replacements!
+            'name': skin.get('name', h_def.get('name', hazard_type)), # Override the base name if skinned
             "spawned_entities": {},
             "target_object_override": target_object_override,
             "support_object_override": support_object_override,
@@ -826,6 +833,16 @@ class HazardEngine:
 
         # 4. Message Formatting
         msg = self._format_hazard_message(msg, hazard_id)
+        
+        # --- THE FIX: Safely fetch the hazard and apply the skin ---
+        if msg and hazard_id:
+            # Grab the actual hazard dictionary from active memory
+            hazard = self.active_hazards.get(hazard_id, {})
+            
+            # Apply the skin to the final, fully-formatted message
+            if hazard:
+                msg = self._apply_skin_to_text(msg, hazard)
+        # -----------------------------------------------------------
 
         return msg, title, qte, pause, nxt
 
@@ -1239,10 +1256,14 @@ class HazardEngine:
             })
             return consequences
 
+        # 4. Fallback for non-QTE narrative popups
         if popup_msg:
             primary = self._build_popup_consequence(hazard_id, sdef.get('__state_name__'), popup_title, popup_msg, None, pause, next_st)
+            
+            # If this state leads to an auto-transition, ensure it's guaranteed
             if next_st and not pause:
-                consequences.append(self._build_auto_advance_consequence(hazard_id, next_st))
+                 consequences.append(self._build_auto_advance_consequence(hazard_id, next_st))
+            
             consequences.append(primary)
 
         return consequences
@@ -1348,12 +1369,49 @@ class HazardEngine:
 
     def trigger_ambushes_for_room(self, room_id):
         if room_id not in self.deferred_ambushes: return []
+        
         self.logger.info(f"Triggering ambushes for room '{room_id}'")
         ambushes = self.deferred_ambushes.pop(room_id)
+        
         all_cons = []
+        all_messages = [] # --- THE FIX: We need to capture the text! ---
+        
         for amb in ambushes:
-            res = self.set_hazard_state(amb['hazard_id'], amb['target_state'], suppress_entry_effects=False)
-            all_cons.extend(res.get('consequences', []))
+            hazard_id = amb['hazard_id']
+            hazard = self.active_hazards.get(hazard_id, {})
+            
+            # 1. Trigger the state change
+            res = self.set_hazard_state(hazard_id, amb['target_state'], suppress_entry_effects=False)
+            
+            # 2. Capture Consequences (Damage, Fear, etc.)
+            if 'consequences' in res:
+                all_cons.extend(res['consequences'])
+                
+            # 3. Capture Messages (The description of the trap)
+            if 'messages' in res:
+                all_messages.extend(res['messages'])
+                
+            # 4. Optional: If the ambush definition included a custom warning message, 
+            # apply the hazard skin to it and send it to the UI!
+            custom_msg = amb.get('message')
+            if custom_msg and self.game_logic:
+                if hazard:
+                    custom_msg = self._apply_skin_to_text(custom_msg, hazard)
+                
+                # Push the custom warning directly to the player's screen
+                self.game_logic.add_ui_event({
+                    "event_type": "show_message", 
+                    "message": f"[color=ff0000][b]AMBUSH![/b][/color] {custom_msg}"
+                })
+
+        # If we captured standard state messages, we need to make sure they get rendered!
+        if all_messages and self.game_logic:
+            for msg in all_messages:
+                self.game_logic.add_ui_event({
+                    "event_type": "show_message", 
+                    "message": msg
+                })
+
         return all_cons
 
     def get_save_state(self) -> dict:
@@ -2559,6 +2617,69 @@ class HazardEngine:
         hazard['movement_cooldown_turns'] = 1  
         self.logger.info(f"Deaths Breath '{hazard_id}' followed player to '{player_location}'")
 
+        current_room = hazard.get('location')
+
+        primary_target = "unknown"
+        if hasattr(self.game_logic, 'death_ai') and self.game_logic.death_ai:
+            primary_target = getattr(self.game_logic.death_ai, 'target_name', 'unknown')
+
+        target_location = None
+        if primary_target == 'player':
+            target_location = player_location
+        elif hasattr(self.game_logic, 'get_npc_location'):
+            try:
+                target_location = self.game_logic.get_npc_location(primary_target)
+            except Exception as e:
+                self.logger.error(
+                    f"_move_deaths_breath: failed resolving target location for '{primary_target}': {e}",
+                    exc_info=True
+                )
+
+        # ── Catalysis: trigger all Tier-1 initiators in the target room ──────
+        # Fires whether or not the player is in the room.
+        # Deaths Breath doesn't need to be seen to start a chain.
+        if current_room == target_location or current_room == player_location:
+            triggered_count = 0
+            local_hazards = self.get_active_hazards_for_room(current_room)
+            for local_h_id, local_h in local_hazards.items():
+                if local_h_id == hazard_id or local_h.get('type') == 'deaths_breath':
+                    continue
+
+                current_state = local_h.get('state')
+                master_def = self.hazards_master_data.get(local_h.get('type'), {})
+                state_def  = master_def.get('states', {}).get(current_state, {})
+                next_state = state_def.get('next_state_on_deaths_breath')
+
+                if next_state:
+                    self.logger.warning(
+                        f"DEATH'S BREATH TRIGGERED: {local_h.get('type')} "
+                        f"-> {next_state} in '{current_room}'"
+                    )
+                    result = self.set_hazard_state(local_h_id, next_state)
+                    consequences.extend(result.get('consequences', []))
+                    triggered_count += 1
+
+                    if current_room == player_location:
+                        skin_name = (
+                            local_h.get('skin', {}).get('name')
+                            or local_h.get('name', 'something nearby')
+                        )
+                        self.game_logic.add_ui_event({
+                            "event_type": "show_message",
+                            "message": (
+                                "[color=#aaaaaa]A sudden, freezing draft sweeps "
+                                "through the room...[/color] "
+                                f"The {skin_name} suddenly shifts."
+                            )
+                        })
+
+            if triggered_count == 0 and current_room == player_location:
+                # Deaths Breath arrived but found nothing to catalyse — omen only
+                self.game_logic.add_ui_event({
+                    "event_type": "show_message",
+                    "message": "[color=#aaaaaa]The temperature drops sharply.[/color]"
+                })
+
         states_progression = ["subtle_chill", "cold_breeze", "icy_presence", "malevolent_gust"]
         current_state = hazard.get('state')
         if current_state in states_progression:
@@ -2591,6 +2712,19 @@ class HazardEngine:
         # --------------------------------------------
 
         return messages, consequences
+
+    def _apply_skin_to_text(self, text: str, hazard: dict) -> str:
+        """Replace skin tokens in any hazard text string."""
+        if not text or not isinstance(text, str):
+            return text
+        skin = hazard.get('skin', {})
+        if not skin:
+            return text
+        for token, value in skin.items():
+            text = text.replace('{' + token + '}', str(value))
+        # Always replace {hazard_name} with the live name as a fallback
+        text = text.replace('{hazard_name}', hazard.get('name', 'object'))
+        return text
 
     def _resolve_death_target_location(self, target_id: str) -> Optional[str]:
         """Finds the room ID of the current death target."""
@@ -2708,6 +2842,123 @@ class HazardEngine:
 
         return messages, consequences
 
+    def _move_rogue_machinery(self, hazard_id: str, hazard: dict, player_location: str) -> tuple:
+        """
+        Universal movement handler for the 'rogue_machinery' archetype.
+        - Handles both wandering/seeking machines and stationary escalating machines.
+
+        State-gated behaviour:
+        ┌──────────────────┬──────────────────────────────────────────────────────┐
+        │ Hazard state     │ Movement behaviour                                   │
+        ├──────────────────┼──────────────────────────────────────────────────────┤
+        │ patrolling, idle,│ Wander one room per turn along random valid exits.   │
+        │ active           │ Seeks targets (seek_hazard_types) if found in scan   │
+        │                  │ radius (seek_radius in master_data, default 3).      │
+        ├──────────────────┼──────────────────────────────────────────────────────┤
+        │ seeking, sparking│ Pathfinds directly to tracked target (e.g. gas_leak).│
+        │                  │ If target lost/resolved, reverts to patrolling.      │
+        │                  │ Waits in the target room until player is present     │
+        │                  │ to fire interactions (co-location required).         │
+        ├──────────────────┼──────────────────────────────────────────────────────┤
+        │ parked, creeping_│ NO inter-room movement. Hazard stays locked in its   │
+        │ forward, ramming_│ current room to execute a localized kill-chain       │
+        │ speed            │ (e.g., a forklift accelerating into a wall).         │
+        ├──────────────────┼──────────────────────────────────────────────────────┤
+        │ all other        │ No movement — resolving, crashed, or neutralized.    │
+        └──────────────────┴──────────────────────────────────────────────────────┘
+
+        Cooldown:  master_data.movement_speed_turns (default 1) sets turns between moves.
+        Proximity: The machine never enters a room it just came from (anti-oscillation).
+
+        Returns (messages, consequences).
+        """
+        messages = []
+        consequences = []
+
+        if not self.game_logic:
+            return messages, consequences
+
+        current_state = hazard.get('state')
+        current_location = hazard.get('location')
+        master = hazard.get('master_data', {})
+        memory = hazard.setdefault('memory', {})
+        
+        # Check if this specific machine is even allowed to leave the room.
+        # If it's a forklift in a kill-chain, skip inter-room movement.
+        if current_state in ('parked', 'creeping_forward', 'ramming_speed', 'crashed', 'disabled'):
+            return messages, consequences
+
+        move_cost = int(master.get('movement_speed_turns', 1))
+
+        # ── SEEKING / SPARKING ─────────────────────────────
+        if current_state in ('sparking', 'seeking'):
+            hazard['behavior_state'] = 'seeking'
+            target_id = hazard.get('seek_target_hazard_id')
+            target_room = hazard.get('seek_target_room')
+            
+            target_still_valid = (
+                target_id and target_id in self.active_hazards and
+                self.active_hazards[target_id].get('state') not in ('resolved', 'neutralized', 'dormant', 'inactive')
+            )
+
+            if not target_still_valid:
+                nearest_id, nearest_room = self._find_nearest_hazard_type(current_location, 'gas_leak')
+                if nearest_id:
+                    hazard['seek_target_hazard_id'] = nearest_id
+                    hazard['seek_target_room'] = nearest_room
+                    hazard['path_to_target'] = self._find_path(current_location, nearest_room)
+                else:
+                    hazard['behavior_state'] = 'patrolling'
+                    hazard['path_to_target'] = []
+
+            if hazard.get('behavior_state') == 'seeking' and hazard.get('path_to_target'):
+                if current_location == hazard.get('seek_target_room'):
+                    hazard['behavior_state'] = 'waiting'
+                    return messages, consequences
+
+                next_room = hazard['path_to_target'][0]
+                if self._execute_hazard_move(hazard_id, hazard, next_room, move_cost, player_location):
+                    hazard['path_to_target'].pop(0)
+                    messages.extend(self._movement_flavor_message(hazard_id, hazard, next_room, player_location))
+                return messages, consequences
+
+        # ── PATROLLING (Random Walk) ─────────────────────────────
+        if current_state in ('patrolling', 'idle', 'active'):
+            hazard['behavior_state'] = 'patrolling'
+            seek_radius = int(master.get('seek_radius', 3))
+            scan_types = master.get('seek_hazard_types', ['water_puddle', 'gas_leak'])
+
+            for seek_type in scan_types:
+                nearest_id, nearest_room = self._find_nearest_hazard_type(current_location, seek_type, max_distance=seek_radius)
+                if nearest_id and nearest_room != current_location:
+                    path = self._find_path(current_location, nearest_room)
+                    if path:
+                        next_room = path[0]
+                        if self._execute_hazard_move(hazard_id, hazard, next_room, move_cost, player_location):
+                            hazard['path_to_target'] = path[1:]
+                            messages.extend(self._movement_flavor_message(hazard_id, hazard, next_room, player_location))
+                        return messages, consequences
+
+            # Random wander
+            rooms = self.game_logic.current_level_rooms_world_state
+            exits = rooms.get(current_location, {}).get('exits', {})
+            last_room = memory.get('last_room')
+            
+            valid_exits = []
+            for dest in exits.values():
+                if isinstance(dest, dict): dest = dest.get('room') or dest.get('target')
+                if dest and isinstance(dest, str) and dest != last_room:
+                    valid_exits.append(dest)
+                    
+            if not valid_exits:
+                valid_exits = [v for v in exits.values() if v and isinstance(v, str)]
+
+            if valid_exits:
+                next_room = random.choice(valid_exits)
+                if self._execute_hazard_move(hazard_id, hazard, next_room, move_cost, player_location):
+                    messages.extend(self._movement_flavor_message(hazard_id, hazard, next_room, player_location))
+
+        return messages, consequences
 
     def _move_fleeing_npc(self, hazard_id: str, hazard: dict, player_location: str) -> tuple:
         """
@@ -2829,159 +3080,6 @@ class HazardEngine:
                     npc['chase_state'] = new_chase_state
                     return
     
-
-    def _move_robo_vacuum(self, hazard_id: str, hazard: dict, player_location: str) -> tuple:
-        """
-        Movement handler for robo_vacuum.
-
-        State-gated behaviour:
-        ┌─────────────────┬──────────────────────────────────────────────────────┐
-        │ Hazard state    │ Movement behaviour                                   │
-        ├─────────────────┼──────────────────────────────────────────────────────┤
-        │ patrolling      │ Wander one room per turn along random valid exits.   │
-        │                 │ Seeks water_puddle or gas_leak if found in scan      │
-        │                 │ radius (set by seek_radius in master_data, default 3)│
-        ├─────────────────┼──────────────────────────────────────────────────────┤
-        │ sparking        │ Pathfinds directly to the nearest gas_leak.          │
-        │                 │ If no gas_leak exists, continues patrolling.         │
-        │                 │ Waits in the gas_leak room until player is present   │
-        │                 │ before the hazard_interaction fires (handled by      │
-        │                 │ _process_hazard_interactions — the vacuum just needs │
-        │                 │ to be co-located with the leak at turn end).         │
-        ├─────────────────┼──────────────────────────────────────────────────────┤
-        │ all other       │ No movement — the hazard is resolving or neutralised.│
-        └─────────────────┴──────────────────────────────────────────────────────┘
-
-        Cooldown:  master_data.movement_speed_turns (default 1) sets turns between moves.
-        Proximity: The vacuum never enters a room it just came from (anti-oscillation).
-
-        Returns (messages, consequences).
-        """
-        messages = []
-        consequences = []
-
-        if not self.game_logic:
-            return messages, consequences
-
-        current_state = hazard.get('state')
-        current_location = hazard.get('location')
-        master = hazard.get('master_data', {})
-        memory = hazard.setdefault('memory', {})
-
-        # Apply movement cooldown from master data each time we successfully move
-        move_cost = int(master.get('movement_speed_turns', 1))
-
-        # ── SPARKING: hunt the nearest gas leak ─────────────────────────────
-        if current_state == 'sparking':
-            behavior = 'seeking'
-            hazard['behavior_state'] = behavior
-
-            # Refresh path if we don't have one or our stored target has resolved
-            target_id = hazard.get('seek_target_hazard_id')
-            target_room = hazard.get('seek_target_room')
-            target_still_valid = (
-                target_id and
-                target_id in self.active_hazards and
-                self.active_hazards[target_id].get('state') not in
-                    ('resolved', 'neutralized', 'dormant', 'inactive')
-            )
-
-            if not target_still_valid:
-                # Scan all rooms for the nearest gas_leak
-                nearest_id, nearest_room = self._find_nearest_hazard_type(
-                    current_location, 'gas_leak'
-                )
-                if nearest_id:
-                    hazard['seek_target_hazard_id'] = nearest_id
-                    hazard['seek_target_room'] = nearest_room
-                    hazard['path_to_target'] = self._find_path(current_location, nearest_room)
-                    self.logger.info(
-                        f"robo_vacuum '{hazard_id}' locked onto gas_leak "
-                        f"'{nearest_id}' in '{nearest_room}'. "
-                        f"Path: {hazard['path_to_target']}"
-                    )
-                else:
-                    # No gas leak in level — fall through to patrol
-                    hazard['behavior_state'] = 'patrolling'
-                    hazard['seek_target_hazard_id'] = None
-                    hazard['seek_target_room'] = None
-                    hazard['path_to_target'] = []
-
-            if hazard.get('behavior_state') == 'seeking' and hazard.get('path_to_target'):
-                # Already at destination?
-                if current_location == hazard.get('seek_target_room'):
-                    # We are co-located with the gas leak.
-                    # _process_hazard_interactions will fire the interaction on the
-                    # NEXT process_turn() call when player is present.
-                    # The vacuum waits here — no further movement needed.
-                    hazard['behavior_state'] = 'waiting'
-                    self.logger.info(
-                        f"robo_vacuum '{hazard_id}' reached gas_leak room "
-                        f"'{current_location}'. Waiting for player."
-                    )
-                    return messages, consequences
-
-                # Step one room along the pre-computed path
-                next_room = hazard['path_to_target'][0]
-                if self._execute_hazard_move(hazard_id, hazard, next_room, move_cost, player_location):
-                    hazard['path_to_target'].pop(0)
-                    msgs = self._movement_flavor_message(hazard_id, hazard, next_room, player_location)
-                    messages.extend(msgs)
-                return messages, consequences
-
-        # ── PATROLLING: random walk, opportunistically seek puddles/leaks ───
-        if current_state in ('patrolling', 'idle', 'active'):
-            hazard['behavior_state'] = 'patrolling'
-
-            seek_radius = int(master.get('seek_radius', 3))
-            scan_types = master.get('seek_hazard_types', ['water_puddle', 'gas_leak'])
-
-            # Opportunistic seek — if a target is within seek_radius, head for it
-            for seek_type in scan_types:
-                nearest_id, nearest_room = self._find_nearest_hazard_type(
-                    current_location, seek_type, max_distance=seek_radius
-                )
-                if nearest_id and nearest_room != current_location:
-                    path = self._find_path(current_location, nearest_room)
-                    if path:
-                        next_room = path[0]
-                        if self._execute_hazard_move(
-                            hazard_id, hazard, next_room, move_cost, player_location
-                        ):
-                            hazard['path_to_target'] = path[1:]
-                            msgs = self._movement_flavor_message(
-                                hazard_id, hazard, next_room, player_location
-                            )
-                            messages.extend(msgs)
-                        return messages, consequences
-
-            # No interesting target nearby — random wander
-            rooms = self.game_logic.current_level_rooms_world_state
-            room_data = rooms.get(current_location, {})
-            exits = room_data.get('exits', {})
-            valid_exits = []
-            last_room = memory.get('last_room')
-            for dest in exits.values():
-                if isinstance(dest, dict):
-                    dest = dest.get('room') or dest.get('target')
-                if dest and isinstance(dest, str) and dest != last_room:
-                    valid_exits.append(dest)
-            # If all exits lead back (dead-end), allow the backtrack
-            if not valid_exits:
-                valid_exits = [v for v in exits.values() if v and isinstance(v, str)]
-
-            if valid_exits:
-                next_room = random.choice(valid_exits)
-                if self._execute_hazard_move(
-                    hazard_id, hazard, next_room, move_cost, player_location
-                ):
-                    msgs = self._movement_flavor_message(
-                        hazard_id, hazard, next_room, player_location
-                    )
-                    messages.extend(msgs)
-
-        return messages, consequences
-
     def _move_stray_cat(self, hazard_id: str, hazard: dict, player_location: str) -> tuple:
         '''
         Random wander for the stray cat.  Every N turns it moves to
@@ -3198,7 +3296,12 @@ class HazardEngine:
                     return messages
 
         flavor_map = {
-            'robo_vacuum': {
+            'rogue_machinery': {
+                'patrolling': "You hear the rhythmic mechanical hum of the {hazard_name} moving nearby.",
+                'seeking':    "The grinding motors of the {hazard_name} grow louder and more aggressive.",
+                'waiting':    "The {hazard_name} idles loudly in an adjacent area.",
+            },
+            'robo_vacuum': { # Legacy fallback just in case
                 'patrolling': "You hear a distant whirring — a vacuum cleaner making its rounds.",
                 'seeking':    "The whirring of the vacuum grows louder, purposeful, closer.",
                 'waiting':    "The vacuum hums quietly nearby. Waiting.",
@@ -3209,6 +3312,21 @@ class HazardEngine:
                 'icy_presence':   "An icy chill seeps through the walls.",
                 'malevolent_gust':"The air turns hostile.",
             },
+            'fleeing_npc': {
+                'panicked': "You hear hurried, panicked footsteps echoing from nearby.",
+                'hiding':   "A muffled sob and heavy breathing drifts from the next room.",
+                'running':  "The sound of someone sprinting frantically echoes down the hall.",
+            },
+            'stray_cat': {
+                'wandering': "You hear a faint 'meow' and the soft patter of paws.",
+                'spooked':   "A sudden feline yowl and claws scrambling on the floor startles you.",
+                'hunting':   "Something small knocks over a lightweight object in the next room."
+            },
+            'pigeon': {
+                'roosting':   "You hear the soft, rhythmic cooing of a bird nearby.",
+                'fluttering': "The frantic beating of wings echoes from an adjacent room.",
+                'startled':   "A sudden flurry of feathers breaks the silence."
+            }
         }
 
         behavior = hazard.get('behavior_state', hazard.get('state', ''))
@@ -3216,6 +3334,10 @@ class HazardEngine:
         msg = type_flavors.get(behavior) or type_flavors.get(hazard.get('state', ''))
 
         if msg:
+            # --- THE FIX: Apply the skin to the ambient text! ---
+            if hasattr(self, '_apply_skin_to_text'):
+                msg = self._apply_skin_to_text(msg, hazard)
+            # ----------------------------------------------------
             messages.append(color_text(msg, 'warning', self.resource_manager))
 
         return messages
@@ -3727,9 +3849,9 @@ class HazardEngine:
 #
 HazardEngine.MOBILE_HAZARD_HANDLERS = {
     'deaths_breath': HazardEngine._move_deaths_breath,
-    'robo_vacuum':   HazardEngine._move_robo_vacuum,
     'fleeing_npc':    HazardEngine._move_fleeing_npc,
     'stray_cat':     HazardEngine._move_stray_cat,
     'pigeon':        HazardEngine._move_pigeon,
-    'stampeding_bull': HazardEngine._move_bull
+    'stampeding_bull': HazardEngine._move_bull,
+    'rogue_machinery': HazardEngine._move_rogue_machinery,
 }

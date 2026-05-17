@@ -144,7 +144,7 @@ class ProceduralGenerator:
     
     # Hazard categories for distribution
     HAZARD_CATEGORIES = {
-        "mechanical": ["wobbling_ceiling_fan", "falling_scaffolding", "robo_vacuum"],
+        "mechanical": ["wobbling_ceiling_fan", "falling_scaffolding", "rogue_machinery"],
         "electrical": ["frayed_lamp_cord", "exposed_wiring", "electrified_fence"],
         "fire": ["gas_leak", "spilled_hot_oil", "propane_tanks"],
         "special": ["deaths_breath", "mri", "elevator_freefall", "stray_cat"]

@@ -27,7 +27,32 @@
       "shipping pallets"
     ],
     "hazards_present": [
-      "gas_leak"
+      {
+        "type": "precarious_object",
+        "chance": 0.8,
+        "skin": {
+          "name": "Iron Pipe Wrench",
+          "description": "A massive pipe wrench balanced on the edge of a high shelf.",
+          "dynamic_target": "rogue_machinery",
+          "dynamic_state": "creeping_forward"
+        }
+      },
+      {
+        "type": "rogue_machinery",
+        "chance": 1.0,
+        "skin": {
+          "name": "Industrial Forklift",
+          "description": "A yellow forklift idling with forks raised at chest height."
+        }
+      },
+      {
+        "type": "gas_source",
+        "chance": 0.5,
+        "skin": {
+          "name": "Propane Line",
+          "description": "A corroded propane feed line running along the wall."
+        }
+      }
     ],
     "entry_room": true,
     "npc_slots": 1

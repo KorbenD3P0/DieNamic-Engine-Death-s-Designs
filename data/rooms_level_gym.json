@@ -93,7 +93,15 @@
         },
         "hazards_present": [
             "water_puddle",
-            "frayed_lamp_cord",
+            {
+                "type": "frayed_lamp_cord",
+                "chance": 1.0,
+                "skin": {
+                "hazard_name": "Frayed Lamp Cord",
+                "dynamic_target": "exposed_wiring",
+                "dynamic_state": "short_circuiting"
+                }
+            },
             "precarious_water_cup",
             "electrified_fence"
         ],

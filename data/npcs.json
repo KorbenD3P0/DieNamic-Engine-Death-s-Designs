@@ -1,5 +1,101 @@
 {
 "master_npcs":{
+  "the_mourner": {
+    "role": "mourner",
+    "name_pool": [
+      "Arthur",
+      "Elias",
+      "Silas",
+      "Theodore",
+      "Vincent",
+      "Walter",
+      "Julian",
+      "Thomas",
+      "Robert"
+    ],
+    "spawn_chance": 0.35,
+    "description_template": "A [color=#5eafd2]{age} {appearance}[/color] sitting alone. He wasn't on the manifest for the disaster, but his wife was. He has been staring at the wall for hours.",
+    "age_pool": [
+      "older",
+      "middle-aged",
+      "gray-haired",
+      "weathered",
+      "tired-looking",
+      "hollow-eyed"
+    ],
+    "appearance_pool": [
+      "man in a rumpled suit",
+      "man wearing a faded windbreaker",
+      "gentleman staring vacantly",
+      "man holding a crushed paper cup",
+      "man with slumped shoulders",
+      "man clutching a folded photograph"
+    ],
+    "workplace": "level_hub",
+    "workplace_name": "The Hub",
+    "is_static_employee": true,
+    "companion_eligible": false,
+    "on_deaths_list": false,
+    "initial_state": "first_meeting",
+    "dialogue_states": {
+      "first_meeting": {
+        "text": "You approach Arthur. He is staring blankly at the wall, completely detached from the panic around him. 'She was supposed to be sitting next to me,' he whispers. 'I got up to get coffee. Why did I get up?'",
+        "options": [
+          {
+            "text": "I'm so sorry for your loss. It wasn't your fault.",
+            "target_state": "grief_response"
+          },
+          {
+            "text": "We all lost people today. You have to snap out of it and keep moving.",
+            "target_state": "pragmatic_response"
+          },
+          {
+            "text": "[color=#cc9900]I know a way to make the survivor's guilt stop. But there is a terrible cost.[/color]",
+            "requires_flag": "knows_sacrifice_path",
+            "target_state": "the_proposal"
+          }
+        ]
+      },
+      "grief_response": {
+        "text": "'I wasn't even thirsty,' he mutters, eyes welling with tears. 'I should have been right there next to her. It should have been me.' He buries his face in his hands, ignoring you.",
+        "next_state": "first_meeting"
+      },
+      "pragmatic_response": {
+        "text": "He looks up at you with hollow, dead eyes. 'Move where? There is nothing left for me anywhere else. Just leave me alone.'",
+        "next_state": "first_meeting"
+      },
+      "the_proposal": {
+        "text": "You quietly explain Bludworth's theory. The design. The ledger. The Gift. You explain that the ledger can be balanced if someone willingly takes the curse. Arthur looks up at you. The emptiness in his eyes is suddenly replaced by a terrifying, desperate clarity.\n\n'[color=#3399ff]I can take your place? It will finally be over?[/color]'",
+        "options": [
+          {
+            "text": "Yes. But it means you die. You take my place in the trap. I can't force you.",
+            "target_state": "the_acceptance"
+          },
+          {
+            "text": "Nevermind. Forget I said anything. It's madness.",
+            "target_state": "grief_response"
+          }
+        ]
+      },
+      "the_acceptance": {
+        "text": "Arthur nods slowly, a chilling sense of peace washing over his face. He pulls a pen from his pocket, writes something on a piece of scrap paper, folds it, and presses it firmly into your hand.\n\n'[color=#3399ff]When you find the way out... let me know. I am ready.[/color]'",
+        "on_talk_action": {
+          "gives_item": "willing_companion_token",
+          "set_player_flag": "mourner_accepted_gift"
+        },
+        "next_state": "ready_waiting"
+      },
+      "ready_waiting": {
+        "text": "You approach Arthur. He looks perfectly calm now, waiting for the end.\n\n'[color=#3399ff]Don't hesitate when the time comes. I am not afraid anymore.[/color]'",
+        "options": [
+          {
+            "text": "I'll let you know when it's time.",
+            "target_state": "ready_waiting"
+            }
+          ]
+        }
+      }
+    },
   "social_worker": {
     "name": "Social Worker",
     "role": "social_worker",
@@ -511,7 +607,8 @@
               },
             "target_state": "uncertain" }
           ]
-    },
+        }
+      },
     "bystander_2": {
       "first_meeting": {
         "text": "'I can't sleep. Every time I close my eyes I see it. The sound, the — I just can't.'",
@@ -525,7 +622,8 @@
             "special_effect": ["recruit_companion", "despawn_npc"]
           },
         "target_state": "uncertain" }
-      ]
+        ]
+      }
     },
     "distracted": {
       "first_meeting": {
@@ -778,6 +876,71 @@
     }
   },
 
+  "unlisted_mourner": {
+    "first_meeting": {
+      "text": "You approach {npc_name}. They are staring blankly at the wall, completely detached from the panic around them. 'She was supposed to be sitting next to me,' they whisper. 'I got up to get coffee. Why did I get up?'",
+      "options": [
+        {
+          "text": "I'm so sorry for your loss. It wasn't your fault.",
+          "target_state": "grief_response"
+        },
+        {
+          "text": "We all lost people today. You have to snap out of it and keep moving.",
+          "target_state": "pragmatic_response"
+        },
+        {
+          "text": "[color=#cc9900]I know a way to make the survivor's guilt stop. But there is a terrible cost.[/color]",
+          "requires_flag": "knows_sacrifice_path",
+          "target_state": "the_proposal"
+        }
+      ]
+    },
+
+    "grief_response": {
+      "text": "'I wasn't even thirsty,' they mutter, eyes welling with tears. 'I should have been right there next to her. It should have been me.' They bury their face in their hands, ignoring you.",
+      "next_state": "exit"
+    },
+
+    "pragmatic_response": {
+      "text": "They look up at you with hollow, dead eyes. 'Move where? There is nothing left for me anywhere else. Just leave me alone.'",
+      "next_state": "exit"
+    },
+
+    "the_proposal": {
+      "text": "You quietly explain Bludworth's theory. The design. The ledger. The Gift. You explain that the ledger can be balanced if someone willingly takes the curse. {npc_name} looks up at you. The emptiness in their eyes is suddenly replaced by a terrifying, desperate clarity.\n\n'[color=#3399ff]I can take your place? It will finally be over?[/color]'",
+      "options": [
+        {
+          "text": "Yes. But it means you die. You take my place in the trap. I can't force you.",
+          "target_state": "the_acceptance"
+        },
+        {
+          "text": "Nevermind. Forget I said anything. It's madness.",
+          "target_state": "grief_response"
+        }
+      ]
+    },
+
+    "the_acceptance": {
+      "text": "{npc_name} nods slowly, a chilling sense of peace washing over their face. They pull a pen from their pocket, write something on a piece of scrap paper, fold it, and press it firmly into your hand.\n\n'[color=#3399ff]When you find the way out... let me know. I am ready.[/color]'",
+      "on_talk_action": {
+        "give_item": "willing_companion_token",
+        "set_flag": "mourner_accepted_gift",
+        "set_default_node": "ready_waiting"
+      },
+      "next_state": "exit"
+    },
+
+    "ready_waiting": {
+      "text": "You approach {npc_name}. They look perfectly calm now, waiting for the end.\n\n'[color=#3399ff]Don't hesitate when the time comes. I am not afraid anymore.[/color]'",
+      "options": [
+        {
+          "text": "I'll let you know when it's time.",
+          "target_state": "exit"
+        }
+      ]
+    }
+  },
+
   "_default": {
     "_context": "Fallback dialogue for any level not explicitly defined.",
 
@@ -940,6 +1103,4 @@
       "panicking": "'I'm going to die. I'm actually going to die today.'"
     }
   }
-}
-}
 }

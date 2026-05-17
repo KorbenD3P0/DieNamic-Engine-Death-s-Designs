@@ -100,24 +100,36 @@
       }
     ],
     "hazards_present": [
-      "butter_pump_malfunction"
+      {
+        "type": "faulty_dispenser",
+        "chance": 1.0,
+        "skin": {
+          "hazard_name": "Butter Pump",
+          "description": "A heated pump for dispensing butter-flavored topping.",
+          "aliases": ["pump", "butter dispenser"],
+          "dynamic_target": "exposed_wiring",
+          "dynamic_state": "short_circuiting"
+        }
+      },
+      {
+        "type": "exposed_wiring",
+        "chance": 1.0,
+        "skin": {
+          "hazard_name": "Wall Outlet",
+          "description": "A wall outlet with a suspicious dark stain near it.",
+          "aliases": ["outlet", "plug", "socket"]
+        }
+      }
     ],
     "objects": [
       {
         "name": "Condiment Stand",
-        "description": "A stainless steel condiment stand with a butter dispenser. The wall behind is coated with a freshly spilled soda near the wall outlet."
+        "description": "A stainless steel condiment stand holding various dispensers. The wall behind it is coated with freshly spilled soda.",
+        "aliases": ["stand", "counter"]
       },
       {
-        "name": "Butter Pump",
-        "description": "A heated pump for dispensing butter-flavored topping. It gurgles with a low mechanical hum.",
-        "aliases": [
-          "pump",
-          "butter dispenser"
-        ]
-      },
-      {
-        "name": "Counter Radio",
-        "description": "A small radio playing more ads than music through bursts of static.",
+        "name": "Concession Speaker",
+        "description": "A small overhead speaker playing more ads than music through bursts of static.",
         "is_omen_provider": "radio",
         "aliases": [
           "radio"
@@ -152,8 +164,25 @@
       }
     ],
     "hazards_present": [
-      "sparking_neon_transformer"
+      {
+        "type": "exposed_wiring",
+        "name": "Neon Transformer",
+        "description": "An old neon transformer mounted on the wall, crackling and occasionally sparking with blue light.",
+        "aliases": [
+          "transformer",
+          "neon transformer"
+        ],
+        "chance": 1.0,
+        "skin": {
+          "hazard_name": "Neon Transformer",
+          "dynamic_target": "exposed_wiring",
+          "dynamic_state": "short_circuiting"
+        }
+      }
     ],
+
+
+
     "lighting": "dim",
     "objects": [
       {
@@ -166,14 +195,6 @@
         "is_omen_provider": "window",
         "aliases": [
           "window"
-        ]
-      },
-      {
-        "name": "Neon Transformer",
-        "description": "An old neon transformer mounted on the wall, crackling and occasionally sparking with blue light.",
-        "aliases": [
-          "transformer",
-          "neon transformer"
         ]
       },
       {
@@ -199,7 +220,7 @@
     "items": [],
     "npc_slots": 1,
     "environmental_omens": {
-      "sparking_neon_transformer": {
+      "exposed_wiring": {
         "television": "Screen fills with violent blue static.",
         "radio": "Loud electrical ZAP sound.",
         "window": "Reflection shows blue sparks dancing on the wall."

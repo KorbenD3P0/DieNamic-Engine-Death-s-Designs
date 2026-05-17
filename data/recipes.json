@@ -72,15 +72,8 @@
     "lore": "Not subtle. Not precise. Absolutely final."
   },
 
-  "recipe_defibrillator_rig": {
-    "ingredients": ["defibrillator_pads", "jumper_cables"],
-    "result": "charged_defibrillator_rig",
-    "message": "You splice the heavy jumper cables into the defibrillator pad circuits. It's a crude hack, but it will deliver a massive jolt.",
-    "lore": "You are turning a medical device into an industrial hazard, or vice-versa."
-  },
-
   "recipe_lethal_syringe": {
-    "ingredients": ["veterinary_sedatives", "syringe"],
+    "ingredients": ["vet_sedatives", "syringe"],
     "result": "lethal_syringe",
     "message": "You draw the sedatives into the syringe. The label says 'Not for human use.' You hope that's just legalese.",
     "lore": "The dose will stop your heart in under a minute. The adrenaline in your system might restart it, but it's not guaranteed."

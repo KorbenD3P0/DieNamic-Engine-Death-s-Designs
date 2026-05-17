@@ -7,6 +7,7 @@ import os
 import glob
 import random
 import math
+import re
 from typing import Optional
 from kivy import app
 from kivy.app import App
@@ -14,7 +15,6 @@ from kivy.core import text
 from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
-from kivy.app import App
 from kivy.uix.screenmanager import Screen, ScreenManager, FadeTransition, SlideTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -341,6 +341,69 @@ class BaseScreen(Screen):
             try: ev.cancel()
             except: pass
         self._scheduled_events.clear()
+
+    def start_typewriter(self, label_widget, narrative_string, chars_per_second=40):
+        """
+        Starts a typewriter effect on a label, typing out narrative_string one character at a time.
+        Tapping the screen cancels the timer and shows the full text.
+        
+        Args:
+            label_widget: The Label widget to type into
+            narrative_string: The full text to type out
+            chars_per_second: Speed of typing (default 40 chars/sec)
+        """
+        if not label_widget:
+            return
+        
+        # Cancel any existing typewriter timer
+        if hasattr(self, '_typewriter_event') and self._typewriter_event:
+            try:
+                self._typewriter_event.cancel()
+            except:
+                pass
+        
+        label_widget.text = ""
+        self._typewriter_index = 0
+        self._typewriter_string = narrative_string
+        self._typewriter_label = label_widget
+        
+        # Calculate delay between characters (in seconds)
+        char_delay = 1.0 / chars_per_second
+    
+        # Start the typing loop
+        def type_one_char(dt):
+            if self._typewriter_index < len(self._typewriter_string):
+                self._typewriter_label.text += self._typewriter_string[self._typewriter_index]
+                self._typewriter_index += 1
+                # Schedule the next character
+                self._typewriter_event = Clock.schedule_once(type_one_char, char_delay)
+            else:
+                # Typing complete
+                self._typewriter_event = None
+        
+        # Schedule the first character
+        self._typewriter_event = Clock.schedule_once(type_one_char, char_delay)
+        if hasattr(self, '_scheduled_events'):
+            self._scheduled_events.append(self._typewriter_event)
+
+    def on_touch_up(self, touch):
+        """Intercepts screen releases to skip the typewriter effect on taps only."""
+        # 1. Ignore mouse wheel scrolling completely
+        if touch.is_mouse_scrolling:
+            return super().on_touch_up(touch)
+
+        # 2. Calculate the distance between where the touch started and ended
+        distance_moved = ((touch.x - touch.ox) ** 2 + (touch.y - touch.oy) ** 2) ** 0.5
+
+        # 3. If the finger/mouse moved less than 15 pixels, treat it as a deliberate tap!
+        if distance_moved < dp(15):
+            # If the typewriter is currently typing...
+            if hasattr(self, '_typewriter_event') and self._typewriter_event:
+                self.finish_typewriter()
+                return True # Consume the touch so it doesn't accidentally trigger buttons behind it
+                
+        # Otherwise (if it was a long swipe/scroll, or the text is already done), let Kivy handle it normally
+        return super().on_touch_up(touch)
 
     def _update_rect(self, instance, value):
         if self.bg_rect_instruction:
@@ -1093,7 +1156,7 @@ class IntroScreen(BaseScreen):
                     game_logic, rm, selected_city, location_name,
                     disaster_name, time_of_day, weather, smell, crowd
                 )
-                self.intro_text_label.text = full_intro
+                self.start_typewriter(self.intro_text_label, full_intro, chars_per_second=40)
                 return  # don\'t fall through to the generic text below
             elif char_class in SUPERNATURAL:
                 attention_hook = (
@@ -1126,7 +1189,7 @@ class IntroScreen(BaseScreen):
                 f"{color_text('You should probably figure that out soon and head for the exit.', 'warning', rm)}"
             )
 
-            self.intro_text_label.text = full_intro
+            self.start_typewriter(self.intro_text_label, full_intro, chars_per_second=40)
 
         # ── LATER LEVELS (2+) ────────────────────────────────────────────
         else:
@@ -1341,6 +1404,76 @@ class IntroScreen(BaseScreen):
             )
 
             return opening + premonition_core + faces_block + context_block + middle + closing
+
+    # ---------------------------------------------------------
+    # --- TYPEWRITER EFFECT ---
+    # ---------------------------------------------------------
+    def start_typewriter(self, label_widget, full_text, chars_per_second=40):
+        """Initializes the smart typewriter effect."""
+        self._typewriter_label = label_widget
+        self._typewriter_full_text = full_text
+        self._typewriter_event = None
+        
+        # --- THE SMART TOKENIZER ---
+        # Splits the text so markup tags like [color=ff0000] count as a single "character"
+        self._tokens = [m.group(0) for m in re.finditer(r'\[.*?\]|.', full_text, re.DOTALL)]
+        self._type_index = 0
+        
+        # Clear the label before starting
+        self._typewriter_label.text = ""
+        
+        # Start the clock tick
+        delay = 1.0 / chars_per_second
+        self._typewriter_event = Clock.schedule_interval(self._typewriter_tick, delay)
+
+    def _typewriter_tick(self, dt):
+        """Fires every tick to reveal the next character/tag."""
+        # If the next token is a markup tag, swallow it instantly without waiting a frame
+        while self._type_index < len(self._tokens) and self._tokens[self._type_index].startswith('['):
+            self._type_index += 1
+            
+        # Reveal one visible character
+        self._type_index += 1
+
+        # Check if we hit the end
+        if self._type_index >= len(self._tokens):
+            self.finish_typewriter()
+            return False # Stop the Clock
+
+        # Update the UI
+        self._typewriter_label.text = "".join(self._tokens[:self._type_index])
+
+    def finish_typewriter(self):
+        """Instantly forces the text to finish."""
+        if hasattr(self, '_typewriter_event') and self._typewriter_event:
+            self._typewriter_event.cancel()
+            self._typewriter_event = None
+            
+        if hasattr(self, '_typewriter_label') and hasattr(self, '_typewriter_full_text'):
+            self._typewriter_label.text = self._typewriter_full_text
+
+    # --- TAP TO SKIP ---
+    def on_touch_up(self, touch):
+        """Intercepts screen releases to skip the typewriter effect on taps only."""
+        # 1. Ignore mouse wheel scrolling completely
+        if touch.is_mouse_scrolling:
+            return super().on_touch_up(touch)
+
+        # 2. Calculate the distance between where the touch started and ended
+        distance_moved = ((touch.x - touch.ox) ** 2 + (touch.y - touch.oy) ** 2) ** 0.5
+
+        # 3. If the finger/mouse moved less than 15 pixels, treat it as a deliberate tap!
+        if distance_moved < dp(15):
+            # If the typewriter is currently typing...
+            if hasattr(self, '_typewriter_event') and self._typewriter_event:
+                self.finish_typewriter()
+                return True # Consume the touch so it doesn't accidentally trigger buttons behind it
+                
+        # Otherwise (if it was a long swipe/scroll, or the text is already done), let Kivy handle it normally
+        return super().on_touch_up(touch)
+            
+        # Otherwise, handle touches normally
+        return super().on_touch_down(touch)
 
     def proceed_to_game(self, instance=None):
         logging.info("IntroScreen: Proceeding to GameScreen.")
@@ -3758,16 +3891,87 @@ class InterLevelScreen(BaseScreen):
             # If GameLogic sent a custom, highly-detailed narrative (like the Visionary intro), USE IT!
             # Otherwise, fall back to the UI's dynamic component builder.
             if payload_narrative and payload_narrative != "You survived this area. Keep moving.":
-                self.narrative_label.text = payload_narrative
+                narrative_text = payload_narrative
             else:
-                self.narrative_label.text = self._build_post_premonition_intro(game_logic, rm)
+                narrative_text = self._build_post_premonition_intro(game_logic, rm)
+            # Start the typewriter effect
+            self.start_typewriter(self.narrative_label, narrative_text, chars_per_second=40)
             # --------------------------------------------------------------
         else:
             # Fallback to midgame intro
             self.title_label.text = "THE DESIGN CONTINUES"
-            self.narrative_label.text = self._build_midgame_intro(
+            narrative_text = self._build_midgame_intro(
                 game_logic, rm, self.next_level_id, self.previous_level_id
             )
+            # Start the typewriter effect
+            self.start_typewriter(self.narrative_label, narrative_text, chars_per_second=40)
+
+    # ---------------------------------------------------------
+    # --- TYPEWRITER EFFECT ---
+    # ---------------------------------------------------------
+    def start_typewriter(self, label_widget, full_text, chars_per_second=40):
+        """Initializes the smart typewriter effect."""
+        self._typewriter_label = label_widget
+        self._typewriter_full_text = full_text
+        self._typewriter_event = None
+        
+        # --- THE SMART TOKENIZER ---
+        # Splits the text so markup tags like [color=ff0000] count as a single "character"
+        self._tokens = [m.group(0) for m in re.finditer(r'\[.*?\]|.', full_text, re.DOTALL)]
+        self._type_index = 0
+        
+        # Clear the label before starting
+        self._typewriter_label.text = ""
+        
+        # Start the clock tick
+        delay = 1.0 / chars_per_second
+        self._typewriter_event = Clock.schedule_interval(self._typewriter_tick, delay)
+
+    def _typewriter_tick(self, dt):
+        """Fires every tick to reveal the next character/tag."""
+        # If the next token is a markup tag, swallow it instantly without waiting a frame
+        while self._type_index < len(self._tokens) and self._tokens[self._type_index].startswith('['):
+            self._type_index += 1
+            
+        # Reveal one visible character
+        self._type_index += 1
+
+        # Check if we hit the end
+        if self._type_index >= len(self._tokens):
+            self.finish_typewriter()
+            return False # Stop the Clock
+
+        # Update the UI
+        self._typewriter_label.text = "".join(self._tokens[:self._type_index])
+
+    def finish_typewriter(self):
+        """Instantly forces the text to finish."""
+        if hasattr(self, '_typewriter_event') and self._typewriter_event:
+            self._typewriter_event.cancel()
+            self._typewriter_event = None
+            
+        if hasattr(self, '_typewriter_label') and hasattr(self, '_typewriter_full_text'):
+            self._typewriter_label.text = self._typewriter_full_text
+
+    # --- TAP TO SKIP ---
+    def on_touch_up(self, touch):
+        """Intercepts screen releases to skip the typewriter effect on taps only."""
+        # 1. Ignore mouse wheel scrolling completely
+        if touch.is_mouse_scrolling:
+            return super().on_touch_up(touch)
+
+        # 2. Calculate the distance between where the touch started and ended
+        distance_moved = ((touch.x - touch.ox) ** 2 + (touch.y - touch.oy) ** 2) ** 0.5
+
+        # 3. If the finger/mouse moved less than 15 pixels, treat it as a deliberate tap!
+        if distance_moved < dp(15):
+            # If the typewriter is currently typing...
+            if hasattr(self, '_typewriter_event') and self._typewriter_event:
+                self.finish_typewriter()
+                return True # Consume the touch so it doesn't accidentally trigger buttons behind it
+                
+        # Otherwise (if it was a long swipe/scroll, or the text is already done), let Kivy handle it normally
+        return super().on_touch_up(touch)
 
     def _intro_read_state(self, game_logic, rm):
         """
@@ -3881,7 +4085,7 @@ class InterLevelScreen(BaseScreen):
             'knows_cycle':        knows_cycle,
             'knows_resurr':       flags.get('knows_resurrection', False),
             'knows_blood':        flags.get('knows_blood_pact', False),
-            'visited':            p.get('visited_levels', set()),
+            'visited':            p.get('visited_levels', []),
             'rm':                 rm,
             '_random':            _random,
         }
@@ -4822,9 +5026,6 @@ class WinScreen(BaseScreen):
         app = App.get_running_app()
         if app.game_logic:
             app.game_logic.ui_events.clear()
-            
-        final_score = getattr(app, 'last_game_score', 0)
-        self.score_display.text = f"Final Score: {final_score}"
 
         game_screen = self.manager.get_screen('game')
         if game_screen and game_screen.game_logic:
@@ -6779,47 +6980,50 @@ class GameScreen(BaseScreen):
 
             # 2. Parse Arguments: crawl <turns> [fast] [<runs>]
             turns = 500
+            mode  = "pathfinder"
             fast  = False
             runs  = 1
 
             try:
-                # Parse turns (first arg after 'crawl')
                 if len(parts) >= 2 and parts[1].isdigit():
                     turns = int(parts[1])
-                
-                # Parse 'fast' and 'runs'
-                if 'fast' in [p.lower() for p in parts]:
+
+                parts_lower = [p.lower() for p in parts]
+
+                for m in ('pathfinder', 'chaos', 'adversarial'):
+                    if m in parts_lower:
+                        mode = m
+                        break
+
+                if 'fast' in parts_lower:
                     fast = True
-                    fast_idx = parts.index('fast')
-                    # Look for runs count immediately following the word 'fast'
-                    if fast_idx + 1 < len(parts) and parts[fast_idx + 1].isdigit():
-                        runs = int(parts[fast_idx + 1])
+
+                if 'runs' in parts_lower:
+                    runs_idx = parts_lower.index('runs')
+                    if runs_idx + 1 < len(parts) and parts[runs_idx + 1].isdigit():
+                        runs = int(parts[runs_idx + 1])
                 elif len(parts) >= 3 and parts[2].isdigit():
-                    # Fallback for "crawl 500 5" (no 'fast' keyword)
                     runs = int(parts[2])
+
             except (ValueError, IndexError):
                 pass
 
-            # 3. Initialization & God Mode
-            # Ensure sys.path is correct for dynamic loading
-            import sys
-            import os
+            # 3. Initialization
+            import sys, os
             root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
             if root_dir not in sys.path:
                 sys.path.insert(0, root_dir)
 
             from chaos_crawler import ChaosCrawler
-            
-            # Grant God Mode and start the session
             self.game_logic.player['turns_left'] = 99999
             self._crawler = ChaosCrawler(self)
-            self._crawler.start(turns=turns, fast=fast, runs=runs)
+            self._crawler.start(turns=turns, mode=mode, fast=fast, runs=runs)
 
-            # 4. UI Feedback
             speed_label = "FAST" if fast else "NORMAL"
             if out:
                 out.append_text(
-                    f"[color=00ff00]Crawler started: {runs} run(s) of {turns} turns ({speed_label}).[/color]\n"
+                    f"[color=00ff00]Crawler started: {runs} run(s) of {turns} turns "
+                    f"({mode.upper()} / {speed_label}).[/color]\n"
                     f"[color=aaaaaa]Logging to: {self._crawler.log_path}[/color]"
                 )
             if ai: ai.text_input.text = ""

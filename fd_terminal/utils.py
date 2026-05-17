@@ -324,7 +324,7 @@ def get_related_items(hazard_key: str) -> list[str]:
         'electrified_fence': ['insulating_tape', 'rubber_gloves', 'wire_cutters'],
         'water_puddle': ['mop', 'bucket', 'wet_floor_sign', 'towel'],
         'frayed_lamp_cord': ['electrical_tape', 'scissors'],
-        'precarious_water_cup': ['coaster', 'towel'],
+        'liquid_spill': ['coaster', 'towel'],
         'spilled_hot_oil': ['sand_bucket', 'extinguisher', 'warning_layout'],
         'faulty_generator': ['wrench', 'fuel_can', 'spark_plug'],
         'wobbling_ceiling_fan': ['screwdriver', 'ladder', 'helmet'],

@@ -50,16 +50,23 @@
     },
     "furniture": [],
     "hazards_present": [
-      "precarious_object",
-      "weak_floorboards"
-    ],
-    "objects": [
       {
+        "type": "precarious_object",
         "name": "T-Rex Skull",
         "description": "The massive fossilized skull is suspended by steel cables, but it looks unbalanced and leans heavily to one side.",
         "id": "precarious_object",
-        "aliases": ["skull", "dinosaur", "fossil"]
+        "aliases": ["skull", "dinosaur", "fossil"],
+        "chance": 1.0,
+        "skin": {
+          "hazard_name": "stack of heavy pans",
+          "dynamic_target": "rogue_machinery",
+          "dynamic_state": "creeping_forward"
+        }
       },
+      "weak_floorboards"
+    ],
+    "objects": [
+
       {
         "name": "Warped Floorboard",
         "description": "The antique hardwood floor sags dangerously near the center exhibit.",

@@ -140,14 +140,15 @@
         "first_entry_text": "You've reached the end of the pier! There! Trapped as the shelter roof collapses! You have seconds to act!",
         "furniture": [],
         "hazards_present": [
-            {
-                "chance": 0.3,
-                "object_name_options": [
-                    "falling_shelter_beam"
-                ],
-                "support_object_override": "shelter_frame",
-                "type": "precarious_object"
+        {
+            "type": "precarious_object",
+            "chance": 1.0,
+            "skin": {
+            "hazard_name": "Falling shelter beam",
+            "dynamic_target": "rogue_machinery",
+            "dynamic_state": "creeping_forward"
             }
+        }
         ],
         "items": [],
         "name": "Pier End Platform",

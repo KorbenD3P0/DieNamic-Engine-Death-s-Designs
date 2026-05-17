@@ -61,7 +61,7 @@
         "chance": 0.3
       },
       {
-        "type": "robo_vacuum",
+        "type": "rogue_machinery",
         "object_name_override": "industrial floor polisher",
         "initial_state": "patrolling",
         "chance": 1.0
@@ -179,10 +179,12 @@
       },
       {
         "type": "precarious_object",
-        "object_name_override": "stack of heavy pans",
-        "support_object_override": "top shelf",
-        "initial_state": "precarious",
-        "chance": 0.5
+        "chance": 1.0,
+        "skin": {
+          "hazard_name": "stack of heavy pans",
+          "dynamic_target": "rogue_machinery",
+          "dynamic_state": "creeping_forward"
+        }
       }
     ],
     "items": [],
